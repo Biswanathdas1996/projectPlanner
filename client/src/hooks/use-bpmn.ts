@@ -122,10 +122,114 @@ export function useBpmn() {
     }
   }, [showNotification]);
 
+  // Convert AI-generated JSON to BPMN XML
+  const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
+    const definitions = jsonData.definitions || jsonData;
+    const elements = definitions.elements || [];
+    const flows = definitions.flows || [];
+
+    // Generate BPMN XML from JSON structure
+    let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+  id="${definitions.id || 'Definitions_1'}" 
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:process id="Process_1" isExecutable="false">`;
+
+    // Add elements
+    elements.forEach((element: any, index: number) => {
+      const x = 100 + (index * 150);
+      const y = 100;
+      
+      switch (element.type) {
+        case 'startEvent':
+          bpmnXml += `
+    <bpmn2:startEvent id="${element.id}" name="${element.name || 'Start'}">
+      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
+    </bpmn2:startEvent>`;
+          break;
+        case 'task':
+          bpmnXml += `
+    <bpmn2:task id="${element.id}" name="${element.name || 'Task'}">
+      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
+    </bpmn2:task>`;
+          break;
+        case 'exclusiveGateway':
+          bpmnXml += `
+    <bpmn2:exclusiveGateway id="${element.id}" name="${element.name || 'Gateway'}">
+      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>`;
+          break;
+        case 'endEvent':
+          bpmnXml += `
+    <bpmn2:endEvent id="${element.id}" name="${element.name || 'End'}">
+      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
+    </bpmn2:endEvent>`;
+          break;
+      }
+    });
+
+    // Add sequence flows
+    flows.forEach((flow: any) => {
+      bpmnXml += `
+    <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}" />`;
+    });
+
+    bpmnXml += `
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+
+    // Add visual elements
+    elements.forEach((element: any, index: number) => {
+      const x = 100 + (index * 150);
+      const y = 100;
+      const width = element.type === 'startEvent' || element.type === 'endEvent' ? 36 : 100;
+      const height = element.type === 'startEvent' || element.type === 'endEvent' ? 36 : 80;
+
+      bpmnXml += `
+      <bpmndi:BPMNShape id="${element.id}_di" bpmnElement="${element.id}">
+        <dc:Bounds x="${x}" y="${y}" width="${width}" height="${height}" />
+      </bpmndi:BPMNShape>`;
+    });
+
+    bpmnXml += `
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>`;
+
+    return bpmnXml;
+  }, []);
+
   // Load from localStorage
   const loadFromStorage = useCallback(async () => {
     if (!modelerRef.current) return;
 
+    // First check for AI-generated diagram
+    const aiDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+    if (aiDiagram) {
+      try {
+        const jsonData = JSON.parse(aiDiagram);
+        const bpmnXml = convertJsonToBpmnXml(jsonData);
+        await modelerRef.current.importXML(bpmnXml);
+        showNotification('AI-generated diagram loaded successfully', 'success');
+        setStatus('AI Loaded');
+        updateJsonView();
+        // Clear the AI diagram after loading to prevent reloading
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+        return;
+      } catch (error) {
+        console.error('Error loading AI diagram:', error);
+        showNotification('Failed to load AI diagram, loading saved diagram instead', 'warning');
+      }
+    }
+
+    // Fallback to regular saved diagram
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.DIAGRAM);
     if (savedDiagram) {
       try {
@@ -138,7 +242,7 @@ export function useBpmn() {
         showNotification('Failed to load saved diagram', 'error');
       }
     }
-  }, [showNotification, updateJsonView]);
+  }, [showNotification, updateJsonView, convertJsonToBpmnXml]);
 
   // Create new diagram
   const createNew = useCallback(async () => {

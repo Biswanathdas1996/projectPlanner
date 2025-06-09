@@ -15,6 +15,9 @@ export const DEFAULT_BPMN_DIAGRAM = `<?xml version="1.0" encoding="UTF-8"?>
 export const STORAGE_KEYS = {
   DIAGRAM: 'bpmn-diagram',
   TIMESTAMP: 'bpmn-diagram-timestamp',
+  CURRENT_DIAGRAM: 'bpmn-current-diagram',
+  PROJECT_PLAN: 'bpmn-project-plan',
+  PROJECT_DESCRIPTION: 'bpmn-project-description',
 } as const;
 
 export function generateId(): string {
