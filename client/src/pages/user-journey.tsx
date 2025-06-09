@@ -38,6 +38,13 @@ export default function UserJourney() {
   const [activePersona, setActivePersona] = useState<string | null>(null);
   const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
+  const [personaPrompts, setPersonaPrompts] = useState<Record<string, string>>({
+    guest: '',
+    'logged-in': '',
+    admin: '',
+    power: '',
+    mobile: ''
+  });
 
   // Load data from localStorage when component mounts and auto-generate BPMN
   useEffect(() => {
@@ -108,7 +115,7 @@ export default function UserJourney() {
     }
   };
 
-  const generatePersonaBpmn = async (personaType: 'guest' | 'logged-in' | 'admin' | 'power' | 'mobile') => {
+  const generatePersonaBpmn = async (personaType: 'guest' | 'logged-in' | 'admin' | 'power' | 'mobile', customPrompt?: string) => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
       setError('No project plan available. Please generate a project plan first.');
@@ -119,7 +126,12 @@ export default function UserJourney() {
     setError('');
 
     try {
-      const bpmn = await generatePersonaBpmnFlow(planContent, personaType);
+      // Combine project plan with custom prompt if provided
+      const enhancedPrompt = customPrompt 
+        ? `${planContent}\n\nAdditional Requirements for ${personaType} user: ${customPrompt}`
+        : planContent;
+        
+      const bpmn = await generatePersonaBpmnFlow(enhancedPrompt, personaType);
       setPersonaBpmnFlows(prev => ({ ...prev, [personaType]: bpmn }));
       
       // Save the latest generated BPMN to localStorage
@@ -523,9 +535,29 @@ export default function UserJourney() {
                     </CardHeader>
                     <CardContent className="p-4">
                       <div className="space-y-4">
+                        {/* Custom Prompt Input */}
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-gray-700">
+                            Custom Requirements (Optional)
+                          </label>
+                          <textarea
+                            value={personaPrompts[persona.type] || ''}
+                            onChange={(e) => setPersonaPrompts(prev => ({ 
+                              ...prev, 
+                              [persona.type]: e.target.value 
+                            }))}
+                            placeholder={`Add specific requirements for ${persona.title.toLowerCase()}... e.g., "Include security verification steps", "Add mobile-specific gestures", "Include offline capabilities"`}
+                            className="flex min-h-[60px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                            disabled={isGeneratingPersonaBpmn[persona.type]}
+                          />
+                        </div>
+                        
                         <div className="flex gap-2">
                           <Button
-                            onClick={() => generatePersonaBpmn(persona.type as any)}
+                            onClick={() => generatePersonaBpmn(
+                              persona.type as any, 
+                              personaPrompts[persona.type]?.trim() || undefined
+                            )}
                             disabled={isGeneratingPersonaBpmn[persona.type] || (!projectPlan && !projectDescription)}
                             size="sm"
                             className={`bg-gradient-to-r from-${persona.color}-500 to-${persona.color}-600`}
@@ -538,7 +570,7 @@ export default function UserJourney() {
                             ) : (
                               <>
                                 <Activity className="h-3 w-3 mr-2" />
-                                Generate
+                                {personaPrompts[persona.type]?.trim() ? 'Generate Extended' : 'Generate'}
                               </>
                             )}
                           </Button>
