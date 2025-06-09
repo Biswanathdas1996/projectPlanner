@@ -173,36 +173,110 @@ export function useBpmn() {
     }
   }, [showNotification]);
 
-  // Convert AI-generated JSON to BPMN XML with swimlanes
-  const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
+  // Validate and ensure proper categorization of BPMN elements
+  const validateAndCategorizeBpmn = useCallback((jsonData: any): any => {
     const definitions = jsonData.definitions || jsonData;
     let elements = definitions.elements || [];
     const flows = definitions.flows || [];
     let swimlanes = definitions.swimlanes || [];
 
-    // Validation: Ensure all elements are assigned to swimlanes
-    if (swimlanes.length > 0) {
-      const swimlaneIds = swimlanes.map((lane: any) => lane.id);
-      
-      // Check for elements without lane assignment
-      elements = elements.map((element: any, index: number) => {
-        if (!element.lane || !swimlaneIds.includes(element.lane)) {
-          // Auto-assign to first available swimlane
-          const targetLane = swimlaneIds[index % swimlaneIds.length];
-          console.warn(`Element ${element.id} assigned to lane ${targetLane}`);
-          return { ...element, lane: targetLane };
-        }
-        return element;
-      });
+    // Create default categories if none exist
+    if (swimlanes.length === 0) {
+      swimlanes = [
+        { id: 'Lane_Planning', name: 'Planning & Initiation', elements: [] },
+        { id: 'Lane_Execution', name: 'Development & Execution', elements: [] },
+        { id: 'Lane_Review', name: 'Review & Quality Control', elements: [] },
+        { id: 'Lane_Completion', name: 'Completion & Delivery', elements: [] }
+      ];
+    }
 
-      // Ensure each swimlane has at least one element
-      swimlanes.forEach((lane: any) => {
-        const laneElements = elements.filter((el: any) => el.lane === lane.id);
-        if (laneElements.length === 0) {
-          console.warn(`Swimlane ${lane.id} has no elements assigned`);
+    // Validate all elements have categories
+    const swimlaneIds = swimlanes.map((lane: any) => lane.id);
+    const uncategorized = elements.filter((el: any) => !el.lane || !swimlaneIds.includes(el.lane));
+    
+    if (uncategorized.length > 0) {
+      console.warn(`Found ${uncategorized.length} uncategorized elements - auto-assigning to appropriate categories`);
+      
+      uncategorized.forEach((element: any, index: number) => {
+        // Smart categorization based on element type and name
+        let targetCategory = '';
+        
+        if (element.type === 'startEvent' || element.name?.toLowerCase().includes('start') || element.name?.toLowerCase().includes('initiat')) {
+          targetCategory = 'Lane_Planning';
+        } else if (element.type === 'endEvent' || element.name?.toLowerCase().includes('complete') || element.name?.toLowerCase().includes('finish')) {
+          targetCategory = 'Lane_Completion';
+        } else if (element.type === 'exclusiveGateway' || element.name?.includes('?') || element.name?.toLowerCase().includes('review') || element.name?.toLowerCase().includes('approval') || element.name?.toLowerCase().includes('check')) {
+          targetCategory = 'Lane_Review';
+        } else if (element.name?.toLowerCase().includes('develop') || element.name?.toLowerCase().includes('implement') || element.name?.toLowerCase().includes('build') || element.name?.toLowerCase().includes('create')) {
+          targetCategory = 'Lane_Execution';
+        } else if (element.name?.toLowerCase().includes('plan') || element.name?.toLowerCase().includes('design') || element.name?.toLowerCase().includes('analyz')) {
+          targetCategory = 'Lane_Planning';
+        } else {
+          // Distribute remaining elements evenly
+          const availableCategories = ['Lane_Planning', 'Lane_Execution', 'Lane_Review', 'Lane_Completion'];
+          targetCategory = availableCategories[index % availableCategories.length];
         }
+        
+        element.lane = targetCategory;
+        console.info(`Auto-categorized ${element.id} (${element.name}) → ${swimlanes.find((l: any) => l.id === targetCategory)?.name}`);
       });
     }
+
+    // Ensure balanced distribution
+    const elementCounts = swimlanes.map((lane: any) => ({
+      lane: lane.id,
+      name: lane.name,
+      count: elements.filter((el: any) => el.lane === lane.id).length
+    }));
+
+    // Move elements from over-populated categories if needed
+    elementCounts.forEach(category => {
+      if (category.count === 0) {
+        // Find an element to move here
+        const overPopulated = elementCounts.find(c => c.count > Math.ceil(elements.length / swimlanes.length) + 1);
+        if (overPopulated) {
+          const elementToMove = elements.find((el: any) => 
+            el.lane === overPopulated.lane && 
+            el.type !== 'startEvent' && 
+            el.type !== 'endEvent'
+          );
+          if (elementToMove) {
+            elementToMove.lane = category.lane;
+            console.info(`Rebalanced: Moved ${elementToMove.id} to ${category.name}`);
+          }
+        }
+      }
+    });
+
+    // Update swimlane element lists
+    swimlanes.forEach((lane: any) => {
+      lane.elements = elements.filter((el: any) => el.lane === lane.id).map((el: any) => el.id);
+    });
+
+    // Final validation report
+    const finalCounts = swimlanes.map((lane: any) => {
+      const count = elements.filter((el: any) => el.lane === lane.id).length;
+      return `${lane.name}: ${count} elements`;
+    });
+    console.info('Categorization validation complete:', finalCounts.join(', '));
+
+    return {
+      ...definitions,
+      elements,
+      flows,
+      swimlanes
+    };
+  }, []);
+
+  // Convert AI-generated JSON to BPMN XML with swimlanes
+  const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
+    // First validate and ensure proper categorization
+    const validatedData = validateAndCategorizeBpmn(jsonData);
+    const elements = validatedData.elements || [];
+    const flows = validatedData.flows || [];
+    const swimlanes = validatedData.swimlanes || [];
+
+    console.info('Converting validated BPMN data to XML with proper categorization');
 
     // Generate BPMN XML from JSON structure
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -211,7 +285,7 @@ export function useBpmn() {
   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-  id="${definitions.id || 'Definitions_1'}" 
+  id="${validatedData.id || 'Definitions_1'}" 
   targetNamespace="http://bpmn.io/schema/bpmn">`;
 
     if (swimlanes.length > 0) {
