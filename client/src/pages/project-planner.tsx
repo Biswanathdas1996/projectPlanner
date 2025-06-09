@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { generateProjectPlan, generateBpmnJson } from '@/lib/gemini';
-import { useBpmn } from '@/hooks/use-bpmn';
-import { Link } from 'wouter';
+import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { Link, useLocation } from 'wouter';
 import {
   Sparkles,
   FileText,
@@ -25,8 +25,9 @@ export default function ProjectPlanner() {
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
   const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
   const [error, setError] = useState('');
+  const [generatedBpmnJson, setGeneratedBpmnJson] = useState<any>(null);
 
-  const { importFromJson } = useBpmn();
+  const [, setLocation] = useLocation();
 
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
@@ -59,7 +60,13 @@ export default function ProjectPlanner() {
 
     try {
       const bpmnJson = await generateBpmnJson(projectPlan);
-      await importFromJson(bpmnJson);
+      setGeneratedBpmnJson(bpmnJson);
+      
+      // Store the generated BPMN JSON in localStorage
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(bpmnJson));
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      
       setCurrentStep('diagram');
     } catch (err) {
       setError('Failed to generate BPMN diagram. Please try again.');
@@ -67,6 +74,16 @@ export default function ProjectPlanner() {
     } finally {
       setIsGeneratingBpmn(false);
     }
+  };
+
+  const navigateToEditor = () => {
+    if (generatedBpmnJson) {
+      // Ensure the BPMN JSON is stored before navigation
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(generatedBpmnJson));
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+    }
+    setLocation('/editor');
   };
 
   const resetPlanner = () => {
