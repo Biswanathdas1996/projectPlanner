@@ -11,7 +11,7 @@ declare global {
 
 export function useBpmn() {
   const [selectedElement, setSelectedElement] = useState<ElementProperties | null>(null);
-  const [diagramJson, setDiagramJson] = useState<string>('{}');
+  const [diagramXml, setDiagramXml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [status, setStatus] = useState<string>('Ready');
@@ -65,13 +65,13 @@ export function useBpmn() {
       });
 
       modeler.on('commandStack.changed', () => {
-        updateJsonView();
+        updateXmlView();
         setStatus('Modified');
       });
 
       // Load from localStorage if available
       loadFromStorage();
-      updateJsonView();
+      updateXmlView();
       setIsLoading(false);
       setStatus('Ready');
       
@@ -89,17 +89,16 @@ export function useBpmn() {
     }
   }, []);
 
-  // Update JSON view
-  const updateJsonView = useCallback(async () => {
+  // Update XML view
+  const updateXmlView = useCallback(async () => {
     if (!modelerRef.current) return;
 
     try {
       const result = await modelerRef.current.saveXML({ format: true });
-      const jsonRepresentation = xmlToJson(result.xml);
-      setDiagramJson(jsonRepresentation);
+      setDiagramXml(result.xml);
     } catch (error) {
-      console.error('Error updating JSON view:', error);
-      setDiagramJson(JSON.stringify({ error: 'Failed to generate JSON view' }, null, 2));
+      console.error('Error updating XML view:', error);
+      setDiagramXml('<!-- Failed to generate BPMN XML -->');
     }
   }, []);
 
@@ -324,7 +323,7 @@ export function useBpmn() {
           await modelerRef.current.importXML(aiDiagram);
           showNotification('AI-generated BPMN diagram loaded successfully', 'success');
           setStatus('AI Loaded');
-          updateJsonView();
+          updateXmlView();
           
           // Auto-fit AI diagrams to viewport for better visibility
           setTimeout(() => {
@@ -343,7 +342,7 @@ export function useBpmn() {
           await modelerRef.current.importXML(bpmnXml);
           showNotification('AI-generated diagram loaded successfully', 'success');
           setStatus('AI Loaded');
-          updateJsonView();
+          updateXmlView();
           
           // Auto-fit AI diagrams to viewport for better visibility
           setTimeout(() => {
@@ -369,13 +368,13 @@ export function useBpmn() {
         await modelerRef.current.importXML(savedDiagram);
         showNotification('Diagram loaded from storage', 'success');
         setStatus('Loaded');
-        updateJsonView();
+        updateXmlView();
       } catch (error) {
         console.error('Error loading saved diagram:', error);
         showNotification('Failed to load saved diagram', 'error');
       }
     }
-  }, [showNotification, updateJsonView, convertJsonToBpmnXml]);
+  }, [showNotification, updateXmlView, convertJsonToBpmnXml]);
 
   // Create new diagram
   const createNew = useCallback(async () => {
@@ -385,12 +384,12 @@ export function useBpmn() {
       await modelerRef.current.importXML(DEFAULT_BPMN_DIAGRAM);
       showNotification('New diagram created', 'success');
       setStatus('Ready');
-      updateJsonView();
+      updateXmlView();
     } catch (error) {
       console.error('Error creating new diagram:', error);
       showNotification('Failed to create new diagram', 'error');
     }
-  }, [showNotification, updateJsonView]);
+  }, [showNotification, updateXmlView]);
 
   // Export diagram
   const exportDiagram = useCallback(async () => {
@@ -423,12 +422,12 @@ export function useBpmn() {
       await modelerRef.current.importXML(text);
       showNotification('Diagram imported successfully', 'success');
       setStatus('Imported');
-      updateJsonView();
+      updateXmlView();
     } catch (error) {
       console.error('Error importing diagram:', error);
       showNotification('Failed to import diagram', 'error');
     }
-  }, [showNotification, updateJsonView]);
+  }, [showNotification, updateXmlView]);
 
   // Zoom functions
   const zoomIn = useCallback(() => {
@@ -475,16 +474,16 @@ export function useBpmn() {
     }
   }, [selectedElement, showNotification]);
 
-  // Copy JSON to clipboard
-  const copyJsonToClipboard = useCallback(async () => {
+  // Copy BPMN XML to clipboard
+  const copyXmlToClipboard = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(diagramJson);
-      showNotification('JSON copied to clipboard', 'success');
+      await navigator.clipboard.writeText(diagramXml);
+      showNotification('BPMN XML copied to clipboard', 'success');
     } catch (error) {
-      console.error('Failed to copy JSON:', error);
-      showNotification('Failed to copy JSON to clipboard', 'error');
+      console.error('Failed to copy BPMN XML:', error);
+      showNotification('Failed to copy BPMN XML to clipboard', 'error');
     }
-  }, [diagramJson, showNotification]);
+  }, [diagramXml, showNotification]);
 
   // Handle element select
   const handleElementSelect = useCallback((elementId: string) => {
@@ -556,7 +555,7 @@ export function useBpmn() {
   return {
     containerRef,
     selectedElement,
-    diagramJson,
+    diagramXml,
     isLoading,
     notifications,
     status,
@@ -571,7 +570,7 @@ export function useBpmn() {
     zoomOut,
     zoomFit,
     updateElementProperties,
-    copyJsonToClipboard,
+    copyXmlToClipboard,
     handleElementSelect,
     connectElements,
     createConnection,
