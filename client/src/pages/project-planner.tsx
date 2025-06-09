@@ -17,6 +17,9 @@ import {
   Workflow,
   ArrowLeft,
   Plus,
+  Edit,
+  Save,
+  X,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -29,6 +32,8 @@ export default function ProjectPlanner() {
   const [generatedBpmnJson, setGeneratedBpmnJson] = useState<any>(null);
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
+  const [isEditingPlan, setIsEditingPlan] = useState(false);
+  const [editedPlanContent, setEditedPlanContent] = useState('');
 
   const [, setLocation] = useLocation();
 
@@ -129,10 +134,28 @@ Return the complete enhanced project plan as HTML with all existing content plus
     }
   };
 
+  const startEditingPlan = () => {
+    setEditedPlanContent(projectPlan);
+    setIsEditingPlan(true);
+  };
+
+  const saveEditedPlan = () => {
+    setProjectPlan(editedPlanContent);
+    setIsEditingPlan(false);
+    setEditedPlanContent('');
+  };
+
+  const cancelEditingPlan = () => {
+    setIsEditingPlan(false);
+    setEditedPlanContent('');
+  };
+
   const resetPlanner = () => {
     setProjectInput('');
     setProjectPlan('');
     setEnhancementPrompt('');
+    setIsEditingPlan(false);
+    setEditedPlanContent('');
     setCurrentStep('input');
     setError('');
   };
@@ -257,33 +280,85 @@ Return the complete enhanced project plan as HTML with all existing content plus
         {currentStep === 'plan' && (
           <Card className="mb-6 border-0 shadow-lg">
             <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <FileText className="h-5 w-5 text-white" />
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-white" />
+                  </div>
+                  Generated Project Plan
                 </div>
-                Generated Project Plan
+                <Button
+                  onClick={startEditingPlan}
+                  variant="outline"
+                  size="sm"
+                  disabled={isEditingPlan || isEnhancing || isGeneratingBpmn}
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Plan
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
-              {/* HTML Project Plan Content with Architecture Diagrams */}
-              {(projectPlan.trim().startsWith('<!DOCTYPE html>') || projectPlan.trim().startsWith('<html') || projectPlan.trim().startsWith('<div') || projectPlan.includes('<style>')) ? (
-                <div className="w-full">
-                  <div 
-                    className="project-plan-content"
-                    dangerouslySetInnerHTML={{ __html: projectPlan }}
-                    style={{
-                      minHeight: '500px',
-                      backgroundColor: '#ffffff',
-                      borderRadius: '8px',
-                      padding: '0'
-                    }}
+              {/* Editing Mode */}
+              {isEditingPlan ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold text-gray-800">Edit Project Plan</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={saveEditedPlan}
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </Button>
+                      <Button
+                        onClick={cancelEditingPlan}
+                        variant="outline"
+                        size="sm"
+                        className="border-gray-300"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <Textarea
+                    value={editedPlanContent}
+                    onChange={(e) => setEditedPlanContent(e.target.value)}
+                    className="min-h-[600px] font-mono text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    placeholder="Edit your project plan content here..."
                   />
+                  
+                  <div className="text-sm text-gray-500 flex justify-between">
+                    <span>You can edit both HTML and markdown content</span>
+                    <span>{editedPlanContent.length} characters</span>
+                  </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
-                  <div className="prose prose-gray max-w-none">
-                    <div className="text-gray-800 leading-relaxed">
-                      {projectPlan.split('\n').map((line, index) => {
+                <>
+                  {/* HTML Project Plan Content with Architecture Diagrams */}
+                  {(projectPlan.trim().startsWith('<!DOCTYPE html>') || projectPlan.trim().startsWith('<html') || projectPlan.trim().startsWith('<div') || projectPlan.includes('<style>')) ? (
+                    <div className="w-full">
+                      <div 
+                        className="project-plan-content"
+                        dangerouslySetInnerHTML={{ __html: projectPlan }}
+                        style={{
+                          minHeight: '500px',
+                          backgroundColor: '#ffffff',
+                          borderRadius: '8px',
+                          padding: '0'
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
+                      <div className="prose prose-gray max-w-none">
+                        <div className="text-gray-800 leading-relaxed">
+                          {projectPlan.split('\n').map((line, index) => {
                         const trimmedLine = line.trim();
                         
                         // Clean markdown symbols and format content
@@ -356,9 +431,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         </p>
                       );
                     })}
-                  </div>
-                </div>
-              </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
               
               {/* Enhancement Section */}
