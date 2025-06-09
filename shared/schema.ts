@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+export const users = z.object({
+  id: z.number(),
+  username: z.string(),
+  password: z.string(),
+});
+
 export const bpmnDiagramSchema = z.object({
   id: z.string(),
   name: z.string(),
