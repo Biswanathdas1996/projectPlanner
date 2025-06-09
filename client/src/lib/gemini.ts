@@ -2,6 +2,83 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
+export async function generateCustomSuggestions(projectDescription: string): Promise<string[]> {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    
+    const prompt = `Based on this project description, generate 12-16 specific, relevant additional features and requirements that would enhance the project. Focus on practical, implementable features that would add real value.
+
+Project Description:
+"${projectDescription}"
+
+Requirements:
+1. Generate suggestions that are directly relevant to this specific project type
+2. Include both technical and business features
+3. Consider scalability, security, user experience, and integration aspects
+4. Make each suggestion specific and actionable
+5. Avoid generic suggestions that don't fit the project context
+6. Include modern web development best practices
+7. Consider the target audience and use cases for this project
+
+Return ONLY a JSON array of strings, each string being a concise suggestion (max 60 characters). No explanations, just the array.
+
+Example format: ["User authentication with 2FA", "Real-time notifications", "Mobile responsive design"]`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    // Clean the response and parse JSON
+    let cleanedText = text.trim();
+    if (cleanedText.startsWith('```json')) {
+      cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+    }
+    if (cleanedText.startsWith('```')) {
+      cleanedText = cleanedText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    }
+    
+    try {
+      const suggestions = JSON.parse(cleanedText);
+      return Array.isArray(suggestions) ? suggestions : [];
+    } catch (parseError) {
+      console.error('JSON parse error for suggestions:', parseError);
+      console.log('Raw response:', text);
+      // Fallback to generic suggestions if parsing fails
+      return [
+        "User authentication and authorization",
+        "Real-time notifications",
+        "Mobile application support",
+        "API integration capabilities",
+        "Advanced search functionality",
+        "Analytics and reporting dashboard",
+        "Payment processing system",
+        "File upload and management",
+        "Multi-language support",
+        "Security audit compliance",
+        "Automated testing pipeline",
+        "Performance optimization"
+      ];
+    }
+  } catch (error) {
+    console.error('Error generating custom suggestions:', error);
+    // Return fallback suggestions
+    return [
+      "User authentication and authorization",
+      "Real-time notifications",
+      "Mobile application support",
+      "API integration capabilities",
+      "Advanced search functionality",
+      "Analytics and reporting dashboard",
+      "Payment processing system",
+      "File upload and management",
+      "Multi-language support",
+      "Security audit compliance",
+      "Automated testing pipeline",
+      "Performance optimization"
+    ];
+  }
+}
+
 export async function generateProjectPlan(
   projectDescription: string,
 ): Promise<string> {
