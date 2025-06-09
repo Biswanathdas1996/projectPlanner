@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { generateProjectPlan, generateBpmnJson, generateCustomSuggestions } from '@/lib/gemini';
+import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { Link, useLocation } from 'wouter';
 import {
@@ -42,7 +42,7 @@ export default function ProjectPlanner() {
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
   const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
   const [error, setError] = useState('');
-  const [generatedBpmnJson, setGeneratedBpmnJson] = useState<any>(null);
+  const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>('');
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isEditingPlan, setIsEditingPlan] = useState(false);
