@@ -12,69 +12,192 @@ export async function generateProjectPlan(
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
+Create a comprehensive project plan for: "${projectDescription}"
+
+Generate the response as complete HTML code with embedded CSS styling, architecture diagrams, and interactive visualizations.
+
+**HTML Structure Requirements:**
+- Use semantic HTML5 elements with modern CSS
+- Include interactive architecture diagrams using CSS
+- Create visual user flow charts with connected elements
+- Add responsive design for different screen sizes
+- Use professional color scheme (blues, grays, whites)
+
+**Required Visual Sections:**
+1. Executive Dashboard with key metrics
+2. System Architecture Diagram with component relationships
+3. User Journey Flow with interactive steps
+4. Technology Stack Visualization
+5. Development Timeline with milestones
+6. Team Structure and Responsibilities
+7. Risk Assessment Matrix
+8. CI/CD Pipeline Visualization
+
+**Content Requirements:**
+- Detailed technical specifications
+- User flow mapping with decision points
+- Development plan with Git workflow, testing, CI/CD
+- Resource allocation and timeline
+- Risk mitigation strategies
+
+Return ONLY valid HTML with embedded CSS - no markdown or explanations.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return response.text();
+}
+
+export async function generateProjectPlanLegacy(
+  projectDescription: string,
+): Promise<string> {
+  if (!projectDescription.trim()) {
+    throw new Error("Project description is required");
+  }
+
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `
 You are a senior business analyst and technical architect. Create a comprehensive project plan for the following project description:
 
 "${projectDescription}"
 
-Generate a detailed project plan that includes:
+1. Project Overview & Objectives
+Problem Statement: Define the core challenge or opportunity addressed by the application.
 
-1. **Project Overview & Business Objectives**
-   - Clear problem statement and goals
-   - Success metrics and KPIs
-   - Stakeholder identification
+Business Goals: List 2–3 clear, measurable goals.
 
-2. **User Flow Diagrams & Journey Mapping**
-   - Complete user journey from start to finish
-   - All user roles and their specific workflows
-   - Decision points and conditional paths
-   - User interactions and touchpoints
-   - Error handling and edge cases
+KPIs & Success Metrics: Define metrics (e.g., user acquisition, retention, conversion).
 
-3. **Technical Architecture & System Design**
-   - Frontend architecture (React components, state management, routing)
-   - Backend architecture (APIs, databases, microservices)
-   - Database schema and data flow
-   - Security architecture (authentication, authorization, encryption)
-   - Infrastructure requirements (cloud services, CDN, monitoring)
-   - Integration points and third-party services
-   - Performance and scalability considerations
-   - Technology stack recommendations
+Stakeholders: Identify key stakeholders (e.g., Product Owner, Tech Lead, QA Manager).
 
-4. **Development Plan & Implementation Strategy**
-   - Code Repository Setup (Git structure, branching model)
-   - Branching Strategy (Git Flow, feature branches, release management)
-   - Module-wise Breakdown (component architecture, service layers)
-   - Sprint Planning & Development Roadmap (2-week sprints with deliverables)
-   - Effort Estimation (story points, time estimates, complexity analysis)
-   - CI/CD Pipeline Design (build, test, deploy automation)
-   - Code Quality Standards (style guides, review processes)
-   - Development Tools & Environment Setup
-   - Linting & Pre-commit Hooks Configuration
-   - Unit Test Coverage Requirements (minimum 80% coverage)
-   - Integration Testing Strategy
-   - Performance Testing & Monitoring Setup
+2. User Flow & Journey Mapping
+User Roles: Define personas (e.g., Admin, End User, Reviewer).
 
-5. **Resource Requirements & Team Structure**
-   - Required roles and skill sets
-   - Team size and composition
-   - Budget considerations
+End-to-End Journey: Outline complete user paths, key actions, and outcomes.
 
-6. **Risk Assessment & Mitigation Strategies**
-   - Technical risks and solutions
-   - Business risks and contingencies
-   - Timeline risks and buffers
+Decision Trees: Include conditional workflows and exception paths.
 
-7. **Quality Assurance & Testing Strategy**
-   - Testing methodologies and frameworks
-   - Automated testing approach
-   - Performance testing requirements
+Touchpoints: Highlight screens, forms, alerts, and external integrations.
 
-8. **Deployment & Go-Live Plan**
-   - Environment setup and configuration
-   - Deployment pipeline and automation
-   - Rollback strategies
+Edge Cases: Plan for invalid input, access issues, and service failures.
 
-Format your response with clear headers and detailed sub-sections. Include specific technical details, user interaction flows, and actionable implementation steps.
+3. Technical Architecture
+Frontend (React):
+
+Component hierarchy, routing, state (Redux/Context/API Query).
+
+Responsive UI, lazy loading, SSR (if needed).
+
+Backend (API Layer):
+
+REST/GraphQL endpoints, Flask/Express/NestJS, service contracts.
+
+Authentication (OAuth2/JWT), role-based access.
+
+Database Schema:
+
+Tables/entities, indexing, relationships, migration strategy.
+
+Security Model:
+
+HTTPS, OWASP top 10, data encryption, API rate limits.
+
+Infrastructure:
+
+Cloud (Azure/AWS), CDN, logging, alerting (e.g., ELK, Prometheus).
+
+Integrations:
+
+External APIs (payment, KYC, analytics), webhooks, third-party SDKs.
+
+Scalability:
+
+Load balancing, horizontal scaling, stateless services.
+
+Stack Recommendation:
+
+React.js, Node.js/Python, PostgreSQL/MongoDB, Docker, NGINX, Kubernetes.
+
+4. Development & Execution Plan
+Repo Setup: GitHub/GitLab, mono/multi-repo, .gitignore, license.
+
+Branching Model: Git Flow with main, develop, feature/hotfix branches.
+
+Component Planning:
+
+Modular folders: /components, /services, /store, /pages.
+
+Sprints:
+
+Bi-weekly with deliverables (UI, API integration, test coverage).
+
+Sample roadmap:
+
+Sprint 1: Auth & UI Skeleton
+
+Sprint 2: Core Features & API
+
+Sprint 3: Testing & Optimization
+
+Estimation: Use story points (1–13), velocity-based burndown.
+
+CI/CD:
+
+GitHub Actions/GitLab CI, auto-tests, Docker builds, deployment.
+
+Code Quality:
+
+ESLint/Prettier, PR template, peer review checklists.
+
+Dev Environment:
+
+Vite/CRA setup, environment configs, .env handling.
+
+Testing:
+
+Jest, Cypress/Postman, min 80% coverage, coverage reports.
+
+5. Team & Resource Allocation
+Roles:
+
+Frontend Devs, Backend Devs, QA Engineer, DevOps, PM, UI/UX.
+
+Team Size: ~6–8 members for MVP.
+
+Budget: Estimate resource cost, infra, licensing (~monthly/quarterly).
+
+6. Risk & Mitigation
+Tech Risks: API bottlenecks → Use caching, DB fallback.
+
+Business Risks: Scope creep → Fixed feature set in MVP.
+
+Timeline Risks: Dev delays → Add 10–15% buffer, parallelize tasks.
+
+7. QA & Test Strategy
+Methodologies:
+
+Shift-left testing, TDD, functional + non-functional tests.
+
+Automation:
+
+CI-triggered unit + integration suites.
+
+Performance Testing:
+
+JMeter/Lighthouse, load benchmarks pre-release.
+
+8. Deployment & Go-Live
+Environment Setup:
+
+Dev → QA → UAT → Prod; IaC with Terraform/Docker Compose.
+
+Deployment Flow:
+
+Blue-Green or Rolling Deployments with Helm or ECS.
+
+Rollback Plan:
+
+Version tagging, DB snapshot, hotfix pipeline.
 `;
 
   const result = await model.generateContent(prompt);

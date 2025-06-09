@@ -220,64 +220,74 @@ export default function ProjectPlanner() {
                 Generated Project Plan
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6">
-              {/* Project Plan Content with Enhanced Formatting */}
-              <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
-                <div className="prose prose-gray max-w-none">
-                  <div className="text-gray-800 leading-relaxed">
-                    {projectPlan.split('\n').map((line, index) => {
-                      const trimmedLine = line.trim();
-                      
-                      // Clean markdown symbols and format content
-                      let cleanLine = trimmedLine
-                        .replace(/\*\*/g, '') // Remove ** bold markers
-                        .replace(/\*/g, '') // Remove * italic markers
-                        .replace(/^#+\s*/, '') // Remove # headers
-                        .replace(/^[-•]\s*/, '') // Remove bullet markers
-                        .replace(/^\d+\.\s*/, '') // Remove number markers for processing
-                        .trim();
+            <CardContent className="p-0">
+              {/* HTML Project Plan Content with Architecture Diagrams */}
+              {(projectPlan.trim().startsWith('<!DOCTYPE html>') || projectPlan.trim().startsWith('<html') || projectPlan.trim().startsWith('<div')) ? (
+                <div 
+                  className="w-full"
+                  dangerouslySetInnerHTML={{ __html: projectPlan }}
+                  style={{
+                    maxHeight: 'none',
+                    overflow: 'visible'
+                  }}
+                />
+              ) : (
+                <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
+                  <div className="prose prose-gray max-w-none">
+                    <div className="text-gray-800 leading-relaxed">
+                      {projectPlan.split('\n').map((line, index) => {
+                        const trimmedLine = line.trim();
+                        
+                        // Clean markdown symbols and format content
+                        let cleanLine = trimmedLine
+                          .replace(/\*\*/g, '') // Remove ** bold markers
+                          .replace(/\*/g, '') // Remove * italic markers
+                          .replace(/^#+\s*/, '') // Remove # headers
+                          .replace(/^[-•]\s*/, '') // Remove bullet markers
+                          .replace(/^\d+\.\s*/, '') // Remove number markers for processing
+                          .trim();
 
-                      // Skip empty lines
-                      if (!cleanLine) {
-                        return <div key={index} className="h-3"></div>;
-                      }
+                        // Skip empty lines
+                        if (!cleanLine) {
+                          return <div key={index} className="h-3"></div>;
+                        }
 
-                      // Format headers (lines that were originally ## or #)
-                      if (trimmedLine.startsWith('##') || trimmedLine.startsWith('# ')) {
-                        return (
-                          <div key={index} className="mt-6 mb-4 first:mt-0">
-                            <div className="flex items-center gap-3">
-                              <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
-                              <h3 className="text-xl font-bold text-blue-800">{cleanLine}</h3>
+                        // Format headers (lines that were originally ## or #)
+                        if (trimmedLine.startsWith('##') || trimmedLine.startsWith('# ')) {
+                          return (
+                            <div key={index} className="mt-6 mb-4 first:mt-0">
+                              <div className="flex items-center gap-3">
+                                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+                                <h3 className="text-xl font-bold text-blue-800">{cleanLine}</h3>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      }
-                      
-                      // Format bullet points
-                      if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
-                        return (
-                          <div key={index} className="flex items-start gap-3 mb-3 ml-4">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
-                          </div>
-                        );
-                      }
-                      
-                      // Format numbered lists
-                      if (trimmedLine.match(/^\d+\./)) {
-                        const number = trimmedLine.match(/^(\d+)/)?.[1];
-                        return (
-                          <div key={index} className="flex items-start gap-4 mb-4 ml-2">
-                            <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
-                              {number}
+                          );
+                        }
+                        
+                        // Format bullet points
+                        if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+                          return (
+                            <div key={index} className="flex items-start gap-3 mb-3 ml-4">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
                             </div>
-                            <div className="flex-1">
-                              <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                          );
+                        }
+                        
+                        // Format numbered lists
+                        if (trimmedLine.match(/^\d+\./)) {
+                          const number = trimmedLine.match(/^(\d+)/)?.[1];
+                          return (
+                            <div key={index} className="flex items-start gap-4 mb-4 ml-2">
+                              <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
+                                {number}
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                              </div>
                             </div>
-                          </div>
-                        );
-                      }
+                          );
+                        }
                       
                       // Format key-value pairs or important statements
                       if (cleanLine.includes(':') && cleanLine.length < 100) {
@@ -301,9 +311,10 @@ export default function ProjectPlanner() {
                   </div>
                 </div>
               </div>
+              )}
               
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-between">
+              <div className="flex flex-col sm:flex-row gap-4 justify-between p-6">
                 <Button
                   variant="outline"
                   onClick={resetPlanner}
