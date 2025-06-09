@@ -110,6 +110,7 @@ Start your response with <!DOCTYPE html> and include:
 6. **Team Structure** - Organizational hierarchy with roles, responsibilities, and reporting structure
 7. **CI/CD Pipeline** - Development workflow from code commit to deployment with automated testing stages
 8. **Risk Assessment Matrix** - Color-coded risk analysis with mitigation strategies and priority levels
+9. **Sitemap Structure** - Complete XML sitemap showing all application pages, their content, and SEO structure with proper hierarchy and metadata
 
 **CSS Requirements:**
 - Use elegant color palette: primary blues (#3b82f6, #1d4ed8), secondary greens (#10b981, #059669), accent purples (#8b5cf6, #7c3aed)
@@ -129,13 +130,36 @@ Start your response with <!DOCTYPE html> and include:
 - **Resource Allocation**: Team structure, skill requirements, budget breakdown, and equipment needs
 - **Risk Management**: Comprehensive risk analysis with probability assessment, impact evaluation, and mitigation plans
 - **Implementation Roadmap**: Phase-wise delivery schedule with milestones, dependencies, and critical path analysis
+- **Complete Sitemap XML**: Full XML sitemap structure showing all application pages, routes, content hierarchy, meta descriptions, and SEO optimization strategy with proper URL structure and navigation flow
 
 **Visual Design Requirements:**
 - Each section must include a brief description paragraph explaining its purpose and importance
-- Use consistent color coding: Blues for architecture, Greens for processes, Purples for planning, Orange for risks
+- Use consistent color coding: Blues for architecture, Greens for processes, Purples for planning, Orange for risks, Teal for sitemap
 - Add subtle animations and hover effects for interactive elements
 - Include icons and visual indicators for different content types
 - Maintain professional spacing with proper typography hierarchy
+
+**CRITICAL: Include Complete Sitemap XML Section**
+Generate a comprehensive XML sitemap that includes:
+1. **Homepage and Landing Pages**: Main entry points with meta descriptions and keywords
+2. **Feature Pages**: All application functionality pages with detailed descriptions
+3. **User Account Pages**: Authentication, profile, dashboard, settings pages
+4. **Content Pages**: About, contact, help, documentation, terms, privacy policy
+5. **API Documentation**: Endpoint documentation and developer resources
+6. **Admin Pages**: Administrative interfaces and management tools
+7. **Error Pages**: 404, 500, maintenance pages with proper handling
+8. **Mobile/App Pages**: Progressive web app and mobile-specific routes
+
+For each page include:
+- Complete URL structure with proper hierarchy
+- Meta title and description optimized for SEO
+- Content summary and key features
+- Target keywords and search intent
+- Priority and change frequency
+- Last modified dates
+- Related pages and internal linking structure
+
+Display the sitemap as both visual hierarchy and actual XML code that can be implemented directly.
 
 Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
 
