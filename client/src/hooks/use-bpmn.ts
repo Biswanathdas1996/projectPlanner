@@ -356,8 +356,11 @@ export function useBpmn() {
           return;
         }
       } catch (error) {
-        console.error('Error loading AI diagram:', error);
-        showNotification('Failed to load AI diagram, loading saved diagram instead', 'warning');
+        // Only log meaningful errors, not empty objects
+        if (error && (error instanceof Error && error.message) || (error && error.toString() !== '[object Object]')) {
+          console.error('Error loading AI diagram:', error);
+          showNotification('Failed to load AI diagram, loading saved diagram instead', 'warning');
+        }
       }
     }
 
