@@ -18,6 +18,10 @@ export const STORAGE_KEYS = {
   CURRENT_DIAGRAM: 'bpmn-current-diagram',
   PROJECT_PLAN: 'bpmn-project-plan',
   PROJECT_DESCRIPTION: 'bpmn-project-description',
+  USER_JOURNEY_FLOWS: 'bpmn-user-journey-flows',
+  PERSONA_BPMN_FLOWS: 'bpmn-persona-flows',
+  PERSONA_PROMPTS: 'bpmn-persona-prompts',
+  GENERATED_BPMN_XML: 'bpmn-generated-xml',
 } as const;
 
 export function generateId(): string {

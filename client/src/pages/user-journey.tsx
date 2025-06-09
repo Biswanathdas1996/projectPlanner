@@ -50,45 +50,68 @@ export default function UserJourney() {
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
+    const savedUserJourneyFlows = localStorage.getItem(STORAGE_KEYS.USER_JOURNEY_FLOWS);
+    const savedPersonaBpmnFlows = localStorage.getItem(STORAGE_KEYS.PERSONA_BPMN_FLOWS);
+    const savedPersonaPrompts = localStorage.getItem(STORAGE_KEYS.PERSONA_PROMPTS);
 
     if (savedProjectDescription) {
       setProjectDescription(savedProjectDescription);
     }
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
-      
-      // Auto-generate all persona BPMN diagrams
-      const autoGeneratePersonaBpmn = async () => {
-        const personas: ('guest' | 'logged-in' | 'admin' | 'power' | 'mobile')[] = ['guest', 'logged-in', 'admin', 'power', 'mobile'];
-        
-        setAutoGenerationStatus('Starting automatic generation of persona BPMN diagrams...');
-        
-        for (let i = 0; i < personas.length; i++) {
-          const persona = personas[i];
-          try {
-            setAutoGenerationStatus(`Generating ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN (${i + 1}/${personas.length})...`);
-            await generatePersonaBpmn(persona);
-            
-            if (i < personas.length - 1) {
-              setAutoGenerationStatus(`Generated ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN. Preparing next diagram...`);
-              // Add delay between generations to avoid rate limiting
-              await new Promise(resolve => setTimeout(resolve, 1500));
-            }
-          } catch (error) {
-            console.error(`Failed to auto-generate ${persona} BPMN:`, error);
-            setAutoGenerationStatus(`Error generating ${persona} BPMN. Continuing with other personas...`);
-            await new Promise(resolve => setTimeout(resolve, 500));
-          }
-        }
-        
-        setAutoGenerationStatus('All persona BPMN diagrams generated successfully!');
-        // Clear status after 3 seconds
-        setTimeout(() => setAutoGenerationStatus(''), 3000);
-      };
-      
-      // Trigger auto-generation after a short delay
-      setTimeout(autoGeneratePersonaBpmn, 1000);
     }
+    if (savedUserJourneyFlows) {
+      setUserJourneyFlows(savedUserJourneyFlows);
+    }
+    if (savedPersonaBpmnFlows) {
+      try {
+        setPersonaBpmnFlows(JSON.parse(savedPersonaBpmnFlows));
+      } catch (error) {
+        console.error('Error parsing saved persona BPMN flows:', error);
+      }
+    }
+    if (savedPersonaPrompts) {
+      try {
+        setPersonaPrompts(JSON.parse(savedPersonaPrompts));
+      } catch (error) {
+        console.error('Error parsing saved persona prompts:', error);
+      }
+    }
+      
+      // Only auto-generate if we have a project plan but no existing persona BPMN flows
+      if (savedProjectPlan && !savedPersonaBpmnFlows) {
+        // Auto-generate all persona BPMN diagrams
+        const autoGeneratePersonaBpmn = async () => {
+          const personas: ('guest' | 'logged-in' | 'admin' | 'power' | 'mobile')[] = ['guest', 'logged-in', 'admin', 'power', 'mobile'];
+          
+          setAutoGenerationStatus('Starting automatic generation of persona BPMN diagrams...');
+          
+          for (let i = 0; i < personas.length; i++) {
+            const persona = personas[i];
+            try {
+              setAutoGenerationStatus(`Generating ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN (${i + 1}/${personas.length})...`);
+              await generatePersonaBpmn(persona);
+              
+              if (i < personas.length - 1) {
+                setAutoGenerationStatus(`Generated ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN. Preparing next diagram...`);
+                // Add delay between generations to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 1500));
+              }
+            } catch (error) {
+              console.error(`Failed to auto-generate ${persona} BPMN:`, error);
+              setAutoGenerationStatus(`Error generating ${persona} BPMN. Continuing with other personas...`);
+              await new Promise(resolve => setTimeout(resolve, 500));
+            }
+          }
+          
+          setAutoGenerationStatus('All persona BPMN diagrams generated successfully!');
+          // Clear status after 3 seconds
+          setTimeout(() => setAutoGenerationStatus(''), 3000);
+        };
+        
+        // Trigger auto-generation after a short delay
+        setTimeout(autoGeneratePersonaBpmn, 1000);
+      }
     
     // Set loading complete
     setIsLoadingFromStorage(false);
@@ -107,6 +130,8 @@ export default function UserJourney() {
     try {
       const flows = await generateUserJourneyFlows(planContent);
       setUserJourneyFlows(flows);
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.USER_JOURNEY_FLOWS, flows);
     } catch (error) {
       console.error('Error generating user journey flows:', error);
       setError('Failed to generate user journey flows. Please try again.');
@@ -132,7 +157,12 @@ export default function UserJourney() {
         : planContent;
         
       const bpmn = await generatePersonaBpmnFlow(enhancedPrompt, personaType);
-      setPersonaBpmnFlows(prev => ({ ...prev, [personaType]: bpmn }));
+      setPersonaBpmnFlows(prev => {
+        const updated = { ...prev, [personaType]: bpmn };
+        // Save persona BPMN flows to localStorage
+        localStorage.setItem(STORAGE_KEYS.PERSONA_BPMN_FLOWS, JSON.stringify(updated));
+        return updated;
+      });
       
       // Save the latest generated BPMN to localStorage
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
@@ -542,10 +572,15 @@ export default function UserJourney() {
                           </label>
                           <textarea
                             value={personaPrompts[persona.type] || ''}
-                            onChange={(e) => setPersonaPrompts(prev => ({ 
-                              ...prev, 
-                              [persona.type]: e.target.value 
-                            }))}
+                            onChange={(e) => setPersonaPrompts(prev => {
+                              const updated = { 
+                                ...prev, 
+                                [persona.type]: e.target.value 
+                              };
+                              // Save persona prompts to localStorage
+                              localStorage.setItem(STORAGE_KEYS.PERSONA_PROMPTS, JSON.stringify(updated));
+                              return updated;
+                            })}
                             placeholder={`Add specific requirements for ${persona.title.toLowerCase()}... e.g., "Include security verification steps", "Add mobile-specific gestures", "Include offline capabilities"`}
                             className="flex min-h-[60px] w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-background placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
                             disabled={isGeneratingPersonaBpmn[persona.type]}
