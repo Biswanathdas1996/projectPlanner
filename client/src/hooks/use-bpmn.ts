@@ -724,12 +724,31 @@ export function useBpmn() {
       const element = elementRegistry.get(selectedElement.id);
 
       if (element) {
+        const updateProps: any = {};
+        
         if (properties.name !== undefined) {
-          modeling.updateProperties(element, { name: properties.name });
+          updateProps.name = properties.name;
         }
         if (properties.id !== undefined && properties.id !== selectedElement.id) {
-          modeling.updateProperties(element, { id: properties.id });
+          updateProps.id = properties.id;
         }
+        if (properties.documentation !== undefined) {
+          updateProps.documentation = properties.documentation;
+        }
+        
+        // Handle duration properties
+        if (properties.duration !== undefined || properties.durationUnit !== undefined) {
+          const duration = properties.duration || selectedElement.duration;
+          const durationUnit = properties.durationUnit || selectedElement.durationUnit || 'minutes';
+          
+          // Create time annotation as part of element name if duration exists
+          if (duration && duration.trim() !== '') {
+            const baseName = (properties.name || selectedElement.name || '').replace(/\s*\(\d+.*?\)$/, '');
+            updateProps.name = `${baseName} (${duration} ${durationUnit})`.trim();
+          }
+        }
+        
+        modeling.updateProperties(element, updateProps);
 
         // Update selected element state
         setSelectedElement(prev => prev ? { ...prev, ...properties } : null);

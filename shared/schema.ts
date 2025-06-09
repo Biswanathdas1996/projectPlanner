@@ -14,6 +14,8 @@ export const elementPropertiesSchema = z.object({
   name: z.string().optional(),
   type: z.string(),
   documentation: z.string().optional(),
+  duration: z.string().optional(),
+  durationUnit: z.enum(['minutes', 'hours', 'days', 'weeks']).optional(),
 });
 
 export type BpmnDiagram = z.infer<typeof bpmnDiagramSchema>;

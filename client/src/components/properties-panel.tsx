@@ -4,7 +4,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { Copy, X } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Copy, X, Clock } from 'lucide-react';
 import type { ElementProperties } from '@shared/schema';
 
 interface PropertiesPanelProps {
@@ -89,6 +90,57 @@ export function PropertiesPanel({
                     placeholder="Process Step Name"
                     className="text-sm"
                   />
+                </div>
+
+                {/* Time Duration Section */}
+                <div className="space-y-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    <Label className="text-sm font-medium text-blue-800">Time Duration</Label>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="element-duration" className="text-xs text-gray-600 mb-1 block">
+                        Duration
+                      </Label>
+                      <Input
+                        id="element-duration"
+                        value={selectedElement.duration || ''}
+                        onChange={(e) => handlePropertyChange('duration', e.target.value)}
+                        placeholder="10"
+                        type="number"
+                        min="0"
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="element-duration-unit" className="text-xs text-gray-600 mb-1 block">
+                        Unit
+                      </Label>
+                      <Select
+                        value={selectedElement.durationUnit || 'minutes'}
+                        onValueChange={(value) => handlePropertyChange('durationUnit', value)}
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="Unit" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="minutes">Minutes</SelectItem>
+                          <SelectItem value="hours">Hours</SelectItem>
+                          <SelectItem value="days">Days</SelectItem>
+                          <SelectItem value="weeks">Weeks</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {selectedElement.duration && (
+                    <div className="text-xs text-blue-700 font-medium">
+                      Duration: {selectedElement.duration} {selectedElement.durationUnit || 'minutes'}
+                    </div>
+                  )}
                 </div>
 
                 <div>

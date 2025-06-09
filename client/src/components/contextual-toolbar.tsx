@@ -14,7 +14,8 @@ import {
   Circle,
   Square,
   Triangle,
-  ArrowRightLeft
+  ArrowRightLeft,
+  Clock
 } from 'lucide-react';
 import { ElementProperties } from '@shared/schema';
 
@@ -144,6 +145,16 @@ export function ContextualToolbar({
         <Button
           variant="ghost"
           size="sm"
+          className="h-8 w-8 p-0 hover:bg-indigo-50"
+          onClick={onShowProperties}
+          title="Add Time Duration"
+        >
+          <Clock className="h-4 w-4 text-indigo-600" />
+        </Button>
+        
+        <Button
+          variant="ghost"
+          size="sm"
           className="h-8 w-8 p-0 hover:bg-yellow-50"
           onClick={onCopyElement}
           title="Copy Element"
@@ -180,6 +191,14 @@ export function ContextualToolbar({
             {selectedElement.type.replace('bpmn:', '')}
           </span>
         </div>
+        {selectedElement.duration && (
+          <div className="flex items-center gap-1 mt-1">
+            <Clock className="h-3 w-3 text-blue-500" />
+            <span className="text-xs font-medium text-blue-600">
+              {selectedElement.duration} {selectedElement.durationUnit || 'minutes'}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
