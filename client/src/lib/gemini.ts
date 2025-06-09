@@ -14,33 +14,43 @@ export async function generateProjectPlan(
   const prompt = `
 Create a comprehensive project plan for: "${projectDescription}"
 
-Generate the response as complete HTML code with embedded CSS styling, architecture diagrams, and interactive visualizations.
+IMPORTANT: Generate the response as complete HTML code with embedded CSS styling, architecture diagrams, and visual elements.
 
-**HTML Structure Requirements:**
-- Use semantic HTML5 elements with modern CSS
-- Include interactive architecture diagrams using CSS
-- Create visual user flow charts with connected elements
-- Add responsive design for different screen sizes
-- Use professional color scheme (blues, grays, whites)
+**OUTPUT FORMAT:**
+Start your response with <!DOCTYPE html> and include:
+- Complete HTML structure with head and body tags
+- Embedded CSS in <style> tags within the head
+- Visual architecture diagrams using CSS boxes, flexbox, and grid
+- Interactive elements with hover effects
+- Professional color scheme and typography
 
-**Required Visual Sections:**
-1. Executive Dashboard with key metrics
-2. System Architecture Diagram with component relationships
-3. User Journey Flow with interactive steps
-4. Technology Stack Visualization
-5. Development Timeline with milestones
-6. Team Structure and Responsibilities
-7. Risk Assessment Matrix
-8. CI/CD Pipeline Visualization
+**Required Visual Components:**
+1. **Executive Dashboard** - Key metrics in card format
+2. **System Architecture Diagram** - Visual boxes showing Frontend → API → Database → External Services
+3. **User Journey Flow** - Step-by-step flow with arrows and decision points
+4. **Technology Stack** - Layered diagram showing tech components
+5. **Development Timeline** - Gantt-style timeline with phases
+6. **Team Structure** - Organizational chart with roles
+7. **CI/CD Pipeline** - Visual pipeline stages
+8. **Risk Matrix** - Color-coded risk assessment table
 
-**Content Requirements:**
-- Detailed technical specifications
-- User flow mapping with decision points
-- Development plan with Git workflow, testing, CI/CD
-- Resource allocation and timeline
-- Risk mitigation strategies
+**CSS Requirements:**
+- Use flexbox and grid for layouts
+- Create boxes with borders, shadows, and colors for components
+- Add arrows (→, ↓) and connecting lines between elements
+- Include hover effects and transitions
+- Responsive design with media queries
+- Professional typography and spacing
 
-Return ONLY valid HTML with embedded CSS - no markdown or explanations.`;
+**Content Structure:**
+- Project overview with objectives and scope
+- Detailed user flows with decision points
+- Complete technical architecture specifications
+- Development workflow with Git, testing, CI/CD
+- Resource planning and timeline estimates
+- Risk assessment and mitigation strategies
+
+Return ONLY the complete HTML document - no explanations or markdown.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
