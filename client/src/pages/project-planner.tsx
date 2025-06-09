@@ -145,6 +145,11 @@ Please ensure the project plan addresses all the selected requirements above and
 
       const plan = await generateProjectPlan(enhancedInput);
       setProjectPlan(plan);
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, plan);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      
       setCurrentStep('plan');
       setLocation('/plan');
     } catch (err) {

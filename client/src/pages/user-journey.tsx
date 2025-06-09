@@ -47,7 +47,8 @@ export default function UserJourney() {
   }, []);
 
   const generateUserJourneys = async () => {
-    if (!projectPlan.trim() && !projectDescription.trim()) {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
       setError('No project plan available. Please generate a project plan first.');
       return;
     }
@@ -56,7 +57,7 @@ export default function UserJourney() {
     setError('');
 
     try {
-      const flows = await generateUserJourneyFlows(projectPlan || projectDescription);
+      const flows = await generateUserJourneyFlows(planContent);
       setUserJourneyFlows(flows);
     } catch (error) {
       console.error('Error generating user journey flows:', error);
@@ -246,7 +247,7 @@ export default function UserJourney() {
               <div className="flex gap-3">
                 <Button
                   onClick={generateUserJourneys}
-                  disabled={isGeneratingFlows || (!projectPlan.trim() && !projectDescription.trim())}
+                  disabled={isGeneratingFlows || (!projectPlan && !projectDescription)}
                   className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
                 >
                   {isGeneratingFlows ? (
@@ -304,7 +305,7 @@ export default function UserJourney() {
                 )}
               </div>
 
-              {!projectPlan.trim() && !projectDescription.trim() && (
+              {!projectPlan && !projectDescription && (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-yellow-800">
                     <strong>No project plan found.</strong> Please go back and generate a project plan first.
@@ -315,6 +316,14 @@ export default function UserJourney() {
                       Go to Project Plan
                     </Button>
                   </Link>
+                </div>
+              )}
+
+              {(projectPlan || projectDescription) && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-green-800">
+                    <strong>Project plan loaded successfully.</strong> You can now generate user journey flows based on your project requirements.
+                  </p>
                 </div>
               )}
             </div>
