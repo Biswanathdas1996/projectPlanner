@@ -1,85 +1,42 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
 export async function generateCustomSuggestions(
   projectDescription: string,
 ): Promise<string[]> {
+  if (!projectDescription.trim()) {
+    throw new Error("Project description is required");
+  }
+
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `Based on this project description: "${projectDescription}"
+
+Generate 8-12 relevant project planning suggestions that would help improve and expand this project. Focus on:
+- Technical enhancements and features
+- User experience improvements
+- Business considerations
+- Implementation strategies
+- Quality assurance approaches
+- Performance optimizations
+
+Return ONLY a JSON array of suggestion strings, no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const prompt = `Based on this project description, generate 12-16 specific, relevant additional features and requirements that would enhance the project. Focus on practical, implementable features that would add real value.
-
-Project Description:
-"${projectDescription}"
-
-Requirements:
-1. Generate suggestions that are directly relevant to this specific project type
-2. Include both technical and business features
-3. Consider scalability, security, user experience, and integration aspects
-4. Make each suggestion specific and actionable
-5. Avoid generic suggestions that don't fit the project context
-6. Include modern web development best practices
-7. Consider the target audience and use cases for this project
-
-Return ONLY a JSON array of strings, each string being a concise suggestion (max 60 characters). No explanations, just the array.
-
-Example format: ["User authentication with 2FA", "Real-time notifications", "Mobile responsive design"]`;
-
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
-
-    // Clean the response and parse JSON
-    let cleanedText = text.trim();
-    if (cleanedText.startsWith("```json")) {
-      cleanedText = cleanedText
-        .replace(/^```json\s*/, "")
-        .replace(/```\s*$/, "");
-    }
-    if (cleanedText.startsWith("```")) {
-      cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
-    }
-
-    try {
-      const suggestions = JSON.parse(cleanedText);
-      return Array.isArray(suggestions) ? suggestions : [];
-    } catch (parseError) {
-      console.error("JSON parse error for suggestions:", parseError);
-      console.log("Raw response:", text);
-      // Fallback to generic suggestions if parsing fails
-      return [
-        "User authentication and authorization",
-        "Real-time notifications",
-        "Mobile application support",
-        "API integration capabilities",
-        "Advanced search functionality",
-        "Analytics and reporting dashboard",
-        "Payment processing system",
-        "File upload and management",
-        "Multi-language support",
-        "Security audit compliance",
-        "Automated testing pipeline",
-        "Performance optimization",
-      ];
-    }
-  } catch (error) {
-    console.error("Error generating custom suggestions:", error);
-    // Return fallback suggestions
-    return [
-      "User authentication and authorization",
-      "Real-time notifications",
-      "Mobile application support",
-      "API integration capabilities",
-      "Advanced search functionality",
-      "Analytics and reporting dashboard",
-      "Payment processing system",
-      "File upload and management",
-      "Multi-language support",
-      "Security audit compliance",
-      "Automated testing pipeline",
-      "Performance optimization",
-    ];
+    return JSON.parse(text);
+  } catch {
+    // Fallback: extract suggestions from text format
+    const lines = text.split('\n').filter(line => 
+      line.trim() && 
+      !line.includes('```') && 
+      !line.includes('JSON')
+    );
+    return lines.slice(0, 10);
   }
 }
 
@@ -92,56 +49,25 @@ export async function generateProjectPlan(
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-  const prompt = `
-Create a comprehensive project plan for: "${projectDescription}"
+  const prompt = `Create a comprehensive project plan for: "${projectDescription}"
 
-IMPORTANT: Generate the response as complete HTML code with embedded CSS styling, architecture diagrams, and visual elements.
+Structure the plan with these sections:
+1. **Project Overview** - Brief summary and objectives
+2. **Technical Architecture** - System design and technology stack
+3. **Core Features** - Main functionality and user stories
+4. **Development Phases** - Implementation timeline and milestones
+5. **User Experience Flow** - Key user interactions and workflows
+6. **Quality Assurance** - Testing strategies and validation
+7. **Deployment Strategy** - Launch and maintenance considerations
+8. **Risk Assessment** - Potential challenges and mitigation plans
 
-**OUTPUT FORMAT:**
-Start your response with <!DOCTYPE html> and include:
-- Complete HTML structure with head and body tags
-- Embedded CSS in <style> tags within the head
-- Visual architecture diagrams using CSS boxes, flexbox, and grid
-- Interactive elements with hover effects
-- Professional color scheme and typography
-
-**Required Visual Components with Descriptions:**
-1. **Executive Dashboard** - Overview cards showing project metrics, budget, timeline, and key performance indicators with elegant blue gradients
-2. **System Architecture Diagram** - Visual component flow with rounded boxes and connecting arrows showing Frontend → API → Database → External Services in green tones
-3. **User Journey Flow** - Step-by-step user interaction flow with decision diamonds and process rectangles in purple gradients
-4. **Technology Stack** - Layered architecture diagram showing frontend, backend, database, and infrastructure layers with distinct color coding
-5. **Development Timeline** - Project phases with milestones, deadlines, and deliverables in a professional timeline format
-6. **Team Structure** - Organizational hierarchy with roles, responsibilities, and reporting structure
-7. **CI/CD Pipeline** - Development workflow from code commit to deployment with automated testing stages
-8. **Risk Assessment Matrix** - Color-coded risk analysis with mitigation strategies and priority levels
-9. **Sitemap Structure** - Complete XML sitemap showing all application pages, their content, and SEO structure with proper hierarchy and metadata
-
-**CSS Requirements:**
-- Use elegant color palette: primary blues (#3b82f6, #1d4ed8), secondary greens (#10b981, #059669), accent purples (#8b5cf6, #7c3aed)
-- Create boxes with subtle gradients, soft shadows, and rounded corners
-- Add smooth hover effects with color transitions
-- Use modern typography with proper hierarchy
-- Include descriptive text for each section explaining its purpose
-- Responsive design with consistent spacing
-- Professional card layouts with elegant borders
-
-**Content Structure with Detailed Descriptions:**
-- **Project Overview Section**: Clear objectives, scope definition, success criteria, and stakeholder information
-- **Executive Summary**: High-level project metrics, budget overview, timeline summary, and expected ROI
-- **Technical Architecture**: Detailed system design with component interactions, data flow, and integration points
-- **User Experience Flow**: Complete user journey mapping with touchpoints, decision trees, and interaction patterns
-- **Development Methodology**: Agile/Scrum practices, sprint planning, code review processes, and quality assurance
-- **Resource Allocation**: Team structure, skill requirements, budget breakdown, and equipment needs
-- **Risk Management**: Comprehensive risk analysis with probability assessment, impact evaluation, and mitigation plans
-- **Implementation Roadmap**: Phase-wise delivery schedule with milestones, dependencies, and critical path analysis
-
-
-**Visual Design Requirements:**
-- Each section must include a brief description paragraph explaining its purpose and importance
-- Use consistent color coding: Blues for architecture, Greens for processes, Purples for planning, Orange for risks, Teal for sitemap
-- Add subtle animations and hover effects for interactive elements
-- Include icons and visual indicators for different content types
-- Maintain professional spacing with proper typography hierarchy
+Format as clean HTML with:
+- Professional styling with embedded CSS
+- Clear section headers with consistent typography
+- Organized lists and structured content
+- Subtle color coding for different section types
+- Responsive design principles
+- Professional spacing and visual hierarchy
 
 Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
 
@@ -178,29 +104,13 @@ Create detailed step-by-step flow diagrams for each distinct user persona and th
 - **Success/Failure Paths**: Different outcomes and error handling
 - **Exit Points**: How journeys conclude
 
-**Visual Flow Requirements:**
-- Use HTML with inline CSS for professional diagram styling
-- Create flowchart-style layouts with boxes, arrows, and decision diamonds
-- Color-code different journey types (blue for user, green for admin, purple for setup, orange for errors)
-- Include icons and visual indicators for different step types
-- Show clear navigation paths and decision branching
-- Add hover effects and interactive elements
-
-**Content Structure:**
-- Journey overview with user persona and goals
-- Step-by-step flow visualization
-- Alternative paths and edge cases
-- Integration points with other journeys
-- Performance considerations and optimization points
-
-**Design Requirements:**
-- Professional color scheme with gradients and shadows
-- Responsive layout that works on different screen sizes
-- Clear typography hierarchy
-- Visual consistency across all journey diagrams
-- Interactive elements where appropriate
-
-Generate realistic, detailed user journeys based on the actual project plan content, not generic examples.
+**Visual Format Requirements:**
+- Clean HTML with embedded CSS styling
+- Interactive flow diagrams with hover effects
+- Color-coded sections for different persona types
+- Professional typography and spacing
+- Responsive design for all screen sizes
+- Clear visual indicators for different flow types
 
 Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
 
@@ -211,7 +121,7 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
 
 export async function generatePersonaBpmnFlow(
   projectPlan: string,
-  personaType: 'guest' | 'logged-in' | 'admin' | 'power' | 'mobile'
+  personaType: 'guest' | 'loggedin' | 'admin' | 'power' | 'mobile'
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -221,22 +131,22 @@ export async function generatePersonaBpmnFlow(
 
   const personaPrompts = {
     guest: {
-      title: "Guest/Anonymous User Journey",
-      description: "Unauthenticated user exploring, discovering features, registration/signup process",
-      swimlanes: ["Guest User", "Public Interface", "Authentication System", "Marketing System"]
+      title: "Guest User Journey", 
+      description: "Unauthenticated user interactions, exploration, discovery, registration flows",
+      swimlanes: ["Guest User", "Public Interface", "Authentication System", "Content Service"]
     },
-    'logged-in': {
+    loggedin: {
       title: "Logged-in User Journey", 
-      description: "Authenticated user accessing core features, managing profile, main workflows",
-      swimlanes: ["Authenticated User", "Application Core", "Database", "Notification System"]
+      description: "Authenticated user core features, profile management, main application workflows",
+      swimlanes: ["Logged-in User", "User Interface", "Application Service", "Data Storage"]
     },
     admin: {
-      title: "Admin User Journey",
-      description: "Administrative tasks, user management, system configuration, reporting, oversight",
-      swimlanes: ["Admin User", "Admin Panel", "User Management", "System Configuration", "Analytics"]
+      title: "Admin User Journey", 
+      description: "Administrative tasks, user management, system configuration, reporting and analytics",
+      swimlanes: ["Admin User", "Admin Panel", "Management Service", "System Database"]
     },
     power: {
-      title: "Power User Journey",
+      title: "Power User Journey", 
       description: "Advanced features, bulk operations, API access, integrations, custom workflows",
       swimlanes: ["Power User", "Advanced Features", "API Gateway", "Integration Hub"]
     },
@@ -291,32 +201,37 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 }
 
 export async function generateSitemapXml(
-  projectDescription: string,
+  projectPlan: string,
 ): Promise<string> {
-  if (!projectDescription.trim()) {
-    throw new Error("Project description is required");
+  if (!projectPlan.trim()) {
+    throw new Error("Project plan is required");
   }
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
-  const prompt = `Generate a comprehensive XML sitemap for an application based on this project description: "${projectDescription}"
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-Create a complete sitemap.xml file that includes:
+  const prompt = `Generate a comprehensive XML sitemap based on this project plan: "${projectPlan}"
 
-**Core Application Pages:**
-1. **Homepage and Landing Pages**: Main entry points with meta descriptions and keywords
-2. **Feature Pages**: All application functionality pages with detailed descriptions
-3. **User Account Pages**: Authentication, profile, dashboard, settings pages
-4. **Content Pages**: About, contact, help, documentation, terms, privacy policy
-5. **API Documentation**: Endpoint documentation and developer resources
-6. **Admin Pages**: Administrative interfaces and management tools
-7. **Error Pages**: 404, 500, maintenance pages with proper handling
-8. **Mobile/App Pages**: Progressive web app and mobile-specific routes
+Create a realistic sitemap.xml file that includes:
+- Homepage and core navigation pages
+- Feature-specific pages based on the project plan
+- User account and profile pages
+- Administrative and management pages
+- API documentation and developer resources
+- Support and help pages
+- Legal and policy pages
+- Blog or content sections if applicable
+- Search and filtering pages
+- Mobile-specific pages if needed
 
-**For each URL include:**
-- Complete URL structure with proper hierarchy
-- Last modified date (use current date)
-- Change frequency (daily, weekly, monthly, yearly)
-- Priority (0.1 to 1.0)
+**Requirements:**
+- Valid XML sitemap format following sitemap.org protocol
+- Realistic URLs that match the project type and structure
+- Proper priority values (0.1 to 1.0) based on page importance
+- Appropriate changefreq values (always, hourly, daily, weekly, monthly, yearly, never)
+- lastmod dates set to current date for all pages
+- Clean, properly formatted XML structure
+- URLs should be realistic for the project description
+- Include both user-facing and administrative pages
 - Relevant to the project description
 
 **XML Requirements:**
@@ -333,166 +248,14 @@ Return ONLY the complete XML sitemap - no explanations or markdown.`;
   return response.text();
 }
 
-export async function generateBpmnXml(projectPlan: string): Promise<string> {
-  if (!projectPlan.trim()) {
-    throw new Error("Project plan is required");
+export async function generateBpmnXml(enhancedPrompt: string): Promise<string> {
+  if (!enhancedPrompt.trim()) {
+    throw new Error("Enhanced prompt is required");
   }
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-  const prompt = `
-Convert the following project plan into a BPMN 2.0 XML document with swimlanes. Focus on creating a realistic workflow that BPMN.js can properly render.
-
-Project Plan:
-"${projectPlan}"
-
-CRITICAL: Generate ONLY valid BPMN 2.0 XML that follows this EXACT structure for BPMN.js compatibility:
-
-<?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-  xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" 
-  id="Definitions_1" 
-  targetNamespace="http://bpmn.io/schema/bpmn">
-  
-  <bpmn2:collaboration id="Collaboration_1">
-    <bpmn2:participant id="Participant_User" name="User" processRef="Process_User" />
-    <bpmn2:participant id="Participant_System" name="System" processRef="Process_System" />
-    <bpmn2:participant id="Participant_Backend" name="Backend" processRef="Process_Backend" />
-  </bpmn2:collaboration>
-
-  <bpmn2:process id="Process_User" isExecutable="false">
-    <bpmn2:startEvent id="StartEvent_1" name="Start">
-      <bpmn2:outgoing>Flow_1</bpmn2:outgoing>
-    </bpmn2:startEvent>
-    <bpmn2:userTask id="UserTask_1" name="User Action">
-      <bpmn2:incoming>Flow_1</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_2</bpmn2:outgoing>
-    </bpmn2:userTask>
-    <bpmn2:endEvent id="EndEvent_1" name="End">
-      <bpmn2:incoming>Flow_2</bpmn2:incoming>
-    </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="UserTask_1" />
-    <bpmn2:sequenceFlow id="Flow_2" sourceRef="UserTask_1" targetRef="EndEvent_1" />
-  </bpmn2:process>
-
-  <bpmn2:process id="Process_System" isExecutable="false">
-    <bpmn2:startEvent id="StartEvent_2" name="System Start">
-      <bpmn2:outgoing>Flow_3</bpmn2:outgoing>
-    </bpmn2:startEvent>
-    <bpmn2:serviceTask id="ServiceTask_1" name="System Process">
-      <bpmn2:incoming>Flow_3</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_4</bpmn2:outgoing>
-    </bpmn2:serviceTask>
-    <bpmn2:endEvent id="EndEvent_2" name="System End">
-      <bpmn2:incoming>Flow_4</bpmn2:incoming>
-    </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="Flow_3" sourceRef="StartEvent_2" targetRef="ServiceTask_1" />
-    <bpmn2:sequenceFlow id="Flow_4" sourceRef="ServiceTask_1" targetRef="EndEvent_2" />
-  </bpmn2:process>
-
-  <bpmn2:process id="Process_Backend" isExecutable="false">
-    <bpmn2:startEvent id="StartEvent_3" name="Backend Start">
-      <bpmn2:outgoing>Flow_5</bpmn2:outgoing>
-    </bpmn2:startEvent>
-    <bpmn2:serviceTask id="ServiceTask_2" name="Backend Process">
-      <bpmn2:incoming>Flow_5</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_6</bpmn2:outgoing>
-    </bpmn2:serviceTask>
-    <bpmn2:endEvent id="EndEvent_3" name="Backend End">
-      <bpmn2:incoming>Flow_6</bpmn2:incoming>
-    </bpmn2:endEvent>
-    <bpmn2:sequenceFlow id="Flow_5" sourceRef="StartEvent_3" targetRef="ServiceTask_2" />
-    <bpmn2:sequenceFlow id="Flow_6" sourceRef="ServiceTask_2" targetRef="EndEvent_3" />
-  </bpmn2:process>
-
-
-
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
-      <bpmndi:BPMNShape id="Participant_User_di" bpmnElement="Participant_User" isHorizontal="true">
-        <dc:Bounds x="160" y="80" width="600" height="250" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Participant_System_di" bpmnElement="Participant_System" isHorizontal="true">
-        <dc:Bounds x="160" y="350" width="600" height="250" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Participant_Backend_di" bpmnElement="Participant_Backend" isHorizontal="true">
-        <dc:Bounds x="160" y="620" width="600" height="250" />
-      </bpmndi:BPMNShape>
-      
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="232" y="162" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="UserTask_1_di" bpmnElement="UserTask_1">
-        <dc:Bounds x="320" y="140" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="472" y="162" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_2_di" bpmnElement="StartEvent_2">
-        <dc:Bounds x="232" y="442" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_1_di" bpmnElement="ServiceTask_1">
-        <dc:Bounds x="320" y="420" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_2_di" bpmnElement="EndEvent_2">
-        <dc:Bounds x="472" y="442" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_3_di" bpmnElement="StartEvent_3">
-        <dc:Bounds x="232" y="702" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ServiceTask_2_di" bpmnElement="ServiceTask_2">
-        <dc:Bounds x="320" y="680" width="100" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_3_di" bpmnElement="EndEvent_3">
-        <dc:Bounds x="472" y="702" width="36" height="36" />
-      </bpmndi:BPMNShape>
-      
-      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-        <di:waypoint x="268" y="180" />
-        <di:waypoint x="320" y="180" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
-        <di:waypoint x="420" y="180" />
-        <di:waypoint x="472" y="180" />
-      </bpmndi:BPMNEdge>
-      
-      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
-        <di:waypoint x="268" y="460" />
-        <di:waypoint x="320" y="460" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
-        <di:waypoint x="420" y="460" />
-        <di:waypoint x="472" y="460" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
-        <di:waypoint x="268" y="720" />
-        <di:waypoint x="320" y="720" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
-        <di:waypoint x="420" y="720" />
-        <di:waypoint x="472" y="720" />
-      </bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
-  </bpmndi:BPMNDiagram>
-</bpmn2:definitions>
-
-CRITICAL REQUIREMENTS:
-1. Use EXACTLY the namespace prefixes shown: bpmn2:, bpmndi:, dc:, di:
-2. Include collaboration with 3-5 participants (swimlanes)
-3. Add 8-15 process elements: start events, user tasks, service tasks, gateways, end events
-4. Connect elements ONLY with sequence flows - NEVER use message flows
-5. Include complete visual layout with proper coordinates
-6. Base element names and flow on the actual project plan content
-7. Ensure all IDs are unique and properly referenced
-8. Each process must be self-contained with start and end events
-
-Generate realistic workflow elements based on the project plan content, not generic placeholders.`;
-
-  const result = await model.generateContent(prompt);
+  const result = await model.generateContent(enhancedPrompt);
   const response = await result.response;
   const text = response.text();
 
