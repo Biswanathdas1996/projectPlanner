@@ -271,6 +271,107 @@ export function useBpmn() {
     }
   }, [showNotification]);
 
+  // Import diagram from JSON structure
+  const importFromJson = useCallback(async (jsonData: any) => {
+    if (!modelerRef.current) return;
+
+    try {
+      // Convert JSON structure to BPMN XML
+      const xml = jsonToBpmnXml(jsonData);
+      await modelerRef.current.importXML(xml);
+      showNotification('Diagram imported successfully from AI plan', 'success');
+      setStatus('AI Generated');
+      updateJsonView();
+    } catch (error) {
+      console.error('Error importing from JSON:', error);
+      showNotification('Failed to import diagram from AI plan', 'error');
+    }
+  }, [showNotification, updateJsonView]);
+
+  // Convert JSON structure to BPMN XML
+  const jsonToBpmnXml = (jsonData: any): string => {
+    const elements = jsonData.definitions?.elements || [];
+    const flows = jsonData.definitions?.flows || [];
+    
+    // Generate basic BPMN XML structure
+    let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+  xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" 
+  id="${jsonData.definitions?.id || 'ai-generated'}" 
+  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:process id="Process_1" isExecutable="false">`;
+
+    // Add elements
+    elements.forEach((element: any, index: number) => {
+      const x = 100 + (index * 180);
+      const y = 150;
+      
+      switch (element.type) {
+        case 'startEvent':
+          xml += `\n    <bpmn2:startEvent id="${element.id}" name="${element.name || ''}" />`;
+          break;
+        case 'endEvent':
+          xml += `\n    <bpmn2:endEvent id="${element.id}" name="${element.name || ''}" />`;
+          break;
+        case 'task':
+          xml += `\n    <bpmn2:task id="${element.id}" name="${element.name || ''}" />`;
+          break;
+        case 'exclusiveGateway':
+          xml += `\n    <bpmn2:exclusiveGateway id="${element.id}" name="${element.name || ''}" />`;
+          break;
+      }
+    });
+
+    // Add sequence flows
+    flows.forEach((flow: any) => {
+      xml += `\n    <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}" />`;
+    });
+
+    xml += `\n  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+
+    // Add visual elements
+    elements.forEach((element: any, index: number) => {
+      const x = 100 + (index * 180);
+      const y = 150;
+      const width = element.type === 'task' ? 100 : element.type.includes('Gateway') ? 50 : 36;
+      const height = element.type === 'task' ? 80 : element.type.includes('Gateway') ? 50 : 36;
+
+      xml += `\n      <bpmndi:BPMNShape id="Shape_${element.id}" bpmnElement="${element.id}">
+        <dc:Bounds height="${height}" width="${width}" x="${x}" y="${y}"/>
+      </bpmndi:BPMNShape>`;
+    });
+
+    // Add flow visuals
+    flows.forEach((flow: any, index: number) => {
+      const sourceIndex = elements.findIndex((el: any) => el.id === flow.sourceRef);
+      const targetIndex = elements.findIndex((el: any) => el.id === flow.targetRef);
+      
+      if (sourceIndex >= 0 && targetIndex >= 0) {
+        const sourceX = 100 + (sourceIndex * 180) + 50;
+        const sourceY = 150 + 20;
+        const targetX = 100 + (targetIndex * 180);
+        const targetY = 150 + 20;
+
+        xml += `\n      <bpmndi:BPMNEdge id="Edge_${flow.id}" bpmnElement="${flow.id}">
+        <di:waypoint x="${sourceX}" y="${sourceY}" />
+        <di:waypoint x="${targetX}" y="${targetY}" />
+      </bpmndi:BPMNEdge>`;
+      }
+    });
+
+    xml += `\n    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>`;
+
+    return xml;
+  };
+
   // Handle element selection from sidebar
   const handleElementSelect = useCallback((elementType: string) => {
     if (!modelerRef.current) return;
@@ -411,5 +512,6 @@ export function useBpmn() {
     copyJsonToClipboard,
     handleElementSelect,
     connectElements,
+    importFromJson,
   };
 }
