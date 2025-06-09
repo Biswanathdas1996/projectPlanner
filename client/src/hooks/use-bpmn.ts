@@ -37,16 +37,25 @@ export function useBpmn() {
 
       // Setup event listeners
       modeler.on('selection.changed', (event: any) => {
-        const selection = event.newSelection;
-        if (selection.length === 1) {
-          const element = selection[0];
-          setSelectedElement({
-            id: element.id || '',
-            name: element.businessObject?.name || '',
-            type: element.type || 'Unknown',
-            documentation: element.businessObject?.documentation?.[0]?.text || ''
-          });
-        } else {
+        try {
+          const selection = event.newSelection;
+          if (selection && selection.length === 1) {
+            const element = selection[0];
+            if (element && element.businessObject) {
+              setSelectedElement({
+                id: element.id || '',
+                name: element.businessObject.name || '',
+                type: element.type || 'Unknown',
+                documentation: element.businessObject.documentation?.[0]?.text || ''
+              });
+            } else {
+              setSelectedElement(null);
+            }
+          } else {
+            setSelectedElement(null);
+          }
+        } catch (error) {
+          console.error('Error selecting element:', error);
           setSelectedElement(null);
         }
       });

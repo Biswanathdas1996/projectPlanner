@@ -20,6 +20,51 @@
         border-radius: 6px !important;
         box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
       }
+      
+      /* Clean BPMN styling - use only lines, remove bold dots */
+      .djs-connection .djs-visual > path {
+        stroke: #333 !important;
+        stroke-width: 1.5px !important;
+        fill: none !important;
+        marker-end: url(#sequenceflow-end) !important;
+      }
+      
+      /* Remove connection dots and waypoints */
+      .djs-connection .djs-visual circle,
+      .djs-bendpoint,
+      .djs-segment-dragger {
+        display: none !important;
+      }
+      
+      /* Clean element borders */
+      .djs-element .djs-visual > circle,
+      .djs-element .djs-visual > rect,
+      .djs-element .djs-visual > polygon {
+        stroke: #333 !important;
+        stroke-width: 1.5px !important;
+        fill: #ffffff !important;
+      }
+      
+      /* Swimlane styling */
+      .djs-element[data-element-id*="Lane"] .djs-visual > rect {
+        stroke: #999 !important;
+        stroke-width: 1px !important;
+        fill: #f8f9fa !important;
+      }
+      
+      /* Hide resize handles and selection decorations */
+      .djs-resize-handle,
+      .djs-hit {
+        display: none !important;
+      }
+      
+      /* Clean selection outline */
+      .djs-shape.selected .djs-outline,
+      .djs-connection.selected .djs-outline {
+        stroke: #0066cc !important;
+        stroke-width: 2px !important;
+        stroke-dasharray: none !important;
+      }
     </style>
   </head>
   <body>
