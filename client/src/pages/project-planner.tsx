@@ -381,6 +381,52 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 disabled={isGeneratingPlan}
               />
               
+              {/* Example Projects Section */}
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  Example Projects
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Social Media Platform</h5>
+                    <p className="text-xs text-gray-600">User profiles, messaging, content sharing, news feed, admin dashboard</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Project Management Tool</h5>
+                    <p className="text-xs text-gray-600">Task tracking, team collaboration, Gantt charts, budget tracking</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Learning Management System</h5>
+                    <p className="text-xs text-gray-600">Course creation, video streaming, quizzes, certifications, mobile app</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Personal Finance App</h5>
+                    <p className="text-xs text-gray-600">Expense tracking, investment portfolio, AI advice, bank integration</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Healthcare Platform</h5>
+                    <p className="text-xs text-gray-600">Patient records, telemedicine, appointments, billing, compliance</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                       onClick={() => setProjectInput("Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.")}>
+                    <h5 className="font-medium text-gray-800 text-sm mb-1">Smart Home IoT Platform</h5>
+                    <p className="text-xs text-gray-600">Device management, automation, energy monitoring, voice control</p>
+                  </div>
+                </div>
+                <p className="text-xs text-blue-600 mt-3">Click any example to use it as a starting point, then customize as needed.</p>
+              </div>
+              
               <div className="flex justify-between items-center">
                 <div className="text-sm text-gray-500">
                   {projectInput.length}/1000 characters
