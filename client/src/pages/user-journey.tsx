@@ -37,6 +37,7 @@ export default function UserJourney() {
   const [showFlowDetails, setShowFlowDetails] = useState(false);
   const [activePersona, setActivePersona] = useState<string | null>(null);
   const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
 
   // Load data from localStorage when component mounts and auto-generate BPMN
   useEffect(() => {
@@ -81,6 +82,9 @@ export default function UserJourney() {
       // Trigger auto-generation after a short delay
       setTimeout(autoGeneratePersonaBpmn, 1000);
     }
+    
+    // Set loading complete
+    setIsLoadingFromStorage(false);
   }, []);
 
   const generateUserJourneys = async () => {
@@ -429,7 +433,14 @@ export default function UserJourney() {
                 )}
               </div>
 
-              {!projectPlan && !projectDescription && (
+              {isLoadingFromStorage ? (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                    <p className="text-blue-700">Loading project data...</p>
+                  </div>
+                </div>
+              ) : !projectPlan && !projectDescription ? (
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-yellow-800">
                     <strong>No project plan found.</strong> Please go back and generate a project plan first.
@@ -441,9 +452,7 @@ export default function UserJourney() {
                     </Button>
                   </Link>
                 </div>
-              )}
-
-              {(projectPlan || projectDescription) && (
+              ) : (
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-green-800">
                     <strong>Project plan loaded successfully.</strong> You can now generate user journey flows based on your project requirements.
