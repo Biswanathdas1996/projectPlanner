@@ -251,6 +251,41 @@ export function useBpmn() {
     }
   }, [diagramJson, showNotification]);
 
+  // Handle element selection from sidebar
+  const handleElementSelect = useCallback((elementType: string) => {
+    if (!modelerRef.current) return;
+
+    try {
+      const palette = modelerRef.current.get('palette');
+      const canvas = modelerRef.current.get('canvas');
+      
+      // Activate the selected tool
+      if (elementType === 'hand-tool') {
+        const handTool = modelerRef.current.get('handTool');
+        handTool.activateHand();
+      } else if (elementType === 'lasso-tool') {
+        const lassoTool = modelerRef.current.get('lassoTool');
+        lassoTool.activateSelection();
+      } else if (elementType === 'space-tool') {
+        const spaceTool = modelerRef.current.get('spaceTool');
+        spaceTool.activateSelection();
+      } else {
+        // For creation tools, trigger the palette action
+        const paletteProvider = modelerRef.current.get('paletteProvider');
+        const entries = paletteProvider.getPaletteEntries();
+        
+        if (entries[elementType]) {
+          entries[elementType].action();
+        }
+      }
+      
+      showNotification(`${elementType.replace(/create\.|tool/, '').replace(/-/g, ' ')} activated`, 'success', 2000);
+    } catch (error) {
+      console.error('Error selecting element:', error);
+      showNotification('Failed to activate tool', 'error');
+    }
+  }, [showNotification]);
+
   // Initialize modeler when component mounts
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -279,5 +314,6 @@ export function useBpmn() {
     zoomFit,
     updateElementProperties,
     copyJsonToClipboard,
+    handleElementSelect,
   };
 }

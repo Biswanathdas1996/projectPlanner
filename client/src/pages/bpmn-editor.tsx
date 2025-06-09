@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { BpmnCanvas } from '@/components/bpmn-canvas';
+import { ElementSidebar } from '@/components/element-sidebar';
 import { PropertiesPanel } from '@/components/properties-panel';
 import { NotificationSystem } from '@/components/notification-system';
 import { ConfirmationModal } from '@/components/confirmation-modal';
@@ -18,10 +19,12 @@ import {
   ZoomOut,
   Maximize2,
   Workflow,
+  Sidebar,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
   const [panelVisible, setPanelVisible] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   const [confirmationModal, setConfirmationModal] = useState({
     open: false,
     title: '',
@@ -49,6 +52,7 @@ export default function BpmnEditor() {
     zoomFit,
     updateElementProperties,
     copyJsonToClipboard,
+    handleElementSelect,
   } = useBpmn();
 
   const handleCreateNew = () => {
@@ -92,6 +96,10 @@ export default function BpmnEditor() {
 
   const togglePanel = () => {
     setPanelVisible(!panelVisible);
+  };
+
+  const toggleSidebar = () => {
+    setSidebarVisible(!sidebarVisible);
   };
 
   // Keyboard shortcuts
@@ -172,6 +180,22 @@ export default function BpmnEditor() {
             </Button>
 
             <div className="w-px h-6 bg-gray-300" />
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={toggleSidebar} 
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 text-gray-600 hover:text-gray-900"
+                >
+                  <Sidebar className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Toggle Element Sidebar</p>
+              </TooltipContent>
+            </Tooltip>
 
             <Tooltip>
               <TooltipTrigger asChild>
