@@ -373,6 +373,7 @@ export default function BpmnEditor() {
           onClose={togglePanel}
           onUpdateElement={updateElementProperties}
           onCopyXml={copyXmlToClipboard}
+          onDiagramUpdate={importDiagram}
         />
       </div>
 
