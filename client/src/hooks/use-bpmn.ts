@@ -20,7 +20,11 @@ export function useBpmn() {
 
   // Initialize BPMN modeler
   const initializeModeler = useCallback(async () => {
-    if (!containerRef.current || !window.BpmnJS) return;
+    if (!containerRef.current) return;
+    if (!window.BpmnJS) {
+      console.warn('BpmnJS not loaded yet');
+      return;
+    }
 
     try {
       const modeler = new window.BpmnJS({
