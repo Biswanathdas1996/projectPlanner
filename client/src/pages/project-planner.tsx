@@ -1150,28 +1150,155 @@ Return the complete enhanced project plan as HTML with all existing content plus
         {/* Step 3: Success */}
         {currentStep === 'diagram' && (
           <Card className="mb-6">
-            <CardContent className="text-center py-8">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Visual Diagram Created Successfully!
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Your project plan has been converted into a comprehensive BPMN diagram with process flows and decision points.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/editor">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                    <Workflow className="h-4 w-4 mr-2" />
-                    View & Edit Diagram
+            <CardContent className="py-8">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Visual Diagram Created Successfully!
+                </h3>
+                <p className="text-gray-600 mb-6">
+                  Your project plan has been converted into a comprehensive BPMN diagram with process flows and decision points.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <Link href="/editor">
+                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                      <Workflow className="h-4 w-4 mr-2" />
+                      View & Edit Diagram
+                    </Button>
+                  </Link>
+                  <Button variant="outline" onClick={resetPlanner}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Another Project
                   </Button>
-                </Link>
-                <Button variant="outline" onClick={resetPlanner}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Another Project
-                </Button>
+                </div>
               </div>
+
+              {/* BPMN Script Management Section */}
+              {generatedBpmnJson && (
+                <div className="border-t border-gray-200 pt-6">
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-purple-800 flex items-center gap-2">
+                        <Code className="h-5 w-5" />
+                        BPMN 2.0 Script Management
+                      </h4>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          onClick={() => setShowBpmnScript(!showBpmnScript)}
+                          variant="outline"
+                          size="sm"
+                          className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                        >
+                          {showBpmnScript ? (
+                            <>
+                              <EyeOff className="h-4 w-4 mr-2" />
+                              Hide Script
+                            </>
+                          ) : (
+                            <>
+                              <Eye className="h-4 w-4 mr-2" />
+                              View Script
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={copyBpmnScript}
+                          variant="outline"
+                          size="sm"
+                          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                        >
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy
+                        </Button>
+                        <Button
+                          onClick={downloadBpmnScript}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-600 hover:bg-green-50"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <p className="text-sm text-purple-700 mb-4">
+                      Access and manage the underlying BPMN 2.0 JSON script that powers your visual workflow diagram. 
+                      This script can be imported into any BPMN-compatible editor or system.
+                    </p>
+
+                    {showBpmnScript && (
+                      <div className="space-y-4">
+                        {isEditingBpmn ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-purple-700">
+                                Edit the BPMN JSON script. Ensure proper JSON syntax before saving.
+                              </p>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={saveBpmnEdits}
+                                  size="sm"
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Save className="h-4 w-4 mr-2" />
+                                  Save Changes
+                                </Button>
+                                <Button
+                                  onClick={cancelBpmnEditing}
+                                  variant="outline"
+                                  size="sm"
+                                  className="border-gray-300"
+                                >
+                                  <X className="h-4 w-4 mr-2" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <Textarea
+                              value={editedBpmnScript}
+                              onChange={(e) => setEditedBpmnScript(e.target.value)}
+                              className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
+                              placeholder="Edit BPMN JSON script..."
+                            />
+                            
+                            <div className="text-sm text-gray-500">
+                              {editedBpmnScript.length} characters | Make sure to maintain valid JSON structure
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-sm text-gray-500">
+                                <span>JSON format with {Object.keys(generatedBpmnJson).length} root properties</span>
+                                <span className="ml-4">{JSON.stringify(generatedBpmnJson).length} characters total</span>
+                              </div>
+                              <Button
+                                onClick={startEditingBpmn}
+                                variant="outline"
+                                size="sm"
+                                className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                              >
+                                <Edit className="h-4 w-4 mr-2" />
+                                Edit Script
+                              </Button>
+                            </div>
+                            
+                            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                              <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                                {JSON.stringify(generatedBpmnJson, null, 2)}
+                              </pre>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
