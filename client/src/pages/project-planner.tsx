@@ -20,6 +20,13 @@ import {
   Edit,
   Save,
   X,
+  Bold,
+  Italic,
+  Underline,
+  List,
+  ListOrdered,
+  Quote,
+  Type,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -148,6 +155,14 @@ Return the complete enhanced project plan as HTML with all existing content plus
   const cancelEditingPlan = () => {
     setIsEditingPlan(false);
     setEditedPlanContent('');
+  };
+
+  const executeCommand = (command: string, value?: string) => {
+    document.execCommand(command, false, value);
+  };
+
+  const insertHeading = (level: number) => {
+    executeCommand('formatBlock', `h${level}`);
   };
 
   const resetPlanner = () => {
@@ -326,16 +341,138 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     </div>
                   </div>
                   
-                  <Textarea
-                    value={editedPlanContent}
-                    onChange={(e) => setEditedPlanContent(e.target.value)}
-                    className="min-h-[600px] font-mono text-sm border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                    placeholder="Edit your project plan content here..."
-                  />
+                  {/* Formatting Toolbar */}
+                  <div className="border border-gray-300 rounded-t-lg p-3 bg-gray-50 border-b-0">
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('bold')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <Bold className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('italic')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <Italic className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('underline')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <Underline className="h-4 w-4" />
+                      </Button>
+                      <Separator orientation="vertical" className="h-6" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertHeading(1)}
+                        className="h-8 px-3 text-xs"
+                        type="button"
+                      >
+                        H1
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertHeading(2)}
+                        className="h-8 px-3 text-xs"
+                        type="button"
+                      >
+                        H2
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => insertHeading(3)}
+                        className="h-8 px-3 text-xs"
+                        type="button"
+                      >
+                        H3
+                      </Button>
+                      <Separator orientation="vertical" className="h-6" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('insertUnorderedList')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('insertOrderedList')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <ListOrdered className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('formatBlock', 'blockquote')}
+                        className="h-8 px-2"
+                        type="button"
+                      >
+                        <Quote className="h-4 w-4" />
+                      </Button>
+                      <Separator orientation="vertical" className="h-6" />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('undo')}
+                        className="h-8 px-3 text-xs"
+                        type="button"
+                      >
+                        Undo
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => executeCommand('redo')}
+                        className="h-8 px-3 text-xs"
+                        type="button"
+                      >
+                        Redo
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="border border-gray-300 rounded-b-lg border-t-0">
+                    <div 
+                      contentEditable
+                      suppressContentEditableWarning={true}
+                      className="min-h-[600px] p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 prose prose-gray max-w-none"
+                      style={{
+                        lineHeight: '1.6',
+                        fontSize: '14px'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: editedPlanContent }}
+                      onInput={(e) => {
+                        const target = e.target as HTMLDivElement;
+                        setEditedPlanContent(target.innerHTML);
+                      }}
+                      onBlur={(e) => {
+                        const target = e.target as HTMLDivElement;
+                        setEditedPlanContent(target.innerHTML);
+                      }}
+                    />
+                  </div>
                   
                   <div className="text-sm text-gray-500 flex justify-between">
-                    <span>You can edit both HTML and markdown content</span>
-                    <span>{editedPlanContent.length} characters</span>
+                    <span>Visual HTML editor - use toolbar buttons to format content</span>
+                    <span>{editedPlanContent.replace(/<[^>]*>/g, '').length} characters (text only)</span>
                   </div>
                 </div>
               ) : (
