@@ -1271,23 +1271,36 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Start Over
                 </Button>
-                <Button
-                  onClick={handleGenerateBpmnDiagram}
-                  disabled={isGeneratingBpmn || isEnhancing}
-                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg"
-                >
-                  {isGeneratingBpmn ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating Visual Diagram...
-                    </>
-                  ) : (
-                    <>
-                      <Workflow className="h-4 w-4 mr-2" />
-                      Create Visual Diagram
-                    </>
-                  )}
-                </Button>
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href="/user-journey">
+                    <Button
+                      variant="outline"
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      User Journey Flows
+                    </Button>
+                  </Link>
+                  
+                  <Button
+                    onClick={handleGenerateBpmnDiagram}
+                    disabled={isGeneratingBpmn || isEnhancing}
+                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg"
+                  >
+                    {isGeneratingBpmn ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Creating Visual Diagram...
+                      </>
+                    ) : (
+                      <>
+                        <Workflow className="h-4 w-4 mr-2" />
+                        Create Visual Diagram
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
