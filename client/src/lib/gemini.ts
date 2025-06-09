@@ -40,6 +40,8 @@ export async function generateBpmnJson(projectPlan: string): Promise<any> {
   const prompt = `
 Convert the following project plan into a BPMN JSON structure with swimlanes. Create a workflow that represents the project phases and tasks as BPMN elements organized by responsible parties or departments.
 
+IMPORTANT: Include exclusive gateways (decision boxes) for any decision points, approvals, quality checks, or yes/no conditions in the workflow. Use parallel gateways for concurrent activities.
+
 Project Plan:
 "${projectPlan}"
 
@@ -53,12 +55,12 @@ Return ONLY a valid JSON object in this exact format:
       {
         "id": "Lane_1",
         "name": "Department/Role Name",
-        "elements": ["StartEvent_1", "Task_1"]
+        "elements": ["StartEvent_1", "Task_1", "Gateway_1"]
       },
       {
         "id": "Lane_2", 
         "name": "Another Department/Role",
-        "elements": ["Task_2", "Gateway_1"]
+        "elements": ["Task_2", "Gateway_2"]
       }
     ],
     "elements": [
@@ -72,6 +74,12 @@ Return ONLY a valid JSON object in this exact format:
         "type": "task",
         "id": "Task_1", 
         "name": "Phase/Task Name",
+        "lane": "Lane_1"
+      },
+      {
+        "type": "exclusiveGateway",
+        "id": "Gateway_1",
+        "name": "Approval Required?",
         "lane": "Lane_1"
       },
       {
@@ -123,13 +131,22 @@ Rules:
 - Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
 - EVERY element MUST be assigned to a swimlane - no elements outside swimlanes
 - Place tasks in appropriate swimlanes based on who performs them
+- MANDATORY: Include exclusive gateways for decision points with conditional flows:
+  * Approval processes (Approved? Yes/No)
+  * Quality checks (Quality OK? Yes/No)
+  * Budget approvals (Budget Approved? Yes/No)
+  * Risk assessments (Risk Acceptable? Yes/No)
+  * Completion checks (Task Complete? Yes/No)
+- For exclusive gateways, create conditional flows with labels like "Yes", "No", "Approved", "Rejected"
+- Use parallel gateways for tasks that can happen simultaneously
 - Ensure ALL elements are connected in sequence with flows
-- Use proper BPMN element types: startEvent, task, exclusiveGateway, endEvent, userTask, serviceTask
+- Use proper BPMN element types: startEvent, task, exclusiveGateway, parallelGateway, endEvent, userTask, serviceTask
 - Every element (except endEvent) must have outgoing flows
 - Every element (except startEvent) must have incoming flows
 - Generate unique IDs for each element and flow
 - Include timer events or intermediate events where appropriate
 - Verify each element has a "lane" property matching one of the swimlane IDs
+- For workflows with multiple outcomes, use multiple end events (e.g., "Project Approved", "Project Rejected")
 - All swimlanes must contain at least one element
 - Elements should be logically distributed across swimlanes based on responsibility
 `;

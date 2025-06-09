@@ -63,7 +63,8 @@ export function ContextualToolbar({
   const createTools = [
     { icon: Circle, type: 'bpmn:StartEvent', label: 'Start Event' },
     { icon: Square, type: 'bpmn:Task', label: 'Task' },
-    { icon: Diamond, type: 'bpmn:ExclusiveGateway', label: 'Gateway' },
+    { icon: Diamond, type: 'bpmn:ExclusiveGateway', label: 'Decision (Yes/No)' },
+    { icon: Move3D, type: 'bpmn:ParallelGateway', label: 'Parallel Gateway' },
     { icon: Triangle, type: 'bpmn:EndEvent', label: 'End Event' }
   ];
 

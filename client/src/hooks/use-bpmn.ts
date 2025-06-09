@@ -280,6 +280,13 @@ export function useBpmn() {
       ${outgoingRefs}
     </bpmn2:parallelGateway>`;
           break;
+        case 'inclusiveGateway':
+          bpmnXml += `
+    <bpmn2:inclusiveGateway id="${element.id}" name="${element.name || 'Inclusive Gateway'}">
+      ${incomingRefs}
+      ${outgoingRefs}
+    </bpmn2:inclusiveGateway>`;
+          break;
         case 'intermediateCatchEvent':
           bpmnXml += `
     <bpmn2:intermediateCatchEvent id="${element.id}" name="${element.name || 'Wait'}">
@@ -297,10 +304,28 @@ export function useBpmn() {
       }
     });
 
-    // Add all sequence flows
+    // Add all sequence flows with conditional expressions
     flows.forEach((flow: any) => {
-      bpmnXml += `
-    <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}" />`;
+      let flowXml = `
+    <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}"`;
+      
+      // Add name for conditional flows (Yes/No labels)
+      if (flow.name) {
+        flowXml += ` name="${flow.name}"`;
+      }
+      
+      flowXml += `>`;
+      
+      // Add conditional expression for gateway decisions
+      if (flow.condition) {
+        flowXml += `
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">${flow.condition}</bpmn2:conditionExpression>`;
+      }
+      
+      flowXml += `
+    </bpmn2:sequenceFlow>`;
+      
+      bpmnXml += flowXml;
     });
 
     bpmnXml += `
