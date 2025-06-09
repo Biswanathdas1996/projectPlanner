@@ -29,6 +29,10 @@ import {
   Quote,
   Type,
   Download,
+  Code,
+  Copy,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -48,6 +52,9 @@ export default function ProjectPlanner() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+  const [showBpmnScript, setShowBpmnScript] = useState(false);
+  const [isEditingBpmn, setIsEditingBpmn] = useState(false);
+  const [editedBpmnScript, setEditedBpmnScript] = useState('');
 
   const [, setLocation] = useLocation();
 
@@ -203,6 +210,9 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setShowSuggestions(false);
     setSelectedSuggestions([]);
     setSuggestions([]);
+    setShowBpmnScript(false);
+    setIsEditingBpmn(false);
+    setEditedBpmnScript('');
   };
 
   const toggleSuggestion = (suggestion: string) => {
@@ -292,6 +302,69 @@ Return the complete enhanced project plan as HTML with all existing content plus
     } finally {
       setIsDownloadingPdf(false);
     }
+  };
+
+  const downloadBpmnScript = () => {
+    if (!generatedBpmnJson) {
+      setError('No BPMN script available to download');
+      return;
+    }
+
+    const bpmnScript = JSON.stringify(generatedBpmnJson, null, 2);
+    const blob = new Blob([bpmnScript], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `bpmn_script_${projectName}_${timestamp}.json`;
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const copyBpmnScript = async () => {
+    if (!generatedBpmnJson) {
+      setError('No BPMN script available to copy');
+      return;
+    }
+
+    try {
+      const bpmnScript = JSON.stringify(generatedBpmnJson, null, 2);
+      await navigator.clipboard.writeText(bpmnScript);
+      // You could add a toast notification here
+    } catch (error) {
+      console.error('Failed to copy BPMN script:', error);
+      setError('Failed to copy BPMN script to clipboard');
+    }
+  };
+
+  const saveBpmnEdits = () => {
+    try {
+      const parsedBpmn = JSON.parse(editedBpmnScript);
+      setGeneratedBpmnJson(parsedBpmn);
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(parsedBpmn));
+      setIsEditingBpmn(false);
+      setEditedBpmnScript('');
+    } catch (error) {
+      setError('Invalid JSON format. Please check your BPMN script syntax.');
+    }
+  };
+
+  const startEditingBpmn = () => {
+    if (generatedBpmnJson) {
+      setEditedBpmnScript(JSON.stringify(generatedBpmnJson, null, 2));
+      setIsEditingBpmn(true);
+    }
+  };
+
+  const cancelBpmnEditing = () => {
+    setIsEditingBpmn(false);
+    setEditedBpmnScript('');
   };
 
   const getStepStatus = (step: string) => {
@@ -700,6 +773,27 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       </>
                     )}
                   </Button>
+                  {generatedBpmnJson && (
+                    <Button
+                      onClick={() => setShowBpmnScript(!showBpmnScript)}
+                      variant="outline"
+                      size="sm"
+                      disabled={isEditingPlan || isEnhancing || isGeneratingBpmn}
+                      className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                    >
+                      {showBpmnScript ? (
+                        <>
+                          <EyeOff className="h-4 w-4 mr-2" />
+                          Hide BPMN Script
+                        </>
+                      ) : (
+                        <>
+                          <Code className="h-4 w-4 mr-2" />
+                          View BPMN Script
+                        </>
+                      )}
+                    </Button>
+                  )}
                   <Button
                     onClick={startEditingPlan}
                     variant="outline"
@@ -876,6 +970,107 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </div>
               ) : (
                 renderProjectPlan()
+              )}
+
+              {/* BPMN Script Section */}
+              {showBpmnScript && generatedBpmnJson && (
+                <div className="mt-6 border-t border-gray-200 pt-6">
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-purple-800 flex items-center gap-2">
+                        <Code className="h-5 w-5" />
+                        BPMN 2.0 Script
+                      </h3>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={copyBpmnScript}
+                          variant="outline"
+                          size="sm"
+                          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                        >
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy Script
+                        </Button>
+                        <Button
+                          onClick={downloadBpmnScript}
+                          variant="outline"
+                          size="sm"
+                          className="border-green-300 text-green-600 hover:bg-green-50"
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download JSON
+                        </Button>
+                        <Button
+                          onClick={startEditingBpmn}
+                          variant="outline"
+                          size="sm"
+                          disabled={isEditingBpmn}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          Edit Script
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {isEditingBpmn ? (
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-purple-700">
+                            Edit the BPMN JSON script. Ensure proper JSON syntax before saving.
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={saveBpmnEdits}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
+                              <Save className="h-4 w-4 mr-2" />
+                              Save Changes
+                            </Button>
+                            <Button
+                              onClick={cancelBpmnEditing}
+                              variant="outline"
+                              size="sm"
+                              className="border-gray-300"
+                            >
+                              <X className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <Textarea
+                          value={editedBpmnScript}
+                          onChange={(e) => setEditedBpmnScript(e.target.value)}
+                          className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
+                          placeholder="Edit BPMN JSON script..."
+                        />
+                        
+                        <div className="text-sm text-gray-500">
+                          {editedBpmnScript.length} characters | Make sure to maintain valid JSON structure
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <p className="text-sm text-purple-700">
+                          This is the generated BPMN 2.0 script that powers your visual workflow diagram. You can copy, download, or edit this script.
+                        </p>
+                        
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                          <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                            {JSON.stringify(generatedBpmnJson, null, 2)}
+                          </pre>
+                        </div>
+                        
+                        <div className="text-sm text-gray-500 flex justify-between">
+                          <span>JSON format with {Object.keys(generatedBpmnJson).length} root properties</span>
+                          <span>{JSON.stringify(generatedBpmnJson).length} characters total</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
               
               {/* Enhancement Section */}
