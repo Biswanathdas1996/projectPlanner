@@ -321,7 +321,7 @@ export function useBpmn() {
         
         bpmnXml += `
       <bpmndi:BPMNShape id="${lane.id}_di" bpmnElement="${lane.id}" isHorizontal="true">
-        <dc:Bounds x="80" y="${laneY}" width="970" height="${laneHeight}" />
+        <dc:Bounds x="80" y="${laneY}" width="1400" height="${laneHeight}" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
       });
@@ -334,18 +334,18 @@ export function useBpmn() {
       // Position elements within swimlane boundaries with padding
       swimlanes.forEach((lane: any, laneIndex: number) => {
         const laneElements = elements.filter((element: any) => element.lane === lane.id);
-        const laneHeight = 200;
+        const laneHeight = 280;
         const laneY = 50 + (laneIndex * laneHeight);
-        const lanePadding = 20; // Padding from swimlane edges
-        const elementSpacing = 150; // Space between elements
+        const lanePadding = 30; // Padding from swimlane edges
+        const elementSpacing = 280; // Space between elements
         
         laneElements.forEach((element: any, elementIndex: number) => {
           // Ensure elements are within swimlane boundaries
-          const x = 120 + lanePadding + (elementIndex * elementSpacing);
-          const y = laneY + lanePadding + 40; // Center vertically in lane with padding
+          const x = 150 + lanePadding + (elementIndex * elementSpacing);
+          const y = laneY + lanePadding + 60; // Center vertically in lane with padding
           
           // Validate element is within lane bounds
-          const maxX = 1050 - 120; // Lane width minus element width
+          const maxX = 1400 - 150; // Lane width minus element width
           const constrainedX = Math.min(x, maxX);
           
           elementPositions[element.id] = { 
@@ -359,8 +359,8 @@ export function useBpmn() {
     } else {
       // Position elements without swimlanes
       elements.forEach((element: any, elementIndex: number) => {
-        const x = 150 + (elementIndex * 180);
-        const y = 150;
+        const x = 200 + (elementIndex * 280);
+        const y = 200;
         elementPositions[element.id] = { x, y };
       });
     }
@@ -545,16 +545,16 @@ export function useBpmn() {
       
       switch (direction) {
         case 'right':
-          targetX += 180;
+          targetX += 220;
           break;
         case 'left':
-          targetX -= 180;
+          targetX -= 220;
           break;
         case 'down':
-          targetY += 120;
+          targetY += 150;
           break;
         case 'up':
-          targetY -= 120;
+          targetY -= 150;
           break;
       }
 
@@ -622,7 +622,7 @@ export function useBpmn() {
       // Position new element to the right of selected element
       const newElement = modeling.createShape(
         { type: elementType, businessObject: businessObject },
-        { x: sourceElement.x + 180, y: sourceElement.y },
+        { x: sourceElement.x + 220, y: sourceElement.y },
         sourceElement.parent
       );
 
@@ -683,7 +683,7 @@ export function useBpmn() {
       // Position copy to the right of original
       const newElement = modeling.createShape(
         { type: sourceElement.type, businessObject: copyBusinessObject },
-        { x: sourceElement.x + 120, y: sourceElement.y + 60 },
+        { x: sourceElement.x + 180, y: sourceElement.y + 80 },
         sourceElement.parent
       );
 
