@@ -162,13 +162,16 @@ Rules:
 - Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
 - EVERY element MUST be assigned to a swimlane - no elements outside swimlanes
 - Place tasks in appropriate swimlanes based on who performs them
-- MANDATORY: Include exclusive gateways for decision points with conditional flows:
+- MANDATORY: Include exclusive gateways for ALL decision points. Every workflow MUST have at least 1-2 exclusive gateways:
   * Approval processes (Approved? Yes/No)
-  * Quality checks (Quality OK? Yes/No)
+  * Quality checks (Quality OK? Yes/No) 
   * Budget approvals (Budget Approved? Yes/No)
   * Risk assessments (Risk Acceptable? Yes/No)
   * Completion checks (Task Complete? Yes/No)
-- For exclusive gateways, create conditional flows with labels like "Yes", "No", "Approved", "Rejected"
+  * Authorization checks (Authorized? Yes/No)
+  * Validation steps (Valid? Yes/No)
+- For exclusive gateways, ALWAYS create TWO outgoing flows with labels "Yes" and "No"
+- Gateway names MUST end with "?" to indicate decision points
 - Use parallel gateways for tasks that can happen simultaneously
 - Ensure ALL elements are connected in sequence with flows
 - Use proper BPMN element types: startEvent, task, exclusiveGateway, parallelGateway, endEvent, userTask, serviceTask
