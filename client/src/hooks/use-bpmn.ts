@@ -439,7 +439,7 @@ export function useBpmn() {
     }
   }, [showNotification]);
 
-  // Import diagram
+  // Import diagram from file
   const importDiagram = useCallback(async (file: File) => {
     if (!modelerRef.current) return;
 
@@ -452,6 +452,29 @@ export function useBpmn() {
     } catch (error) {
       console.error('Error importing diagram:', error);
       showNotification('Failed to import diagram', 'error');
+    }
+  }, [showNotification, updateXmlView]);
+
+  // Import diagram from XML string (for AI-generated content)
+  const importDiagramFromXml = useCallback(async (xmlString: string) => {
+    if (!modelerRef.current) return;
+
+    try {
+      await modelerRef.current.importXML(xmlString);
+      setDiagramXml(xmlString);
+      showNotification('AI diagram imported successfully', 'success');
+      setStatus('AI Updated');
+      updateXmlView();
+      
+      // Auto-fit to viewport for better visibility
+      setTimeout(() => {
+        if (modelerRef.current) {
+          modelerRef.current.get('canvas').zoom('fit-viewport');
+        }
+      }, 300);
+    } catch (error) {
+      console.error('Error importing AI diagram:', error);
+      showNotification('Failed to import AI-generated diagram', 'error');
     }
   }, [showNotification, updateXmlView]);
 
@@ -592,6 +615,7 @@ export function useBpmn() {
     createNew,
     exportDiagram,
     importDiagram,
+    importDiagramFromXml,
     zoomIn,
     zoomOut,
     zoomFit,

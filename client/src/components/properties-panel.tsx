@@ -17,7 +17,7 @@ interface PropertiesPanelProps {
   onClose: () => void;
   onUpdateElement: (properties: Partial<ElementProperties>) => void;
   onCopyXml: () => void;
-  onDiagramUpdate?: (newXml: string) => void;
+  onDiagramUpdate?: (newXml: string) => Promise<void>;
 }
 
 export function PropertiesPanel({
