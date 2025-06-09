@@ -46,22 +46,31 @@ export function useBpmn() {
           const selection = event.newSelection;
           if (Array.isArray(selection) && selection.length === 1) {
             const element = selection[0];
-            if (element && typeof element === 'object' && element.businessObject) {
-              const businessObject = element.businessObject;
-              setSelectedElement({
+            if (element && typeof element === 'object') {
+              const businessObject = element.businessObject || element;
+              const elementData = {
                 id: element.id || businessObject.id || '',
                 name: businessObject.name || element.label || '',
                 type: element.type || businessObject.$type || 'Unknown',
-                documentation: (businessObject.documentation && businessObject.documentation[0]) 
-                  ? businessObject.documentation[0].text || '' 
-                  : ''
-              });
+                documentation: ''
+              };
+
+              // Safe documentation extraction
+              try {
+                if (businessObject.documentation && Array.isArray(businessObject.documentation) && businessObject.documentation[0]) {
+                  elementData.documentation = businessObject.documentation[0].text || '';
+                }
+              } catch (docError) {
+                // Documentation extraction failed, keep empty
+              }
+
+              setSelectedElement(elementData);
               return;
             }
           }
           setSelectedElement(null);
         } catch (error) {
-          // Silently handle selection errors to avoid console spam
+          console.error('Error selecting element:', error);
           setSelectedElement(null);
         }
       });
@@ -518,6 +527,173 @@ export function useBpmn() {
     }
   }, []);
 
+  // Create connection from selected element
+  const createConnection = useCallback((direction: 'right' | 'down' | 'up' | 'left') => {
+    if (!modelerRef.current || !selectedElement) return;
+
+    try {
+      const elementRegistry = modelerRef.current.get('elementRegistry');
+      const modeling = modelerRef.current.get('modeling');
+      const elementFactory = modelerRef.current.get('elementFactory');
+      
+      const sourceElement = elementRegistry.get(selectedElement.id);
+      if (!sourceElement) return;
+
+      // Calculate position for new element based on direction
+      const sourcePos = sourceElement;
+      let targetX = sourcePos.x;
+      let targetY = sourcePos.y;
+      
+      switch (direction) {
+        case 'right':
+          targetX += 150;
+          break;
+        case 'left':
+          targetX -= 150;
+          break;
+        case 'down':
+          targetY += 100;
+          break;
+        case 'up':
+          targetY -= 100;
+          break;
+      }
+
+      // Create new task element
+      const taskShape = elementFactory.createShape({
+        type: 'bpmn:Task',
+        businessObject: elementFactory.create('bpmn:Task', {
+          id: `Task_${generateId()}`,
+          name: 'New Task'
+        })
+      });
+
+      // Add the new shape to the canvas
+      const newElement = modeling.createShape(taskShape, { x: targetX, y: targetY }, sourceElement.parent);
+
+      // Create connection between elements
+      const connectionShape = elementFactory.createConnection({
+        type: 'bpmn:SequenceFlow',
+        businessObject: elementFactory.create('bpmn:SequenceFlow', {
+          id: `Flow_${generateId()}`,
+          sourceRef: sourceElement.businessObject,
+          targetRef: newElement.businessObject
+        })
+      });
+
+      modeling.createConnection(sourceElement, newElement, connectionShape, sourceElement.parent);
+      
+      // Select the new element
+      const selection = modelerRef.current.get('selection');
+      selection.select(newElement);
+      
+      showNotification(`Connected ${direction} successfully`, 'success');
+      updateJsonView();
+    } catch (error) {
+      console.error('Error creating connection:', error);
+      showNotification('Failed to create connection', 'error');
+    }
+  }, [selectedElement, showNotification, updateJsonView]);
+
+  // Create new element near selected element
+  const createElement = useCallback((elementType: string) => {
+    if (!modelerRef.current || !selectedElement) return;
+
+    try {
+      const elementRegistry = modelerRef.current.get('elementRegistry');
+      const modeling = modelerRef.current.get('modeling');
+      const elementFactory = modelerRef.current.get('elementFactory');
+      
+      const sourceElement = elementRegistry.get(selectedElement.id);
+      if (!sourceElement) return;
+
+      // Create new element based on type
+      const newShape = elementFactory.createShape({
+        type: elementType,
+        businessObject: elementFactory.create(elementType, {
+          id: `${elementType.split(':')[1]}_${generateId()}`,
+          name: elementType.includes('Event') ? '' : `New ${elementType.split(':')[1]}`
+        })
+      });
+
+      // Position new element to the right of selected element
+      const newElement = modeling.createShape(newShape, 
+        { x: sourceElement.x + 150, y: sourceElement.y }, 
+        sourceElement.parent
+      );
+
+      // Select the new element
+      const selection = modelerRef.current.get('selection');
+      selection.select(newElement);
+      
+      showNotification(`${elementType.split(':')[1]} created successfully`, 'success');
+      updateJsonView();
+    } catch (error) {
+      console.error('Error creating element:', error);
+      showNotification('Failed to create element', 'error');
+    }
+  }, [selectedElement, showNotification, updateJsonView]);
+
+  // Delete selected element
+  const deleteSelectedElement = useCallback(() => {
+    if (!modelerRef.current || !selectedElement) return;
+
+    try {
+      const elementRegistry = modelerRef.current.get('elementRegistry');
+      const modeling = modelerRef.current.get('modeling');
+      
+      const element = elementRegistry.get(selectedElement.id);
+      if (element) {
+        modeling.removeElements([element]);
+        setSelectedElement(null);
+        showNotification('Element deleted successfully', 'success');
+        updateJsonView();
+      }
+    } catch (error) {
+      console.error('Error deleting element:', error);
+      showNotification('Failed to delete element', 'error');
+    }
+  }, [selectedElement, showNotification, updateJsonView]);
+
+  // Copy selected element
+  const copySelectedElement = useCallback(() => {
+    if (!modelerRef.current || !selectedElement) return;
+
+    try {
+      const elementRegistry = modelerRef.current.get('elementRegistry');
+      const modeling = modelerRef.current.get('modeling');
+      const elementFactory = modelerRef.current.get('elementFactory');
+      
+      const sourceElement = elementRegistry.get(selectedElement.id);
+      if (!sourceElement) return;
+
+      // Create copy of the element
+      const copyShape = elementFactory.createShape({
+        type: sourceElement.type,
+        businessObject: elementFactory.create(sourceElement.type, {
+          id: `${sourceElement.businessObject.$type.split(':')[1]}_${generateId()}`,
+          name: sourceElement.businessObject.name ? `${sourceElement.businessObject.name} (Copy)` : ''
+        })
+      });
+
+      // Position copy to the right of original
+      const newElement = modeling.createShape(copyShape, 
+        { x: sourceElement.x + 120, y: sourceElement.y + 60 }, 
+        sourceElement.parent
+      );
+
+      // Select the copied element
+      const selection = modelerRef.current.get('selection');
+      selection.select(newElement);
+      
+      showNotification('Element copied successfully', 'success');
+      updateJsonView();
+    } catch (error) {
+      console.error('Error copying element:', error);
+      showNotification('Failed to copy element', 'error');
+    }
+  }, [selectedElement, showNotification, updateJsonView]);
+
   // Update element properties
   const updateElementProperties = useCallback(async (properties: Partial<ElementProperties>) => {
     if (!modelerRef.current || !selectedElement) return;
@@ -822,5 +998,10 @@ export function useBpmn() {
     handleElementSelect,
     connectElements,
     importFromJson,
+    // Contextual toolbar functions
+    createConnection,
+    createElement,
+    deleteSelectedElement,
+    copySelectedElement,
   };
 }
