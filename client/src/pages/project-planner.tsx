@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Workflow,
   ArrowLeft,
+  Plus,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -26,6 +27,8 @@ export default function ProjectPlanner() {
   const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
   const [error, setError] = useState('');
   const [generatedBpmnJson, setGeneratedBpmnJson] = useState<any>(null);
+  const [enhancementPrompt, setEnhancementPrompt] = useState('');
+  const [isEnhancing, setIsEnhancing] = useState(false);
 
   const [, setLocation] = useLocation();
 
@@ -86,9 +89,50 @@ export default function ProjectPlanner() {
     setLocation('/editor');
   };
 
+  const enhanceProjectPlan = async () => {
+    if (!enhancementPrompt.trim()) {
+      setError('Please enter enhancement details');
+      return;
+    }
+
+    setIsEnhancing(true);
+    setError('');
+
+    try {
+      const enhancementRequest = `
+Based on the existing project plan below, enhance it by adding the following requirements:
+
+ENHANCEMENT REQUEST: "${enhancementPrompt}"
+
+EXISTING PROJECT PLAN:
+${projectPlan}
+
+INSTRUCTIONS:
+- Keep all existing content and structure
+- Add the new requirements/features seamlessly
+- Update architecture diagrams to include new components
+- Modify user flows to incorporate new features
+- Update development timeline and resource estimates
+- Maintain the same HTML format with embedded CSS
+- Ensure all new content is properly integrated
+
+Return the complete enhanced project plan as HTML with all existing content plus the new enhancements.`;
+
+      const enhancedPlan = await generateProjectPlan(enhancementRequest);
+      setProjectPlan(enhancedPlan);
+      setEnhancementPrompt('');
+    } catch (err) {
+      console.error('Enhancement error:', err);
+      setError('Failed to enhance project plan. Please try again.');
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
   const resetPlanner = () => {
     setProjectInput('');
     setProjectPlan('');
+    setEnhancementPrompt('');
     setCurrentStep('input');
     setError('');
   };
@@ -317,8 +361,49 @@ export default function ProjectPlanner() {
               </div>
               )}
               
+              {/* Enhancement Section */}
+              <div className="border-t border-gray-200 p-6">
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                    <Plus className="h-5 w-5 text-blue-600" />
+                    Enhance Project Plan
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    Add specific requirements, features, or modifications to enhance your existing project plan.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <Textarea
+                      value={enhancementPrompt}
+                      onChange={(e) => setEnhancementPrompt(e.target.value)}
+                      placeholder="e.g., Add user authentication system, Include mobile app requirements, Add payment gateway integration, Include security audit section..."
+                      className="min-h-[100px] resize-y border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                      disabled={isEnhancing}
+                    />
+                    
+                    <Button
+                      onClick={enhanceProjectPlan}
+                      disabled={isEnhancing || !enhancementPrompt.trim()}
+                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
+                    >
+                      {isEnhancing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Enhancing Plan...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-4 w-4 mr-2" />
+                          Enhance Project Plan
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-between p-6">
+              <div className="flex flex-col sm:flex-row gap-4 justify-between p-6 border-t border-gray-200">
                 <Button
                   variant="outline"
                   onClick={resetPlanner}
