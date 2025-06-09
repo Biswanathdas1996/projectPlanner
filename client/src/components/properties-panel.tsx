@@ -65,7 +65,7 @@ Return the complete updated BPMN 2.0 XML.`;
       const updatedXml = await generateBpmnXml(enhancedPrompt);
       
       if (onDiagramUpdate) {
-        onDiagramUpdate(updatedXml);
+        await onDiagramUpdate(updatedXml);
       }
       
       setAiPrompt('');
