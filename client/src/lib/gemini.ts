@@ -38,7 +38,7 @@ export async function generateBpmnJson(projectPlan: string): Promise<any> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
-Convert the following project plan into a BPMN JSON structure. Create a workflow that represents the project phases and tasks as BPMN elements.
+Convert the following project plan into a BPMN JSON structure with swimlanes. Create a workflow that represents the project phases and tasks as BPMN elements organized by responsible parties or departments.
 
 Project Plan:
 "${projectPlan}"
@@ -49,26 +49,48 @@ Return ONLY a valid JSON object in this exact format:
     "id": "project-workflow",
     "name": "Project Workflow",
     "lastModified": "${new Date().toISOString()}",
+    "swimlanes": [
+      {
+        "id": "Lane_1",
+        "name": "Department/Role Name",
+        "elements": ["StartEvent_1", "Task_1"]
+      },
+      {
+        "id": "Lane_2", 
+        "name": "Another Department/Role",
+        "elements": ["Task_2", "Gateway_1"]
+      }
+    ],
     "elements": [
       {
         "type": "startEvent",
         "id": "StartEvent_1",
-        "name": "Project Start"
+        "name": "Project Start",
+        "lane": "Lane_1"
       },
       {
         "type": "task",
         "id": "Task_1", 
-        "name": "Phase/Task Name"
+        "name": "Phase/Task Name",
+        "lane": "Lane_1"
+      },
+      {
+        "type": "task",
+        "id": "Task_2", 
+        "name": "Another Task",
+        "lane": "Lane_2"
       },
       {
         "type": "exclusiveGateway",
         "id": "Gateway_1",
-        "name": "Decision Point"
+        "name": "Decision Point",
+        "lane": "Lane_2"
       },
       {
         "type": "endEvent",
         "id": "EndEvent_1",
-        "name": "Project Complete"
+        "name": "Project Complete",
+        "lane": "Lane_2"
       }
     ],
     "flows": [
@@ -76,18 +98,36 @@ Return ONLY a valid JSON object in this exact format:
         "id": "Flow_1",
         "sourceRef": "StartEvent_1",
         "targetRef": "Task_1"
+      },
+      {
+        "id": "Flow_2",
+        "sourceRef": "Task_1",
+        "targetRef": "Task_2"
+      },
+      {
+        "id": "Flow_3",
+        "sourceRef": "Task_2",
+        "targetRef": "Gateway_1"
+      },
+      {
+        "id": "Flow_4",
+        "sourceRef": "Gateway_1",
+        "targetRef": "EndEvent_1"
       }
     ]
   }
 }
 
 Rules:
-- Use descriptive names for tasks based on the project phases
-- Include decision points as gateways where appropriate
-- Create a logical flow from start to end
-- Use proper BPMN element types: startEvent, task, exclusiveGateway, endEvent
-- Ensure all flows connect elements properly
-- Generate unique IDs for each element
+- Create 2-4 swimlanes based on different departments, roles, or phases
+- Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
+- Place tasks in appropriate swimlanes based on who performs them
+- Ensure ALL elements are connected in sequence with flows
+- Use proper BPMN element types: startEvent, task, exclusiveGateway, endEvent, userTask, serviceTask
+- Every element (except endEvent) must have outgoing flows
+- Every element (except startEvent) must have incoming flows
+- Generate unique IDs for each element and flow
+- Include timer events or intermediate events where appropriate
 `;
 
   const result = await model.generateContent(prompt);
