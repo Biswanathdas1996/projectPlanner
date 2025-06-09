@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -40,7 +40,12 @@ export default function ProjectPlanner() {
   const [projectPlan, setProjectPlan] = useState('');
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
+  const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>(() => {
+    const path = window.location.pathname;
+    if (path === '/plan') return 'plan';
+    if (path === '/diagram') return 'diagram';
+    return 'input';
+  });
   const [error, setError] = useState('');
   const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>('');
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
@@ -58,7 +63,44 @@ export default function ProjectPlanner() {
   const [isEditingBpmn, setIsEditingBpmn] = useState(false);
   const [editedBpmnScript, setEditedBpmnScript] = useState('');
 
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  // Load data from localStorage when component mounts or route changes
+  useEffect(() => {
+    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
+    const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+
+    if (savedProjectDescription) {
+      setProjectInput(savedProjectDescription);
+    }
+    if (savedProjectPlan) {
+      setProjectPlan(savedProjectPlan);
+    }
+    if (savedDiagram) {
+      setGeneratedBpmnXml(savedDiagram);
+    }
+
+    // Update current step based on route and available data
+    const path = window.location.pathname;
+    if (path === '/plan' && savedProjectPlan) {
+      setCurrentStep('plan');
+    } else if (path === '/diagram' && savedDiagram) {
+      setCurrentStep('diagram');
+    } else if (savedProjectDescription || savedProjectPlan || savedDiagram) {
+      // If we have data but are on the wrong route, redirect to appropriate step
+      if (savedDiagram) {
+        setCurrentStep('diagram');
+        setLocation('/diagram');
+      } else if (savedProjectPlan) {
+        setCurrentStep('plan');
+        setLocation('/plan');
+      } else {
+        setCurrentStep('input');
+        setLocation('/');
+      }
+    }
+  }, [location, setLocation]);
 
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
@@ -103,6 +145,7 @@ Please ensure the project plan addresses all the selected requirements above and
       const plan = await generateProjectPlan(enhancedInput);
       setProjectPlan(plan);
       setCurrentStep('plan');
+      setLocation('/plan');
     } catch (err) {
       console.error('Project plan generation error:', err);
       setError('Failed to generate project plan. Please try again.');
@@ -125,10 +168,11 @@ Please ensure the project plan addresses all the selected requirements above and
       setGeneratedBpmnXml(bpmnXml);
       setCurrentStep('diagram');
       
-      // Save to localStorage and navigate
+      // Save to localStorage and navigate to diagram route
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      setLocation('/diagram');
     } catch (err) {
       console.error('BPMN generation error:', err);
       setError('Failed to generate BPMN diagram. Please try again.');
@@ -204,6 +248,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
   const resetPlanner = () => {
     setProjectInput('');
     setProjectPlan('');
+    setGeneratedBpmnXml('');
+    setGeneratedSitemapXml('');
     setEnhancementPrompt('');
     setIsEditingPlan(false);
     setEditedPlanContent('');
@@ -215,6 +261,12 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setShowBpmnScript(false);
     setIsEditingBpmn(false);
     setEditedBpmnScript('');
+    
+    // Clear localStorage and navigate to home
+    localStorage.removeItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
+    localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+    setLocation('/');
   };
 
   const toggleSuggestion = (suggestion: string) => {

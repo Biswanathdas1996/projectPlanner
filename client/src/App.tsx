@@ -11,7 +11,9 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={ProjectPlanner} />
+      <Route path="/plan" component={ProjectPlanner} />
       <Route path="/editor" component={BpmnEditor} />
+      <Route path="/diagram" component={BpmnEditor} />
       <Route component={NotFound} />
     </Switch>
   );
