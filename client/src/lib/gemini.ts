@@ -189,19 +189,10 @@ Return ONLY a valid JSON object in this exact format:
 }
 
 Rules:
-- MANDATORY: Create 3-5 swimlanes based on different departments, roles, or project phases
-- Use descriptive, role-based names for swimlanes (e.g., "Customer/Requestor", "Project Manager", "Development Team", "Quality Assurance", "Management/Approval")
-- EVERY element MUST be assigned to a swimlane - ZERO elements outside swimlanes
+- Create 2-4 swimlanes based on different departments, roles, or phases
+- Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
+- EVERY element MUST be assigned to a swimlane - no elements outside swimlanes
 - Place tasks in appropriate swimlanes based on who performs them
-- CATEGORIZATION RULES:
-  * Planning/initiation tasks → "Project Manager" or "Management" lane
-  * Customer interactions → "Customer/Requestor" lane  
-  * Development/implementation → "Development Team" lane
-  * Reviews/testing → "Quality Assurance" lane
-  * Approvals/decisions → "Management/Approval" lane
-  * Documentation → "Documentation Team" lane (if applicable)
-- Each swimlane MUST contain at least 2 elements minimum
-- Balance element distribution - no single swimlane should have more than 40% of total elements
 - MANDATORY: Include exclusive gateways for ALL decision points. Every workflow MUST have at least 1-2 exclusive gateways:
   * Approval processes (Approved? Yes/No)
   * Quality checks (Quality OK? Yes/No) 
