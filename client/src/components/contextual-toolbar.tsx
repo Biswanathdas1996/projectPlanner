@@ -13,7 +13,8 @@ import {
   Diamond,
   Circle,
   Square,
-  Triangle
+  Triangle,
+  ArrowRightLeft
 } from 'lucide-react';
 import { ElementProperties } from '@shared/schema';
 
@@ -26,6 +27,7 @@ interface ContextualToolbarProps {
   onCopyElement: () => void;
   onShowProperties: () => void;
   onCreateElement: (elementType: string) => void;
+  onActivateConnectionMode: () => void;
 }
 
 export function ContextualToolbar({
@@ -36,7 +38,8 @@ export function ContextualToolbar({
   onDeleteElement,
   onCopyElement,
   onShowProperties,
-  onCreateElement
+  onCreateElement,
+  onActivateConnectionMode
 }: ContextualToolbarProps) {
   const [showCreateMenu, setShowCreateMenu] = useState(false);
   const toolbarRef = useRef<HTMLDivElement>(null);
@@ -75,6 +78,18 @@ export function ContextualToolbar({
     >
       {/* Connection Tools */}
       <div className="flex gap-1 border-r border-gray-200 pr-2">
+        {/* Interactive Connection Tool */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-orange-50"
+          onClick={onActivateConnectionMode}
+          title="Connect to Any Element - Click to activate, then click target element"
+        >
+          <ArrowRightLeft className="h-4 w-4 text-orange-600" />
+        </Button>
+        
+        {/* Quick Direction Tools */}
         {connectionTools.map(({ icon: Icon, direction, label }) => (
           <Button
             key={direction}

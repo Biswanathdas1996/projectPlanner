@@ -67,6 +67,7 @@ export default function BpmnEditor() {
     createElement,
     deleteSelectedElement,
     copySelectedElement,
+    activateConnectionMode,
   } = useBpmn();
 
   // Track click position for contextual toolbar
@@ -399,6 +400,7 @@ export default function BpmnEditor() {
         onCopyElement={copySelectedElement}
         onShowProperties={() => setPanelVisible(true)}
         onCreateElement={createElement}
+        onActivateConnectionMode={activateConnectionMode}
       />
 
       {/* Hidden File Input */}

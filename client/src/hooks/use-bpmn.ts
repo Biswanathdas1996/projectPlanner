@@ -733,6 +733,27 @@ export function useBpmn() {
     }
   }, [diagramJson, showNotification]);
 
+  // Activate connection mode for connecting to any element
+  const activateConnectionMode = useCallback(() => {
+    if (!modelerRef.current) return;
+
+    try {
+      const globalConnect = modelerRef.current.get('globalConnect');
+      const selection = modelerRef.current.get('selection');
+      
+      if (globalConnect.isActive()) {
+        globalConnect.toggle();
+        showNotification('Connection mode deactivated', 'success', 2000);
+      } else {
+        globalConnect.toggle();
+        showNotification('Connection mode active - click on target element to connect', 'success', 4000);
+      }
+    } catch (error) {
+      console.error('Error activating connection mode:', error);
+      showNotification('Failed to activate connection mode', 'error');
+    }
+  }, [showNotification]);
+
   // Connect two elements with sequence flow
   const connectElements = useCallback(() => {
     if (!modelerRef.current) return;
@@ -1003,5 +1024,6 @@ export function useBpmn() {
     createElement,
     deleteSelectedElement,
     copySelectedElement,
+    activateConnectionMode,
   };
 }
