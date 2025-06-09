@@ -84,6 +84,18 @@ Return ONLY a valid JSON object in this exact format:
       },
       {
         "type": "task",
+        "id": "Task_Approved",
+        "name": "Process Approved Request",
+        "lane": "Lane_1"
+      },
+      {
+        "type": "task", 
+        "id": "Task_Rejected",
+        "name": "Handle Rejection",
+        "lane": "Lane_1"
+      },
+      {
+        "type": "task",
         "id": "Task_2", 
         "name": "Another Task",
         "lane": "Lane_2"
@@ -110,16 +122,35 @@ Return ONLY a valid JSON object in this exact format:
       {
         "id": "Flow_2",
         "sourceRef": "Task_1",
-        "targetRef": "Task_2"
+        "targetRef": "Gateway_1"
       },
       {
         "id": "Flow_3",
-        "sourceRef": "Task_2",
-        "targetRef": "Gateway_1"
+        "sourceRef": "Gateway_1",
+        "targetRef": "Task_Approved",
+        "name": "Yes",
+        "condition": "approved"
       },
       {
         "id": "Flow_4",
         "sourceRef": "Gateway_1",
+        "targetRef": "Task_Rejected",
+        "name": "No",
+        "condition": "rejected"
+      },
+      {
+        "id": "Flow_5",
+        "sourceRef": "Task_Approved",
+        "targetRef": "Task_2"
+      },
+      {
+        "id": "Flow_6",
+        "sourceRef": "Task_Rejected",
+        "targetRef": "EndEvent_1"
+      },
+      {
+        "id": "Flow_7",
+        "sourceRef": "Task_2",
         "targetRef": "EndEvent_1"
       }
     ]

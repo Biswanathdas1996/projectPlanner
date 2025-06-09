@@ -348,12 +348,12 @@ export function useBpmn() {
 
       // Add swimlane shapes
       swimlanes.forEach((lane: any, laneIndex: number) => {
-        const laneHeight = 280;
+        const laneHeight = 350;
         const laneY = 50 + (laneIndex * laneHeight);
         
         bpmnXml += `
       <bpmndi:BPMNShape id="${lane.id}_di" bpmnElement="${lane.id}" isHorizontal="true">
-        <dc:Bounds x="80" y="${laneY}" width="1400" height="${laneHeight}" />
+        <dc:Bounds x="80" y="${laneY}" width="2000" height="${laneHeight}" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
       });
@@ -366,25 +366,53 @@ export function useBpmn() {
       // Position elements within swimlane boundaries with padding
       swimlanes.forEach((lane: any, laneIndex: number) => {
         const laneElements = elements.filter((element: any) => element.lane === lane.id);
-        const laneHeight = 280;
+        const laneHeight = 350;
         const laneY = 50 + (laneIndex * laneHeight);
-        const lanePadding = 30; // Padding from swimlane edges
-        const elementSpacing = 280; // Space between elements
+        const lanePadding = 40; // Padding from swimlane edges
+        const elementSpacing = 400; // Increased space between elements
+        
+        // Smart positioning for gateways and branching
+        let currentX = 150 + lanePadding;
+        let branchOffset = 0;
         
         laneElements.forEach((element: any, elementIndex: number) => {
-          // Ensure elements are within swimlane boundaries
-          const x = 150 + lanePadding + (elementIndex * elementSpacing);
-          const y = laneY + lanePadding + 60; // Center vertically in lane with padding
+          let x = currentX;
+          let y = laneY + lanePadding + 60;
+          
+          // Special positioning for exclusive gateways and their branches
+          if (element.type === 'exclusiveGateway') {
+            // Gateway gets normal position
+            x = currentX;
+            currentX += elementSpacing;
+          } else if (elementIndex > 0 && laneElements[elementIndex - 1]?.type === 'exclusiveGateway') {
+            // Elements after gateway are positioned as branches
+            if (branchOffset === 0) {
+              // First branch (Yes) - position above gateway level
+              y = laneY + 30;
+              branchOffset = 1;
+            } else {
+              // Second branch (No) - position below gateway level  
+              y = laneY + 150;
+              branchOffset = 0;
+            }
+            // Branches use same X but different Y
+            x = currentX - elementSpacing + 200;
+          } else {
+            // Normal sequential positioning
+            x = currentX;
+            currentX += elementSpacing;
+          }
           
           // Validate element is within lane bounds
-          const maxX = 1400 - 150; // Lane width minus element width
+          const maxX = 2000 - 150;
           const constrainedX = Math.min(x, maxX);
           
           elementPositions[element.id] = { 
             x: constrainedX, 
             y: y,
             laneIndex: laneIndex,
-            elementIndex: elementIndex
+            elementIndex: elementIndex,
+            isBranch: branchOffset > 0 || (elementIndex > 0 && laneElements[elementIndex - 1]?.type === 'exclusiveGateway')
           };
         });
       });
