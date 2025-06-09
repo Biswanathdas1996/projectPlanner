@@ -32,8 +32,26 @@ export function useBpmn() {
 
       modelerRef.current = modeler;
 
-      // Load default diagram
-      await modeler.importXML(DEFAULT_BPMN_DIAGRAM);
+      // Check for existing diagram in localStorage
+      const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM) || 
+                          localStorage.getItem(STORAGE_KEYS.DIAGRAM);
+      
+      if (savedDiagram) {
+        try {
+          // Try to load the saved diagram
+          await modeler.importXML(savedDiagram);
+          setDiagramXml(savedDiagram);
+          showNotification('Loaded existing diagram from storage', 'success');
+        } catch (error) {
+          console.error('Error loading saved diagram:', error);
+          // Fall back to default diagram if saved one is corrupted
+          await modeler.importXML(DEFAULT_BPMN_DIAGRAM);
+          showNotification('Loaded saved diagram with errors, using default', 'warning');
+        }
+      } else {
+        // Load default diagram if no saved diagram exists
+        await modeler.importXML(DEFAULT_BPMN_DIAGRAM);
+      }
 
       // Setup event listeners
       modeler.on('selection.changed', (event: any) => {
@@ -89,13 +107,18 @@ export function useBpmn() {
     }
   }, []);
 
-  // Update XML view
+  // Update XML view and save to localStorage
   const updateXmlView = useCallback(async () => {
     if (!modelerRef.current) return;
 
     try {
       const result = await modelerRef.current.saveXML({ format: true });
       setDiagramXml(result.xml);
+      
+      // Auto-save to localStorage
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, result.xml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, result.xml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
       console.error('Error updating XML view:', error);
       setDiagramXml('<!-- Failed to generate BPMN XML -->');
