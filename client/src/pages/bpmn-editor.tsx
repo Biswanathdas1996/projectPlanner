@@ -9,6 +9,7 @@ import { ConfirmationModal } from '@/components/confirmation-modal';
 import { HelpPanel } from '@/components/help-panel';
 import { useBpmn } from '@/hooks/use-bpmn';
 import { validateBpmnFile } from '@/lib/bpmn-utils';
+import { Link } from 'wouter';
 import {
   Plus,
   Save,
@@ -23,6 +24,7 @@ import {
   Sidebar,
   ArrowRightLeft,
   HelpCircle,
+  Sparkles,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
@@ -178,6 +180,16 @@ export default function BpmnEditor() {
               <ArrowRightLeft className="h-4 w-4" />
               <span className="font-medium">Connect</span>
             </Button>
+
+            <Link href="/ai-planner">
+              <Button 
+                variant="outline"
+                className="flex items-center space-x-2 border-purple-200 text-purple-700 hover:bg-purple-50"
+              >
+                <Sparkles className="h-4 w-4" />
+                <span className="font-medium">AI Planner</span>
+              </Button>
+            </Link>
           </div>
         </div>
 
