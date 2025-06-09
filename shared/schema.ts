@@ -24,6 +24,8 @@ export const elementPropertiesSchema = z.object({
   durationUnit: z.enum(['minutes', 'hours', 'days', 'weeks']).optional(),
 });
 
+export type User = z.infer<typeof users>;
+export type InsertUser = Omit<User, 'id'>;
 export type BpmnDiagram = z.infer<typeof bpmnDiagramSchema>;
 export type ElementProperties = z.infer<typeof elementPropertiesSchema>;
 
