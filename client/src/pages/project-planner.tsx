@@ -606,11 +606,27 @@ Return the complete enhanced project plan as HTML with all existing content plus
       <div className="max-w-4xl mx-auto px-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-              <Sparkles className="text-white h-6 w-6" />
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1"></div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <Sparkles className="text-white h-6 w-6" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900">AI Project Planner</h1>
             </div>
-            <h1 className="text-3xl font-bold text-gray-900">AI Project Planner</h1>
+            <div className="flex-1 flex justify-end">
+              {(currentStep !== 'input' || projectPlan || generatedBpmnXml) && (
+                <Button
+                  onClick={resetPlanner}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-300 text-red-600 hover:bg-red-50"
+                >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Start Over
+                </Button>
+              )}
+            </div>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Transform your project ideas into structured BPMN workflows. 
