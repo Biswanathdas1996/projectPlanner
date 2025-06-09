@@ -25,6 +25,7 @@ import {
   ArrowRightLeft,
   HelpCircle,
   Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
@@ -181,12 +182,12 @@ export default function BpmnEditor() {
               <span className="font-medium">Connect</span>
             </Button>
 
-            <Link href="/ai-planner">
+            <Link href="/">
               <Button 
                 variant="outline"
                 className="flex items-center space-x-2 border-purple-200 text-purple-700 hover:bg-purple-50"
               >
-                <Sparkles className="h-4 w-4" />
+                <ArrowLeft className="h-4 w-4" />
                 <span className="font-medium">AI Planner</span>
               </Button>
             </Link>

@@ -10,8 +10,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={BpmnEditor} />
-      <Route path="/ai-planner" component={ProjectPlanner} />
+      <Route path="/" component={ProjectPlanner} />
+      <Route path="/editor" component={BpmnEditor} />
       <Route component={NotFound} />
     </Switch>
   );
