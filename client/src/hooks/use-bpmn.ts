@@ -251,43 +251,129 @@ export function useBpmn() {
     }
   }, [diagramJson, showNotification]);
 
+  // Connect two elements with sequence flow
+  const connectElements = useCallback(() => {
+    if (!modelerRef.current) return;
+
+    try {
+      const globalConnect = modelerRef.current.get('globalConnect');
+      
+      if (globalConnect.isActive()) {
+        globalConnect.toggle();
+        showNotification('Connection mode deactivated', 'success', 2000);
+      } else {
+        globalConnect.toggle();
+        showNotification('Connection mode activated - click two elements to connect', 'success', 3000);
+      }
+    } catch (error) {
+      console.error('Error activating connection tool:', error);
+      showNotification('Failed to activate connection tool', 'error');
+    }
+  }, [showNotification]);
+
   // Handle element selection from sidebar
   const handleElementSelect = useCallback((elementType: string) => {
     if (!modelerRef.current) return;
 
     try {
-      // For creation tools, trigger the palette action
-      const paletteProvider = modelerRef.current.get('paletteProvider');
-      const entries = paletteProvider.getPaletteEntries();
-      
-      if (entries[elementType] && entries[elementType].action) {
-        if (typeof entries[elementType].action === 'function') {
-          entries[elementType].action();
-        } else if (entries[elementType].action.click) {
-          entries[elementType].action.click();
-        }
-        
-        const displayName = elementType
-          .replace('create.', '')
-          .replace(/-/g, ' ')
-          .replace(/\b\w/g, l => l.toUpperCase());
-        
-        showNotification(`${displayName} tool activated`, 'success', 2000);
-      } else {
-        // Fallback for tools that might not be in palette
-        const toolMap: { [key: string]: string } = {
-          'hand-tool': 'hand',
-          'lasso-tool': 'lasso',
-          'space-tool': 'space'
-        };
-        
-        if (toolMap[elementType]) {
-          const globalConnect = modelerRef.current.get('globalConnect');
+      const globalConnect = modelerRef.current.get('globalConnect');
+      const dragging = modelerRef.current.get('dragging');
+      const create = modelerRef.current.get('create');
+      const elementFactory = modelerRef.current.get('elementFactory');
+      const selection = modelerRef.current.get('selection');
+
+      // First, clear any active tools
+      if (globalConnect.isActive()) {
+        globalConnect.toggle();
+      }
+
+      // Handle different tool types
+      switch (elementType) {
+        case 'hand-tool':
+          // Activate hand tool (panning)
+          selection.select([]);
+          showNotification('Hand tool activated - drag to pan', 'success', 2000);
+          break;
+
+        case 'lasso-tool':
+          // Activate selection mode
+          selection.select([]);
+          showNotification('Selection tool activated', 'success', 2000);
+          break;
+
+        case 'create.sequence-flow':
+          // Activate connection mode
           globalConnect.toggle();
-          showNotification(`${toolMap[elementType]} tool activated`, 'success', 2000);
-        } else {
+          showNotification('Connection tool activated - click elements to connect', 'success', 3000);
+          break;
+
+        case 'create.start-event':
+          const startEvent = elementFactory.createShape({
+            type: 'bpmn:StartEvent'
+          });
+          create.start(null, startEvent);
+          showNotification('Start Event tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.end-event':
+          const endEvent = elementFactory.createShape({
+            type: 'bpmn:EndEvent'
+          });
+          create.start(null, endEvent);
+          showNotification('End Event tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.intermediate-event':
+          const intermediateEvent = elementFactory.createShape({
+            type: 'bpmn:IntermediateThrowEvent'
+          });
+          create.start(null, intermediateEvent);
+          showNotification('Intermediate Event tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.task':
+          const task = elementFactory.createShape({
+            type: 'bpmn:Task'
+          });
+          create.start(null, task);
+          showNotification('Task tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.exclusive-gateway':
+          const gateway = elementFactory.createShape({
+            type: 'bpmn:ExclusiveGateway'
+          });
+          create.start(null, gateway);
+          showNotification('Exclusive Gateway tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.subprocess-expanded':
+          const subprocess = elementFactory.createShape({
+            type: 'bpmn:SubProcess',
+            isExpanded: true
+          });
+          create.start(null, subprocess);
+          showNotification('Subprocess tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.data-object':
+          const dataObject = elementFactory.createShape({
+            type: 'bpmn:DataObjectReference'
+          });
+          create.start(null, dataObject);
+          showNotification('Data Object tool activated - click to place', 'success', 2000);
+          break;
+
+        case 'create.text-annotation':
+          const textAnnotation = elementFactory.createShape({
+            type: 'bpmn:TextAnnotation'
+          });
+          create.start(null, textAnnotation);
+          showNotification('Text Annotation tool activated - click to place', 'success', 2000);
+          break;
+
+        default:
           showNotification('Tool not available', 'warning');
-        }
       }
     } catch (error) {
       console.error('Error selecting element:', error);
@@ -324,5 +410,6 @@ export function useBpmn() {
     updateElementProperties,
     copyJsonToClipboard,
     handleElementSelect,
+    connectElements,
   };
 }
