@@ -1,11 +1,5 @@
 import { z } from "zod";
 
-export const users = z.object({
-  id: z.number(),
-  username: z.string(),
-  password: z.string(),
-});
-
 export const bpmnDiagramSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -24,8 +18,6 @@ export const elementPropertiesSchema = z.object({
   durationUnit: z.enum(['minutes', 'hours', 'days', 'weeks']).optional(),
 });
 
-export type User = z.infer<typeof users>;
-export type InsertUser = Omit<User, 'id'>;
 export type BpmnDiagram = z.infer<typeof bpmnDiagramSchema>;
 export type ElementProperties = z.infer<typeof elementPropertiesSchema>;
 
