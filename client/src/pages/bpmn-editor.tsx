@@ -6,6 +6,7 @@ import { ElementSidebar } from '@/components/element-sidebar';
 import { PropertiesPanel } from '@/components/properties-panel';
 import { NotificationSystem } from '@/components/notification-system';
 import { ConfirmationModal } from '@/components/confirmation-modal';
+import { HelpPanel } from '@/components/help-panel';
 import { useBpmn } from '@/hooks/use-bpmn';
 import { validateBpmnFile } from '@/lib/bpmn-utils';
 import {
@@ -21,11 +22,13 @@ import {
   Workflow,
   Sidebar,
   ArrowRightLeft,
+  HelpCircle,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
   const [panelVisible, setPanelVisible] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [helpVisible, setHelpVisible] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState({
     open: false,
     title: '',
@@ -102,6 +105,10 @@ export default function BpmnEditor() {
 
   const toggleSidebar = () => {
     setSidebarVisible(!sidebarVisible);
+  };
+
+  const toggleHelp = () => {
+    setHelpVisible(!helpVisible);
   };
 
   // Keyboard shortcuts
@@ -227,6 +234,22 @@ export default function BpmnEditor() {
                 <p>Toggle Properties Panel</p>
               </TooltipContent>
             </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={toggleHelp} 
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 text-gray-600 hover:text-gray-900"
+                >
+                  <HelpCircle className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Show Help & Shortcuts</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <div className="flex items-center space-x-2">
@@ -321,6 +344,12 @@ export default function BpmnEditor() {
         message={confirmationModal.message}
         onConfirm={confirmationModal.onConfirm}
         onCancel={() => setConfirmationModal(prev => ({ ...prev, open: false }))}
+      />
+
+      {/* Help Panel */}
+      <HelpPanel
+        visible={helpVisible}
+        onClose={toggleHelp}
       />
 
       {/* Hidden File Input */}
