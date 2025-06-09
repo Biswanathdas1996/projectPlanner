@@ -65,6 +65,30 @@
         stroke-width: 2px !important;
         stroke-dasharray: none !important;
       }
+      
+      /* Connection preview styling */
+      .djs-connection-preview .djs-visual > path {
+        stroke: #0066cc !important;
+        stroke-width: 2px !important;
+        stroke-dasharray: 5,5 !important;
+        fill: none !important;
+      }
+      
+      /* Hover effects for better UX */
+      .djs-element:hover .djs-visual > rect,
+      .djs-element:hover .djs-visual > circle,
+      .djs-element:hover .djs-visual > polygon {
+        stroke: #0066cc !important;
+        stroke-width: 2px !important;
+      }
+      
+      /* Connection points visibility */
+      .connect-ok .djs-visual > circle {
+        stroke: #28a745 !important;
+        stroke-width: 3px !important;
+        fill: #28a745 !important;
+        opacity: 0.3 !important;
+      }
     </style>
   </head>
   <body>
