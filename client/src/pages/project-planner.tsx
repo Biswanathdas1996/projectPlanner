@@ -86,15 +86,7 @@ export default function ProjectPlanner() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
-        {/* Back Navigation */}
-        <div className="mb-6">
-          <Link href="/">
-            <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4" />
-              Back to BPMN Editor
-            </Button>
-          </Link>
-        </div>
+
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -268,13 +260,12 @@ export default function ProjectPlanner() {
                 >
                   Create Another Project
                 </Button>
-                <Button
-                  onClick={() => window.location.href = '/'}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Workflow className="h-4 w-4 mr-2" />
-                  Edit in BPMN Editor
-                </Button>
+                <Link href="/editor">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    <Workflow className="h-4 w-4 mr-2" />
+                    Edit in BPMN Editor
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>
