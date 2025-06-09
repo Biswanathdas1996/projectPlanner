@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { BpmnCanvas } from '@/components/bpmn-canvas';
@@ -7,6 +7,7 @@ import { PropertiesPanel } from '@/components/properties-panel';
 import { NotificationSystem } from '@/components/notification-system';
 import { ConfirmationModal } from '@/components/confirmation-modal';
 import { HelpPanel } from '@/components/help-panel';
+import { ContextualToolbar } from '@/components/contextual-toolbar';
 import { useBpmn } from '@/hooks/use-bpmn';
 import { validateBpmnFile } from '@/lib/bpmn-utils';
 import { Link } from 'wouter';
