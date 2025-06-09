@@ -1265,7 +1265,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                               value={editedBpmnScript}
                               onChange={(e) => setEditedBpmnScript(e.target.value)}
                               className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
-                              placeholder="Edit BPMN JSON script..."
+                              placeholder="Edit BPMN XML script..."
                             />
                             
                             <div className="text-sm text-gray-500">
@@ -1276,8 +1276,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
                               <div className="text-sm text-gray-500">
-                                <span>JSON format with {Object.keys(generatedBpmnJson).length} root properties</span>
-                                <span className="ml-4">{JSON.stringify(generatedBpmnJson).length} characters total</span>
+                                <span>BPMN 2.0 XML format with swimlanes</span>
+                                <span className="ml-4">{generatedBpmnXml.length} characters total</span>
                               </div>
                               <Button
                                 onClick={startEditingBpmn}
@@ -1292,7 +1292,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                             
                             <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                               <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
-                                {JSON.stringify(generatedBpmnJson, null, 2)}
+                                {generatedBpmnXml}
                               </pre>
                             </div>
                           </div>

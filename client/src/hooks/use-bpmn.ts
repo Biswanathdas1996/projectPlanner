@@ -554,27 +554,48 @@ export function useBpmn() {
   const loadFromStorage = useCallback(async () => {
     if (!modelerRef.current) return;
 
-    // First check for AI-generated diagram
+    // First check for AI-generated diagram (now in XML format)
     const aiDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
     if (aiDiagram) {
       try {
-        const jsonData = JSON.parse(aiDiagram);
-        const bpmnXml = convertJsonToBpmnXml(jsonData);
-        await modelerRef.current.importXML(bpmnXml);
-        showNotification('AI-generated diagram loaded successfully', 'success');
-        setStatus('AI Loaded');
-        updateJsonView();
-        
-        // Auto-fit AI diagrams to viewport for better visibility
-        setTimeout(() => {
-          if (modelerRef.current) {
-            modelerRef.current.get('canvas').zoom('fit-viewport');
-          }
-        }, 300);
-        
-        // Clear the AI diagram after loading to prevent reloading
-        localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
-        return;
+        // Check if it's XML format (starts with <?xml or <bpmn:definitions)
+        if (aiDiagram.trim().startsWith('<?xml') || aiDiagram.trim().startsWith('<bpmn:definitions')) {
+          // Direct XML import
+          await modelerRef.current.importXML(aiDiagram);
+          showNotification('AI-generated BPMN diagram loaded successfully', 'success');
+          setStatus('AI Loaded');
+          updateJsonView();
+          
+          // Auto-fit AI diagrams to viewport for better visibility
+          setTimeout(() => {
+            if (modelerRef.current) {
+              modelerRef.current.get('canvas').zoom('fit-viewport');
+            }
+          }, 300);
+          
+          // Clear the AI diagram after loading to prevent reloading
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+          return;
+        } else {
+          // Legacy JSON format - convert to XML
+          const jsonData = JSON.parse(aiDiagram);
+          const bpmnXml = convertJsonToBpmnXml(jsonData);
+          await modelerRef.current.importXML(bpmnXml);
+          showNotification('AI-generated diagram loaded successfully', 'success');
+          setStatus('AI Loaded');
+          updateJsonView();
+          
+          // Auto-fit AI diagrams to viewport for better visibility
+          setTimeout(() => {
+            if (modelerRef.current) {
+              modelerRef.current.get('canvas').zoom('fit-viewport');
+            }
+          }, 300);
+          
+          // Clear the AI diagram after loading to prevent reloading
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+          return;
+        }
       } catch (error) {
         console.error('Error loading AI diagram:', error);
         showNotification('Failed to load AI diagram, loading saved diagram instead', 'warning');
