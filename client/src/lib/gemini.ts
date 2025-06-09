@@ -1,13 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
-export async function generateProjectPlan(projectDescription: string): Promise<string> {
+export async function generateProjectPlan(
+  projectDescription: string,
+): Promise<string> {
   if (!projectDescription.trim()) {
-    throw new Error('Project description is required');
+    throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
 You are a business process analyst. Create a detailed project plan for the following project description:
@@ -30,10 +32,10 @@ Format your response as a clear, structured plan that can be converted into a bu
 
 export async function generateBpmnJson(projectPlan: string): Promise<any> {
   if (!projectPlan.trim()) {
-    throw new Error('Project plan is required');
+    throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
 Convert the following project plan into a BPMN JSON structure. Create a workflow that represents the project phases and tasks as BPMN elements.
@@ -93,12 +95,15 @@ Rules:
   let text = response.text();
 
   // Clean up the response to extract just the JSON
-  text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-  
+  text = text
+    .replace(/```json\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+
   try {
     return JSON.parse(text);
   } catch (parseError) {
-    console.error('Failed to parse generated JSON:', text);
-    throw new Error('Failed to parse generated BPMN structure');
+    console.error("Failed to parse generated JSON:", text);
+    throw new Error("Failed to parse generated BPMN structure");
   }
 }
