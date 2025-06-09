@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { generateUserJourneyFlows } from '@/lib/gemini';
+import { generateUserJourneyFlows, generateUserJourneyBpmn } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { Link } from 'wouter';
 import {
@@ -29,7 +29,9 @@ export default function UserJourney() {
   const [projectPlan, setProjectPlan] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [userJourneyFlows, setUserJourneyFlows] = useState<string>('');
+  const [userJourneyBpmn, setUserJourneyBpmn] = useState<string>('');
   const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
+  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
   const [error, setError] = useState('');
   const [showFlowDetails, setShowFlowDetails] = useState(false);
 
@@ -67,6 +69,32 @@ export default function UserJourney() {
     }
   };
 
+  const generateUserJourneyBpmnDiagram = async () => {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
+      setError('No project plan available. Please generate a project plan first.');
+      return;
+    }
+
+    setIsGeneratingBpmn(true);
+    setError('');
+
+    try {
+      const bpmn = await generateUserJourneyBpmn(planContent);
+      setUserJourneyBpmn(bpmn);
+      
+      // Save to localStorage for use in BPMN editor
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmn);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (error) {
+      console.error('Error generating user journey BPMN:', error);
+      setError('Failed to generate user journey BPMN diagram. Please try again.');
+    } finally {
+      setIsGeneratingBpmn(false);
+    }
+  };
+
   const downloadUserJourneys = () => {
     if (!userJourneyFlows) {
       setError('No user journey flows available to download');
@@ -89,6 +117,28 @@ export default function UserJourney() {
     URL.revokeObjectURL(url);
   };
 
+  const downloadBpmn = () => {
+    if (!userJourneyBpmn) {
+      setError('No BPMN diagram available to download');
+      return;
+    }
+
+    const blob = new Blob([userJourneyBpmn], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const projectName = projectDescription.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `user_journey_bpmn_${projectName}_${timestamp}.xml`;
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const copyUserJourneys = async () => {
     if (!userJourneyFlows) {
       setError('No user journey flows available to copy');
@@ -100,6 +150,20 @@ export default function UserJourney() {
     } catch (error) {
       console.error('Error copying user journey flows:', error);
       setError('Failed to copy user journey flows to clipboard');
+    }
+  };
+
+  const copyBpmn = async () => {
+    if (!userJourneyBpmn) {
+      setError('No BPMN diagram available to copy');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(userJourneyBpmn);
+    } catch (error) {
+      console.error('Error copying BPMN diagram:', error);
+      setError('Failed to copy BPMN diagram to clipboard');
     }
   };
 
