@@ -119,12 +119,12 @@ Please ensure the project plan addresses all the selected requirements above and
     setError('');
 
     try {
-      const bpmnJson = await generateBpmnJson(projectPlan);
-      setGeneratedBpmnJson(bpmnJson);
+      const bpmnXml = await generateBpmnXml(projectPlan);
+      setGeneratedBpmnXml(bpmnXml);
       setCurrentStep('diagram');
       
       // Save to localStorage and navigate
-      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(bpmnJson));
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
     } catch (err) {
@@ -305,19 +305,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
   };
 
   const downloadBpmnScript = () => {
-    if (!generatedBpmnJson) {
+    if (!generatedBpmnXml) {
       setError('No BPMN script available to download');
       return;
     }
 
-    const bpmnScript = JSON.stringify(generatedBpmnJson, null, 2);
-    const blob = new Blob([bpmnScript], { type: 'application/json' });
+    const blob = new Blob([generatedBpmnXml], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     
     const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
     const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `bpmn_script_${projectName}_${timestamp}.json`;
+    const filename = `bpmn_diagram_${projectName}_${timestamp}.bpmn`;
     
     link.href = url;
     link.download = filename;
@@ -328,14 +327,13 @@ Return the complete enhanced project plan as HTML with all existing content plus
   };
 
   const copyBpmnScript = async () => {
-    if (!generatedBpmnJson) {
+    if (!generatedBpmnXml) {
       setError('No BPMN script available to copy');
       return;
     }
 
     try {
-      const bpmnScript = JSON.stringify(generatedBpmnJson, null, 2);
-      await navigator.clipboard.writeText(bpmnScript);
+      await navigator.clipboard.writeText(generatedBpmnXml);
       // You could add a toast notification here
     } catch (error) {
       console.error('Failed to copy BPMN script:', error);
@@ -345,19 +343,24 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
   const saveBpmnEdits = () => {
     try {
-      const parsedBpmn = JSON.parse(editedBpmnScript);
-      setGeneratedBpmnJson(parsedBpmn);
-      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(parsedBpmn));
+      // Basic XML validation - check if it starts and ends with proper XML tags
+      const trimmedScript = editedBpmnScript.trim();
+      if (!trimmedScript.startsWith('<?xml') && !trimmedScript.startsWith('<bpmn:definitions')) {
+        throw new Error('Invalid BPMN XML format');
+      }
+      
+      setGeneratedBpmnXml(editedBpmnScript);
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, editedBpmnScript);
       setIsEditingBpmn(false);
       setEditedBpmnScript('');
     } catch (error) {
-      setError('Invalid JSON format. Please check your BPMN script syntax.');
+      setError('Invalid BPMN XML format. Please check your script syntax.');
     }
   };
 
   const startEditingBpmn = () => {
-    if (generatedBpmnJson) {
-      setEditedBpmnScript(JSON.stringify(generatedBpmnJson, null, 2));
+    if (generatedBpmnXml) {
+      setEditedBpmnScript(generatedBpmnXml);
       setIsEditingBpmn(true);
     }
   };
@@ -773,7 +776,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       </>
                     )}
                   </Button>
-                  {generatedBpmnJson && (
+                  {generatedBpmnXml && (
                     <Button
                       onClick={() => setShowBpmnScript(!showBpmnScript)}
                       variant="outline"
@@ -973,7 +976,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
               )}
 
               {/* BPMN Script Section */}
-              {showBpmnScript && generatedBpmnJson && (
+              {showBpmnScript && generatedBpmnXml && (
                 <div className="mt-6 border-t border-gray-200 pt-6">
                   <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -1059,13 +1062,13 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         
                         <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                           <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
-                            {JSON.stringify(generatedBpmnJson, null, 2)}
+                            {generatedBpmnXml}
                           </pre>
                         </div>
                         
                         <div className="text-sm text-gray-500 flex justify-between">
-                          <span>JSON format with {Object.keys(generatedBpmnJson).length} root properties</span>
-                          <span>{JSON.stringify(generatedBpmnJson).length} characters total</span>
+                          <span>BPMN 2.0 XML format with swimlanes</span>
+                          <span>{generatedBpmnXml.length} characters total</span>
                         </div>
                       </div>
                     )}
@@ -1176,7 +1179,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
               </div>
 
               {/* BPMN Script Management Section */}
-              {generatedBpmnJson && (
+              {generatedBpmnXml && (
                 <div className="border-t border-gray-200 pt-6">
                   <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -1266,7 +1269,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                             />
                             
                             <div className="text-sm text-gray-500">
-                              {editedBpmnScript.length} characters | Make sure to maintain valid JSON structure
+                              {editedBpmnScript.length} characters | Make sure to maintain valid BPMN XML structure
                             </div>
                           </div>
                         ) : (
