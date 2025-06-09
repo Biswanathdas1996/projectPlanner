@@ -101,15 +101,27 @@ Return ONLY a valid JSON object in this exact format:
         "lane": "Lane_2"
       },
       {
+        "type": "intermediateCatchEvent",
+        "id": "Event_1",
+        "name": "Wait for Input",
+        "lane": "Lane_2"
+      },
+      {
         "type": "exclusiveGateway",
-        "id": "Gateway_1",
-        "name": "Decision Point",
+        "id": "Gateway_2",
+        "name": "Final Check?",
         "lane": "Lane_2"
       },
       {
         "type": "endEvent",
         "id": "EndEvent_1",
         "name": "Project Complete",
+        "lane": "Lane_2"
+      },
+      {
+        "type": "endEvent",
+        "id": "EndEvent_2",
+        "name": "Project Cancelled",
         "lane": "Lane_2"
       }
     ],
@@ -151,7 +163,26 @@ Return ONLY a valid JSON object in this exact format:
       {
         "id": "Flow_7",
         "sourceRef": "Task_2",
-        "targetRef": "EndEvent_1"
+        "targetRef": "Event_1"
+      },
+      {
+        "id": "Flow_8",
+        "sourceRef": "Event_1",
+        "targetRef": "Gateway_2"
+      },
+      {
+        "id": "Flow_9",
+        "sourceRef": "Gateway_2",
+        "targetRef": "EndEvent_1",
+        "name": "Approved",
+        "condition": "approved"
+      },
+      {
+        "id": "Flow_10",
+        "sourceRef": "Gateway_2",
+        "targetRef": "EndEvent_2",
+        "name": "Rejected",
+        "condition": "rejected"
       }
     ]
   }
@@ -183,6 +214,13 @@ Rules:
 - For workflows with multiple outcomes, use multiple end events (e.g., "Project Approved", "Project Rejected")
 - All swimlanes must contain at least one element
 - Elements should be logically distributed across swimlanes based on responsibility
+- CRITICAL: Break complex workflows into smaller sections to prevent line overlaps:
+  * If a swimlane has more than 4 elements, split into multiple swimlanes
+  * Use intermediate events to separate long sequences
+  * Create sub-processes for complex multi-step operations
+  * Distribute connected elements across different swimlanes when possible
+- Avoid having more than 2 outgoing flows from any single element except gateways
+- Use intermediate catch events to create visual breaks in long sequences
 `;
 
   const result = await model.generateContent(prompt);

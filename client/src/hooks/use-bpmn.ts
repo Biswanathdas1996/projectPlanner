@@ -371,48 +371,88 @@ export function useBpmn() {
         const lanePadding = 40; // Padding from swimlane edges
         const elementSpacing = 400; // Increased space between elements
         
-        // Smart positioning for gateways and branching
+        // Enhanced positioning algorithm to prevent overlapping
         let currentX = 150 + lanePadding;
-        let branchOffset = 0;
+        let branchLevel = 0;
+        let usedPositions = new Set();
+        
+        // Analyze flows to identify branching patterns
+        const elementFlows = flows.filter(f => 
+          laneElements.some(e => e.id === f.sourceRef) || 
+          laneElements.some(e => e.id === f.targetRef)
+        );
         
         laneElements.forEach((element: any, elementIndex: number) => {
           let x = currentX;
           let y = laneY + lanePadding + 60;
           
-          // Special positioning for exclusive gateways and their branches
-          if (element.type === 'exclusiveGateway') {
-            // Gateway gets normal position
+          // Count incoming and outgoing flows for this element
+          const incomingFlows = elementFlows.filter(f => f.targetRef === element.id);
+          const outgoingFlows = elementFlows.filter(f => f.sourceRef === element.id);
+          
+          // Special handling for gateways and high-connection elements
+          if (element.type === 'exclusiveGateway' || element.type === 'parallelGateway') {
             x = currentX;
+            y = laneY + lanePadding + 60; // Center position for gateways
             currentX += elementSpacing;
-          } else if (elementIndex > 0 && laneElements[elementIndex - 1]?.type === 'exclusiveGateway') {
-            // Elements after gateway are positioned as branches
-            if (branchOffset === 0) {
-              // First branch (Yes) - position above gateway level
-              y = laneY + 30;
-              branchOffset = 1;
+          } else if (incomingFlows.length > 1 || outgoingFlows.length > 1) {
+            // Element with multiple connections - create spacing
+            if (branchLevel === 0) {
+              y = laneY + 40; // Upper branch
+              branchLevel = 1;
+            } else if (branchLevel === 1) {
+              y = laneY + 180; // Lower branch
+              branchLevel = 2;
             } else {
-              // Second branch (No) - position below gateway level  
-              y = laneY + 150;
-              branchOffset = 0;
+              y = laneY + lanePadding + 60; // Center
+              branchLevel = 0;
             }
-            // Branches use same X but different Y
-            x = currentX - elementSpacing + 200;
-          } else {
-            // Normal sequential positioning
             x = currentX;
             currentX += elementSpacing;
+          } else {
+            // Check if previous element was a gateway
+            const prevElement = elementIndex > 0 ? laneElements[elementIndex - 1] : null;
+            if (prevElement && (prevElement.type === 'exclusiveGateway' || prevElement.type === 'parallelGateway')) {
+              // Position as branch from gateway
+              const branchFlows = elementFlows.filter(f => f.sourceRef === prevElement.id);
+              const flowIndex = branchFlows.findIndex(f => f.targetRef === element.id);
+              
+              if (flowIndex === 0) {
+                y = laneY + 30; // First branch (Yes/Approved)
+              } else if (flowIndex === 1) {
+                y = laneY + 180; // Second branch (No/Rejected)
+              } else {
+                y = laneY + lanePadding + 60; // Additional branches
+              }
+              x = currentX - elementSpacing + 250; // Offset from gateway
+            } else {
+              // Normal sequential positioning
+              x = currentX;
+              currentX += elementSpacing;
+            }
           }
           
-          // Validate element is within lane bounds
-          const maxX = 2000 - 150;
+          // Prevent position conflicts
+          const positionKey = `${Math.round(x/50)}-${Math.round(y/50)}`;
+          let attempts = 0;
+          while (usedPositions.has(positionKey) && attempts < 5) {
+            y += 40;
+            attempts++;
+          }
+          usedPositions.add(positionKey);
+          
+          // Validate bounds
+          const maxX = 1900;
           const constrainedX = Math.min(x, maxX);
+          const constrainedY = Math.max(laneY + 20, Math.min(y, laneY + laneHeight - 80));
           
           elementPositions[element.id] = { 
             x: constrainedX, 
-            y: y,
+            y: constrainedY,
             laneIndex: laneIndex,
             elementIndex: elementIndex,
-            isBranch: branchOffset > 0 || (elementIndex > 0 && laneElements[elementIndex - 1]?.type === 'exclusiveGateway')
+            connectionCount: incomingFlows.length + outgoingFlows.length,
+            isGateway: element.type.includes('Gateway')
           };
         });
       });
@@ -455,16 +495,49 @@ export function useBpmn() {
         const sourcePos = elementPositions[sourceElement.id];
         const targetPos = elementPositions[targetElement.id];
         
-        // Calculate connection points
-        const sourceX = sourcePos.x + 50; // Center of element
+        // Enhanced connection points with intelligent routing
+        const sourceX = sourcePos.x + 75; // Right edge of source
         const sourceY = sourcePos.y + 40;
-        const targetX = targetPos.x;
+        const targetX = targetPos.x; // Left edge of target
         const targetY = targetPos.y + 40;
+        
+        let waypoints = `<di:waypoint x="${sourceX}" y="${sourceY}" />`;
+        
+        // Calculate routing needs
+        const xDistance = Math.abs(targetX - sourceX);
+        const yDistance = Math.abs(targetY - sourceY);
+        const isGatewaySource = sourceElement.type.includes('Gateway');
+        
+        // Smart routing to prevent overlapping lines
+        if (isGatewaySource && yDistance > 80) {
+          // Gateway branches: L-shaped routing
+          const midX = sourceX + Math.min(150, xDistance * 0.5);
+          waypoints += `
+        <di:waypoint x="${midX}" y="${sourceY}" />
+        <di:waypoint x="${midX}" y="${targetY}" />`;
+        } else if (xDistance > 400 && yDistance > 100) {
+          // Cross-lane connections: stepped routing
+          const midX1 = sourceX + (xDistance * 0.4);
+          const midY = sourceY + (targetY - sourceY) * 0.5;
+          waypoints += `
+        <di:waypoint x="${midX1}" y="${sourceY}" />
+        <di:waypoint x="${midX1}" y="${midY}" />
+        <di:waypoint x="${targetX}" y="${midY}" />`;
+        } else if (yDistance > 120) {
+          // Vertical connections: arc routing
+          const offsetX = 120;
+          const midX = Math.max(sourceX, targetX) + offsetX;
+          waypoints += `
+        <di:waypoint x="${midX}" y="${sourceY}" />
+        <di:waypoint x="${midX}" y="${targetY}" />`;
+        }
+        
+        waypoints += `
+        <di:waypoint x="${targetX}" y="${targetY}" />`;
 
         bpmnXml += `
       <bpmndi:BPMNEdge id="${flow.id}_di" bpmnElement="${flow.id}">
-        <di:waypoint x="${sourceX}" y="${sourceY}" />
-        <di:waypoint x="${targetX}" y="${targetY}" />
+        ${waypoints}
       </bpmndi:BPMNEdge>`;
       }
     });
