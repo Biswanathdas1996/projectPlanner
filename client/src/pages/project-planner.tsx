@@ -4,8 +4,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { apiRequest } from '@/lib/queryClient';
+import { generateProjectPlan, generateBpmnJson } from '@/lib/gemini';
 import { useBpmn } from '@/hooks/use-bpmn';
+import { Link } from 'wouter';
 import {
   Sparkles,
   FileText,
@@ -14,18 +15,8 @@ import {
   CheckCircle,
   AlertTriangle,
   Workflow,
+  ArrowLeft,
 } from 'lucide-react';
-
-interface ProjectPlanResponse {
-  success: boolean;
-  projectPlan: string;
-}
-
-interface BpmnJsonResponse {
-  success: boolean;
-  bpmnJson: any;
-  rawResponse?: string;
-}
 
 export default function ProjectPlanner() {
   const [projectInput, setProjectInput] = useState('');
@@ -37,7 +28,7 @@ export default function ProjectPlanner() {
 
   const { importFromJson } = useBpmn();
 
-  const generateProjectPlan = async () => {
+  const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
       setError('Please enter a project description');
       return;
@@ -47,18 +38,9 @@ export default function ProjectPlanner() {
     setError('');
 
     try {
-      const response = await apiRequest<ProjectPlanResponse>('/api/generate-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectDescription: projectInput }),
-      });
-
-      if (response.success) {
-        setProjectPlan(response.projectPlan);
-        setCurrentStep('plan');
-      } else {
-        setError('Failed to generate project plan');
-      }
+      const plan = await generateProjectPlan(projectInput);
+      setProjectPlan(plan);
+      setCurrentStep('plan');
     } catch (err) {
       setError('Failed to generate project plan. Please check your API key and try again.');
     } finally {
@@ -66,7 +48,7 @@ export default function ProjectPlanner() {
     }
   };
 
-  const generateBpmnDiagram = async () => {
+  const handleGenerateBpmnDiagram = async () => {
     if (!projectPlan) {
       setError('No project plan available');
       return;
@@ -76,20 +58,12 @@ export default function ProjectPlanner() {
     setError('');
 
     try {
-      const response = await apiRequest<BpmnJsonResponse>('/api/generate-bpmn', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectPlan }),
-      });
-
-      if (response.success && response.bpmnJson) {
-        await importFromJson(response.bpmnJson);
-        setCurrentStep('diagram');
-      } else {
-        setError('Failed to generate BPMN diagram: ' + (response.rawResponse || 'Unknown error'));
-      }
+      const bpmnJson = await generateBpmnJson(projectPlan);
+      await importFromJson(bpmnJson);
+      setCurrentStep('diagram');
     } catch (err) {
       setError('Failed to generate BPMN diagram. Please try again.');
+      console.error('BPMN generation error:', err);
     } finally {
       setIsGeneratingBpmn(false);
     }
@@ -112,6 +86,16 @@ export default function ProjectPlanner() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
+        {/* Back Navigation */}
+        <div className="mb-6">
+          <Link href="/">
+            <Button variant="ghost" className="flex items-center gap-2 text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4" />
+              Back to BPMN Editor
+            </Button>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -195,7 +179,7 @@ export default function ProjectPlanner() {
                   {projectInput.length}/1000 characters
                 </div>
                 <Button
-                  onClick={generateProjectPlan}
+                  onClick={handleGenerateProjectPlan}
                   disabled={!projectInput.trim() || isGeneratingPlan}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
@@ -241,7 +225,7 @@ export default function ProjectPlanner() {
                   Start Over
                 </Button>
                 <Button
-                  onClick={generateBpmnDiagram}
+                  onClick={handleGenerateBpmnDiagram}
                   disabled={isGeneratingBpmn}
                   className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
                 >
