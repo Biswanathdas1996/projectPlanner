@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions } from '@/lib/gemini';
+import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { Link, useLocation } from 'wouter';
 import {
@@ -48,6 +48,8 @@ export default function ProjectPlanner() {
   const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [editedPlanContent, setEditedPlanContent] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [generatedSitemapXml, setGeneratedSitemapXml] = useState<string>('');
+  const [isGeneratingSitemap, setIsGeneratingSitemap] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
@@ -338,6 +340,62 @@ Return the complete enhanced project plan as HTML with all existing content plus
     } catch (error) {
       console.error('Failed to copy BPMN script:', error);
       setError('Failed to copy BPMN script to clipboard');
+    }
+  };
+
+  const generateSitemap = async () => {
+    if (!projectInput.trim()) {
+      setError('Please enter a project description first');
+      return;
+    }
+
+    setIsGeneratingSitemap(true);
+    setError('');
+
+    try {
+      const sitemapXml = await generateSitemapXml(projectInput);
+      setGeneratedSitemapXml(sitemapXml);
+    } catch (error) {
+      console.error('Error generating sitemap:', error);
+      setError('Failed to generate sitemap. Please try again.');
+    } finally {
+      setIsGeneratingSitemap(false);
+    }
+  };
+
+  const downloadSitemapXml = () => {
+    if (!generatedSitemapXml) {
+      setError('No sitemap XML available to download');
+      return;
+    }
+
+    const blob = new Blob([generatedSitemapXml], { type: 'application/xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `sitemap_${projectName}_${timestamp}.xml`;
+    
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const copySitemapXml = async () => {
+    if (!generatedSitemapXml) {
+      setError('No sitemap XML available to copy');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(generatedSitemapXml);
+    } catch (error) {
+      console.error('Error copying sitemap XML:', error);
+      setError('Failed to copy sitemap XML to clipboard');
     }
   };
 
@@ -1302,6 +1360,94 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                 </div>
               )}
+
+              {/* Sitemap XML Generation Section */}
+              <div className="mt-6">
+                <Card className="border-0 shadow-lg">
+                  <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b">
+                    <CardTitle className="flex items-center justify-between text-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
+                          <FileText className="h-5 w-5 text-white" />
+                        </div>
+                        Sitemap XML Generator
+                      </div>
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <div className="space-y-4">
+                      <p className="text-gray-600">
+                        Generate a comprehensive XML sitemap for your project including all suggested pages, 
+                        content hierarchy, SEO metadata, and navigation structure.
+                      </p>
+                      
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={generateSitemap}
+                          disabled={isGeneratingSitemap || !projectInput.trim()}
+                          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700"
+                        >
+                          {isGeneratingSitemap ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Generating Sitemap...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Generate Sitemap XML
+                            </>
+                          )}
+                        </Button>
+
+                        {generatedSitemapXml && (
+                          <>
+                            <Button
+                              onClick={copySitemapXml}
+                              variant="outline"
+                              size="sm"
+                              className="border-teal-300 text-teal-600 hover:bg-teal-50"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy XML
+                            </Button>
+                            <Button
+                              onClick={downloadSitemapXml}
+                              variant="outline"
+                              size="sm"
+                              className="border-green-300 text-green-600 hover:bg-green-50"
+                            >
+                              <Download className="h-4 w-4 mr-2" />
+                              Download XML
+                            </Button>
+                          </>
+                        )}
+                      </div>
+
+                      {generatedSitemapXml && (
+                        <div className="mt-6">
+                          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-6">
+                            <h4 className="text-lg font-semibold text-teal-800 mb-3 flex items-center gap-2">
+                              <Code className="h-5 w-5" />
+                              Generated Sitemap XML
+                            </h4>
+                            <p className="text-sm text-teal-700 mb-4">
+                              Complete XML sitemap with all application pages, URLs, priorities, and SEO metadata. 
+                              Ready for implementation and search engine submission.
+                            </p>
+                            
+                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-[400px] overflow-y-auto">
+                              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
+                                {generatedSitemapXml}
+                              </pre>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </CardContent>
           </Card>
         )}
