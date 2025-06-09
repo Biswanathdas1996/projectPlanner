@@ -330,7 +330,10 @@ export default function UserJourney() {
                 {userJourneyFlows && (
                   <>
                     <Button
-                      onClick={() => setShowFlowDetails(!showFlowDetails)}
+                      onClick={() => {
+                        console.log('View Details clicked, current state:', showFlowDetails);
+                        setShowFlowDetails(!showFlowDetails);
+                      }}
                       variant="outline"
                       size="sm"
                       className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
