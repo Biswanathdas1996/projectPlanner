@@ -2,10 +2,12 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
-export async function generateCustomSuggestions(projectDescription: string): Promise<string[]> {
+export async function generateCustomSuggestions(
+  projectDescription: string,
+): Promise<string[]> {
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-    
+
     const prompt = `Based on this project description, generate 12-16 specific, relevant additional features and requirements that would enhance the project. Focus on practical, implementable features that would add real value.
 
 Project Description:
@@ -27,22 +29,24 @@ Example format: ["User authentication with 2FA", "Real-time notifications", "Mob
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
+
     // Clean the response and parse JSON
     let cleanedText = text.trim();
-    if (cleanedText.startsWith('```json')) {
-      cleanedText = cleanedText.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+    if (cleanedText.startsWith("```json")) {
+      cleanedText = cleanedText
+        .replace(/^```json\s*/, "")
+        .replace(/```\s*$/, "");
     }
-    if (cleanedText.startsWith('```')) {
-      cleanedText = cleanedText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    if (cleanedText.startsWith("```")) {
+      cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
     }
-    
+
     try {
       const suggestions = JSON.parse(cleanedText);
       return Array.isArray(suggestions) ? suggestions : [];
     } catch (parseError) {
-      console.error('JSON parse error for suggestions:', parseError);
-      console.log('Raw response:', text);
+      console.error("JSON parse error for suggestions:", parseError);
+      console.log("Raw response:", text);
       // Fallback to generic suggestions if parsing fails
       return [
         "User authentication and authorization",
@@ -56,11 +60,11 @@ Example format: ["User authentication with 2FA", "Real-time notifications", "Mob
         "Multi-language support",
         "Security audit compliance",
         "Automated testing pipeline",
-        "Performance optimization"
+        "Performance optimization",
       ];
     }
   } catch (error) {
-    console.error('Error generating custom suggestions:', error);
+    console.error("Error generating custom suggestions:", error);
     // Return fallback suggestions
     return [
       "User authentication and authorization",
@@ -74,7 +78,7 @@ Example format: ["User authentication with 2FA", "Real-time notifications", "Mob
       "Multi-language support",
       "Security audit compliance",
       "Automated testing pipeline",
-      "Performance optimization"
+      "Performance optimization",
     ];
   }
 }
@@ -146,14 +150,14 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
   return response.text();
 }
 
-export async function generateUserJourneyFlows(projectPlan: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  if (!apiKey) {
-    throw new Error('Gemini API key not found. Please check your environment variables.');
+export async function generateUserJourneyFlows(
+  projectPlan: string,
+): Promise<string> {
+  if (!projectPlan.trim()) {
+    throw new Error("Project plan is required");
   }
 
-  const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `Generate comprehensive user journey flow diagrams based on this project plan: "${projectPlan}"
 
@@ -205,10 +209,72 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
   return response.text();
 }
 
-export async function generateSitemapXml(projectDescription: string): Promise<string> {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+export async function generateUserJourneyBpmn(
+  projectPlan: string,
+): Promise<string> {
+  if (!projectPlan.trim()) {
+    throw new Error("Project plan is required");
+  }
+
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+
+  const prompt = `Generate a comprehensive BPMN 2.0 XML diagram with swimlanes for user journey flows based on this project plan: "${projectPlan}"
+
+**BPMN 2.0 Requirements:**
+- Create valid BPMN 2.0 XML format following OMG specifications
+- Include proper XML namespaces and schema declarations
+- Use swimlanes (Participant/Lane elements) to organize different actors
+- Implement proper BPMN elements: StartEvent, Task, ExclusiveGateway, EndEvent
+- Include SequenceFlow connections between all elements
+- Add proper BPMNDiagram with visual positioning coordinates
+
+**Swimlane Structure:**
+1. **User Swimlane** - End user actions and decisions
+2. **System Swimlane** - Automated system processes
+3. **Admin Swimlane** - Administrative tasks and approvals
+4. **External Services** - Third-party integrations and APIs
+
+**BPMN Elements to Include:**
+- **Start Events**: Entry points for different user types
+- **User Tasks**: Manual activities performed by users
+- **Service Tasks**: Automated system processes
+- **Exclusive Gateways**: Decision points and branching logic
+- **Parallel Gateways**: Concurrent process flows
+- **End Events**: Success and error termination points
+- **Message Events**: Communication between swimlanes
+
+**Flow Patterns:**
+- Sequential user journey steps
+- Decision branching with gateway conditions
+- Error handling and exception flows
+- Parallel processing where applicable
+- Cross-swimlane message flows for system interactions
+
+**XML Structure Requirements:**
+- Valid XML declaration and BPMN namespace
+- Proper Process definition with flowNodeRef elements
+- Collaboration element containing Participant definitions
+- Lanes within participants for sub-categorization
+- Complete BPMNDiagram with BPMNShape and BPMNEdge elements
+- Realistic coordinate positioning for visual layout
+
+Generate a complete, valid BPMN 2.0 XML document that can be imported into any standard BPMN editor. Base the workflow on actual project requirements from the plan provided.
+
+Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return response.text();
+}
+
+export async function generateSitemapXml(
+  projectDescription: string,
+): Promise<string> {
+  const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
   if (!apiKey) {
-    throw new Error('Gemini API key not found. Please check your environment variables.');
+    throw new Error(
+      "Gemini API key not found. Please check your environment variables.",
+    );
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -411,15 +477,15 @@ Generate realistic workflow elements based on the project plan content, not gene
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const text = response.text();
-  
+
   // Clean the response to remove any markdown formatting
   let cleanedText = text.trim();
-  if (cleanedText.startsWith('```xml')) {
-    cleanedText = cleanedText.replace(/^```xml\s*/, '').replace(/```\s*$/, '');
+  if (cleanedText.startsWith("```xml")) {
+    cleanedText = cleanedText.replace(/^```xml\s*/, "").replace(/```\s*$/, "");
   }
-  if (cleanedText.startsWith('```')) {
-    cleanedText = cleanedText.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  if (cleanedText.startsWith("```")) {
+    cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
-  
+
   return cleanedText;
 }
