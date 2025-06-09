@@ -176,8 +176,11 @@ Please ensure the project plan addresses all the selected requirements above and
       
       // Save to localStorage and navigate to diagram route
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.GENERATED_BPMN_XML, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
       setLocation('/diagram');
     } catch (err) {
       console.error('BPMN generation error:', err);
