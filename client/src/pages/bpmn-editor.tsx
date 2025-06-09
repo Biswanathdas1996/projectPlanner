@@ -20,6 +20,7 @@ import {
   Maximize2,
   Workflow,
   Sidebar,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
@@ -53,6 +54,7 @@ export default function BpmnEditor() {
     updateElementProperties,
     copyJsonToClipboard,
     handleElementSelect,
+    connectElements,
   } = useBpmn();
 
   const handleCreateNew = () => {
@@ -118,6 +120,10 @@ export default function BpmnEditor() {
           event.preventDefault();
           handleImport();
           break;
+        case 'l':
+          event.preventDefault();
+          connectElements();
+          break;
       }
     }
   };
@@ -155,6 +161,15 @@ export default function BpmnEditor() {
             >
               <FolderOpen className="h-4 w-4" />
               <span className="font-medium">Load</span>
+            </Button>
+
+            <Button 
+              onClick={connectElements} 
+              variant="outline"
+              className="flex items-center space-x-2 border-blue-200 text-blue-700 hover:bg-blue-50"
+            >
+              <ArrowRightLeft className="h-4 w-4" />
+              <span className="font-medium">Connect</span>
             </Button>
           </div>
         </div>
