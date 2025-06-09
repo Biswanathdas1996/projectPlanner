@@ -277,12 +277,13 @@ export default function ProjectPlanner() {
                 >
                   Create Another Project
                 </Button>
-                <Link href="/editor">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    <Workflow className="h-4 w-4 mr-2" />
-                    Edit in BPMN Editor
-                  </Button>
-                </Link>
+                <Button 
+                  onClick={navigateToEditor}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Workflow className="h-4 w-4 mr-2" />
+                  Edit in BPMN Editor
+                </Button>
               </div>
             </CardContent>
           </Card>
