@@ -93,6 +93,33 @@
         font-size: 11px !important;
       }
       
+      /* Enhanced styling for exclusive gateways (decision boxes) */
+      .djs-element[data-element-id*="Gateway"] .djs-visual path {
+        stroke: #dc2626 !important;
+        stroke-width: 2.5px !important;
+        fill: #fef2f2 !important;
+      }
+      
+      .djs-element[data-element-id*="ExclusiveGateway"] .djs-visual path {
+        stroke: #dc2626 !important;
+        stroke-width: 2.5px !important;
+        fill: #fef2f2 !important;
+      }
+      
+      /* Parallel gateway styling */
+      .djs-element[data-element-id*="ParallelGateway"] .djs-visual path {
+        stroke: #059669 !important;
+        stroke-width: 2.5px !important;
+        fill: #f0fdf4 !important;
+      }
+      
+      /* Gateway labels styling */
+      .djs-element[data-element-id*="Gateway"] text {
+        font-weight: 600 !important;
+        font-size: 12px !important;
+        fill: #1f2937 !important;
+      }
+      
       /* Hide resize handles and selection decorations */
       .djs-resize-handle,
       .djs-hit {
