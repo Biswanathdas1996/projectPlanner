@@ -220,17 +220,21 @@ export default function ProjectPlanner() {
                 Generated Project Plan
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-6">
               {/* HTML Project Plan Content with Architecture Diagrams */}
-              {(projectPlan.trim().startsWith('<!DOCTYPE html>') || projectPlan.trim().startsWith('<html') || projectPlan.trim().startsWith('<div')) ? (
-                <div 
-                  className="w-full"
-                  dangerouslySetInnerHTML={{ __html: projectPlan }}
-                  style={{
-                    maxHeight: 'none',
-                    overflow: 'visible'
-                  }}
-                />
+              {(projectPlan.trim().startsWith('<!DOCTYPE html>') || projectPlan.trim().startsWith('<html') || projectPlan.trim().startsWith('<div') || projectPlan.includes('<style>')) ? (
+                <div className="w-full">
+                  <div 
+                    className="project-plan-content"
+                    dangerouslySetInnerHTML={{ __html: projectPlan }}
+                    style={{
+                      minHeight: '500px',
+                      backgroundColor: '#ffffff',
+                      borderRadius: '8px',
+                      padding: '0'
+                    }}
+                  />
+                </div>
               ) : (
                 <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
                   <div className="prose prose-gray max-w-none">
