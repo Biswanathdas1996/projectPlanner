@@ -36,8 +36,9 @@ export default function UserJourney() {
   const [error, setError] = useState('');
   const [showFlowDetails, setShowFlowDetails] = useState(false);
   const [activePersona, setActivePersona] = useState<string | null>(null);
+  const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
 
-  // Load data from localStorage when component mounts
+  // Load data from localStorage when component mounts and auto-generate BPMN
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
@@ -47,6 +48,38 @@ export default function UserJourney() {
     }
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
+      
+      // Auto-generate all persona BPMN diagrams
+      const autoGeneratePersonaBpmn = async () => {
+        const personas: ('guest' | 'logged-in' | 'admin' | 'power' | 'mobile')[] = ['guest', 'logged-in', 'admin', 'power', 'mobile'];
+        
+        setAutoGenerationStatus('Starting automatic generation of persona BPMN diagrams...');
+        
+        for (let i = 0; i < personas.length; i++) {
+          const persona = personas[i];
+          try {
+            setAutoGenerationStatus(`Generating ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN (${i + 1}/${personas.length})...`);
+            await generatePersonaBpmn(persona);
+            
+            if (i < personas.length - 1) {
+              setAutoGenerationStatus(`Generated ${persona.charAt(0).toUpperCase() + persona.slice(1)} user BPMN. Preparing next diagram...`);
+              // Add delay between generations to avoid rate limiting
+              await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+          } catch (error) {
+            console.error(`Failed to auto-generate ${persona} BPMN:`, error);
+            setAutoGenerationStatus(`Error generating ${persona} BPMN. Continuing with other personas...`);
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        setAutoGenerationStatus('All persona BPMN diagrams generated successfully!');
+        // Clear status after 3 seconds
+        setTimeout(() => setAutoGenerationStatus(''), 3000);
+      };
+      
+      // Trigger auto-generation after a short delay
+      setTimeout(autoGeneratePersonaBpmn, 1000);
     }
   }, []);
 
@@ -265,6 +298,16 @@ export default function UserJourney() {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Auto-Generation Status */}
+        {autoGenerationStatus && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+              <p className="text-blue-700 font-medium">{autoGenerationStatus}</p>
+            </div>
           </div>
         )}
 
