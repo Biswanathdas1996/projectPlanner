@@ -40,11 +40,19 @@ Generate a detailed project plan that includes:
    - Performance and scalability considerations
    - Technology stack recommendations
 
-4. **Implementation Phases with Detailed Breakdown**
-   - Phase-by-phase development approach
-   - User stories and acceptance criteria
-   - Technical tasks and deliverables
-   - Timeline estimates and dependencies
+4. **Development Plan & Implementation Strategy**
+   - Code Repository Setup (Git structure, branching model)
+   - Branching Strategy (Git Flow, feature branches, release management)
+   - Module-wise Breakdown (component architecture, service layers)
+   - Sprint Planning & Development Roadmap (2-week sprints with deliverables)
+   - Effort Estimation (story points, time estimates, complexity analysis)
+   - CI/CD Pipeline Design (build, test, deploy automation)
+   - Code Quality Standards (style guides, review processes)
+   - Development Tools & Environment Setup
+   - Linting & Pre-commit Hooks Configuration
+   - Unit Test Coverage Requirements (minimum 80% coverage)
+   - Integration Testing Strategy
+   - Performance Testing & Monitoring Setup
 
 5. **Resource Requirements & Team Structure**
    - Required roles and skill sets
@@ -107,74 +115,96 @@ Return ONLY a valid JSON object in this exact format:
     "swimlanes": [
       {
         "id": "Lane_1",
-        "name": "Department/Role Name",
+        "name": "Development Team",
         "elements": ["StartEvent_1", "Task_1", "Gateway_1"]
       },
       {
         "id": "Lane_2", 
-        "name": "Another Department/Role",
-        "elements": ["Task_2", "Gateway_2"]
+        "name": "CI/CD Pipeline",
+        "elements": ["Task_Build", "Gateway_Tests", "Task_Deploy"]
+      },
+      {
+        "id": "Lane_3",
+        "name": "Quality Assurance",
+        "elements": ["Task_CodeReview", "Gateway_QualityGate"]
+      },
+      {
+        "id": "Lane_4",
+        "name": "DevOps/Infrastructure", 
+        "elements": ["Task_EnvSetup", "Task_Monitoring"]
       }
     ],
     "elements": [
       {
         "type": "startEvent",
         "id": "StartEvent_1",
-        "name": "Project Start",
+        "name": "Development Sprint Start",
         "lane": "Lane_1"
       },
       {
         "type": "task",
         "id": "Task_1", 
-        "name": "Phase/Task Name",
+        "name": "Feature Development",
         "lane": "Lane_1"
       },
       {
         "type": "exclusiveGateway",
         "id": "Gateway_1",
-        "name": "Approval Required?",
+        "name": "Code Complete?",
         "lane": "Lane_1"
       },
       {
         "type": "task",
-        "id": "Task_Approved",
-        "name": "Process Approved Request",
-        "lane": "Lane_1"
+        "id": "Task_CodeReview",
+        "name": "Code Review Process",
+        "lane": "Lane_3"
       },
       {
-        "type": "task", 
-        "id": "Task_Rejected",
-        "name": "Handle Rejection",
-        "lane": "Lane_1"
+        "type": "exclusiveGateway",
+        "id": "Gateway_QualityGate",
+        "name": "Review Approved?",
+        "lane": "Lane_3"
       },
       {
         "type": "task",
-        "id": "Task_2", 
-        "name": "Another Task",
-        "lane": "Lane_2"
-      },
-      {
-        "type": "intermediateCatchEvent",
-        "id": "Event_1",
-        "name": "Wait for Input",
+        "id": "Task_Build",
+        "name": "Automated Build",
         "lane": "Lane_2"
       },
       {
         "type": "exclusiveGateway",
-        "id": "Gateway_2",
-        "name": "Final Check?",
+        "id": "Gateway_Tests",
+        "name": "All Tests Pass?",
         "lane": "Lane_2"
+      },
+      {
+        "type": "task",
+        "id": "Task_Deploy",
+        "name": "Deploy to Staging",
+        "lane": "Lane_2"
+      },
+      {
+        "type": "task",
+        "id": "Task_EnvSetup",
+        "name": "Environment Configuration",
+        "lane": "Lane_4"
+      },
+      {
+        "type": "task",
+        "id": "Task_Monitoring",
+        "name": "Setup Monitoring & Alerts",
+        "lane": "Lane_4"
       },
       {
         "type": "endEvent",
         "id": "EndEvent_1",
-        "name": "Project Complete",
+        "name": "Feature Deployed",
         "lane": "Lane_2"
       },
       {
         "type": "endEvent",
         "id": "EndEvent_2",
-        "name": "Project Cancelled",
+        "name": "Build Failed",
         "lane": "Lane_2"
       }
     ],
@@ -192,50 +222,59 @@ Return ONLY a valid JSON object in this exact format:
       {
         "id": "Flow_3",
         "sourceRef": "Gateway_1",
-        "targetRef": "Task_Approved",
+        "targetRef": "Task_CodeReview",
         "name": "Yes",
-        "condition": "approved"
+        "condition": "complete"
       },
       {
         "id": "Flow_4",
         "sourceRef": "Gateway_1",
-        "targetRef": "Task_Rejected",
+        "targetRef": "Task_1",
         "name": "No",
-        "condition": "rejected"
+        "condition": "incomplete"
       },
       {
         "id": "Flow_5",
-        "sourceRef": "Task_Approved",
-        "targetRef": "Task_2"
+        "sourceRef": "Task_CodeReview",
+        "targetRef": "Gateway_QualityGate"
       },
       {
         "id": "Flow_6",
-        "sourceRef": "Task_Rejected",
-        "targetRef": "EndEvent_1"
-      },
-      {
-        "id": "Flow_7",
-        "sourceRef": "Task_2",
-        "targetRef": "Event_1"
-      },
-      {
-        "id": "Flow_8",
-        "sourceRef": "Event_1",
-        "targetRef": "Gateway_2"
-      },
-      {
-        "id": "Flow_9",
-        "sourceRef": "Gateway_2",
-        "targetRef": "EndEvent_1",
+        "sourceRef": "Gateway_QualityGate",
+        "targetRef": "Task_Build",
         "name": "Approved",
         "condition": "approved"
       },
       {
-        "id": "Flow_10",
-        "sourceRef": "Gateway_2",
-        "targetRef": "EndEvent_2",
+        "id": "Flow_7",
+        "sourceRef": "Gateway_QualityGate",
+        "targetRef": "Task_1",
         "name": "Rejected",
         "condition": "rejected"
+      },
+      {
+        "id": "Flow_8",
+        "sourceRef": "Task_Build",
+        "targetRef": "Gateway_Tests"
+      },
+      {
+        "id": "Flow_9",
+        "sourceRef": "Gateway_Tests",
+        "targetRef": "Task_Deploy",
+        "name": "Pass",
+        "condition": "pass"
+      },
+      {
+        "id": "Flow_10",
+        "sourceRef": "Gateway_Tests",
+        "targetRef": "EndEvent_2",
+        "name": "Fail",
+        "condition": "fail"
+      },
+      {
+        "id": "Flow_11",
+        "sourceRef": "Task_Deploy",
+        "targetRef": "EndEvent_1"
       }
     ]
   }
@@ -286,6 +325,15 @@ Rules for Comprehensive User Flow & Technical Architecture Mapping:
 - Add data validation and sanitization processes
 - Include error logging, monitoring, and alerting flows
 - Add backup, recovery, and rollback procedures
+
+**Development Workflow Integration:**
+- Include code review processes as approval gateways
+- Add CI/CD pipeline stages (build, test, deploy) as sequential tasks
+- Include quality gates (linting, testing, security scans) as exclusive gateways
+- Add sprint planning and release management processes
+- Include environment promotion flows (dev → staging → production)
+- Add rollback and hotfix deployment procedures
+- Include monitoring and alerting setup processes
 `;
 
   const result = await model.generateContent(prompt);
