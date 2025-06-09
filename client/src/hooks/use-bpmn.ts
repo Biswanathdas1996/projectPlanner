@@ -35,27 +35,33 @@ export function useBpmn() {
       // Load default diagram
       await modeler.importXML(DEFAULT_BPMN_DIAGRAM);
 
-      // Setup event listeners
+      // Setup event listeners with improved error handling
       modeler.on('selection.changed', (event: any) => {
         try {
-          const selection = event.newSelection;
-          if (selection && selection.length === 1) {
-            const element = selection[0];
-            if (element && element.businessObject) {
-              setSelectedElement({
-                id: element.id || '',
-                name: element.businessObject.name || '',
-                type: element.type || 'Unknown',
-                documentation: element.businessObject.documentation?.[0]?.text || ''
-              });
-            } else {
-              setSelectedElement(null);
-            }
-          } else {
+          if (!event || !event.newSelection) {
             setSelectedElement(null);
+            return;
           }
+          
+          const selection = event.newSelection;
+          if (Array.isArray(selection) && selection.length === 1) {
+            const element = selection[0];
+            if (element && typeof element === 'object' && element.businessObject) {
+              const businessObject = element.businessObject;
+              setSelectedElement({
+                id: element.id || businessObject.id || '',
+                name: businessObject.name || element.label || '',
+                type: element.type || businessObject.$type || 'Unknown',
+                documentation: (businessObject.documentation && businessObject.documentation[0]) 
+                  ? businessObject.documentation[0].text || '' 
+                  : ''
+              });
+              return;
+            }
+          }
+          setSelectedElement(null);
         } catch (error) {
-          console.error('Error selecting element:', error);
+          // Silently handle selection errors to avoid console spam
           setSelectedElement(null);
         }
       });
@@ -63,6 +69,22 @@ export function useBpmn() {
       modeler.on('commandStack.changed', () => {
         updateJsonView();
         setStatus('Modified');
+      });
+
+      // Add connection helper when elements are created
+      modeler.on('shape.added', (event: any) => {
+        try {
+          const newElement = event.element;
+          if (newElement && newElement.type && !newElement.type.includes('Lane') && !newElement.type.includes('Participant')) {
+            // Auto-select newly created elements for easier connection
+            const selection = modelerRef.current?.get('selection');
+            if (selection) {
+              setTimeout(() => selection.select(newElement), 100);
+            }
+          }
+        } catch (error) {
+          // Silent error handling for shape addition
+        }
       });
 
       // Load from localStorage if available
@@ -501,13 +523,16 @@ export function useBpmn() {
 
     try {
       const globalConnect = modelerRef.current.get('globalConnect');
+      const selection = modelerRef.current.get('selection');
       
       if (globalConnect.isActive()) {
         globalConnect.toggle();
         showNotification('Connection mode deactivated', 'success', 2000);
       } else {
+        // Clear any current selection to start fresh
+        selection.select([]);
         globalConnect.toggle();
-        showNotification('Connection mode activated - click two elements to connect', 'success', 3000);
+        showNotification('Click on source element, then target element to connect', 'success', 4000);
       }
     } catch (error) {
       console.error('Error activating connection tool:', error);
