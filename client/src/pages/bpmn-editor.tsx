@@ -45,7 +45,7 @@ export default function BpmnEditor() {
   const {
     containerRef,
     selectedElement,
-    diagramJson,
+    diagramXml,
     isLoading,
     notifications,
     status,
@@ -60,7 +60,7 @@ export default function BpmnEditor() {
     zoomOut,
     zoomFit,
     updateElementProperties,
-    copyJsonToClipboard,
+    copyXmlToClipboard,
     handleElementSelect,
     connectElements,
     createConnection,
@@ -362,10 +362,10 @@ export default function BpmnEditor() {
         <PropertiesPanel
           visible={panelVisible}
           selectedElement={selectedElement}
-          diagramJson={diagramJson}
+          diagramXml={diagramXml}
           onClose={togglePanel}
           onUpdateElement={updateElementProperties}
-          onCopyJson={copyJsonToClipboard}
+          onCopyXml={copyXmlToClipboard}
         />
       </div>
 

@@ -11,19 +11,19 @@ import type { ElementProperties } from '@shared/schema';
 interface PropertiesPanelProps {
   visible: boolean;
   selectedElement: ElementProperties | null;
-  diagramJson: string;
+  diagramXml: string;
   onClose: () => void;
   onUpdateElement: (properties: Partial<ElementProperties>) => void;
-  onCopyJson: () => void;
+  onCopyXml: () => void;
 }
 
 export function PropertiesPanel({
   visible,
   selectedElement,
-  diagramJson,
+  diagramXml,
   onClose,
   onUpdateElement,
-  onCopyJson,
+  onCopyXml,
 }: PropertiesPanelProps) {
   if (!visible) return null;
 
@@ -163,14 +163,14 @@ export function PropertiesPanel({
 
         <Separator />
 
-        {/* Diagram JSON View */}
+        {/* BPMN Script View */}
         <div className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-gray-900">Diagram JSON</h3>
+            <h3 className="text-sm font-medium text-gray-900">BPMN Script</h3>
             <Button
               variant="ghost"
               size="sm"
-              onClick={onCopyJson}
+              onClick={onCopyXml}
               className="p-1 text-gray-400 hover:text-gray-600 h-auto"
             >
               <Copy className="h-4 w-4" />
@@ -180,7 +180,7 @@ export function PropertiesPanel({
           <Card className="bg-gray-900 border-gray-800">
             <CardContent className="p-3">
               <pre className="text-xs text-green-400 font-roboto-mono leading-relaxed max-h-64 overflow-y-auto custom-scrollbar whitespace-pre-wrap">
-                {diagramJson}
+                {diagramXml}
               </pre>
             </CardContent>
           </Card>
