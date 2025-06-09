@@ -270,14 +270,9 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 export async function generateSitemapXml(
   projectDescription: string,
 ): Promise<string> {
-  const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
-  if (!apiKey) {
-    throw new Error(
-      "Gemini API key not found. Please check your environment variables.",
-    );
+  if (!projectDescription.trim()) {
+    throw new Error("Project description is required");
   }
-
-  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
   const prompt = `Generate a comprehensive XML sitemap for an application based on this project description: "${projectDescription}"
