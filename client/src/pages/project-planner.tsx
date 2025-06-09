@@ -28,6 +28,7 @@ import {
   ListOrdered,
   Quote,
   Type,
+  Download,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -46,6 +47,7 @@ export default function ProjectPlanner() {
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const [, setLocation] = useLocation();
 
@@ -209,6 +211,87 @@ Return the complete enhanced project plan as HTML with all existing content plus
         ? prev.filter(s => s !== suggestion)
         : [...prev, suggestion]
     );
+  };
+
+  const downloadPDF = async () => {
+    setIsDownloadingPdf(true);
+    
+    try {
+      // Import libraries dynamically
+      const html2canvas = (await import('html2canvas')).default;
+      const jsPDF = (await import('jspdf')).default;
+      
+      // Find the project plan content element
+      const element = document.querySelector('.project-plan-content');
+      if (!element) {
+        setError('No project plan content found to download');
+        return;
+      }
+
+      // Create a temporary container for PDF generation
+      const tempContainer = document.createElement('div');
+      tempContainer.style.position = 'absolute';
+      tempContainer.style.top = '-9999px';
+      tempContainer.style.left = '-9999px';
+      tempContainer.style.width = '1200px';
+      tempContainer.style.backgroundColor = '#ffffff';
+      tempContainer.style.padding = '40px';
+      tempContainer.style.fontFamily = 'Arial, sans-serif';
+      
+      // Clone the content
+      const clonedElement = element.cloneNode(true) as HTMLElement;
+      tempContainer.appendChild(clonedElement);
+      document.body.appendChild(tempContainer);
+
+      // Generate canvas from the content
+      const canvas = await html2canvas(tempContainer, {
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: '#ffffff',
+        width: 1200,
+        height: tempContainer.scrollHeight
+      });
+
+      // Remove temporary container
+      document.body.removeChild(tempContainer);
+
+      // Create PDF
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      // Add additional pages if needed
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+
+      // Generate filename
+      const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+      const timestamp = new Date().toISOString().slice(0, 10);
+      const filename = `project_plan_${projectName}_${timestamp}.pdf`;
+
+      // Download PDF
+      pdf.save(filename);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsDownloadingPdf(false);
+    }
   };
 
   const getStepStatus = (step: string) => {
@@ -597,16 +680,37 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                   Generated Project Plan
                 </div>
-                <Button
-                  onClick={startEditingPlan}
-                  variant="outline"
-                  size="sm"
-                  disabled={isEditingPlan || isEnhancing || isGeneratingBpmn}
-                  className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Plan
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={downloadPDF}
+                    variant="outline"
+                    size="sm"
+                    disabled={isDownloadingPdf || isEditingPlan || isEnhancing || isGeneratingBpmn}
+                    className="border-green-300 text-green-600 hover:bg-green-50"
+                  >
+                    {isDownloadingPdf ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating PDF...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Download PDF
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={startEditingPlan}
+                    variant="outline"
+                    size="sm"
+                    disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Plan
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
