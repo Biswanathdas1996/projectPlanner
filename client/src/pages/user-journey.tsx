@@ -394,6 +394,95 @@ export default function UserJourney() {
           </CardContent>
         </Card>
 
+        {/* Generate BPMN Diagram */}
+        <Card className="mb-6 border-0 shadow-lg">
+          <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
+            <CardTitle className="flex items-center justify-between text-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                BPMN 2.0 Swimlane Diagram Generation
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                Generate a comprehensive BPMN 2.0 XML diagram with swimlanes for user journey flows. 
+                The diagram will include different actors (User, System, Admin, External Services) with proper sequence flows and decision gateways.
+              </p>
+              
+              <div className="flex gap-3">
+                <Button
+                  onClick={generateUserJourneyBpmnDiagram}
+                  disabled={isGeneratingBpmn || (!projectPlan && !projectDescription)}
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                >
+                  {isGeneratingBpmn ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating BPMN...
+                    </>
+                  ) : (
+                    <>
+                      <Activity className="h-4 w-4 mr-2" />
+                      Generate BPMN Diagram
+                    </>
+                  )}
+                </Button>
+
+                {userJourneyBpmn && (
+                  <>
+                    <Link href="/diagram">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View in Editor
+                      </Button>
+                    </Link>
+                    
+                    <Button
+                      onClick={downloadBpmn}
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download XML
+                    </Button>
+                    
+                    <Button
+                      onClick={copyBpmn}
+                      variant="outline"
+                      size="sm"
+                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
+                    >
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy XML
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              {userJourneyBpmn && (
+                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                  <p className="text-emerald-800 font-medium mb-2">
+                    ✓ BPMN 2.0 diagram generated successfully
+                  </p>
+                  <p className="text-emerald-700 text-sm">
+                    The swimlane-enabled BPMN diagram has been saved and is ready to view in the visual editor. 
+                    Click "View in Editor" to see the interactive diagram with swimlanes for different user roles.
+                  </p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* User Journey Flows Display */}
         {userJourneyFlows && showFlowDetails && (
           <Card className="mb-6 border-0 shadow-lg">
