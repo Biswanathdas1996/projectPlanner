@@ -224,40 +224,77 @@ export default function ProjectPlanner() {
               {/* Project Plan Content with Enhanced Formatting */}
               <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
                 <div className="prose prose-gray max-w-none">
-                  <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                  <div className="text-gray-800 leading-relaxed">
                     {projectPlan.split('\n').map((line, index) => {
-                      // Enhanced formatting for different content types
-                      if (line.trim().startsWith('##') || line.trim().startsWith('# ')) {
-                        return (
-                          <h3 key={index} className="text-lg font-bold text-blue-800 mt-6 mb-3 first:mt-0">
-                            {line.replace(/^#+\s*/, '')}
-                          </h3>
-                        );
-                      }
-                      if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
-                        return (
-                          <div key={index} className="flex items-start gap-2 mb-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                            <span className="text-gray-700">{line.replace(/^[-•]\s*/, '')}</span>
-                          </div>
-                        );
-                      }
-                      if (line.trim().match(/^\d+\./)) {
-                        return (
-                          <div key={index} className="flex items-start gap-3 mb-3">
-                            <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                              {line.trim().match(/^(\d+)/)?.[1]}
-                            </div>
-                            <span className="text-gray-700 font-medium">{line.replace(/^\d+\.\s*/, '')}</span>
-                          </div>
-                        );
-                      }
-                      if (line.trim() === '') {
+                      const trimmedLine = line.trim();
+                      
+                      // Clean markdown symbols and format content
+                      let cleanLine = trimmedLine
+                        .replace(/\*\*/g, '') // Remove ** bold markers
+                        .replace(/\*/g, '') // Remove * italic markers
+                        .replace(/^#+\s*/, '') // Remove # headers
+                        .replace(/^[-•]\s*/, '') // Remove bullet markers
+                        .replace(/^\d+\.\s*/, '') // Remove number markers for processing
+                        .trim();
+
+                      // Skip empty lines
+                      if (!cleanLine) {
                         return <div key={index} className="h-3"></div>;
                       }
+
+                      // Format headers (lines that were originally ## or #)
+                      if (trimmedLine.startsWith('##') || trimmedLine.startsWith('# ')) {
+                        return (
+                          <div key={index} className="mt-6 mb-4 first:mt-0">
+                            <div className="flex items-center gap-3">
+                              <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+                              <h3 className="text-xl font-bold text-blue-800">{cleanLine}</h3>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
+                      // Format bullet points
+                      if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+                        return (
+                          <div key={index} className="flex items-start gap-3 mb-3 ml-4">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
+                          </div>
+                        );
+                      }
+                      
+                      // Format numbered lists
+                      if (trimmedLine.match(/^\d+\./)) {
+                        const number = trimmedLine.match(/^(\d+)/)?.[1];
+                        return (
+                          <div key={index} className="flex items-start gap-4 mb-4 ml-2">
+                            <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
+                              {number}
+                            </div>
+                            <div className="flex-1">
+                              <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
+                      // Format key-value pairs or important statements
+                      if (cleanLine.includes(':') && cleanLine.length < 100) {
+                        const [key, ...valueParts] = cleanLine.split(':');
+                        const value = valueParts.join(':').trim();
+                        return (
+                          <div key={index} className="mb-3 p-3 bg-white rounded-lg border-l-4 border-blue-400">
+                            <span className="font-semibold text-blue-800">{key.trim()}:</span>
+                            {value && <span className="text-gray-700 ml-2">{value}</span>}
+                          </div>
+                        );
+                      }
+                      
+                      // Regular paragraphs
                       return (
-                        <p key={index} className="text-gray-700 mb-3 leading-relaxed">
-                          {line}
+                        <p key={index} className="text-gray-700 mb-4 leading-relaxed text-justify">
+                          {cleanLine}
                         </p>
                       );
                     })}
