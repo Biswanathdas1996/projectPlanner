@@ -12,17 +12,61 @@ export async function generateProjectPlan(
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
-You are a business process analyst. Create a detailed project plan for the following project description:
+You are a senior business analyst and technical architect. Create a comprehensive project plan for the following project description:
 
 "${projectDescription}"
 
-Please provide a structured response with:
-1. Project Overview (2-3 sentences)
-2. Key Phases (3-6 main phases)
-3. Major Tasks (under each phase)
-4. Dependencies and considerations
+Generate a detailed project plan that includes:
 
-Format your response as a clear, structured plan that can be converted into a business process diagram.
+1. **Project Overview & Business Objectives**
+   - Clear problem statement and goals
+   - Success metrics and KPIs
+   - Stakeholder identification
+
+2. **User Flow Diagrams & Journey Mapping**
+   - Complete user journey from start to finish
+   - All user roles and their specific workflows
+   - Decision points and conditional paths
+   - User interactions and touchpoints
+   - Error handling and edge cases
+
+3. **Technical Architecture & System Design**
+   - Frontend architecture (React components, state management, routing)
+   - Backend architecture (APIs, databases, microservices)
+   - Database schema and data flow
+   - Security architecture (authentication, authorization, encryption)
+   - Infrastructure requirements (cloud services, CDN, monitoring)
+   - Integration points and third-party services
+   - Performance and scalability considerations
+   - Technology stack recommendations
+
+4. **Implementation Phases with Detailed Breakdown**
+   - Phase-by-phase development approach
+   - User stories and acceptance criteria
+   - Technical tasks and deliverables
+   - Timeline estimates and dependencies
+
+5. **Resource Requirements & Team Structure**
+   - Required roles and skill sets
+   - Team size and composition
+   - Budget considerations
+
+6. **Risk Assessment & Mitigation Strategies**
+   - Technical risks and solutions
+   - Business risks and contingencies
+   - Timeline risks and buffers
+
+7. **Quality Assurance & Testing Strategy**
+   - Testing methodologies and frameworks
+   - Automated testing approach
+   - Performance testing requirements
+
+8. **Deployment & Go-Live Plan**
+   - Environment setup and configuration
+   - Deployment pipeline and automation
+   - Rollback strategies
+
+Format your response with clear headers and detailed sub-sections. Include specific technical details, user interaction flows, and actionable implementation steps.
 `;
 
   const result = await model.generateContent(prompt);
@@ -38,9 +82,18 @@ export async function generateBpmnJson(projectPlan: string): Promise<any> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
-Convert the following project plan into a BPMN JSON structure with swimlanes. Create a workflow that represents the project phases and tasks as BPMN elements organized by responsible parties or departments.
+Convert the following comprehensive project plan into a detailed BPMN JSON structure with swimlanes that represents complete user flows and technical architecture. Create workflows that capture:
 
-IMPORTANT: Include exclusive gateways (decision boxes) for any decision points, approvals, quality checks, or yes/no conditions in the workflow. Use parallel gateways for concurrent activities.
+1. **User Journey Flows**: Map every user interaction, decision point, and system response
+2. **Technical Process Flows**: Include API calls, database operations, and system integrations
+3. **Business Process Flows**: Capture approval workflows, validation steps, and business logic
+
+CRITICAL REQUIREMENTS:
+- Include exclusive gateways for ALL decision points (user choices, validations, approvals, error handling)
+- Use parallel gateways for concurrent processes (async operations, multi-user workflows)
+- Add intermediate events for system waits, API calls, and external integrations
+- Create separate swimlanes for different user roles, system components, and external services
+- Include error handling paths and exception flows
 
 Project Plan:
 "${projectPlan}"
@@ -188,39 +241,51 @@ Return ONLY a valid JSON object in this exact format:
   }
 }
 
-Rules:
-- Create 2-4 swimlanes based on different departments, roles, or phases
-- Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
+Rules for Comprehensive User Flow & Technical Architecture Mapping:
+
+**Swimlane Organization:**
+- Create 4-6 swimlanes representing user roles, system components, and external services
+- Use specific names: "End User", "Frontend App", "Backend API", "Database", "External Services", "Admin/Manager"
 - EVERY element MUST be assigned to a swimlane - no elements outside swimlanes
-- Place tasks in appropriate swimlanes based on who performs them
-- MANDATORY: Include exclusive gateways for ALL decision points. Every workflow MUST have at least 1-2 exclusive gateways:
-  * Approval processes (Approved? Yes/No)
-  * Quality checks (Quality OK? Yes/No) 
-  * Budget approvals (Budget Approved? Yes/No)
-  * Risk assessments (Risk Acceptable? Yes/No)
-  * Completion checks (Task Complete? Yes/No)
-  * Authorization checks (Authorized? Yes/No)
-  * Validation steps (Valid? Yes/No)
-- For exclusive gateways, ALWAYS create TWO outgoing flows with labels "Yes" and "No"
-- Gateway names MUST end with "?" to indicate decision points
-- Use parallel gateways for tasks that can happen simultaneously
-- Ensure ALL elements are connected in sequence with flows
-- Use proper BPMN element types: startEvent, task, exclusiveGateway, parallelGateway, endEvent, userTask, serviceTask
-- Every element (except endEvent) must have outgoing flows
-- Every element (except startEvent) must have incoming flows
-- Generate unique IDs for each element and flow
-- Include timer events or intermediate events where appropriate
-- Verify each element has a "lane" property matching one of the swimlane IDs
-- For workflows with multiple outcomes, use multiple end events (e.g., "Project Approved", "Project Rejected")
-- All swimlanes must contain at least one element
-- Elements should be logically distributed across swimlanes based on responsibility
-- CRITICAL: Break complex workflows into smaller sections to prevent line overlaps:
-  * If a swimlane has more than 4 elements, split into multiple swimlanes
-  * Use intermediate events to separate long sequences
-  * Create sub-processes for complex multi-step operations
-  * Distribute connected elements across different swimlanes when possible
-- Avoid having more than 2 outgoing flows from any single element except gateways
-- Use intermediate catch events to create visual breaks in long sequences
+- Place tasks in appropriate swimlanes based on who/what performs them
+
+**User Flow Mapping Requirements:**
+- Map EVERY user interaction as a separate task or event
+- Include user input validation, form submissions, navigation actions
+- Add decision points for user choices (Login/Register?, Save/Cancel?, Accept/Decline?)
+- Include error handling flows for invalid inputs, failed operations, timeouts
+
+**Technical Architecture Requirements:**
+- Include API calls as service tasks in "Backend API" swimlane
+- Add database operations (Create, Read, Update, Delete) in "Database" swimlane
+- Include authentication/authorization checks as exclusive gateways
+- Add external service integrations (payment, email, notifications) in "External Services"
+- Include caching, validation, and data transformation processes
+
+**Decision Points & Gateways:**
+- MANDATORY: Every workflow MUST have 3-5 exclusive gateways minimum
+- User decision points: "Continue?", "Save Changes?", "Confirm Action?"
+- System validation points: "Data Valid?", "User Authorized?", "Payment Successful?"
+- Error handling points: "Retry?", "Fallback Required?", "Escalate Issue?"
+- Gateway names MUST end with "?" and have exactly TWO outgoing flows ("Yes"/"No")
+
+**Process Flow Structure:**
+- Use parallel gateways for concurrent operations (async API calls, background processing)
+- Add intermediate catch events for system waits, external responses, user notifications
+- Include timer events for timeouts, scheduled tasks, reminder notifications
+- Use intermediate throw events for error conditions, alerts, notifications
+
+**Element Distribution & Clean Layout:**
+- Maximum 4 elements per swimlane to prevent crowding
+- Use intermediate events to break long sequences
+- Distribute connected elements across different swimlanes
+- Include multiple end events for different outcomes (Success, Error, Cancel, Timeout)
+
+**Technical Integration Points:**
+- Include authentication flows (login, logout, session management)
+- Add data validation and sanitization processes
+- Include error logging, monitoring, and alerting flows
+- Add backup, recovery, and rollback procedures
 `;
 
   const result = await model.generateContent(prompt);
