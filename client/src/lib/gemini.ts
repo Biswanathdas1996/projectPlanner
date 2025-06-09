@@ -130,7 +130,7 @@ Start your response with <!DOCTYPE html> and include:
 - **Resource Allocation**: Team structure, skill requirements, budget breakdown, and equipment needs
 - **Risk Management**: Comprehensive risk analysis with probability assessment, impact evaluation, and mitigation plans
 - **Implementation Roadmap**: Phase-wise delivery schedule with milestones, dependencies, and critical path analysis
-- **Complete Sitemap XML**: Full XML sitemap structure showing all application pages, routes, content hierarchy, meta descriptions, and SEO optimization strategy with proper URL structure and navigation flow
+
 
 **Visual Design Requirements:**
 - Each section must include a brief description paragraph explaining its purpose and importance
@@ -139,8 +139,27 @@ Start your response with <!DOCTYPE html> and include:
 - Include icons and visual indicators for different content types
 - Maintain professional spacing with proper typography hierarchy
 
-**CRITICAL: Include Complete Sitemap XML Section**
-Generate a comprehensive XML sitemap that includes:
+Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return response.text();
+}
+
+export async function generateSitemapXml(projectDescription: string): Promise<string> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Gemini API key not found. Please check your environment variables.');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+  const prompt = `Generate a comprehensive XML sitemap for an application based on this project description: "${projectDescription}"
+
+Create a complete sitemap.xml file that includes:
+
+**Core Application Pages:**
 1. **Homepage and Landing Pages**: Main entry points with meta descriptions and keywords
 2. **Feature Pages**: All application functionality pages with detailed descriptions
 3. **User Account Pages**: Authentication, profile, dashboard, settings pages
@@ -150,18 +169,21 @@ Generate a comprehensive XML sitemap that includes:
 7. **Error Pages**: 404, 500, maintenance pages with proper handling
 8. **Mobile/App Pages**: Progressive web app and mobile-specific routes
 
-For each page include:
+**For each URL include:**
 - Complete URL structure with proper hierarchy
-- Meta title and description optimized for SEO
-- Content summary and key features
-- Target keywords and search intent
-- Priority and change frequency
-- Last modified dates
-- Related pages and internal linking structure
+- Last modified date (use current date)
+- Change frequency (daily, weekly, monthly, yearly)
+- Priority (0.1 to 1.0)
+- Relevant to the project description
 
-Display the sitemap as both visual hierarchy and actual XML code that can be implemented directly.
+**XML Requirements:**
+- Valid XML sitemap format following sitemap.org protocol
+- Proper XML declaration and namespace
+- Clean, properly formatted structure
+- URLs should be realistic for the project type
+- Include at least 15-25 pages for comprehensive coverage
 
-Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
+Return ONLY the complete XML sitemap - no explanations or markdown.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
