@@ -58,16 +58,15 @@ export default function ProjectPlanner() {
       setProjectPlan(plan);
       setCurrentStep('plan');
     } catch (err) {
-      console.error('Project plan generation error:', err);
-      setError('Failed to generate project plan. Please try again.');
+      setError('Failed to generate project plan. Please check your API key and try again.');
     } finally {
       setIsGeneratingPlan(false);
     }
   };
 
   const handleGenerateBpmnDiagram = async () => {
-    if (!projectPlan.trim()) {
-      setError('No project plan available to convert');
+    if (!projectPlan) {
+      setError('No project plan available');
       return;
     }
 
@@ -77,18 +76,29 @@ export default function ProjectPlanner() {
     try {
       const bpmnJson = await generateBpmnJson(projectPlan);
       setGeneratedBpmnJson(bpmnJson);
-      setCurrentStep('diagram');
       
-      // Save to localStorage and navigate
+      // Store the generated BPMN JSON in localStorage
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(bpmnJson));
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      
+      setCurrentStep('diagram');
     } catch (err) {
-      console.error('BPMN generation error:', err);
       setError('Failed to generate BPMN diagram. Please try again.');
+      console.error('BPMN generation error:', err);
     } finally {
       setIsGeneratingBpmn(false);
     }
+  };
+
+  const navigateToEditor = () => {
+    if (generatedBpmnJson) {
+      // Ensure the BPMN JSON is stored before navigation
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, JSON.stringify(generatedBpmnJson));
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+    }
+    setLocation('/editor');
   };
 
   const enhanceProjectPlan = async () => {
@@ -172,123 +182,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
     return 'pending';
   };
 
-  const renderProjectPlan = () => {
-    // Clean the project plan content to remove code block markers
-    let cleanedContent = projectPlan.trim();
-    
-    // Remove ```html and ``` markers if present
-    if (cleanedContent.startsWith('```html')) {
-      cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
-    }
-    if (cleanedContent.startsWith('```')) {
-      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
-    }
-    
-    // Check if it's HTML content
-    const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
-                        cleanedContent.startsWith('<html') || 
-                        cleanedContent.startsWith('<div') || 
-                        cleanedContent.includes('<style>');
-    
-    if (isHtmlContent) {
-      return (
-        <div className="w-full">
-          <div 
-            className="project-plan-content"
-            dangerouslySetInnerHTML={{ __html: cleanedContent }}
-            style={{
-              minHeight: '500px',
-              backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              padding: '0'
-            }}
-          />
-        </div>
-      );
-    }
-    
-    // If not HTML, render as markdown
-    return (
-      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
-        <div className="prose prose-gray max-w-none">
-          <div className="text-gray-800 leading-relaxed">
-            {cleanedContent.split('\n').map((line, index) => {
-              const trimmedLine = line.trim();
-              
-              // Clean markdown symbols and format content
-              let cleanLine = trimmedLine
-                .replace(/^\*\s+/, '')
-                .replace(/^\-\s+/, '')
-                .replace(/^#+\s+/, '')
-                .replace(/\*\*(.*?)\*\*/g, '$1')
-                .replace(/\*(.*?)\*/g, '$1');
-              
-              if (!cleanLine) return null;
-              
-              // Format section headers
-              if (trimmedLine.startsWith('#')) {
-                const level = (trimmedLine.match(/^#+/) || [''])[0].length;
-                const HeaderTag = `h${Math.min(level + 1, 6)}` as keyof JSX.IntrinsicElements;
-                return (
-                  <HeaderTag key={index} className="text-blue-800 font-bold mb-4 mt-6">
-                    {cleanLine}
-                  </HeaderTag>
-                );
-              }
-              
-              // Format bullet points
-              if (trimmedLine.match(/^[\*\-]\s+/)) {
-                return (
-                  <div key={index} className="flex items-start gap-3 mb-3 ml-4">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
-                  </div>
-                );
-              }
-              
-              // Format numbered lists
-              if (trimmedLine.match(/^\d+\./)) {
-                const number = trimmedLine.match(/^(\d+)/)?.[1];
-                return (
-                  <div key={index} className="flex items-start gap-4 mb-4 ml-2">
-                    <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
-                      {number}
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
-                    </div>
-                  </div>
-                );
-              }
-            
-              // Format key-value pairs or important statements
-              if (cleanLine.includes(':') && cleanLine.length < 100) {
-                const [key, ...valueParts] = cleanLine.split(':');
-                const value = valueParts.join(':').trim();
-                return (
-                  <div key={index} className="mb-3 p-3 bg-white rounded-lg border-l-4 border-blue-400">
-                    <span className="font-semibold text-blue-800">{key.trim()}:</span>
-                    {value && <span className="text-gray-700 ml-2">{value}</span>}
-                  </div>
-                );
-              }
-              
-              // Regular paragraphs
-              return (
-                <p key={index} className="text-gray-700 mb-4 leading-relaxed text-justify">
-                  {cleanLine}
-                </p>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
+
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
@@ -299,80 +197,66 @@ Return the complete enhanced project plan as HTML with all existing content plus
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
             Transform your project ideas into structured BPMN workflows. 
-            Get comprehensive planning with architecture diagrams and visual process flows.
+            Describe your project and let AI create a visual process diagram for you.
           </p>
         </div>
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center space-x-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('input') === 'active' ? 'bg-blue-100 text-blue-700' :
-              getStepStatus('input') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
-                getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+            <div className="flex items-center space-x-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' :
+                getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'
               }`}>
                 {getStepStatus('input') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '1'}
               </div>
-              Project Input
+              <span className="text-sm font-medium text-gray-700">Describe Project</span>
             </div>
             
             <ArrowRight className="h-4 w-4 text-gray-400" />
             
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('plan') === 'active' ? 'bg-blue-100 text-blue-700' :
-              getStepStatus('plan') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+            <div className="flex items-center space-x-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' :
+                getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-400'
               }`}>
                 {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '2'}
               </div>
-              Generate Plan
+              <span className="text-sm font-medium text-gray-700">Generate Plan</span>
             </div>
             
             <ArrowRight className="h-4 w-4 text-gray-400" />
             
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('diagram') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+            <div className="flex items-center space-x-2">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-400'
               }`}>
                 {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '3'}
               </div>
-              Visual Diagram
+              <span className="text-sm font-medium text-gray-700">Create Diagram</span>
             </div>
           </div>
         </div>
 
         {/* Error Display */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
-            <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
-            <p className="text-red-700">{error}</p>
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-red-500" />
+            <span className="text-red-700">{error}</span>
           </div>
         )}
 
         {/* Step 1: Project Input */}
         {currentStep === 'input' && (
-          <Card className="mb-6 border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-white" />
-                </div>
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
                 Describe Your Project
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
-              <p className="text-gray-600">
-                Provide a detailed description of your project. Include features, requirements, and any specific goals you want to achieve.
-              </p>
-              
+            <CardContent className="space-y-4">
               <Textarea
                 placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
                 value={projectInput}
@@ -592,7 +476,127 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                 </div>
               ) : (
-                renderProjectPlan()
+                <>
+                  {/* HTML Project Plan Content with Architecture Diagrams */}
+                  {(() => {
+                    // Clean the project plan content to remove code block markers
+                    let cleanedContent = projectPlan.trim();
+                    
+                    // Remove ```html and ``` markers if present
+                    if (cleanedContent.startsWith('```html')) {
+                      cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+                    }
+                    if (cleanedContent.startsWith('```')) {
+                      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+                    }
+                    
+                    // Check if it's HTML content
+                    const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
+                                        cleanedContent.startsWith('<html') || 
+                                        cleanedContent.startsWith('<div') || 
+                                        cleanedContent.includes('<style>');
+                    
+                    if (isHtmlContent) {
+                      return (
+                        <div className="w-full">
+                          <div 
+                            className="project-plan-content"
+                            dangerouslySetInnerHTML={{ __html: cleanedContent }}
+                            style={{
+                              minHeight: '500px',
+                              backgroundColor: '#ffffff',
+                              borderRadius: '8px',
+                              padding: '0'
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+                    
+                    // If not HTML, render as markdown
+                    return (
+                      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
+                        <div className="prose prose-gray max-w-none">
+                          <div className="text-gray-800 leading-relaxed">
+                            {cleanedContent.split('\n').map((line, index) => {
+                        const trimmedLine = line.trim();
+                        
+                        // Clean markdown symbols and format content
+                        let cleanLine = trimmedLine
+                          .replace(/\*\*/g, '') // Remove ** bold markers
+                          .replace(/\*/g, '') // Remove * italic markers
+                          .replace(/^#+\s*/, '') // Remove # headers
+                          .replace(/^[-•]\s*/, '') // Remove bullet markers
+                          .replace(/^\d+\.\s*/, '') // Remove number markers for processing
+                          .trim();
+
+                        // Skip empty lines
+                        if (!cleanLine) {
+                          return <div key={index} className="h-3"></div>;
+                        }
+
+                        // Format headers (lines that were originally ## or #)
+                        if (trimmedLine.startsWith('##') || trimmedLine.startsWith('# ')) {
+                          return (
+                            <div key={index} className="mt-6 mb-4 first:mt-0">
+                              <div className="flex items-center gap-3">
+                                <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-600 rounded-full"></div>
+                                <h3 className="text-xl font-bold text-blue-800">{cleanLine}</h3>
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        // Format bullet points
+                        if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+                          return (
+                            <div key={index} className="flex items-start gap-3 mb-3 ml-4">
+                              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                              <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
+                            </div>
+                          );
+                        }
+                        
+                        // Format numbered lists
+                        if (trimmedLine.match(/^\d+\./)) {
+                          const number = trimmedLine.match(/^(\d+)/)?.[1];
+                          return (
+                            <div key={index} className="flex items-start gap-4 mb-4 ml-2">
+                              <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
+                                {number}
+                              </div>
+                              <div className="flex-1">
+                                <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                              </div>
+                            </div>
+                          );
+                        }
+                      
+                      // Format key-value pairs or important statements
+                      if (cleanLine.includes(':') && cleanLine.length < 100) {
+                        const [key, ...valueParts] = cleanLine.split(':');
+                        const value = valueParts.join(':').trim();
+                        return (
+                          <div key={index} className="mb-3 p-3 bg-white rounded-lg border-l-4 border-blue-400">
+                            <span className="font-semibold text-blue-800">{key.trim()}:</span>
+                            {value && <span className="text-gray-700 ml-2">{value}</span>}
+                          </div>
+                        );
+                      }
+                      
+                      // Regular paragraphs
+                      return (
+                        <p key={index} className="text-gray-700 mb-4 leading-relaxed text-justify">
+                          {cleanLine}
+                        </p>
+                      );
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </>
               )}
               
               {/* Enhancement Section */}
@@ -677,26 +681,69 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 <CheckCircle className="h-8 w-8 text-green-600" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                Visual Diagram Created Successfully!
+                BPMN Diagram Created!
               </h3>
               <p className="text-gray-600 mb-6">
-                Your project plan has been converted into a comprehensive BPMN diagram with process flows and decision points.
+                Your project workflow has been generated and loaded into the BPMN editor.
+                You can now edit, refine, and export your process diagram.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/editor">
-                  <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                    <Workflow className="h-4 w-4 mr-2" />
-                    View & Edit Diagram
-                  </Button>
-                </Link>
-                <Button variant="outline" onClick={resetPlanner}>
-                  <Plus className="h-4 w-4 mr-2" />
+              
+              <div className="flex justify-center space-x-4">
+                <Button
+                  variant="outline"
+                  onClick={resetPlanner}
+                >
                   Create Another Project
+                </Button>
+                <Button 
+                  onClick={navigateToEditor}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Workflow className="h-4 w-4 mr-2" />
+                  Edit in BPMN Editor
                 </Button>
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Example Projects */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Example Project Ideas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                {
+                  title: "E-commerce Platform",
+                  description: "Online store with user accounts, product catalog, shopping cart, payment processing, and order fulfillment."
+                },
+                {
+                  title: "Employee Onboarding",
+                  description: "HR process for new employee recruitment, documentation, training, and integration into the organization."
+                },
+                {
+                  title: "Software Development",
+                  description: "Agile development process including requirements gathering, design, development, testing, and deployment."
+                },
+                {
+                  title: "Customer Support",
+                  description: "Support ticket system with ticket creation, assignment, escalation, resolution, and customer feedback."
+                }
+              ].map((example, index) => (
+                <div
+                  key={index}
+                  className="p-4 border rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => setProjectInput(example.description)}
+                >
+                  <h4 className="font-medium text-gray-900 mb-1">{example.title}</h4>
+                  <p className="text-sm text-gray-600">{example.description}</p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
