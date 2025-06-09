@@ -113,40 +113,109 @@ export function useBpmn() {
     const elements = validatedData.elements || [];
     const flows = validatedData.flows || [];
 
+    // Helper function to escape XML attributes
+    const escapeXml = (text: string): string => {
+      return text.replace(/&/g, '&amp;')
+                 .replace(/</g, '&lt;')
+                 .replace(/>/g, '&gt;')
+                 .replace(/"/g, '&quot;')
+                 .replace(/'/g, '&apos;');
+    };
+
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-  id="Definitions_1" 
-  targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn2:process id="Process_1" isExecutable="false">`;
 
     elements.forEach((element: any) => {
+      const elementId = escapeXml(element.id || '');
+      const elementName = escapeXml(element.name || '');
+      
       switch (element.type) {
         case 'startEvent':
-          bpmnXml += `\n    <bpmn2:startEvent id="${element.id}" name="${element.name || ''}" />`;
+          bpmnXml += `\n    <bpmn2:startEvent id="${elementId}" name="${elementName}" />`;
           break;
         case 'endEvent':
-          bpmnXml += `\n    <bpmn2:endEvent id="${element.id}" name="${element.name || ''}" />`;
+          bpmnXml += `\n    <bpmn2:endEvent id="${elementId}" name="${elementName}" />`;
           break;
         case 'task':
-          bpmnXml += `\n    <bpmn2:task id="${element.id}" name="${element.name || ''}" />`;
+        case 'userTask':
+        case 'serviceTask':
+          bpmnXml += `\n    <bpmn2:task id="${elementId}" name="${elementName}" />`;
           break;
         case 'exclusiveGateway':
-          bpmnXml += `\n    <bpmn2:exclusiveGateway id="${element.id}" name="${element.name || ''}" />`;
+          bpmnXml += `\n    <bpmn2:exclusiveGateway id="${elementId}" name="${elementName}" />`;
+          break;
+        case 'parallelGateway':
+          bpmnXml += `\n    <bpmn2:parallelGateway id="${elementId}" name="${elementName}" />`;
+          break;
+        case 'intermediateCatchEvent':
+        case 'intermediateThrowEvent':
+          bpmnXml += `\n    <bpmn2:intermediateCatchEvent id="${elementId}" name="${elementName}" />`;
           break;
         default:
-          bpmnXml += `\n    <bpmn2:task id="${element.id}" name="${element.name || ''}" />`;
+          bpmnXml += `\n    <bpmn2:task id="${elementId}" name="${elementName}" />`;
       }
     });
 
     flows.forEach((flow: any) => {
-      bpmnXml += `\n    <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}" name="${flow.name || ''}" />`;
+      const flowId = escapeXml(flow.id || '');
+      const sourceRef = escapeXml(flow.sourceRef || '');
+      const targetRef = escapeXml(flow.targetRef || '');
+      const flowName = escapeXml(flow.name || '');
+      
+      bpmnXml += `\n    <bpmn2:sequenceFlow id="${flowId}" sourceRef="${sourceRef}" targetRef="${targetRef}" name="${flowName}" />`;
     });
 
-    bpmnXml += `\n  </bpmn2:process>\n</bpmn2:definitions>`;
+    bpmnXml += `\n  </bpmn2:process>`;
+
+    // Add diagram layout information
+    bpmnXml += `\n  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+
+    // Add shape positions for elements
+    elements.forEach((element: any, index: number) => {
+      const x = 100 + (index * 200);
+      const y = 150;
+      let width = 100;
+      let height = 80;
+
+      // Adjust dimensions based on element type
+      if (element.type === 'startEvent' || element.type === 'endEvent') {
+        width = 36;
+        height = 36;
+      } else if (element.type.includes('Gateway')) {
+        width = 50;
+        height = 50;
+      }
+
+      bpmnXml += `\n      <bpmndi:BPMNShape id="Shape_${escapeXml(element.id)}" bpmnElement="${escapeXml(element.id)}">
+        <dc:Bounds height="${height}" width="${width}" x="${x}" y="${y}" />
+      </bpmndi:BPMNShape>`;
+    });
+
+    // Add flow connections
+    flows.forEach((flow: any) => {
+      const sourceIndex = elements.findIndex((el: any) => el.id === flow.sourceRef);
+      const targetIndex = elements.findIndex((el: any) => el.id === flow.targetRef);
+      
+      if (sourceIndex >= 0 && targetIndex >= 0) {
+        const sourceX = 100 + (sourceIndex * 200) + 50;
+        const sourceY = 150 + 40;
+        const targetX = 100 + (targetIndex * 200);
+        const targetY = 150 + 40;
+
+        bpmnXml += `\n      <bpmndi:BPMNEdge id="Edge_${escapeXml(flow.id)}" bpmnElement="${escapeXml(flow.id)}">
+        <di:waypoint x="${sourceX}" y="${sourceY}" />
+        <di:waypoint x="${targetX}" y="${targetY}" />
+      </bpmndi:BPMNEdge>`;
+      }
+    });
+
+    bpmnXml += `\n    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>`;
+
+    console.info('Generated BPMN XML with proper categorization and layout');
     return bpmnXml;
   }, [validateAndCategorizeBpmn]);
 
@@ -159,8 +228,22 @@ export function useBpmn() {
       try {
         const jsonData = JSON.parse(aiDiagram);
         const bpmnXml = convertJsonToBpmnXml(jsonData);
-        await modelerRef.current.importXML(bpmnXml);
-        showNotification('AI-generated diagram loaded successfully', 'success');
+        
+        // Validate XML before importing
+        if (!bpmnXml || bpmnXml.length < 100) {
+          throw new Error('Generated BPMN XML is invalid or too short');
+        }
+        
+        const result = await modelerRef.current.importXML(bpmnXml);
+        
+        // Check for import warnings
+        if (result.warnings && result.warnings.length > 0) {
+          console.warn('BPMN import warnings:', result.warnings);
+          showNotification(`Diagram loaded with ${result.warnings.length} warnings`, 'warning');
+        } else {
+          showNotification('AI-generated diagram loaded successfully', 'success');
+        }
+        
         setStatus('AI Loaded');
         updateJsonView();
         
@@ -174,7 +257,19 @@ export function useBpmn() {
         return;
       } catch (error) {
         console.error('Error loading AI diagram:', error);
-        showNotification('Failed to load AI diagram', 'warning');
+        
+        // Provide more specific error messages
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMessage.includes('unparsable content')) {
+          showNotification('BPMN diagram has formatting issues - loading default diagram', 'warning');
+        } else if (errorMessage.includes('XML')) {
+          showNotification('Invalid XML format in generated diagram', 'error');
+        } else {
+          showNotification('Failed to load AI-generated diagram', 'warning');
+        }
+        
+        // Clear the problematic diagram and load default
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
       }
     }
 
