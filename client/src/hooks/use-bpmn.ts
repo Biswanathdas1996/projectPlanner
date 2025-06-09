@@ -357,7 +357,7 @@ export function useBpmn() {
         }
       } catch (error) {
         // Only log meaningful errors, not empty objects
-        if (error && (error instanceof Error && error.message) || (error && error.toString() !== '[object Object]')) {
+        if (error && ((error instanceof Error && error.message) || (typeof error === 'string' && error.length > 0) || error.toString() !== '[object Object]')) {
           console.error('Error loading AI diagram:', error);
           showNotification('Failed to load AI diagram, loading saved diagram instead', 'warning');
         }
