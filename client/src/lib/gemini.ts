@@ -121,6 +121,7 @@ Return ONLY a valid JSON object in this exact format:
 Rules:
 - Create 2-4 swimlanes based on different departments, roles, or phases
 - Use descriptive names for swimlanes (e.g., "Customer", "Sales Team", "Development", "Management")
+- EVERY element MUST be assigned to a swimlane - no elements outside swimlanes
 - Place tasks in appropriate swimlanes based on who performs them
 - Ensure ALL elements are connected in sequence with flows
 - Use proper BPMN element types: startEvent, task, exclusiveGateway, endEvent, userTask, serviceTask
@@ -128,6 +129,9 @@ Rules:
 - Every element (except startEvent) must have incoming flows
 - Generate unique IDs for each element and flow
 - Include timer events or intermediate events where appropriate
+- Verify each element has a "lane" property matching one of the swimlane IDs
+- All swimlanes must contain at least one element
+- Elements should be logically distributed across swimlanes based on responsibility
 `;
 
   const result = await model.generateContent(prompt);
