@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { generateUserJourneyFlows, generateUserJourneyBpmn } from '@/lib/gemini';
+import { generateUserJourneyFlows, generatePersonaBpmnFlow } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
 import { Link } from 'wouter';
 import {
   Users,
@@ -29,11 +30,12 @@ export default function UserJourney() {
   const [projectPlan, setProjectPlan] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [userJourneyFlows, setUserJourneyFlows] = useState<string>('');
-  const [userJourneyBpmn, setUserJourneyBpmn] = useState<string>('');
+  const [personaBpmnFlows, setPersonaBpmnFlows] = useState<Record<string, string>>({});
   const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
-  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
+  const [isGeneratingPersonaBpmn, setIsGeneratingPersonaBpmn] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
   const [showFlowDetails, setShowFlowDetails] = useState(false);
+  const [activePersona, setActivePersona] = useState<string | null>(null);
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -69,29 +71,39 @@ export default function UserJourney() {
     }
   };
 
-  const generateUserJourneyBpmnDiagram = async () => {
+  const generatePersonaBpmn = async (personaType: 'guest' | 'logged-in' | 'admin' | 'power' | 'mobile') => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
       setError('No project plan available. Please generate a project plan first.');
       return;
     }
 
-    setIsGeneratingBpmn(true);
+    setIsGeneratingPersonaBpmn(prev => ({ ...prev, [personaType]: true }));
     setError('');
 
     try {
-      const bpmn = await generateUserJourneyBpmn(planContent);
-      setUserJourneyBpmn(bpmn);
+      const bpmn = await generatePersonaBpmnFlow(planContent, personaType);
+      setPersonaBpmnFlows(prev => ({ ...prev, [personaType]: bpmn }));
       
-      // Save to localStorage for use in BPMN editor
+      // Save the latest generated BPMN to localStorage
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmn);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error('Error generating user journey BPMN:', error);
-      setError('Failed to generate user journey BPMN diagram. Please try again.');
+      console.error(`Error generating ${personaType} BPMN:`, error);
+      setError(`Failed to generate ${personaType} user BPMN diagram. Please try again.`);
     } finally {
-      setIsGeneratingBpmn(false);
+      setIsGeneratingPersonaBpmn(prev => ({ ...prev, [personaType]: false }));
+    }
+  };
+
+  const generateAllPersonaBpmn = async () => {
+    const personas: ('guest' | 'logged-in' | 'admin' | 'power' | 'mobile')[] = ['guest', 'logged-in', 'admin', 'power', 'mobile'];
+    
+    for (const persona of personas) {
+      await generatePersonaBpmn(persona);
+      // Add a small delay between generations to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
   };
 
@@ -117,19 +129,20 @@ export default function UserJourney() {
     URL.revokeObjectURL(url);
   };
 
-  const downloadBpmn = () => {
-    if (!userJourneyBpmn) {
-      setError('No BPMN diagram available to download');
+  const downloadPersonaBpmn = (personaType: string) => {
+    const bpmn = personaBpmnFlows[personaType];
+    if (!bpmn) {
+      setError(`No ${personaType} BPMN diagram available to download`);
       return;
     }
 
-    const blob = new Blob([userJourneyBpmn], { type: 'application/xml' });
+    const blob = new Blob([bpmn], { type: 'application/xml' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     
-    const projectName = projectDescription.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const projectName = projectDescription.substring(0, 30).replace(/[^a-zA-Z0-9]/g, '_');
     const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `user_journey_bpmn_${projectName}_${timestamp}.xml`;
+    const filename = `${personaType}_user_journey_${projectName}_${timestamp}.xml`;
     
     link.href = url;
     link.download = filename;
@@ -153,17 +166,18 @@ export default function UserJourney() {
     }
   };
 
-  const copyBpmn = async () => {
-    if (!userJourneyBpmn) {
-      setError('No BPMN diagram available to copy');
+  const copyPersonaBpmn = async (personaType: string) => {
+    const bpmn = personaBpmnFlows[personaType];
+    if (!bpmn) {
+      setError(`No ${personaType} BPMN diagram available to copy`);
       return;
     }
 
     try {
-      await navigator.clipboard.writeText(userJourneyBpmn);
+      await navigator.clipboard.writeText(bpmn);
     } catch (error) {
-      console.error('Error copying BPMN diagram:', error);
-      setError('Failed to copy BPMN diagram to clipboard');
+      console.error(`Error copying ${personaType} BPMN diagram:`, error);
+      setError(`Failed to copy ${personaType} BPMN diagram to clipboard`);
     }
   };
 
