@@ -411,7 +411,7 @@ export default function UserJourney() {
           </CardContent>
         </Card>
 
-        {/* Generate BPMN Diagram */}
+        {/* Persona-Based BPMN Generation */}
         <Card className="mb-6 border-0 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 border-b">
             <CardTitle className="flex items-center justify-between text-xl">
@@ -419,83 +419,112 @@ export default function UserJourney() {
                 <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
                   <Activity className="h-5 w-5 text-white" />
                 </div>
-                BPMN 2.0 Swimlane Diagram Generation
+                Persona-Based BPMN 2.0 Diagrams
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent className="p-6">
-            <div className="space-y-4">
+            <div className="space-y-6">
               <p className="text-gray-600">
-                Generate a comprehensive BPMN 2.0 XML diagram with swimlanes for user journey flows. 
-                The diagram will include different actors (User, System, Admin, External Services) with proper sequence flows and decision gateways.
+                Generate individual BPMN 2.0 diagrams with swimlanes for each user persona. 
+                Each diagram shows specific workflows, decision points, and interactions tailored to different user types.
               </p>
               
-              <div className="flex gap-3">
+              <div className="flex gap-3 flex-wrap">
                 <Button
-                  onClick={generateUserJourneyBpmnDiagram}
-                  disabled={isGeneratingBpmn || (!projectPlan && !projectDescription)}
+                  onClick={generateAllPersonaBpmn}
+                  disabled={Object.values(isGeneratingPersonaBpmn).some(Boolean) || (!projectPlan && !projectDescription)}
                   className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                 >
-                  {isGeneratingBpmn ? (
+                  {Object.values(isGeneratingPersonaBpmn).some(Boolean) ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating BPMN...
+                      Generating All Personas...
                     </>
                   ) : (
                     <>
                       <Activity className="h-4 w-4 mr-2" />
-                      Generate BPMN Diagram
+                      Generate All Persona BPMN
                     </>
                   )}
                 </Button>
-
-                {userJourneyBpmn && (
-                  <>
-                    <Link href="/diagram">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
-                      >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View in Editor
-                      </Button>
-                    </Link>
-                    
-                    <Button
-                      onClick={downloadBpmn}
-                      variant="outline"
-                      size="sm"
-                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download XML
-                    </Button>
-                    
-                    <Button
-                      onClick={copyBpmn}
-                      variant="outline"
-                      size="sm"
-                      className="border-emerald-300 text-emerald-600 hover:bg-emerald-50"
-                    >
-                      <Copy className="h-4 w-4 mr-2" />
-                      Copy XML
-                    </Button>
-                  </>
-                )}
               </div>
 
-              {userJourneyBpmn && (
-                <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                  <p className="text-emerald-800 font-medium mb-2">
-                    ✓ BPMN 2.0 diagram generated successfully
-                  </p>
-                  <p className="text-emerald-700 text-sm">
-                    The swimlane-enabled BPMN diagram has been saved and is ready to view in the visual editor. 
-                    Click "View in Editor" to see the interactive diagram with swimlanes for different user roles.
-                  </p>
-                </div>
-              )}
+              {/* Individual Persona Cards */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {[
+                  { type: 'guest', title: 'Guest User', icon: '👤', color: 'blue', description: 'Unauthenticated exploration & registration' },
+                  { type: 'logged-in', title: 'Logged-in User', icon: '👥', color: 'green', description: 'Core features & profile management' },
+                  { type: 'admin', title: 'Admin User', icon: '👑', color: 'purple', description: 'User management & system configuration' },
+                  { type: 'power', title: 'Power User', icon: '⚡', color: 'orange', description: 'Advanced features & bulk operations' },
+                  { type: 'mobile', title: 'Mobile User', icon: '📱', color: 'pink', description: 'Mobile-specific interactions & offline sync' }
+                ].map((persona) => (
+                  <Card key={persona.type} className="border border-gray-200">
+                    <CardHeader className={`bg-gradient-to-r from-${persona.color}-50 to-${persona.color}-100 border-b`}>
+                      <CardTitle className="flex items-center gap-3 text-lg">
+                        <span className="text-2xl">{persona.icon}</span>
+                        <div>
+                          <div className="font-semibold">{persona.title}</div>
+                          <div className="text-sm font-normal text-gray-600">{persona.description}</div>
+                        </div>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-4">
+                      <div className="space-y-4">
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => generatePersonaBpmn(persona.type as any)}
+                            disabled={isGeneratingPersonaBpmn[persona.type] || (!projectPlan && !projectDescription)}
+                            size="sm"
+                            className={`bg-gradient-to-r from-${persona.color}-500 to-${persona.color}-600`}
+                          >
+                            {isGeneratingPersonaBpmn[persona.type] ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Activity className="h-3 w-3 mr-2" />
+                                Generate
+                              </>
+                            )}
+                          </Button>
+                          
+                          {personaBpmnFlows[persona.type] && (
+                            <>
+                              <Button
+                                onClick={() => downloadPersonaBpmn(persona.type)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Download className="h-3 w-3 mr-1" />
+                                Download
+                              </Button>
+                              <Button
+                                onClick={() => copyPersonaBpmn(persona.type)}
+                                variant="outline"
+                                size="sm"
+                              >
+                                <Copy className="h-3 w-3 mr-1" />
+                                Copy
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        
+                        {personaBpmnFlows[persona.type] && (
+                          <InlineBpmnViewer 
+                            bpmnXml={personaBpmnFlows[persona.type]}
+                            title={persona.title}
+                            height="300px"
+                          />
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
