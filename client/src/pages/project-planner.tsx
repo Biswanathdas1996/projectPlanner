@@ -211,42 +211,85 @@ export default function ProjectPlanner() {
 
         {/* Step 2: Project Plan */}
         {currentStep === 'plan' && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
+          <Card className="mb-6 border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+              <CardTitle className="flex items-center gap-3 text-xl">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
                 Generated Project Plan
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700 font-sans">
-                  {projectPlan}
-                </pre>
+            <CardContent className="p-6">
+              {/* Project Plan Content with Enhanced Formatting */}
+              <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
+                <div className="prose prose-gray max-w-none">
+                  <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
+                    {projectPlan.split('\n').map((line, index) => {
+                      // Enhanced formatting for different content types
+                      if (line.trim().startsWith('##') || line.trim().startsWith('# ')) {
+                        return (
+                          <h3 key={index} className="text-lg font-bold text-blue-800 mt-6 mb-3 first:mt-0">
+                            {line.replace(/^#+\s*/, '')}
+                          </h3>
+                        );
+                      }
+                      if (line.trim().startsWith('-') || line.trim().startsWith('•')) {
+                        return (
+                          <div key={index} className="flex items-start gap-2 mb-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                            <span className="text-gray-700">{line.replace(/^[-•]\s*/, '')}</span>
+                          </div>
+                        );
+                      }
+                      if (line.trim().match(/^\d+\./)) {
+                        return (
+                          <div key={index} className="flex items-start gap-3 mb-3">
+                            <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                              {line.trim().match(/^(\d+)/)?.[1]}
+                            </div>
+                            <span className="text-gray-700 font-medium">{line.replace(/^\d+\.\s*/, '')}</span>
+                          </div>
+                        );
+                      }
+                      if (line.trim() === '') {
+                        return <div key={index} className="h-3"></div>;
+                      }
+                      return (
+                        <p key={index} className="text-gray-700 mb-3 leading-relaxed">
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
               
-              <div className="flex justify-between">
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-between">
                 <Button
                   variant="outline"
                   onClick={resetPlanner}
                   disabled={isGeneratingBpmn}
+                  className="border-gray-300 hover:bg-gray-50"
                 >
+                  <ArrowLeft className="h-4 w-4 mr-2" />
                   Start Over
                 </Button>
                 <Button
                   onClick={handleGenerateBpmnDiagram}
                   disabled={isGeneratingBpmn}
-                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+                  className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg"
                 >
                   {isGeneratingBpmn ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Creating Diagram...
+                      Creating Visual Diagram...
                     </>
                   ) : (
                     <>
                       <Workflow className="h-4 w-4 mr-2" />
-                      Create BPMN Diagram
+                      Create Visual Diagram
                     </>
                   )}
                 </Button>
