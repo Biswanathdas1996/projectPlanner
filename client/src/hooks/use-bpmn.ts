@@ -534,54 +534,57 @@ export function useBpmn() {
     try {
       const elementRegistry = modelerRef.current.get('elementRegistry');
       const modeling = modelerRef.current.get('modeling');
-      const elementFactory = modelerRef.current.get('elementFactory');
+      const bpmnFactory = modelerRef.current.get('bpmnFactory');
       
       const sourceElement = elementRegistry.get(selectedElement.id);
       if (!sourceElement) return;
 
       // Calculate position for new element based on direction
-      const sourcePos = sourceElement;
-      let targetX = sourcePos.x;
-      let targetY = sourcePos.y;
+      let targetX = sourceElement.x;
+      let targetY = sourceElement.y;
       
       switch (direction) {
         case 'right':
-          targetX += 150;
+          targetX += 180;
           break;
         case 'left':
-          targetX -= 150;
+          targetX -= 180;
           break;
         case 'down':
-          targetY += 100;
+          targetY += 120;
           break;
         case 'up':
-          targetY -= 100;
+          targetY -= 120;
           break;
       }
 
-      // Create new task element
-      const taskShape = elementFactory.createShape({
-        type: 'bpmn:Task',
-        businessObject: elementFactory.create('bpmn:Task', {
-          id: `Task_${generateId()}`,
-          name: 'New Task'
-        })
+      // Create new task business object
+      const taskBusinessObject = bpmnFactory.create('bpmn:Task', {
+        id: `Task_${generateId()}`,
+        name: 'New Task'
       });
 
-      // Add the new shape to the canvas
-      const newElement = modeling.createShape(taskShape, { x: targetX, y: targetY }, sourceElement.parent);
+      // Create the shape using modeling service
+      const newElement = modeling.createShape(
+        { type: 'bpmn:Task', businessObject: taskBusinessObject },
+        { x: targetX, y: targetY },
+        sourceElement.parent
+      );
 
-      // Create connection between elements
-      const connectionShape = elementFactory.createConnection({
-        type: 'bpmn:SequenceFlow',
-        businessObject: elementFactory.create('bpmn:SequenceFlow', {
-          id: `Flow_${generateId()}`,
-          sourceRef: sourceElement.businessObject,
-          targetRef: newElement.businessObject
-        })
+      // Create sequence flow business object
+      const flowBusinessObject = bpmnFactory.create('bpmn:SequenceFlow', {
+        id: `Flow_${generateId()}`,
+        sourceRef: sourceElement.businessObject,
+        targetRef: newElement.businessObject
       });
 
-      modeling.createConnection(sourceElement, newElement, connectionShape, sourceElement.parent);
+      // Create the connection using modeling service
+      modeling.createConnection(
+        sourceElement,
+        newElement,
+        { type: 'bpmn:SequenceFlow', businessObject: flowBusinessObject },
+        sourceElement.parent
+      );
       
       // Select the new element
       const selection = modelerRef.current.get('selection');
@@ -602,23 +605,24 @@ export function useBpmn() {
     try {
       const elementRegistry = modelerRef.current.get('elementRegistry');
       const modeling = modelerRef.current.get('modeling');
-      const elementFactory = modelerRef.current.get('elementFactory');
+      const bpmnFactory = modelerRef.current.get('bpmnFactory');
       
       const sourceElement = elementRegistry.get(selectedElement.id);
       if (!sourceElement) return;
 
-      // Create new element based on type
-      const newShape = elementFactory.createShape({
-        type: elementType,
-        businessObject: elementFactory.create(elementType, {
-          id: `${elementType.split(':')[1]}_${generateId()}`,
-          name: elementType.includes('Event') ? '' : `New ${elementType.split(':')[1]}`
-        })
+      // Create business object based on type
+      const elementId = `${elementType.split(':')[1]}_${generateId()}`;
+      const elementName = elementType.includes('Event') ? '' : `New ${elementType.split(':')[1]}`;
+      
+      const businessObject = bpmnFactory.create(elementType, {
+        id: elementId,
+        name: elementName
       });
 
       // Position new element to the right of selected element
-      const newElement = modeling.createShape(newShape, 
-        { x: sourceElement.x + 150, y: sourceElement.y }, 
+      const newElement = modeling.createShape(
+        { type: elementType, businessObject: businessObject },
+        { x: sourceElement.x + 180, y: sourceElement.y },
         sourceElement.parent
       );
 
@@ -662,23 +666,24 @@ export function useBpmn() {
     try {
       const elementRegistry = modelerRef.current.get('elementRegistry');
       const modeling = modelerRef.current.get('modeling');
-      const elementFactory = modelerRef.current.get('elementFactory');
+      const bpmnFactory = modelerRef.current.get('bpmnFactory');
       
       const sourceElement = elementRegistry.get(selectedElement.id);
       if (!sourceElement) return;
 
-      // Create copy of the element
-      const copyShape = elementFactory.createShape({
-        type: sourceElement.type,
-        businessObject: elementFactory.create(sourceElement.type, {
-          id: `${sourceElement.businessObject.$type.split(':')[1]}_${generateId()}`,
-          name: sourceElement.businessObject.name ? `${sourceElement.businessObject.name} (Copy)` : ''
-        })
+      // Create copy business object
+      const copyId = `${sourceElement.businessObject.$type.split(':')[1]}_${generateId()}`;
+      const copyName = sourceElement.businessObject.name ? `${sourceElement.businessObject.name} (Copy)` : '';
+      
+      const copyBusinessObject = bpmnFactory.create(sourceElement.businessObject.$type, {
+        id: copyId,
+        name: copyName
       });
 
       // Position copy to the right of original
-      const newElement = modeling.createShape(copyShape, 
-        { x: sourceElement.x + 120, y: sourceElement.y + 60 }, 
+      const newElement = modeling.createShape(
+        { type: sourceElement.type, businessObject: copyBusinessObject },
+        { x: sourceElement.x + 120, y: sourceElement.y + 60 },
         sourceElement.parent
       );
 
