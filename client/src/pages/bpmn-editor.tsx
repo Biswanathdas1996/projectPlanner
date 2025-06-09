@@ -56,6 +56,7 @@ export default function BpmnEditor() {
     createNew,
     exportDiagram,
     importDiagram,
+    importDiagramFromXml,
     zoomIn,
     zoomOut,
     zoomFit,
@@ -373,7 +374,7 @@ export default function BpmnEditor() {
           onClose={togglePanel}
           onUpdateElement={updateElementProperties}
           onCopyXml={copyXmlToClipboard}
-          onDiagramUpdate={importDiagram}
+          onDiagramUpdate={importDiagramFromXml}
         />
       </div>
 
