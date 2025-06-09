@@ -33,6 +33,7 @@ import {
   Copy,
   Eye,
   EyeOff,
+  Users,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -923,6 +924,17 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       )}
                     </Button>
                   )}
+                  <Link href="/user-journey">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
+                      className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                    >
+                      <Users className="h-4 w-4 mr-2" />
+                      User Journey Flows
+                    </Button>
+                  </Link>
                   <Button
                     onClick={startEditingPlan}
                     variant="outline"
