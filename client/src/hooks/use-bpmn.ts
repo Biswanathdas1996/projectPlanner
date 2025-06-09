@@ -381,9 +381,9 @@ export function useBpmn() {
         let usedPositions = new Set();
         
         // Analyze flows to identify branching patterns
-        const elementFlows = flows.filter(f => 
-          laneElements.some(e => e.id === f.sourceRef) || 
-          laneElements.some(e => e.id === f.targetRef)
+        const elementFlows = flows.filter((f: any) => 
+          laneElements.some((e: any) => e.id === f.sourceRef) || 
+          laneElements.some((e: any) => e.id === f.targetRef)
         );
         
         laneElements.forEach((element: any, elementIndex: number) => {
@@ -391,8 +391,8 @@ export function useBpmn() {
           let y = laneY + lanePadding + 60;
           
           // Count incoming and outgoing flows for this element
-          const incomingFlows = elementFlows.filter(f => f.targetRef === element.id);
-          const outgoingFlows = elementFlows.filter(f => f.sourceRef === element.id);
+          const incomingFlows = elementFlows.filter((f: any) => f.targetRef === element.id);
+          const outgoingFlows = elementFlows.filter((f: any) => f.sourceRef === element.id);
           
           // Special handling for gateways and high-connection elements
           if (element.type === 'exclusiveGateway' || element.type === 'parallelGateway') {
@@ -418,8 +418,8 @@ export function useBpmn() {
             const prevElement = elementIndex > 0 ? laneElements[elementIndex - 1] : null;
             if (prevElement && (prevElement.type === 'exclusiveGateway' || prevElement.type === 'parallelGateway')) {
               // Position as branch from gateway
-              const branchFlows = elementFlows.filter(f => f.sourceRef === prevElement.id);
-              const flowIndex = branchFlows.findIndex(f => f.targetRef === element.id);
+              const branchFlows = elementFlows.filter((f: any) => f.sourceRef === prevElement.id);
+              const flowIndex = branchFlows.findIndex((f: any) => f.targetRef === element.id);
               
               if (flowIndex === 0) {
                 y = laneY + 30; // First branch (Yes/Approved)
