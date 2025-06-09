@@ -256,33 +256,42 @@ export function useBpmn() {
     if (!modelerRef.current) return;
 
     try {
-      const palette = modelerRef.current.get('palette');
-      const canvas = modelerRef.current.get('canvas');
+      // For creation tools, trigger the palette action
+      const paletteProvider = modelerRef.current.get('paletteProvider');
+      const entries = paletteProvider.getPaletteEntries();
       
-      // Activate the selected tool
-      if (elementType === 'hand-tool') {
-        const handTool = modelerRef.current.get('handTool');
-        handTool.activateHand();
-      } else if (elementType === 'lasso-tool') {
-        const lassoTool = modelerRef.current.get('lassoTool');
-        lassoTool.activateSelection();
-      } else if (elementType === 'space-tool') {
-        const spaceTool = modelerRef.current.get('spaceTool');
-        spaceTool.activateSelection();
-      } else {
-        // For creation tools, trigger the palette action
-        const paletteProvider = modelerRef.current.get('paletteProvider');
-        const entries = paletteProvider.getPaletteEntries();
-        
-        if (entries[elementType]) {
+      if (entries[elementType] && entries[elementType].action) {
+        if (typeof entries[elementType].action === 'function') {
           entries[elementType].action();
+        } else if (entries[elementType].action.click) {
+          entries[elementType].action.click();
+        }
+        
+        const displayName = elementType
+          .replace('create.', '')
+          .replace(/-/g, ' ')
+          .replace(/\b\w/g, l => l.toUpperCase());
+        
+        showNotification(`${displayName} tool activated`, 'success', 2000);
+      } else {
+        // Fallback for tools that might not be in palette
+        const toolMap: { [key: string]: string } = {
+          'hand-tool': 'hand',
+          'lasso-tool': 'lasso',
+          'space-tool': 'space'
+        };
+        
+        if (toolMap[elementType]) {
+          const globalConnect = modelerRef.current.get('globalConnect');
+          globalConnect.toggle();
+          showNotification(`${toolMap[elementType]} tool activated`, 'success', 2000);
+        } else {
+          showNotification('Tool not available', 'warning');
         }
       }
-      
-      showNotification(`${elementType.replace(/create\.|tool/, '').replace(/-/g, ' ')} activated`, 'success', 2000);
     } catch (error) {
       console.error('Error selecting element:', error);
-      showNotification('Failed to activate tool', 'error');
+      showNotification('Tool activation failed', 'error');
     }
   }, [showNotification]);
 

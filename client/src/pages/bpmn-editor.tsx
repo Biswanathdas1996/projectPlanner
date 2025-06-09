@@ -223,6 +223,12 @@ export default function BpmnEditor() {
 
       {/* Main Workspace */}
       <div className="flex h-screen pt-16">
+        {/* Element Sidebar */}
+        <ElementSidebar 
+          visible={sidebarVisible} 
+          onElementSelect={handleElementSelect}
+        />
+        
         <BpmnCanvas ref={containerRef} isLoading={isLoading} />
 
         {/* Canvas Controls */}
