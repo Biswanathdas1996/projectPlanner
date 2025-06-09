@@ -122,11 +122,12 @@ export function useBpmn() {
     }
   }, [showNotification]);
 
-  // Convert AI-generated JSON to BPMN XML
+  // Convert AI-generated JSON to BPMN XML with swimlanes
   const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
     const definitions = jsonData.definitions || jsonData;
     const elements = definitions.elements || [];
     const flows = definitions.flows || [];
+    const swimlanes = definitions.swimlanes || [];
 
     // Generate BPMN XML from JSON structure
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -136,66 +137,196 @@ export function useBpmn() {
   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
   xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
   id="${definitions.id || 'Definitions_1'}" 
-  targetNamespace="http://bpmn.io/schema/bpmn">
+  targetNamespace="http://bpmn.io/schema/bpmn">`;
+
+    if (swimlanes.length > 0) {
+      // Create collaboration with single participant for swimlanes
+      bpmnXml += `
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Participant_1" name="Process Participant" processRef="Process_1" />
+  </bpmn2:collaboration>`;
+    }
+
+    // Create single process with all elements
+    bpmnXml += `
   <bpmn2:process id="Process_1" isExecutable="false">`;
 
-    // Add elements
-    elements.forEach((element: any, index: number) => {
-      const x = 100 + (index * 150);
-      const y = 100;
-      
+    if (swimlanes.length > 0) {
+      // Add lane sets for swimlanes
+      bpmnXml += `
+    <bpmn2:laneSet id="LaneSet_1">`;
+
+      swimlanes.forEach((lane: any) => {
+        const laneElements = elements.filter((element: any) => element.lane === lane.id);
+        const elementRefs = laneElements.map((el: any) => el.id).join('" flowNodeRef="');
+        
+        bpmnXml += `
+      <bpmn2:lane id="${lane.id}" name="${lane.name}">
+        <bpmn2:flowNodeRef>${elementRefs}</bpmn2:flowNodeRef>
+      </bpmn2:lane>`;
+      });
+
+      bpmnXml += `
+    </bpmn2:laneSet>`;
+    }
+
+    // Add all elements
+    elements.forEach((element: any) => {
+      const incomingFlows = flows.filter((flow: any) => flow.targetRef === element.id);
+      const outgoingFlows = flows.filter((flow: any) => flow.sourceRef === element.id);
+
+      const incomingRefs = incomingFlows.map((flow: any) => `<bpmn2:incoming>${flow.id}</bpmn2:incoming>`).join('\n      ');
+      const outgoingRefs = outgoingFlows.map((flow: any) => `<bpmn2:outgoing>${flow.id}</bpmn2:outgoing>`).join('\n      ');
+
       switch (element.type) {
         case 'startEvent':
           bpmnXml += `
     <bpmn2:startEvent id="${element.id}" name="${element.name || 'Start'}">
-      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
+      ${outgoingRefs}
     </bpmn2:startEvent>`;
           break;
         case 'task':
+        case 'userTask':
+        case 'serviceTask':
+          const taskType = element.type === 'task' ? 'task' : element.type;
           bpmnXml += `
-    <bpmn2:task id="${element.id}" name="${element.name || 'Task'}">
-      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
-    </bpmn2:task>`;
+    <bpmn2:${taskType} id="${element.id}" name="${element.name || 'Task'}">
+      ${incomingRefs}
+      ${outgoingRefs}
+    </bpmn2:${taskType}>`;
           break;
         case 'exclusiveGateway':
           bpmnXml += `
     <bpmn2:exclusiveGateway id="${element.id}" name="${element.name || 'Gateway'}">
-      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_${index + 1}</bpmn2:outgoing>
+      ${incomingRefs}
+      ${outgoingRefs}
     </bpmn2:exclusiveGateway>`;
+          break;
+        case 'parallelGateway':
+          bpmnXml += `
+    <bpmn2:parallelGateway id="${element.id}" name="${element.name || 'Parallel Gateway'}">
+      ${incomingRefs}
+      ${outgoingRefs}
+    </bpmn2:parallelGateway>`;
+          break;
+        case 'intermediateCatchEvent':
+          bpmnXml += `
+    <bpmn2:intermediateCatchEvent id="${element.id}" name="${element.name || 'Wait'}">
+      ${incomingRefs}
+      ${outgoingRefs}
+      <bpmn2:timerEventDefinition />
+    </bpmn2:intermediateCatchEvent>`;
           break;
         case 'endEvent':
           bpmnXml += `
     <bpmn2:endEvent id="${element.id}" name="${element.name || 'End'}">
-      <bpmn2:incoming>Flow_${index}</bpmn2:incoming>
+      ${incomingRefs}
     </bpmn2:endEvent>`;
           break;
       }
     });
 
-    // Add sequence flows
+    // Add all sequence flows
     flows.forEach((flow: any) => {
       bpmnXml += `
     <bpmn2:sequenceFlow id="${flow.id}" sourceRef="${flow.sourceRef}" targetRef="${flow.targetRef}" />`;
     });
 
     bpmnXml += `
-  </bpmn2:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">`;
+  </bpmn2:process>`;
 
-    // Add visual elements
-    elements.forEach((element: any, index: number) => {
-      const x = 100 + (index * 150);
-      const y = 100;
-      const width = element.type === 'startEvent' || element.type === 'endEvent' ? 36 : 100;
-      const height = element.type === 'startEvent' || element.type === 'endEvent' ? 36 : 80;
+    // Add BPMN diagram with swimlanes
+    const diagramElement = swimlanes.length > 0 ? "Collaboration_1" : "Process_1";
+    bpmnXml += `
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="${diagramElement}">`;
+
+    if (swimlanes.length > 0) {
+      // Add participant shape
+      const totalHeight = swimlanes.length * 200;
+      bpmnXml += `
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <dc:Bounds x="50" y="50" width="1000" height="${totalHeight}" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>`;
+
+      // Add swimlane shapes
+      swimlanes.forEach((lane: any, laneIndex: number) => {
+        const laneHeight = 200;
+        const laneY = 50 + (laneIndex * laneHeight);
+        
+        bpmnXml += `
+      <bpmndi:BPMNShape id="${lane.id}_di" bpmnElement="${lane.id}" isHorizontal="true">
+        <dc:Bounds x="80" y="${laneY}" width="970" height="${laneHeight}" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>`;
+      });
+    }
+
+    // Add element shapes
+    let elementPositions: any = {};
+    
+    if (swimlanes.length > 0) {
+      // Position elements within swimlanes
+      swimlanes.forEach((lane: any, laneIndex: number) => {
+        const laneElements = elements.filter((element: any) => element.lane === lane.id);
+        laneElements.forEach((element: any, elementIndex: number) => {
+          const x = 150 + (elementIndex * 180);
+          const y = 50 + (laneIndex * 200) + 80;
+          elementPositions[element.id] = { x, y };
+        });
+      });
+    } else {
+      // Position elements without swimlanes
+      elements.forEach((element: any, elementIndex: number) => {
+        const x = 150 + (elementIndex * 180);
+        const y = 150;
+        elementPositions[element.id] = { x, y };
+      });
+    }
+
+    // Add element shapes
+    elements.forEach((element: any) => {
+      const pos = elementPositions[element.id];
+      let width = 100;
+      let height = 80;
+
+      if (element.type === 'startEvent' || element.type === 'endEvent' || element.type === 'intermediateCatchEvent') {
+        width = 36;
+        height = 36;
+      } else if (element.type === 'exclusiveGateway' || element.type === 'parallelGateway') {
+        width = 50;
+        height = 50;
+      }
 
       bpmnXml += `
       <bpmndi:BPMNShape id="${element.id}_di" bpmnElement="${element.id}">
-        <dc:Bounds x="${x}" y="${y}" width="${width}" height="${height}" />
+        <dc:Bounds x="${pos.x}" y="${pos.y}" width="${width}" height="${height}" />
+        <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
+    });
+
+    // Add flow connectors
+    flows.forEach((flow: any) => {
+      const sourceElement = elements.find((el: any) => el.id === flow.sourceRef);
+      const targetElement = elements.find((el: any) => el.id === flow.targetRef);
+      
+      if (sourceElement && targetElement) {
+        const sourcePos = elementPositions[sourceElement.id];
+        const targetPos = elementPositions[targetElement.id];
+        
+        // Calculate connection points
+        const sourceX = sourcePos.x + 50; // Center of element
+        const sourceY = sourcePos.y + 40;
+        const targetX = targetPos.x;
+        const targetY = targetPos.y + 40;
+
+        bpmnXml += `
+      <bpmndi:BPMNEdge id="${flow.id}_di" bpmnElement="${flow.id}">
+        <di:waypoint x="${sourceX}" y="${sourceY}" />
+        <di:waypoint x="${targetX}" y="${targetY}" />
+      </bpmndi:BPMNEdge>`;
+      }
     });
 
     bpmnXml += `
