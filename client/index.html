@@ -95,15 +95,28 @@
       
       /* Enhanced styling for exclusive gateways (decision boxes) */
       .djs-element[data-element-id*="Gateway"] .djs-visual path {
-        stroke: #dc2626 !important;
-        stroke-width: 2.5px !important;
-        fill: #fef2f2 !important;
+        stroke: #1f2937 !important;
+        stroke-width: 3px !important;
+        fill: #ffffff !important;
       }
       
       .djs-element[data-element-id*="ExclusiveGateway"] .djs-visual path {
-        stroke: #dc2626 !important;
-        stroke-width: 2.5px !important;
-        fill: #fef2f2 !important;
+        stroke: #1f2937 !important;
+        stroke-width: 3px !important;
+        fill: #ffffff !important;
+      }
+      
+      /* Add X symbol to exclusive gateways */
+      .djs-element[data-element-id*="ExclusiveGateway"] .djs-visual::after {
+        content: "×";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        font-weight: bold;
+        color: #1f2937;
+        pointer-events: none;
       }
       
       /* Parallel gateway styling */
