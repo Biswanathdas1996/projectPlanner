@@ -101,6 +101,13 @@ export function useBpmn() {
       updateJsonView();
       setIsLoading(false);
       setStatus('Ready');
+      
+      // Auto-fit the diagram to viewport after initialization
+      setTimeout(() => {
+        if (modelerRef.current) {
+          modelerRef.current.get('canvas').zoom('fit-viewport');
+        }
+      }, 500);
 
     } catch (error) {
       console.error('Error initializing BPMN modeler:', error);
@@ -307,16 +314,16 @@ export function useBpmn() {
 
     if (swimlanes.length > 0) {
       // Add participant shape
-      const totalHeight = swimlanes.length * 200;
+      const totalHeight = swimlanes.length * 280;
       bpmnXml += `
       <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
-        <dc:Bounds x="50" y="50" width="1000" height="${totalHeight}" />
+        <dc:Bounds x="50" y="50" width="1500" height="${totalHeight}" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
 
       // Add swimlane shapes
       swimlanes.forEach((lane: any, laneIndex: number) => {
-        const laneHeight = 200;
+        const laneHeight = 280;
         const laneY = 50 + (laneIndex * laneHeight);
         
         bpmnXml += `
@@ -431,6 +438,14 @@ export function useBpmn() {
         showNotification('AI-generated diagram loaded successfully', 'success');
         setStatus('AI Loaded');
         updateJsonView();
+        
+        // Auto-fit AI diagrams to viewport for better visibility
+        setTimeout(() => {
+          if (modelerRef.current) {
+            modelerRef.current.get('canvas').zoom('fit-viewport');
+          }
+        }, 300);
+        
         // Clear the AI diagram after loading to prevent reloading
         localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
         return;
