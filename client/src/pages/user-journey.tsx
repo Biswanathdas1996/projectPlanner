@@ -577,6 +577,22 @@ export default function UserJourney() {
                           
                           {personaBpmnFlows[persona.type] && (
                             <>
+                              <Link href="/editor">
+                                <Button
+                                  onClick={() => {
+                                    // Save the current persona BPMN to localStorage for the editor
+                                    localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, personaBpmnFlows[persona.type]);
+                                    localStorage.setItem(STORAGE_KEYS.DIAGRAM, personaBpmnFlows[persona.type]);
+                                    localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="bg-indigo-50 border-indigo-300 text-indigo-600 hover:bg-indigo-100"
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View in Editor
+                                </Button>
+                              </Link>
                               <Button
                                 onClick={() => downloadPersonaBpmn(persona.type)}
                                 variant="outline"
