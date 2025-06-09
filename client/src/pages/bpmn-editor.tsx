@@ -33,6 +33,7 @@ export default function BpmnEditor() {
   const [panelVisible, setPanelVisible] = useState(true);
   const [sidebarVisible, setSidebarVisible] = useState(true);
   const [helpVisible, setHelpVisible] = useState(false);
+  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
   const [confirmationModal, setConfirmationModal] = useState({
     open: false,
     title: '',
@@ -62,7 +63,29 @@ export default function BpmnEditor() {
     copyJsonToClipboard,
     handleElementSelect,
     connectElements,
+    createConnection,
+    createElement,
+    deleteSelectedElement,
+    copySelectedElement,
   } = useBpmn();
+
+  // Track click position for contextual toolbar
+  useEffect(() => {
+    const handleCanvasClick = (event: MouseEvent) => {
+      if (selectedElement) {
+        setToolbarPosition({
+          x: event.clientX,
+          y: event.clientY
+        });
+      }
+    };
+
+    const canvasElement = containerRef.current;
+    if (canvasElement) {
+      canvasElement.addEventListener('click', handleCanvasClick);
+      return () => canvasElement.removeEventListener('click', handleCanvasClick);
+    }
+  }, [selectedElement, containerRef]);
 
   const handleCreateNew = () => {
     setConfirmationModal({
@@ -364,6 +387,18 @@ export default function BpmnEditor() {
       <HelpPanel
         visible={helpVisible}
         onClose={toggleHelp}
+      />
+
+      {/* Contextual Toolbar */}
+      <ContextualToolbar
+        selectedElement={selectedElement}
+        visible={!!selectedElement}
+        position={toolbarPosition}
+        onCreateConnection={createConnection}
+        onDeleteElement={deleteSelectedElement}
+        onCopyElement={copySelectedElement}
+        onShowProperties={() => setPanelVisible(true)}
+        onCreateElement={createElement}
       />
 
       {/* Hidden File Input */}
