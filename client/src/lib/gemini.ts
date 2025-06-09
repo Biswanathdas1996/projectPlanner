@@ -237,23 +237,36 @@ CRITICAL: Generate ONLY valid BPMN 2.0 XML that follows this EXACT structure for
   </bpmn2:process>
 
   <bpmn2:process id="Process_System" isExecutable="false">
+    <bpmn2:startEvent id="StartEvent_2" name="System Start">
+      <bpmn2:outgoing>Flow_3</bpmn2:outgoing>
+    </bpmn2:startEvent>
     <bpmn2:serviceTask id="ServiceTask_1" name="System Process">
-      <bpmn2:incoming>MessageFlow_1</bpmn2:incoming>
-      <bpmn2:outgoing>MessageFlow_2</bpmn2:outgoing>
+      <bpmn2:incoming>Flow_3</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_4</bpmn2:outgoing>
     </bpmn2:serviceTask>
+    <bpmn2:endEvent id="EndEvent_2" name="System End">
+      <bpmn2:incoming>Flow_4</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_3" sourceRef="StartEvent_2" targetRef="ServiceTask_1" />
+    <bpmn2:sequenceFlow id="Flow_4" sourceRef="ServiceTask_1" targetRef="EndEvent_2" />
   </bpmn2:process>
 
   <bpmn2:process id="Process_Backend" isExecutable="false">
+    <bpmn2:startEvent id="StartEvent_3" name="Backend Start">
+      <bpmn2:outgoing>Flow_5</bpmn2:outgoing>
+    </bpmn2:startEvent>
     <bpmn2:serviceTask id="ServiceTask_2" name="Backend Process">
-      <bpmn2:incoming>MessageFlow_3</bpmn2:incoming>
-      <bpmn2:outgoing>MessageFlow_4</bpmn2:outgoing>
+      <bpmn2:incoming>Flow_5</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_6</bpmn2:outgoing>
     </bpmn2:serviceTask>
+    <bpmn2:endEvent id="EndEvent_3" name="Backend End">
+      <bpmn2:incoming>Flow_6</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_5" sourceRef="StartEvent_3" targetRef="ServiceTask_2" />
+    <bpmn2:sequenceFlow id="Flow_6" sourceRef="ServiceTask_2" targetRef="EndEvent_3" />
   </bpmn2:process>
 
-  <bpmn2:messageFlow id="MessageFlow_1" sourceRef="UserTask_1" targetRef="ServiceTask_1" />
-  <bpmn2:messageFlow id="MessageFlow_2" sourceRef="ServiceTask_1" targetRef="UserTask_1" />
-  <bpmn2:messageFlow id="MessageFlow_3" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
-  <bpmn2:messageFlow id="MessageFlow_4" sourceRef="ServiceTask_2" targetRef="ServiceTask_1" />
+
 
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
@@ -276,11 +289,23 @@ CRITICAL: Generate ONLY valid BPMN 2.0 XML that follows this EXACT structure for
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
         <dc:Bounds x="472" y="162" width="36" height="36" />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_2_di" bpmnElement="StartEvent_2">
+        <dc:Bounds x="232" y="442" width="36" height="36" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ServiceTask_1_di" bpmnElement="ServiceTask_1">
-        <dc:Bounds x="320" y="410" width="100" height="80" />
+        <dc:Bounds x="320" y="420" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_2_di" bpmnElement="EndEvent_2">
+        <dc:Bounds x="472" y="442" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_3_di" bpmnElement="StartEvent_3">
+        <dc:Bounds x="232" y="702" width="36" height="36" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="ServiceTask_2_di" bpmnElement="ServiceTask_2">
         <dc:Bounds x="320" y="680" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_3_di" bpmnElement="EndEvent_3">
+        <dc:Bounds x="472" y="702" width="36" height="36" />
       </bpmndi:BPMNShape>
       
       <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
@@ -292,34 +317,35 @@ CRITICAL: Generate ONLY valid BPMN 2.0 XML that follows this EXACT structure for
         <di:waypoint x="472" y="180" />
       </bpmndi:BPMNEdge>
       
-      <bpmndi:BPMNEdge id="MessageFlow_1_di" bpmnElement="MessageFlow_1">
-        <di:waypoint x="370" y="220" />
-        <di:waypoint x="370" y="410" />
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="268" y="460" />
+        <di:waypoint x="320" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="MessageFlow_2_di" bpmnElement="MessageFlow_2">
-        <di:waypoint x="390" y="410" />
-        <di:waypoint x="390" y="220" />
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="420" y="460" />
+        <di:waypoint x="472" y="460" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="MessageFlow_3_di" bpmnElement="MessageFlow_3">
-        <di:waypoint x="370" y="490" />
-        <di:waypoint x="370" y="680" />
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="268" y="720" />
+        <di:waypoint x="320" y="720" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="MessageFlow_4_di" bpmnElement="MessageFlow_4">
-        <di:waypoint x="390" y="680" />
-        <di:waypoint x="390" y="490" />
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="420" y="720" />
+        <di:waypoint x="472" y="720" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>
 
-REQUIREMENTS:
+CRITICAL REQUIREMENTS:
 1. Use EXACTLY the namespace prefixes shown: bpmn2:, bpmndi:, dc:, di:
 2. Include collaboration with 3-5 participants (swimlanes)
 3. Add 8-15 process elements: start events, user tasks, service tasks, gateways, end events
-4. Connect elements with sequence flows and message flows
+4. Connect elements ONLY with sequence flows - NEVER use message flows
 5. Include complete visual layout with proper coordinates
 6. Base element names and flow on the actual project plan content
 7. Ensure all IDs are unique and properly referenced
+8. Each process must be self-contained with start and end events
 
 Generate realistic workflow elements based on the project plan content, not generic placeholders.`;
 
