@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <title>BPMN 2.0 Process Designer</title>
+    <meta name="description" content="Professional BPMN 2.0 process flow diagram editor with JSON storage and localStorage persistence. Create, edit, and manage business process diagrams with ease." />
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/bpmn-js@17.0.2/dist/bpmn-modeler.development.js"></script>
+    <style>
+      .bpmn-container { height: 100%; }
+      .bjs-powered-by { display: none !important; }
+      
+      .djs-palette {
+        border-radius: 8px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+      }
+      
+      .djs-context-pad {
+        border-radius: 6px !important;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.15) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
+  </body>
+</html>
