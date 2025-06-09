@@ -45,11 +45,30 @@
         fill: #ffffff !important;
       }
       
-      /* Swimlane styling */
+      /* Swimlane styling with clear boundaries */
       .djs-element[data-element-id*="Lane"] .djs-visual > rect {
-        stroke: #999 !important;
-        stroke-width: 1px !important;
+        stroke: #666 !important;
+        stroke-width: 2px !important;
         fill: #f8f9fa !important;
+      }
+      
+      /* Participant container styling */
+      .djs-element[data-element-id*="Participant"] .djs-visual > rect {
+        stroke: #333 !important;
+        stroke-width: 3px !important;
+        fill: rgba(248, 249, 250, 0.3) !important;
+      }
+      
+      /* Ensure elements stay within lane boundaries */
+      .djs-element {
+        position: relative !important;
+      }
+      
+      /* Lane header styling */
+      .djs-label {
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        fill: #333 !important;
       }
       
       /* Hide resize handles and selection decorations */

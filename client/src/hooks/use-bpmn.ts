@@ -156,9 +156,33 @@ export function useBpmn() {
   // Convert AI-generated JSON to BPMN XML with swimlanes
   const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
     const definitions = jsonData.definitions || jsonData;
-    const elements = definitions.elements || [];
+    let elements = definitions.elements || [];
     const flows = definitions.flows || [];
-    const swimlanes = definitions.swimlanes || [];
+    let swimlanes = definitions.swimlanes || [];
+
+    // Validation: Ensure all elements are assigned to swimlanes
+    if (swimlanes.length > 0) {
+      const swimlaneIds = swimlanes.map((lane: any) => lane.id);
+      
+      // Check for elements without lane assignment
+      elements = elements.map((element: any, index: number) => {
+        if (!element.lane || !swimlaneIds.includes(element.lane)) {
+          // Auto-assign to first available swimlane
+          const targetLane = swimlaneIds[index % swimlaneIds.length];
+          console.warn(`Element ${element.id} assigned to lane ${targetLane}`);
+          return { ...element, lane: targetLane };
+        }
+        return element;
+      });
+
+      // Ensure each swimlane has at least one element
+      swimlanes.forEach((lane: any) => {
+        const laneElements = elements.filter((el: any) => el.lane === lane.id);
+        if (laneElements.length === 0) {
+          console.warn(`Swimlane ${lane.id} has no elements assigned`);
+        }
+      });
+    }
 
     // Generate BPMN XML from JSON structure
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -294,17 +318,33 @@ export function useBpmn() {
       });
     }
 
-    // Add element shapes
+    // Add element shapes with proper containment within swimlanes
     let elementPositions: any = {};
     
     if (swimlanes.length > 0) {
-      // Position elements within swimlanes
+      // Position elements within swimlane boundaries with padding
       swimlanes.forEach((lane: any, laneIndex: number) => {
         const laneElements = elements.filter((element: any) => element.lane === lane.id);
+        const laneHeight = 200;
+        const laneY = 50 + (laneIndex * laneHeight);
+        const lanePadding = 20; // Padding from swimlane edges
+        const elementSpacing = 150; // Space between elements
+        
         laneElements.forEach((element: any, elementIndex: number) => {
-          const x = 150 + (elementIndex * 180);
-          const y = 50 + (laneIndex * 200) + 80;
-          elementPositions[element.id] = { x, y };
+          // Ensure elements are within swimlane boundaries
+          const x = 120 + lanePadding + (elementIndex * elementSpacing);
+          const y = laneY + lanePadding + 40; // Center vertically in lane with padding
+          
+          // Validate element is within lane bounds
+          const maxX = 1050 - 120; // Lane width minus element width
+          const constrainedX = Math.min(x, maxX);
+          
+          elementPositions[element.id] = { 
+            x: constrainedX, 
+            y: y,
+            laneIndex: laneIndex,
+            elementIndex: elementIndex
+          };
         });
       });
     } else {
