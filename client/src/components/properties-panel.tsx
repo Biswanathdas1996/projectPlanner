@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -5,8 +6,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Copy, X, Clock } from 'lucide-react';
+import { Copy, X, Clock, Sparkles, Loader2 } from 'lucide-react';
 import type { ElementProperties } from '@shared/schema';
+import { generateBpmnXml } from '@/lib/gemini';
 
 interface PropertiesPanelProps {
   visible: boolean;
@@ -15,6 +17,7 @@ interface PropertiesPanelProps {
   onClose: () => void;
   onUpdateElement: (properties: Partial<ElementProperties>) => void;
   onCopyXml: () => void;
+  onDiagramUpdate?: (newXml: string) => void;
 }
 
 export function PropertiesPanel({
@@ -24,11 +27,54 @@ export function PropertiesPanel({
   onClose,
   onUpdateElement,
   onCopyXml,
+  onDiagramUpdate,
 }: PropertiesPanelProps) {
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isProcessingAi, setIsProcessingAi] = useState(false);
+  const [aiError, setAiError] = useState('');
+
   if (!visible) return null;
 
   const handlePropertyChange = (field: keyof ElementProperties, value: string) => {
     onUpdateElement({ [field]: value });
+  };
+
+  const handleAiPrompt = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    setIsProcessingAi(true);
+    setAiError('');
+    
+    try {
+      // Combine current diagram context with user prompt
+      const enhancedPrompt = `
+Current BPMN diagram context:
+${diagramXml}
+
+User request: ${aiPrompt}
+
+Please modify the BPMN diagram according to the user's request. You can:
+- Add new elements (tasks, gateways, events)
+- Modify existing elements
+- Delete elements
+- Change connections and flows
+- Update element properties
+
+Return the complete updated BPMN 2.0 XML.`;
+
+      const updatedXml = await generateBpmnXml(enhancedPrompt);
+      
+      if (onDiagramUpdate) {
+        onDiagramUpdate(updatedXml);
+      }
+      
+      setAiPrompt('');
+    } catch (error) {
+      console.error('AI diagram update error:', error);
+      setAiError('Failed to process AI request. Please try again.');
+    } finally {
+      setIsProcessingAi(false);
+    }
   };
 
   return (
@@ -158,6 +204,64 @@ export function PropertiesPanel({
                 </div>
               </>
             )}
+          </div>
+        </div>
+
+        <Separator />
+
+        {/* AI-Powered Diagram Editor */}
+        <div className="p-4">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-blue-500" />
+              <h3 className="text-sm font-medium text-gray-900">AI Diagram Editor</h3>
+            </div>
+            
+            <div className="space-y-3">
+              <Textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                placeholder="Tell AI how to modify your diagram... e.g., 'Add a user authentication task after login', 'Delete the approval gateway', 'Add error handling paths'"
+                rows={4}
+                className="text-sm resize-none"
+                disabled={isProcessingAi}
+              />
+              
+              {aiError && (
+                <div className="text-xs text-red-600 bg-red-50 p-2 rounded border">
+                  {aiError}
+                </div>
+              )}
+              
+              <Button
+                onClick={handleAiPrompt}
+                disabled={isProcessingAi || !aiPrompt.trim()}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm"
+                size="sm"
+              >
+                {isProcessingAi ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Apply Changes
+                  </>
+                )}
+              </Button>
+              
+              <div className="text-xs text-gray-500 space-y-1">
+                <p className="font-medium">Examples:</p>
+                <ul className="list-disc list-inside space-y-1 text-gray-400">
+                  <li>"Add parallel gateway for concurrent approval"</li>
+                  <li>"Insert error handling after payment task"</li>
+                  <li>"Remove the review step and connect directly"</li>
+                  <li>"Add swimlanes for different user roles"</li>
+                </ul>
+              </div>
+            </div>
           </div>
         </div>
 
