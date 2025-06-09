@@ -71,6 +71,28 @@
         fill: #333 !important;
       }
       
+      /* Time annotation styling for elements with duration */
+      .djs-element .djs-visual text[data-duration] {
+        font-size: 11px !important;
+        fill: #1d4ed8 !important;
+        font-weight: 500 !important;
+      }
+      
+      /* Enhanced text labels for time annotations */
+      .djs-element text tspan:contains("minutes"),
+      .djs-element text tspan:contains("hours"),
+      .djs-element text tspan:contains("days"),
+      .djs-element text tspan:contains("weeks") {
+        fill: #1d4ed8 !important;
+        font-size: 10px !important;
+        font-weight: 600 !important;
+      }
+      
+      /* Make time duration text more visible */
+      .djs-element text:contains("(") {
+        font-size: 11px !important;
+      }
+      
       /* Hide resize handles and selection decorations */
       .djs-resize-handle,
       .djs-hit {
