@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
-import { generateProjectPlan, generateBpmnJson } from '@/lib/gemini';
+import { generateProjectPlan, generateBpmnJson, generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { Link, useLocation } from 'wouter';
 import {
@@ -44,6 +44,8 @@ export default function ProjectPlanner() {
   const [editedPlanContent, setEditedPlanContent] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isGeneratingSuggestions, setIsGeneratingSuggestions] = useState(false);
 
   const [, setLocation] = useLocation();
 
@@ -53,9 +55,21 @@ export default function ProjectPlanner() {
       return;
     }
 
-    // Show suggestions first
-    setShowSuggestions(true);
-    setSelectedSuggestions([]);
+    setIsGeneratingSuggestions(true);
+    setError('');
+
+    try {
+      // Generate custom suggestions based on user input
+      const customSuggestions = await generateCustomSuggestions(projectInput);
+      setSuggestions(customSuggestions);
+      setShowSuggestions(true);
+      setSelectedSuggestions([]);
+    } catch (err) {
+      console.error('Error generating suggestions:', err);
+      setError('Failed to generate suggestions. Please try again.');
+    } finally {
+      setIsGeneratingSuggestions(false);
+    }
   };
 
   const handleGenerateWithSuggestions = async () => {
@@ -186,6 +200,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setError('');
     setShowSuggestions(false);
     setSelectedSuggestions([]);
+    setSuggestions([]);
   };
 
   const toggleSuggestion = (suggestion: string) => {
@@ -195,25 +210,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
         : [...prev, suggestion]
     );
   };
-
-  const suggestions = [
-    "User authentication and authorization system",
-    "Real-time notifications and messaging",
-    "Mobile application (iOS/Android)",
-    "API integration with third-party services",
-    "Advanced search and filtering capabilities",
-    "Data analytics and reporting dashboard",
-    "Payment processing and billing system",
-    "File upload and media management",
-    "Multi-language and internationalization support",
-    "Security audit and compliance requirements",
-    "Automated testing and CI/CD pipeline",
-    "Scalability and performance optimization",
-    "Admin panel with role-based permissions",
-    "Email notifications and communication system",
-    "Social media integration and sharing",
-    "Advanced caching and database optimization"
-  ];
 
   const getStepStatus = (step: string) => {
     if (step === 'input') return currentStep === 'input' ? 'active' : currentStep === 'plan' || currentStep === 'diagram' ? 'completed' : 'pending';
@@ -565,10 +561,15 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </div>
                 <Button
                   onClick={handleGenerateProjectPlan}
-                  disabled={!projectInput.trim() || isGeneratingPlan}
+                  disabled={!projectInput.trim() || isGeneratingPlan || isGeneratingSuggestions}
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                 >
-                  {isGeneratingPlan ? (
+                  {isGeneratingSuggestions ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing Project...
+                    </>
+                  ) : isGeneratingPlan ? (
                     <>
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Generating Plan...
