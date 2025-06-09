@@ -146,6 +146,65 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
   return response.text();
 }
 
+export async function generateUserJourneyFlows(projectPlan: string): Promise<string> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error('Gemini API key not found. Please check your environment variables.');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+  const prompt = `Generate comprehensive user journey flow diagrams based on this project plan: "${projectPlan}"
+
+Create detailed step-by-step flow diagrams for each distinct user journey identified in the project plan. Include:
+
+**User Journey Types to Cover:**
+1. **End User Journey** - Primary user interactions and core feature usage
+2. **Admin/Manager Journey** - Administrative workflows and management tasks
+3. **Setup/Onboarding Journey** - Initial configuration and user setup
+4. **Error/Exception Journey** - Error handling and recovery flows
+5. **Guest/Anonymous Journey** - Non-authenticated user interactions
+
+**For Each Journey Include:**
+- **Start Point**: Clear entry point and user context
+- **Decision Points**: Where users make choices with branching paths
+- **Action Steps**: Specific tasks users perform
+- **System Interactions**: Backend processes and validations
+- **Success/Failure Paths**: Different outcomes and error handling
+- **Exit Points**: How journeys conclude
+
+**Visual Flow Requirements:**
+- Use HTML with inline CSS for professional diagram styling
+- Create flowchart-style layouts with boxes, arrows, and decision diamonds
+- Color-code different journey types (blue for user, green for admin, purple for setup, orange for errors)
+- Include icons and visual indicators for different step types
+- Show clear navigation paths and decision branching
+- Add hover effects and interactive elements
+
+**Content Structure:**
+- Journey overview with user persona and goals
+- Step-by-step flow visualization
+- Alternative paths and edge cases
+- Integration points with other journeys
+- Performance considerations and optimization points
+
+**Design Requirements:**
+- Professional color scheme with gradients and shadows
+- Responsive layout that works on different screen sizes
+- Clear typography hierarchy
+- Visual consistency across all journey diagrams
+- Interactive elements where appropriate
+
+Generate realistic, detailed user journeys based on the actual project plan content, not generic examples.
+
+Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  return response.text();
+}
+
 export async function generateSitemapXml(projectDescription: string): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
