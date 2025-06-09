@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnJson } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { Link, useLocation } from 'wouter';
@@ -41,6 +42,8 @@ export default function ProjectPlanner() {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isEditingPlan, setIsEditingPlan] = useState(false);
   const [editedPlanContent, setEditedPlanContent] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
 
   const [, setLocation] = useLocation();
 
@@ -50,11 +53,29 @@ export default function ProjectPlanner() {
       return;
     }
 
+    // Show suggestions first
+    setShowSuggestions(true);
+    setSelectedSuggestions([]);
+  };
+
+  const handleGenerateWithSuggestions = async () => {
     setIsGeneratingPlan(true);
     setError('');
+    setShowSuggestions(false);
 
     try {
-      const plan = await generateProjectPlan(projectInput);
+      let enhancedInput = projectInput;
+      
+      if (selectedSuggestions.length > 0) {
+        enhancedInput = `${projectInput}
+
+Additional Requirements:
+${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}
+
+Please ensure the project plan addresses all the selected requirements above and includes comprehensive architecture diagrams, user flows, and technical specifications.`;
+      }
+
+      const plan = await generateProjectPlan(enhancedInput);
       setProjectPlan(plan);
       setCurrentStep('plan');
     } catch (err) {
@@ -163,7 +184,36 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setEditedPlanContent('');
     setCurrentStep('input');
     setError('');
+    setShowSuggestions(false);
+    setSelectedSuggestions([]);
   };
+
+  const toggleSuggestion = (suggestion: string) => {
+    setSelectedSuggestions(prev => 
+      prev.includes(suggestion) 
+        ? prev.filter(s => s !== suggestion)
+        : [...prev, suggestion]
+    );
+  };
+
+  const suggestions = [
+    "User authentication and authorization system",
+    "Real-time notifications and messaging",
+    "Mobile application (iOS/Android)",
+    "API integration with third-party services",
+    "Advanced search and filtering capabilities",
+    "Data analytics and reporting dashboard",
+    "Payment processing and billing system",
+    "File upload and media management",
+    "Multi-language and internationalization support",
+    "Security audit and compliance requirements",
+    "Automated testing and CI/CD pipeline",
+    "Scalability and performance optimization",
+    "Admin panel with role-based permissions",
+    "Email notifications and communication system",
+    "Social media integration and sharing",
+    "Advanced caching and database optimization"
+  ];
 
   const getStepStatus = (step: string) => {
     if (step === 'input') return currentStep === 'input' ? 'active' : currentStep === 'plan' || currentStep === 'diagram' ? 'completed' : 'pending';
@@ -354,6 +404,88 @@ Return the complete enhanced project plan as HTML with all existing content plus
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
             <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
             <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* Suggestions Modal */}
+        {showSuggestions && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <Sparkles className="h-5 w-5 text-white" />
+                  </div>
+                  Customize Your Project Plan
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-gray-600 mb-6">
+                  Select additional features and requirements to include in your project plan. These will be integrated into the comprehensive architecture and development timeline.
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                  {suggestions.map((suggestion) => (
+                    <div key={suggestion} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <Checkbox
+                        id={suggestion}
+                        checked={selectedSuggestions.includes(suggestion)}
+                        onCheckedChange={() => toggleSuggestion(suggestion)}
+                        className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
+                      />
+                      <label
+                        htmlFor={suggestion}
+                        className="text-sm text-gray-700 cursor-pointer flex-1 leading-relaxed"
+                      >
+                        {suggestion}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-medium text-blue-800 mb-2">Selected Requirements ({selectedSuggestions.length})</h4>
+                  {selectedSuggestions.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedSuggestions.map((suggestion) => (
+                        <Badge key={suggestion} variant="outline" className="bg-white border-blue-300 text-blue-700">
+                          {suggestion}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-blue-600 text-sm">No additional requirements selected</p>
+                  )}
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowSuggestions(false)}
+                    className="border-gray-300 hover:bg-gray-50"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleGenerateWithSuggestions}
+                    disabled={isGeneratingPlan}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  >
+                    {isGeneratingPlan ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Plan...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Enhanced Plan
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 
