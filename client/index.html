@@ -137,60 +137,166 @@
       .project-plan-content {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         line-height: 1.6;
-        color: #333;
+        color: #1f2937;
+        max-width: none;
       }
       
       .project-plan-content h1, .project-plan-content h2, .project-plan-content h3 {
-        margin: 1.5rem 0 1rem 0;
+        margin: 2rem 0 1rem 0;
         color: #1f2937;
+        font-weight: 700;
+      }
+      
+      .project-plan-content h1 {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+      }
+      
+      .project-plan-content h2 {
+        color: #1e40af;
+        font-size: 1.8rem;
+        border-bottom: 2px solid #e0e7ff;
+        padding-bottom: 0.5rem;
+      }
+      
+      .project-plan-content .section-description {
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        padding: 1rem 1.5rem;
+        border-left: 4px solid #3b82f6;
+        border-radius: 0 8px 8px 0;
+        margin: 1rem 0 2rem 0;
+        font-style: italic;
+        color: #1e40af;
       }
       
       .project-plan-content .architecture-diagram {
         margin: 2rem 0;
-        padding: 1.5rem;
-        background: #f8fafc;
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc, #f1f5f9);
         border: 1px solid #e2e8f0;
-        border-radius: 8px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
       
       .project-plan-content .flow-diagram {
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin: 1rem 0;
+        margin: 1.5rem 0;
         flex-wrap: wrap;
+        justify-content: center;
       }
       
       .project-plan-content .diagram-box {
-        padding: 0.75rem 1rem;
-        background: #3b82f6;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
         color: white;
-        border-radius: 6px;
-        font-weight: 500;
+        border-radius: 8px;
+        font-weight: 600;
         text-align: center;
-        min-width: 120px;
+        min-width: 140px;
+        box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.3);
+        transition: all 0.3s ease;
+      }
+      
+      .project-plan-content .diagram-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -5px rgba(59, 130, 246, 0.4);
+      }
+      
+      .project-plan-content .diagram-box.green {
+        background: linear-gradient(135deg, #10b981, #059669);
+        box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+      }
+      
+      .project-plan-content .diagram-box.purple {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.3);
+      }
+      
+      .project-plan-content .diagram-box.orange {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.3);
       }
       
       .project-plan-content .arrow {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         color: #6b7280;
+        font-weight: bold;
+      }
+      
+      .project-plan-content .metric-card {
+        background: linear-gradient(135deg, #ffffff, #f8fafc);
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+      
+      .project-plan-content .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
       }
       
       .project-plan-content table {
         width: 100%;
         border-collapse: collapse;
-        margin: 1.5rem 0;
+        margin: 2rem 0;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       }
       
       .project-plan-content th, .project-plan-content td {
-        padding: 0.75rem;
+        padding: 1rem;
         text-align: left;
         border-bottom: 1px solid #e5e7eb;
       }
       
       .project-plan-content th {
-        background-color: #f3f4f6;
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: white;
         font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.875rem;
+        letter-spacing: 0.05em;
+      }
+      
+      .project-plan-content tr:nth-child(even) {
+        background-color: #f8fafc;
+      }
+      
+      .project-plan-content tr:hover {
+        background-color: #e0f2fe;
+      }
+      
+      .project-plan-content .timeline-item {
+        background: linear-gradient(135deg, #ffffff, #f9fafb);
+        border-left: 4px solid #3b82f6;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        border-radius: 0 8px 8px 0;
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      }
+      
+      .project-plan-content .risk-low {
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #166534;
+      }
+      
+      .project-plan-content .risk-medium {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #92400e;
+      }
+      
+      .project-plan-content .risk-high {
+        background: linear-gradient(135deg, #fecaca, #fca5a5);
+        color: #991b1b;
       }
       
       /* Hide resize handles and selection decorations */

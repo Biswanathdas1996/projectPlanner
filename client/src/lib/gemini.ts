@@ -24,33 +24,43 @@ Start your response with <!DOCTYPE html> and include:
 - Interactive elements with hover effects
 - Professional color scheme and typography
 
-**Required Visual Components:**
-1. **Executive Dashboard** - Key metrics in card format
-2. **System Architecture Diagram** - Visual boxes showing Frontend → API → Database → External Services
-3. **User Journey Flow** - Step-by-step flow with arrows and decision points
-4. **Technology Stack** - Layered diagram showing tech components
-5. **Development Timeline** - Gantt-style timeline with phases
-6. **Team Structure** - Organizational chart with roles
-7. **CI/CD Pipeline** - Visual pipeline stages
-8. **Risk Matrix** - Color-coded risk assessment table
+**Required Visual Components with Descriptions:**
+1. **Executive Dashboard** - Overview cards showing project metrics, budget, timeline, and key performance indicators with elegant blue gradients
+2. **System Architecture Diagram** - Visual component flow with rounded boxes and connecting arrows showing Frontend → API → Database → External Services in green tones
+3. **User Journey Flow** - Step-by-step user interaction flow with decision diamonds and process rectangles in purple gradients
+4. **Technology Stack** - Layered architecture diagram showing frontend, backend, database, and infrastructure layers with distinct color coding
+5. **Development Timeline** - Project phases with milestones, deadlines, and deliverables in a professional timeline format
+6. **Team Structure** - Organizational hierarchy with roles, responsibilities, and reporting structure
+7. **CI/CD Pipeline** - Development workflow from code commit to deployment with automated testing stages
+8. **Risk Assessment Matrix** - Color-coded risk analysis with mitigation strategies and priority levels
 
 **CSS Requirements:**
-- Use flexbox and grid for layouts
-- Create boxes with borders, shadows, and colors for components
-- Add arrows (→, ↓) and connecting lines between elements
-- Include hover effects and transitions
-- Responsive design with media queries
-- Professional typography and spacing
+- Use elegant color palette: primary blues (#3b82f6, #1d4ed8), secondary greens (#10b981, #059669), accent purples (#8b5cf6, #7c3aed)
+- Create boxes with subtle gradients, soft shadows, and rounded corners
+- Add smooth hover effects with color transitions
+- Use modern typography with proper hierarchy
+- Include descriptive text for each section explaining its purpose
+- Responsive design with consistent spacing
+- Professional card layouts with elegant borders
 
-**Content Structure:**
-- Project overview with objectives and scope
-- Detailed user flows with decision points
-- Complete technical architecture specifications
-- Development workflow with Git, testing, CI/CD
-- Resource planning and timeline estimates
-- Risk assessment and mitigation strategies
+**Content Structure with Detailed Descriptions:**
+- **Project Overview Section**: Clear objectives, scope definition, success criteria, and stakeholder information
+- **Executive Summary**: High-level project metrics, budget overview, timeline summary, and expected ROI
+- **Technical Architecture**: Detailed system design with component interactions, data flow, and integration points
+- **User Experience Flow**: Complete user journey mapping with touchpoints, decision trees, and interaction patterns
+- **Development Methodology**: Agile/Scrum practices, sprint planning, code review processes, and quality assurance
+- **Resource Allocation**: Team structure, skill requirements, budget breakdown, and equipment needs
+- **Risk Management**: Comprehensive risk analysis with probability assessment, impact evaluation, and mitigation plans
+- **Implementation Roadmap**: Phase-wise delivery schedule with milestones, dependencies, and critical path analysis
 
-Return ONLY the complete HTML document - no explanations or markdown.`;
+**Visual Design Requirements:**
+- Each section must include a brief description paragraph explaining its purpose and importance
+- Use consistent color coding: Blues for architecture, Greens for processes, Purples for planning, Orange for risks
+- Add subtle animations and hover effects for interactive elements
+- Include icons and visual indicators for different content types
+- Maintain professional spacing with proper typography hierarchy
+
+Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
