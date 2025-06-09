@@ -152,93 +152,130 @@ export async function generateBpmnXml(projectPlan: string): Promise<string> {
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
   const prompt = `
-Convert the following comprehensive project plan into a detailed BPMN 2.0 XML script with swimlanes that represents complete user flows and technical architecture. Create workflows that capture:
-
-1. **User Journey Flows**: Map every user interaction, decision point, and system response
-2. **Technical Process Flows**: Include API calls, database operations, and system integrations
-3. **Business Process Flows**: Capture approval workflows, validation steps, and business logic
-
-CRITICAL REQUIREMENTS:
-- Generate complete BPMN 2.0 XML with proper namespace declarations
-- Include swimlanes (lanes) for different user roles, system components, and external services
-- Use exclusive gateways for ALL decision points (user choices, validations, approvals, error handling)
-- Use parallel gateways for concurrent processes (async operations, multi-user workflows)
-- Add intermediate events for system waits, API calls, and external integrations
-- Include error handling paths and exception flows
-- Ensure all elements have proper IDs and are connected with sequence flows
+Convert the following project plan into a BPMN 2.0 XML document with swimlanes. Focus on creating a realistic workflow that BPMN.js can properly render.
 
 Project Plan:
 "${projectPlan}"
 
-Return ONLY a complete BPMN 2.0 XML document in this format:
+CRITICAL: Generate ONLY valid BPMN 2.0 XML that follows this EXACT structure for BPMN.js compatibility:
 
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
-                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
-                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-                  id="Definitions_1"
-                  targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+  xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" 
+  id="Definitions_1" 
+  targetNamespace="http://bpmn.io/schema/bpmn">
   
-  <bpmn:collaboration id="Collaboration_1">
-    <bpmn:participant id="Participant_EndUser" name="End User" processRef="Process_EndUser" />
-    <bpmn:participant id="Participant_Frontend" name="Frontend Application" processRef="Process_Frontend" />
-    <bpmn:participant id="Participant_Backend" name="Backend API" processRef="Process_Backend" />
-    <bpmn:participant id="Participant_Database" name="Database Layer" processRef="Process_Database" />
-    <bpmn:participant id="Participant_External" name="External Services" processRef="Process_External" />
-  </bpmn:collaboration>
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Participant_User" name="User" processRef="Process_User" />
+    <bpmn2:participant id="Participant_System" name="System" processRef="Process_System" />
+    <bpmn2:participant id="Participant_Backend" name="Backend" processRef="Process_Backend" />
+  </bpmn2:collaboration>
 
-  <!-- Process definitions for each swimlane -->
-  <bpmn:process id="Process_EndUser" isExecutable="true">
-    <!-- End User tasks and events -->
-  </bpmn:process>
+  <bpmn2:process id="Process_User" isExecutable="false">
+    <bpmn2:startEvent id="StartEvent_1" name="Start">
+      <bpmn2:outgoing>Flow_1</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:userTask id="UserTask_1" name="User Action">
+      <bpmn2:incoming>Flow_1</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_2</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:endEvent id="EndEvent_1" name="End">
+      <bpmn2:incoming>Flow_2</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="UserTask_1" />
+    <bpmn2:sequenceFlow id="Flow_2" sourceRef="UserTask_1" targetRef="EndEvent_1" />
+  </bpmn2:process>
 
-  <bpmn:process id="Process_Frontend" isExecutable="true">
-    <!-- Frontend application tasks -->
-  </bpmn:process>
+  <bpmn2:process id="Process_System" isExecutable="false">
+    <bpmn2:serviceTask id="ServiceTask_1" name="System Process">
+      <bpmn2:incoming>MessageFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>MessageFlow_2</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+  </bpmn2:process>
 
-  <bpmn:process id="Process_Backend" isExecutable="true">
-    <!-- Backend API tasks and gateways -->
-  </bpmn:process>
+  <bpmn2:process id="Process_Backend" isExecutable="false">
+    <bpmn2:serviceTask id="ServiceTask_2" name="Backend Process">
+      <bpmn2:incoming>MessageFlow_3</bpmn2:incoming>
+      <bpmn2:outgoing>MessageFlow_4</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+  </bpmn2:process>
 
-  <bpmn:process id="Process_Database" isExecutable="true">
-    <!-- Database operations -->
-  </bpmn:process>
+  <bpmn2:messageFlow id="MessageFlow_1" sourceRef="UserTask_1" targetRef="ServiceTask_1" />
+  <bpmn2:messageFlow id="MessageFlow_2" sourceRef="ServiceTask_1" targetRef="UserTask_1" />
+  <bpmn2:messageFlow id="MessageFlow_3" sourceRef="ServiceTask_1" targetRef="ServiceTask_2" />
+  <bpmn2:messageFlow id="MessageFlow_4" sourceRef="ServiceTask_2" targetRef="ServiceTask_1" />
 
-  <bpmn:process id="Process_External" isExecutable="true">
-    <!-- External service integrations -->
-  </bpmn:process>
-
-  <!-- BPMN Diagram Information -->
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
-      <!-- Visual layout information -->
+      <bpmndi:BPMNShape id="Participant_User_di" bpmnElement="Participant_User" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_System_di" bpmnElement="Participant_System" isHorizontal="true">
+        <dc:Bounds x="160" y="350" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_Backend_di" bpmnElement="Participant_Backend" isHorizontal="true">
+        <dc:Bounds x="160" y="620" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="232" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="UserTask_1_di" bpmnElement="UserTask_1">
+        <dc:Bounds x="320" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="472" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_1_di" bpmnElement="ServiceTask_1">
+        <dc:Bounds x="320" y="410" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ServiceTask_2_di" bpmnElement="ServiceTask_2">
+        <dc:Bounds x="320" y="680" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="268" y="180" />
+        <di:waypoint x="320" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="420" y="180" />
+        <di:waypoint x="472" y="180" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="MessageFlow_1_di" bpmnElement="MessageFlow_1">
+        <di:waypoint x="370" y="220" />
+        <di:waypoint x="370" y="410" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_2_di" bpmnElement="MessageFlow_2">
+        <di:waypoint x="390" y="410" />
+        <di:waypoint x="390" y="220" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_3_di" bpmnElement="MessageFlow_3">
+        <di:waypoint x="370" y="490" />
+        <di:waypoint x="370" y="680" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="MessageFlow_4_di" bpmnElement="MessageFlow_4">
+        <di:waypoint x="390" y="680" />
+        <di:waypoint x="390" y="490" />
+      </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-</bpmn:definitions>
+</bpmn2:definitions>
 
-REQUIREMENTS FOR THE GENERATED XML:
-1. **Swimlanes Structure**: Use bpmn:collaboration with multiple bpmn:participant elements for different roles (End User, Frontend, Backend, Database, External Services)
-2. **Process Elements**: Include start events, tasks, exclusive gateways, parallel gateways, intermediate events, and end events
-3. **Gateway Types**: 
-   - exclusiveGateway for decision points (Yes/No branches)
-   - parallelGateway for concurrent operations
-   - eventBasedGateway for event-driven processes
-4. **Task Types**:
-   - userTask for user interactions
-   - serviceTask for system operations
-   - scriptTask for automated processes
-   - manualTask for manual operations
-5. **Event Types**:
-   - startEvent for process initiation
-   - endEvent for process completion
-   - intermediateEvent for waiting points
-   - messageEvent for notifications
-6. **Sequence Flows**: Connect all elements with proper flow relationships and condition expressions
-7. **Error Handling**: Include error events and exception flows
-8. **Real Data Mapping**: Base all elements on actual project requirements from the plan
+REQUIREMENTS:
+1. Use EXACTLY the namespace prefixes shown: bpmn2:, bpmndi:, dc:, di:
+2. Include collaboration with 3-5 participants (swimlanes)
+3. Add 8-15 process elements: start events, user tasks, service tasks, gateways, end events
+4. Connect elements with sequence flows and message flows
+5. Include complete visual layout with proper coordinates
+6. Base element names and flow on the actual project plan content
+7. Ensure all IDs are unique and properly referenced
 
-Generate a comprehensive BPMN 2.0 XML that accurately represents the project workflow with proper swimlane separation and realistic process flows.`;
+Generate realistic workflow elements based on the project plan content, not generic placeholders.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
