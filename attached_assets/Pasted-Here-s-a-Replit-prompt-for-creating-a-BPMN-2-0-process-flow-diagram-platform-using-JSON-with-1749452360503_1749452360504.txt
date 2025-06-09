@@ -1,0 +1,58 @@
+Here's a **Replit prompt** for creating a **BPMN 2.0 process flow diagram platform** using JSON with **add/edit/delete** functionality, and **localStorage** for persistence. This is ideal for a small front-end focused project using JavaScript, HTML, and the [bpmn-js](https://github.com/bpmn-io/bpmn-js) library.
+
+---
+
+### 🧠 Replit Prompt: BPMN 2.0 JSON Diagram Editor
+
+**Title**: BPMN 2.0 Diagram Editor with JSON Storage
+
+**Prompt**:
+
+Create a web-based BPMN 2.0 process flow diagram editor that allows users to:
+
+* ✅ Create new BPMN diagrams from scratch.
+* ✏️ Add, edit, and delete BPMN elements (like tasks, gateways, events).
+* 📥 Import/export BPMN diagrams as JSON.
+* 💾 Save diagrams to `localStorage` so they persist across sessions.
+
+Use the open-source [`bpmn-js`](https://github.com/bpmn-io/bpmn-js) library for rendering and interacting with BPMN 2.0 diagrams.
+
+---
+
+### 💡 Features
+
+* Interactive BPMN 2.0 canvas.
+* Buttons or UI for **Add / Edit / Delete** elements.
+* Export the diagram as JSON to view or reuse.
+* Automatically **save to and load from localStorage**.
+* Optionally show the raw BPMN XML or JSON representation.
+
+---
+
+### 🛠 Tech Stack
+
+* HTML/CSS/JavaScript (Vanilla or with a front-end framework like React)
+* [bpmn-js](https://github.com/bpmn-io/bpmn-js)
+* Browser `localStorage` API
+
+---
+
+### 🧩 Starter Tasks
+
+1. Setup a basic HTML page and include `bpmn-js` via CDN or npm.
+2. Initialize the BPMN modeler and load a blank diagram.
+3. Add buttons for "Add Task", "Delete Element", and "Save to LocalStorage".
+4. Implement JSON export/import functionality using the modeler APIs.
+5. Persist the diagram data in `localStorage` and reload on page refresh.
+
+---
+
+### 📎 Resources
+
+* [`bpmn-js`](https://bpmn.io/toolkit/bpmn-js/)
+* [`bpmn-js Example`](https://github.com/bpmn-io/bpmn-js-examples)
+* [MDN localStorage Guide](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+
+---
+
+Would you like a working boilerplate for this Replit project (including `index.html`, JavaScript, and integration with `bpmn-js`)?
