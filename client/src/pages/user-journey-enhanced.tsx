@@ -1657,9 +1657,17 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         <label className="text-xs font-medium text-gray-600 mb-1 block">Process Description</label>
                                         <Textarea
                                           value={editedFlowDetails.processDescription}
-                                          onChange={(e) => updateEditedField('processDescription', e.target.value)}
-                                          className="text-xs min-h-[60px] resize-none"
-                                          rows={3}
+                                          onChange={(e) => {
+                                            updateEditedField('processDescription', e.target.value);
+                                            // Auto-expand textarea
+                                            const target = e.target;
+                                            target.style.height = 'auto';
+                                            target.style.height = Math.max(60, target.scrollHeight) + 'px';
+                                          }}
+                                          className="text-xs min-h-[60px] resize-none overflow-hidden"
+                                          style={{
+                                            height: Math.max(60, editedFlowDetails.processDescription.split('\n').length * 20 + 20) + 'px'
+                                          }}
                                         />
                                       </div>
 
@@ -1702,9 +1710,17 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         <label className="text-xs font-medium text-gray-600 mb-1 block">Trigger (Start Event)</label>
                                         <Textarea
                                           value={editedFlowDetails.trigger}
-                                          onChange={(e) => updateEditedField('trigger', e.target.value)}
-                                          className="text-xs min-h-[40px] resize-none"
-                                          rows={2}
+                                          onChange={(e) => {
+                                            updateEditedField('trigger', e.target.value);
+                                            // Auto-expand textarea
+                                            const target = e.target;
+                                            target.style.height = 'auto';
+                                            target.style.height = Math.max(40, target.scrollHeight) + 'px';
+                                          }}
+                                          className="text-xs min-h-[40px] resize-none overflow-hidden"
+                                          style={{
+                                            height: Math.max(40, editedFlowDetails.trigger.split('\n').length * 20 + 20) + 'px'
+                                          }}
                                         />
                                       </div>
 
@@ -1781,9 +1797,17 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         <label className="text-xs font-medium text-gray-600 mb-1 block">End Event</label>
                                         <Textarea
                                           value={editedFlowDetails.endEvent}
-                                          onChange={(e) => updateEditedField('endEvent', e.target.value)}
-                                          className="text-xs min-h-[40px] resize-none"
-                                          rows={2}
+                                          onChange={(e) => {
+                                            updateEditedField('endEvent', e.target.value);
+                                            // Auto-expand textarea
+                                            const target = e.target;
+                                            target.style.height = 'auto';
+                                            target.style.height = Math.max(40, target.scrollHeight) + 'px';
+                                          }}
+                                          className="text-xs min-h-[40px] resize-none overflow-hidden"
+                                          style={{
+                                            height: Math.max(40, editedFlowDetails.endEvent.split('\n').length * 20 + 20) + 'px'
+                                          }}
                                         />
                                       </div>
 
