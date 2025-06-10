@@ -950,71 +950,86 @@ export async function generateBpmnXml(projectPlan: string): Promise<string> {
     }
   });
 
-  const prompt = `Generate a comprehensive BPMN 2.0 XML workflow diagram based on this project plan: "${projectPlan}"
+  const prompt = `Generate a valid BPMN 2.0 XML diagram based on: "${projectPlan}"
 
-CRITICAL REQUIREMENTS:
-1. **Valid BPMN 2.0 XML Structure**
-   - Proper XML declaration and BPMN namespace
-   - Valid BPMN elements with correct IDs
-   - Proper process flow with start/end events
-   - Include decision gateways for business logic
-   - Add user tasks, service tasks, and script tasks
-   - Include sequence flows connecting all elements
+MANDATORY STRUCTURE - Follow this EXACT format:
 
-2. **Essential BPMN Elements to Include**:
-   - startEvent (circle)
-   - endEvent (circle with thick border)
-   - userTask (rectangle) for user interactions
-   - serviceTask (rectangle with gear icon) for system processes
-   - exclusiveGateway (diamond) for decision points
-   - parallelGateway (diamond with plus) for parallel flows
-   - sequenceFlow (arrows) connecting elements
-
-3. **Process Flow Structure**:
-   - Start with project initiation
-   - Include requirements gathering phase
-   - Add design and architecture phase
-   - Include development iterations
-   - Add testing and quality assurance
-   - Include deployment and launch
-   - End with project completion
-
-4. **ID Naming Convention**:
-   - Use descriptive, valid XML IDs (no spaces, special chars)
-   - StartEvent_1, UserTask_Requirements, Gateway_Decision_1
-   - Process_ProjectWorkflow
-   - SequenceFlow_1, SequenceFlow_2, etc.
-
-5. **Visual Layout (bpmndi:BPMNDiagram)**:
-   - Include proper positioning coordinates
-   - Logical left-to-right flow
-   - Adequate spacing between elements
-   - Professional swimlane layout if applicable
-
-EXAMPLE STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
-                   id="Definitions_1" 
-                   targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn2:process id="Process_ProjectWorkflow" isExecutable="true">
-    [Process elements here]
-  </bpmn2:process>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
+                  id="Definitions_1" 
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  
+  <bpmn:collaboration id="Collaboration_1">
+    <!-- Add participants as swimlanes if multiple actors -->
+    <bpmn:participant id="Participant_1" name="Main Process" processRef="Process_1" />
+  </bpmn:collaboration>
+  
+  <bpmn:process id="Process_1" isExecutable="true">
+    <!-- REQUIRED: Start event -->
+    <bpmn:startEvent id="StartEvent_1" name="Process Start" />
+    
+    <!-- Add tasks based on project activities -->
+    <bpmn:userTask id="Task_1" name="Activity 1" />
+    
+    <!-- Add gateways for decision points -->
+    <bpmn:exclusiveGateway id="Gateway_1" name="Decision Point" />
+    
+    <!-- REQUIRED: End event -->
+    <bpmn:endEvent id="EndEvent_1" name="Process End" />
+    
+    <!-- REQUIRED: Sequence flows connecting all elements -->
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    [Diagram elements here]
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <!-- REQUIRED: Visual elements with coordinates -->
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="600" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="212" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
+        <dc:Bounds x="320" y="140" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="502" y="162" width="36" height="36" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="248" y="180" />
+        <di:waypoint x="320" y="180" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="420" y="180" />
+        <di:waypoint x="502" y="180" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-</bpmn2:definitions>
+</bpmn:definitions>
 
-VALIDATION REQUIREMENTS:
-- XML must be well-formed and valid
-- All BPMN elements must have proper IDs
-- Sequence flows must connect valid elements
-- Process must have clear start and end points
-- Include meaningful labels and descriptions
+CRITICAL RULES:
+1. Every element MUST have corresponding visual shape in BPMNDiagram
+2. All sourceRef/targetRef in sequenceFlow must reference valid element IDs
+3. Use proper BPMN element types: startEvent, userTask, serviceTask, exclusiveGateway, endEvent
+4. Include bpmndi:BPMNLabel tags for all shapes
+5. Coordinates must be realistic (x: 100-800, y: 100-400)
+6. NO extra elements beyond what's specified in the project plan
 
-Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
+Return ONLY valid BPMN 2.0 XML - no markdown, no explanations.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
