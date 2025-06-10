@@ -821,8 +821,12 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 
   // Generate fallback BPMN when API fails
   const generateFallbackBpmn = (stakeholder: string, flowType: string, details: { description: string; keyComponents: string[]; processes: string[] }) => {
-    const processId = `Process_${stakeholder.replace(/\s+/g, '_')}_${flowType.replace(/\s+/g, '_')}`;
-    const poolId = `Pool_${stakeholder.replace(/\s+/g, '_')}`;
+    // Create valid XML IDs by removing special characters
+    const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+    const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
+    
+    const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
+    const poolId = `Pool_${cleanStakeholder}`;
     
     // Generate process elements based on core processes
     const processElements = details.processes.map((process, index) => {

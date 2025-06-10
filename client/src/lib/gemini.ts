@@ -1037,6 +1037,10 @@ export async function generateSwimlaneXml(
     }
   });
 
+  // Create valid XML IDs by sanitizing stakeholder and flow type names
+  const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+
   const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on these specifications:
 
 STAKEHOLDER: ${stakeholder}
@@ -1057,16 +1061,66 @@ Create a BPMN 2.0 XML with proper swimlane structure including:
 - Sequence flows connecting all elements
 - Swimlanes representing main actors (${stakeholder}, System, External Services)
 
-Requirements:
+CRITICAL XML ID REQUIREMENTS:
+- All IDs must be valid XML identifiers (no spaces, parentheses, commas, or special characters)
+- Use only alphanumeric characters and underscores for IDs
+- Example valid IDs: "Process_${cleanStakeholder}_${cleanFlowType}", "Pool_${cleanStakeholder}", "Activity_1", "Flow_1"
+- Invalid characters: ( ) , . - / \ @ # $ % ^ & * + = | [ ] { } < > ? ! ~ \` " '
+
+BPMN STRUCTURE REQUIREMENTS:
 - Return ONLY valid BPMN 2.0 XML
 - No markdown formatting or explanations
-- Include proper xmlns declarations
+- Include proper xmlns declarations exactly as shown:
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
 - Use collaboration with participant pools for swimlanes
 - Include bpmndi:BPMNDiagram for visual layout
 - Process flows connecting the core processes in logical sequence
 - Service tasks for key components
 - Start and end events
 - Gateways where decisions are needed
+- Do not include unknown attributes like dx, dy in waypoints
+
+EXAMPLE VALID STRUCTURE:
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Pool_${cleanStakeholder}" name="${stakeholder}" processRef="Process_${cleanStakeholder}_${cleanFlowType}" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_${cleanStakeholder}_${cleanFlowType}" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Start ${flowType}" />
+    <bpmn:serviceTask id="Activity_1" name="Task Name" />
+    <bpmn:endEvent id="EndEvent_1" name="End ${flowType}" />
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Pool_${cleanStakeholder}_di" bpmnElement="Pool_${cleanStakeholder}" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="600" height="250" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="212" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1_di" bpmnElement="Activity_1">
+        <dc:Bounds x="320" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="502" y="162" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="248" y="180" />
+        <di:waypoint x="320" y="180" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="420" y="180" />
+        <di:waypoint x="502" y="180" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
 
 Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 
