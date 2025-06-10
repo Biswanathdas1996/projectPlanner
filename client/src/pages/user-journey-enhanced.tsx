@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { generateUserJourneyFlows, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
@@ -29,7 +30,11 @@ import {
   Activity,
   Plus,
   Trash2,
-  BookOpen
+  BookOpen,
+  Edit3,
+  X,
+  Save,
+  UserPlus
 } from 'lucide-react';
 
 interface StakeholderFlow {
@@ -53,6 +58,11 @@ export default function UserJourneyEnhanced() {
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
   const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
+  
+  // Stakeholder management state
+  const [newStakeholderName, setNewStakeholderName] = useState('');
+  const [editingStakeholder, setEditingStakeholder] = useState<string | null>(null);
+  const [editedStakeholderName, setEditedStakeholderName] = useState('');
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -326,6 +336,107 @@ export default function UserJourneyEnhanced() {
     }
   };
 
+  // Stakeholder Management Functions
+  const addStakeholder = () => {
+    const trimmedName = newStakeholderName.trim();
+    if (!trimmedName) {
+      setError('Stakeholder name cannot be empty');
+      return;
+    }
+    
+    if (extractedStakeholders.includes(trimmedName)) {
+      setError('Stakeholder already exists');
+      return;
+    }
+    
+    const updatedStakeholders = [...extractedStakeholders, trimmedName];
+    setExtractedStakeholders(updatedStakeholders);
+    localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
+    
+    // Add default flow types for new stakeholder
+    const updatedFlowTypes = {
+      ...personaFlowTypes,
+      [trimmedName]: ['Registration Process', 'Main Workflow', 'Support Process']
+    };
+    setPersonaFlowTypes(updatedFlowTypes);
+    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+    
+    setNewStakeholderName('');
+    setError('');
+  };
+
+  const startEditingStakeholder = (stakeholder: string) => {
+    setEditingStakeholder(stakeholder);
+    setEditedStakeholderName(stakeholder);
+  };
+
+  const saveStakeholderEdit = () => {
+    const trimmedName = editedStakeholderName.trim();
+    if (!trimmedName) {
+      setError('Stakeholder name cannot be empty');
+      return;
+    }
+    
+    if (trimmedName !== editingStakeholder && extractedStakeholders.includes(trimmedName)) {
+      setError('Stakeholder name already exists');
+      return;
+    }
+    
+    if (editingStakeholder) {
+      // Update stakeholders list
+      const updatedStakeholders = extractedStakeholders.map(s => 
+        s === editingStakeholder ? trimmedName : s
+      );
+      setExtractedStakeholders(updatedStakeholders);
+      localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
+      
+      // Update flow types
+      const updatedFlowTypes = { ...personaFlowTypes };
+      if (updatedFlowTypes[editingStakeholder]) {
+        updatedFlowTypes[trimmedName] = updatedFlowTypes[editingStakeholder];
+        if (trimmedName !== editingStakeholder) {
+          delete updatedFlowTypes[editingStakeholder];
+        }
+      }
+      setPersonaFlowTypes(updatedFlowTypes);
+      localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+      
+      // Update stakeholder flows
+      const updatedFlows = stakeholderFlows.map(flow => 
+        flow.stakeholder === editingStakeholder 
+          ? { ...flow, stakeholder: trimmedName }
+          : flow
+      );
+      updateStakeholderFlows(updatedFlows);
+    }
+    
+    setEditingStakeholder(null);
+    setEditedStakeholderName('');
+    setError('');
+  };
+
+  const cancelStakeholderEdit = () => {
+    setEditingStakeholder(null);
+    setEditedStakeholderName('');
+  };
+
+  const deleteStakeholder = (stakeholder: string) => {
+    // Remove from stakeholders list
+    const updatedStakeholders = extractedStakeholders.filter(s => s !== stakeholder);
+    setExtractedStakeholders(updatedStakeholders);
+    localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
+    
+    // Remove from flow types
+    const updatedFlowTypes = { ...personaFlowTypes };
+    delete updatedFlowTypes[stakeholder];
+    setPersonaFlowTypes(updatedFlowTypes);
+    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+    
+    // Remove from stakeholder flows
+    const updatedFlows = stakeholderFlows.filter(flow => flow.stakeholder !== stakeholder);
+    updateStakeholderFlows(updatedFlows);
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -433,13 +544,91 @@ export default function UserJourneyEnhanced() {
             {extractedStakeholders.length > 0 ? (
               <div className="space-y-3">
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2 text-sm">Identified Stakeholders ({extractedStakeholders.length})</h4>
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-800 text-sm">Identified Stakeholders ({extractedStakeholders.length})</h4>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={newStakeholderName}
+                        onChange={(e) => setNewStakeholderName(e.target.value)}
+                        placeholder="Add stakeholder..."
+                        className="text-xs h-8 w-32"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            addStakeholder();
+                          }
+                        }}
+                      />
+                      <Button
+                        onClick={addStakeholder}
+                        size="sm"
+                        className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <UserPlus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {extractedStakeholders.map((stakeholder, index) => (
-                      <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-                        <Users className="h-3 w-3 mr-1" />
-                        {stakeholder}
-                      </Badge>
+                      <div key={index} className="relative group">
+                        {editingStakeholder === stakeholder ? (
+                          <div className="flex items-center gap-1 bg-white border border-blue-300 rounded-lg px-2 py-1">
+                            <Input
+                              value={editedStakeholderName}
+                              onChange={(e) => setEditedStakeholderName(e.target.value)}
+                              className="text-xs h-6 w-24 border-0 p-0 focus:ring-0"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  saveStakeholderEdit();
+                                } else if (e.key === 'Escape') {
+                                  cancelStakeholderEdit();
+                                }
+                              }}
+                              autoFocus
+                            />
+                            <Button
+                              onClick={saveStakeholderEdit}
+                              size="sm"
+                              className="h-5 w-5 p-0 bg-green-600 hover:bg-green-700"
+                            >
+                              <Save className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              onClick={cancelStakeholderEdit}
+                              size="sm"
+                              variant="outline"
+                              className="h-5 w-5 p-0 border-gray-300"
+                            >
+                              <X className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <Badge 
+                            variant="secondary" 
+                            className="bg-blue-100 text-blue-800 hover:bg-blue-200 pr-1 cursor-pointer"
+                          >
+                            <Users className="h-3 w-3 mr-1" />
+                            {stakeholder}
+                            <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                onClick={() => startEditingStakeholder(stakeholder)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-4 w-4 p-0 hover:bg-blue-200"
+                              >
+                                <Edit3 className="h-2.5 w-2.5" />
+                              </Button>
+                              <Button
+                                onClick={() => deleteStakeholder(stakeholder)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-4 w-4 p-0 hover:bg-red-200 text-red-600"
+                              >
+                                <X className="h-2.5 w-2.5" />
+                              </Button>
+                            </div>
+                          </Badge>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -475,9 +664,30 @@ export default function UserJourneyEnhanced() {
             ) : (
               <div className="text-center py-6">
                 <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm">
-                  Extract stakeholders from your project plan to see persona-based workflow analysis
+                <p className="text-gray-500 text-sm mb-4">
+                  Extract stakeholders from your project plan or add them manually
                 </p>
+                <div className="flex items-center justify-center gap-2">
+                  <Input
+                    value={newStakeholderName}
+                    onChange={(e) => setNewStakeholderName(e.target.value)}
+                    placeholder="Enter stakeholder name..."
+                    className="text-sm h-9 w-48"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        addStakeholder();
+                      }
+                    }}
+                  />
+                  <Button
+                    onClick={addStakeholder}
+                    size="sm"
+                    className="h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Add Stakeholder
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
