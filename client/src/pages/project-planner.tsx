@@ -246,6 +246,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setEditedPlanContent('');
   };
 
+
+
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
   };
@@ -278,13 +280,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setLocation('/');
   };
 
-  const toggleSuggestion = (suggestion: string) => {
-    setSelectedSuggestions(prev => 
-      prev.includes(suggestion) 
-        ? prev.filter(s => s !== suggestion)
-        : [...prev, suggestion]
-    );
-  };
+
 
   const downloadPDF = async () => {
     setIsDownloadingPdf(true);
