@@ -24,6 +24,7 @@ import {
 import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
+import { WorkflowProgress } from '@/components/workflow-progress';
 
 interface UserStory {
   id: string;
@@ -326,6 +327,8 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationBar title="User Story Generator" />
       <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <WorkflowProgress />
+        
         <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
           <p className="text-gray-600 dark:text-gray-300">
             Generate user stories in Gherkin format from your BPMN workflows and export to JIRA
