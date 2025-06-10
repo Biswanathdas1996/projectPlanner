@@ -567,22 +567,17 @@ export default function UserJourneyEnhanced() {
         const key = `${flow.stakeholder}-${flow.flowType}`;
         
         try {
-          const prompt = `
-Based on this project context:
+          const prompt = `Based on this project context:
 ${projectPlan || projectDescription}
 
 Generate detailed analysis for the "${flow.flowType}" flow for stakeholder "${flow.stakeholder}":
 
 1. Flow Description: A clear 2-3 sentence description of what this flow encompasses
-2. Key Components: List 4-6 specific components, features, or elements involved in this flow
+2. Key Components: List 4-6 specific components, features, or elements involved in this flow  
 3. Core Processes: List 3-5 main processes or steps that occur in this flow
 
-Return ONLY a JSON object in this exact format:
-{
-  "description": "description here",
-  "keyComponents": ["component1", "component2", "component3", "component4"],
-  "processes": ["process1", "process2", "process3"]
-}`;
+Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
+{"description": "description here", "keyComponents": ["component1", "component2", "component3", "component4"], "processes": ["process1", "process2", "process3"]}`;
 
           const response = await fetch('/api/gemini/generate-project-plan', {
             method: 'POST',
@@ -593,12 +588,58 @@ Return ONLY a JSON object in this exact format:
           if (!response.ok) throw new Error('Failed to generate flow details');
 
           const result = await response.text();
+          console.log(`Response for ${key}:`, result);
           
-          // Parse JSON from response
-          const jsonMatch = result.match(/\{[\s\S]*\}/);
+          // Clean and parse the response
+          let cleanedResult = result.trim();
+          
+          // Remove markdown code blocks if present
+          cleanedResult = cleanedResult.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+          
+          // Remove any extra text before or after JSON
+          const jsonMatch = cleanedResult.match(/\{[\s\S]*\}/);
           if (jsonMatch) {
-            const flowData = JSON.parse(jsonMatch[0]);
-            details[key] = flowData;
+            cleanedResult = jsonMatch[0];
+          }
+          
+          try {
+            const flowData = JSON.parse(cleanedResult);
+            
+            // Validate the structure
+            if (flowData.description && flowData.keyComponents && flowData.processes) {
+              details[key] = {
+                description: flowData.description,
+                keyComponents: Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [],
+                processes: Array.isArray(flowData.processes) ? flowData.processes : []
+              };
+            } else {
+              throw new Error('Invalid response structure');
+            }
+          } catch (parseError) {
+            console.error(`Failed to parse response for ${key}:`, parseError, 'Raw response:', result);
+            
+            // Generate contextual fallback based on flow type and stakeholder
+            const flowTypeWords = flow.flowType.toLowerCase().split(' ');
+            const stakeholderWords = flow.stakeholder.toLowerCase().split(' ');
+            
+            details[key] = {
+              description: `This flow manages ${flow.flowType.toLowerCase()} activities for ${flow.stakeholder}. It encompasses the core processes and interactions required to successfully complete ${flowTypeWords[0]}-related tasks. The system ensures proper validation, processing, and completion of all ${flowTypeWords[0]} operations.`,
+              keyComponents: [
+                `${flow.flowType} Dashboard`,
+                `${flowTypeWords[0] ? flowTypeWords[0].charAt(0).toUpperCase() + flowTypeWords[0].slice(1) : 'Process'} Engine`,
+                'Authentication Module',
+                'Data Validation Layer',
+                'Notification System',
+                'Audit & Logging'
+              ],
+              processes: [
+                `Initiate ${flow.flowType}`,
+                'Authenticate & Authorize',
+                `Process ${flowTypeWords[0] || 'Request'}`,
+                'Validate Results',
+                'Complete & Notify'
+              ]
+            };
           }
         } catch (err) {
           console.error(`Failed to generate details for ${key}:`, err);
