@@ -725,7 +725,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           id={`suggestion-${suggestion.replace(/\s+/g, '-')}`}
                           checked={isChecked}
                           onCheckedChange={(checked) => {
-                            console.log('Checkbox change:', { suggestion, checked, current: selectedSuggestions });
                             toggleSuggestion(suggestion);
                           }}
                           className="h-5 w-5 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-2 border-gray-300"
@@ -744,7 +743,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                   <h4 className="font-medium text-blue-800 mb-2">Selected Requirements ({selectedSuggestions.length})</h4>
-                  <div className="text-xs text-gray-500 mb-2">Debug: {JSON.stringify(selectedSuggestions)}</div>
                   {selectedSuggestions.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {selectedSuggestions.map((suggestion) => (

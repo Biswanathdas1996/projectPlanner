@@ -9,35 +9,107 @@ export async function generateCustomSuggestions(
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.8,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 2048,
+    }
+  });
 
-  const prompt = `Based on this project description: "${projectDescription}"
+  const prompt = `Analyze this project description and generate 10-15 highly relevant, actionable enhancement suggestions: "${projectDescription}"
 
-Generate 8-12 relevant project planning suggestions that would help improve and expand this project. Focus on:
-- Technical enhancements and features
-- User experience improvements
-- Business considerations
-- Implementation strategies
-- Quality assurance approaches
-- Performance optimizations
+SUGGESTION CATEGORIES (include 2-3 from each):
 
-Return ONLY a JSON array of suggestion strings, no explanations or markdown.`;
+1. **Advanced Technical Features**
+   - AI/ML integrations and automation
+   - Advanced security implementations
+   - Performance optimizations and caching
+   - Real-time capabilities and websockets
+   - API integrations and third-party services
+
+2. **User Experience Enhancements**
+   - Accessibility improvements (WCAG compliance)
+   - Mobile-first responsive design
+   - Progressive web app capabilities
+   - User onboarding and tutorial systems
+   - Personalization and customization options
+
+3. **Business Intelligence & Analytics**
+   - Comprehensive analytics and reporting
+   - A/B testing framework implementation
+   - User behavior tracking and insights
+   - Performance monitoring and KPIs
+   - Business intelligence dashboards
+
+4. **Quality & Reliability**
+   - Comprehensive testing strategies (unit, integration, e2e)
+   - Error handling and graceful degradation
+   - Monitoring and alerting systems
+   - Backup and disaster recovery plans
+   - Load testing and stress testing protocols
+
+5. **Scalability & Infrastructure**
+   - Microservices architecture implementation
+   - Container orchestration and deployment
+   - CDN integration for global performance
+   - Database optimization and sharding
+   - Auto-scaling and load balancing
+
+REQUIREMENTS:
+- Each suggestion must be specific and actionable
+- Include implementation complexity consideration
+- Focus on measurable business value
+- Ensure suggestions are relevant to the project type
+- Include both short-term and long-term enhancements
+- Consider industry best practices and standards
+
+Return ONLY a JSON array of suggestion strings with no explanations, markdown, or additional text.
+
+Example format: ["Implement multi-factor authentication (MFA) and biometric login options for enhanced security", "Develop a personalized onboarding experience with interactive tutorials tailored to user financial literacy levels"]`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const text = response.text();
 
   try {
-    return JSON.parse(text);
-  } catch {
-    // Fallback: extract suggestions from text format
+    // Clean the response to extract JSON
+    let cleanedText = text.trim();
+    if (cleanedText.startsWith("```json")) {
+      cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/```\s*$/, "");
+    }
+    if (cleanedText.startsWith("```")) {
+      cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
+    }
+    
+    const suggestions = JSON.parse(cleanedText);
+    
+    // Validate suggestions array
+    if (!Array.isArray(suggestions) || suggestions.length < 8) {
+      throw new Error("Invalid suggestions format");
+    }
+    
+    return suggestions.slice(0, 15); // Limit to 15 suggestions max
+  } catch (error) {
+    console.error("Failed to parse suggestions JSON:", error);
+    // Enhanced fallback: extract suggestions from text format
     const lines = text
       .split("\n")
-      .filter(
-        (line) =>
-          line.trim() && !line.includes("```") && !line.includes("JSON"),
-      );
-    return lines.slice(0, 10);
+      .map(line => line.trim())
+      .filter(line => 
+        line && 
+        !line.includes("```") && 
+        !line.includes("JSON") &&
+        !line.startsWith("Here") &&
+        !line.startsWith("Based") &&
+        line.length > 20
+      )
+      .map(line => line.replace(/^[\d\.\-\*\+]\s*/, "")) // Remove list markers
+      .filter(line => line.length > 30); // Filter out short lines
+    
+    return lines.slice(0, 12);
   }
 }
 
@@ -48,33 +120,144 @@ export async function generateProjectPlan(
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 8192,
+    }
+  });
 
-  const prompt = `Create a comprehensive project plan for: "${projectDescription}"
+  const prompt = `Create a comprehensive, detailed project plan for: "${projectDescription}"
 
-Structure the plan with these sections:
-1. **Project Overview** - Brief summary and objectives
-2. **Technical Architecture** - System design and technology stack
-3. **Core Features** - Main functionality and user stories
-4. **Development Phases** - Implementation timeline and milestones
-5. **User Experience Flow** - Key user interactions and workflows
-6. **Quality Assurance** - Testing strategies and validation
-7. **Deployment Strategy** - Launch and maintenance considerations
-8. **Risk Assessment** - Potential challenges and mitigation plans
+MANDATORY SECTIONS (ALL MUST BE INCLUDED):
 
-Format as clean HTML with:
-- Professional styling with embedded CSS
-- Clear section headers with consistent typography
-- Organized lists and structured content
-- Subtle color coding for different section types
-- Responsive design principles
-- Professional spacing and visual hierarchy
+1. **Executive Summary**
+   - Project purpose and vision
+   - Key objectives and success metrics
+   - Target audience and market analysis
+   - Budget estimation and ROI projections
 
-Return ONLY the complete HTML document with embedded CSS - no explanations or markdown.`;
+2. **Technical Architecture & Infrastructure**
+   - Complete technology stack with specific versions
+   - System architecture diagrams (described in detail)
+   - Database design and data flow
+   - Security architecture and compliance requirements
+   - Scalability and performance considerations
+   - Third-party integrations and APIs
+
+3. **Detailed Feature Specifications**
+   - Core functionality with user stories
+   - Advanced features and capabilities
+   - User roles and permissions matrix
+   - Feature prioritization (MVP vs future phases)
+   - Acceptance criteria for each feature
+
+4. **Development Methodology & Timeline**
+   - Project phases with specific deliverables
+   - Detailed timeline with milestones (weeks/months)
+   - Team structure and resource allocation
+   - Development methodology (Agile/Scrum sprints)
+   - Dependencies and critical path analysis
+
+5. **User Experience & Interface Design**
+   - User persona definitions
+   - User journey mapping
+   - Wireframes and mockup descriptions
+   - Accessibility requirements (WCAG compliance)
+   - Mobile responsiveness strategy
+
+6. **Quality Assurance & Testing Strategy**
+   - Testing methodologies (unit, integration, e2e)
+   - Performance testing requirements
+   - Security testing protocols
+   - User acceptance testing procedures
+   - Bug tracking and resolution processes
+
+7. **Deployment & DevOps Strategy**
+   - Environment setup (dev, staging, production)
+   - CI/CD pipeline configuration
+   - Monitoring and logging systems
+   - Backup and disaster recovery plans
+   - Maintenance and support procedures
+
+8. **Risk Management & Mitigation**
+   - Technical risks and solutions
+   - Business risks and contingencies
+   - Resource and timeline risks
+   - Security and compliance risks
+   - Market and competitive risks
+
+9. **Stakeholder Management**
+   - Key stakeholders and their roles
+   - Communication plan and reporting
+   - Approval processes and sign-offs
+   - Change management procedures
+
+10. **Post-Launch Strategy**
+    - User onboarding and training
+    - Performance monitoring KPIs
+    - Feature enhancement roadmap
+    - Marketing and growth strategies
+    - Long-term maintenance planning
+
+FORMATTING REQUIREMENTS:
+- Complete HTML document with embedded CSS
+- Professional corporate styling
+- Responsive design for all devices
+- Clear visual hierarchy with consistent typography
+- Color-coded sections for easy navigation
+- Interactive table of contents
+- Professional charts and diagrams (ASCII/Unicode)
+- Print-friendly styling
+- Accessibility-compliant markup
+
+QUALITY STANDARDS:
+- Each section must be substantial (minimum 200 words)
+- Include specific, actionable details
+- Provide realistic timelines and estimates
+- Use industry-standard terminology
+- Include measurable success criteria
+- Address scalability from day one
+
+Return ONLY the complete HTML document with embedded CSS. The document must be production-ready and comprehensive enough for actual project implementation.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
-  return response.text();
+  const text = response.text();
+  
+  // Validate the response contains required sections
+  const requiredSections = [
+    'Executive Summary',
+    'Technical Architecture',
+    'Feature Specifications',
+    'Development Methodology',
+    'User Experience',
+    'Quality Assurance',
+    'Deployment',
+    'Risk Management',
+    'Stakeholder Management',
+    'Post-Launch Strategy'
+  ];
+  
+  const missingSections = requiredSections.filter(section => 
+    !text.toLowerCase().includes(section.toLowerCase())
+  );
+  
+  if (missingSections.length > 3) {
+    // If too many sections are missing, retry with a more specific prompt
+    const retryPrompt = `${prompt}
+
+CRITICAL: The response MUST include ALL 10 mandatory sections listed above. Do not skip any sections. Each section must be comprehensive and detailed.`;
+    
+    const retryResult = await model.generateContent(retryPrompt);
+    const retryResponse = await retryResult.response;
+    return retryResponse.text();
+  }
+  
+  return text;
 }
 
 export async function generateUserJourneyFlows(
@@ -401,14 +584,88 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
   return cleanedText;
 }
 
-export async function generateBpmnXml(enhancedPrompt: string): Promise<string> {
-  if (!enhancedPrompt.trim()) {
-    throw new Error("Enhanced prompt is required");
+export async function generateBpmnXml(projectPlan: string): Promise<string> {
+  if (!projectPlan.trim()) {
+    throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.3,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 4096,
+    }
+  });
 
-  const result = await model.generateContent(enhancedPrompt);
+  const prompt = `Generate a comprehensive BPMN 2.0 XML workflow diagram based on this project plan: "${projectPlan}"
+
+CRITICAL REQUIREMENTS:
+1. **Valid BPMN 2.0 XML Structure**
+   - Proper XML declaration and BPMN namespace
+   - Valid BPMN elements with correct IDs
+   - Proper process flow with start/end events
+   - Include decision gateways for business logic
+   - Add user tasks, service tasks, and script tasks
+   - Include sequence flows connecting all elements
+
+2. **Essential BPMN Elements to Include**:
+   - startEvent (circle)
+   - endEvent (circle with thick border)
+   - userTask (rectangle) for user interactions
+   - serviceTask (rectangle with gear icon) for system processes
+   - exclusiveGateway (diamond) for decision points
+   - parallelGateway (diamond with plus) for parallel flows
+   - sequenceFlow (arrows) connecting elements
+
+3. **Process Flow Structure**:
+   - Start with project initiation
+   - Include requirements gathering phase
+   - Add design and architecture phase
+   - Include development iterations
+   - Add testing and quality assurance
+   - Include deployment and launch
+   - End with project completion
+
+4. **ID Naming Convention**:
+   - Use descriptive, valid XML IDs (no spaces, special chars)
+   - StartEvent_1, UserTask_Requirements, Gateway_Decision_1
+   - Process_ProjectWorkflow
+   - SequenceFlow_1, SequenceFlow_2, etc.
+
+5. **Visual Layout (bpmndi:BPMNDiagram)**:
+   - Include proper positioning coordinates
+   - Logical left-to-right flow
+   - Adequate spacing between elements
+   - Professional swimlane layout if applicable
+
+EXAMPLE STRUCTURE:
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   id="Definitions_1" 
+                   targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:process id="Process_ProjectWorkflow" isExecutable="true">
+    [Process elements here]
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    [Diagram elements here]
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
+
+VALIDATION REQUIREMENTS:
+- XML must be well-formed and valid
+- All BPMN elements must have proper IDs
+- Sequence flows must connect valid elements
+- Process must have clear start and end points
+- Include meaningful labels and descriptions
+
+Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
   const response = await result.response;
   const text = response.text();
 
@@ -419,6 +676,20 @@ export async function generateBpmnXml(enhancedPrompt: string): Promise<string> {
   }
   if (cleanedText.startsWith("```")) {
     cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
+  }
+
+  // Basic validation - ensure it starts with XML declaration
+  if (!cleanedText.startsWith('<?xml') && !cleanedText.startsWith('<bpmn2:definitions')) {
+    throw new Error('Generated BPMN XML is not properly formatted');
+  }
+
+  // Validate essential BPMN elements are present
+  const requiredElements = ['bpmn2:process', 'bpmn2:startEvent', 'bpmn2:endEvent', 'bpmndi:BPMNDiagram'];
+  const missingElements = requiredElements.filter(element => !cleanedText.includes(element));
+  
+  if (missingElements.length > 0) {
+    console.warn('BPMN XML missing elements:', missingElements);
+    // Continue anyway as some elements might be optional
   }
 
   return cleanedText;
