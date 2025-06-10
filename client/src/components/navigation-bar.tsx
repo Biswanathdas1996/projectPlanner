@@ -39,11 +39,8 @@ export function NavigationBar({
     // Clear additional user story data
     localStorage.removeItem('user_stories');
 
-    // Navigate to home page
-    setLocation('/');
-    
-    // Reload the page to reset all state
-    window.location.reload();
+    // Navigate to start-over page
+    setLocation('/start-over');
   };
 
   const handleHome = () => {
