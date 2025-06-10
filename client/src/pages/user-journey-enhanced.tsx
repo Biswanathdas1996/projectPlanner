@@ -814,7 +814,7 @@ export default function UserJourneyEnhanced() {
                                       variant="outline" 
                                       className="text-xs px-1.5 py-0.5 bg-white/90 border-white/60 cursor-pointer hover:bg-white pr-1 group"
                                     >
-                                      <span className="truncate max-w-[80px]">{flowType}</span>
+                                      <span>{flowType}</span>
                                       <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <Button
                                           onClick={() => startEditingFlowType(stakeholder, flowType)}
