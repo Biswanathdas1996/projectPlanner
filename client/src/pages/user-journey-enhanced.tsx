@@ -584,40 +584,93 @@ export default function UserJourneyEnhanced() {
         const key = `${flow.stakeholder}-${flow.flowType}`;
         
         try {
-          const prompt = `Generate comprehensive BPMN flow analysis for ${flow.stakeholder} - ${flow.flowType} based on project context:
+          const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${flow.stakeholder} - ${flow.flowType} with fine granular details for perfect BPMN diagram generation:
+
+PROJECT CONTEXT:
 ${projectPlan || projectDescription}
 
-Create detailed BPMN-focused analysis following this structure:
+Create detailed BPMN-focused analysis with specific, actionable elements:
 
 ✅ 1. Process Name and Description
-Clearly describe what this ${flow.flowType} process is and why it exists for ${flow.stakeholder}.
+- Clear process name: "${flow.stakeholder} ${flow.flowType} Process"
+- Business purpose and value proposition
+- Process scope and boundaries
+- Key objectives and success criteria
+- Integration points with other processes
 
-✅ 2. Participants (Swimlanes / Pools and Lanes)  
-List all roles, departments, or systems involved. These define the swimlanes.
-Include: ${flow.stakeholder}, relevant departments, IT systems, external services.
+✅ 2. Participants (Swimlanes / Pools and Lanes)
+Create detailed swimlane structure with specific roles:
+- Primary Actor: ${flow.stakeholder} (main responsible party)
+- Supporting Roles: specific job titles, departments, teams
+- IT Systems: databases, APIs, applications, services (name each system)
+- External Entities: customers, vendors, partners, regulatory bodies
+- Service Providers: payment processors, notification services, cloud providers
+Minimum 4-6 distinct participants for comprehensive swimlanes.
 
 ✅ 3. Trigger (Start Event)
-Describe what specific event or condition starts this ${flow.flowType} process for ${flow.stakeholder}.
+Define precise, actionable trigger:
+- Specific triggering action or event
+- Pre-conditions that must be satisfied
+- Input data or parameters required
+- Event source (user interface, scheduled job, API call, message)
+- Business context that necessitates this process
 
 ✅ 4. Sequence of Activities (Tasks / Actions)
-Provide 4-6 step-by-step breakdown of tasks, including who performs each task.
-Make activities specific to ${flow.flowType} workflow.
+Provide 6-8 detailed, sequential activities:
+- Use clear action verbs (Submit, Validate, Process, Generate, Send, Update)
+- Specify responsible participant for each task
+- Define task type (User Task, Service Task, Script Task, Manual Task)
+- Include input requirements and expected outputs
+- Add realistic time estimates
+- Specify any dependencies or prerequisites
 
 ✅ 5. Decision Points (Gateways)
-List 2-3 key decision points where conditions affect the flow.
-Format each as: "If [condition], then [action]; otherwise [alternative action]"
+Include 3-5 specific decision points with business rules:
+- Gateway type (Exclusive OR, Inclusive OR, Parallel AND)
+- Clear decision criteria with specific conditions
+- Branching logic with detailed outcomes
+- Error handling scenarios
+- Escalation rules and timeouts
+- Business rule specifications
 
 ✅ 6. End Event
-Describe how and when this ${flow.flowType} process concludes for ${flow.stakeholder}.
+Define comprehensive completion scenarios:
+- Primary success end event with completion criteria
+- Alternative end events for different outcomes
+- Error end events for failure scenarios
+- Data state at completion
+- Notifications and confirmations required
+- Process artifacts created or updated
 
 ✅ 7. Additional Elements
-Include relevant BPMN components like:
-- Messages: "Email sent to [recipient]"  
-- Timers: "Wait [duration] for [condition]"
-- Data: "[object name], [form name]"
+Include specific BPMN elements with implementation details:
+
+**Messages:**
+- "Email notification sent to ${flow.stakeholder} with [specific content]"
+- "API request sent to [system name] with [data payload]"
+- "SMS alert triggered for [specific condition]"
+
+**Timers:**
+- "Business timer: Wait [X hours/days] for [specific response]"
+- "Escalation timer: If no action within [timeframe], then [escalation action]"
+- "Scheduled timer: Execute at [specific time/interval]"
+
+**Data Objects:**
+- "[FormName] data object containing [specific fields]"
+- "[DocumentType] generated with [content specifications]"
+- "[RecordType] updated in [system name] database"
+
+**Error Events:**
+- "Handle [ErrorType] when [specific condition occurs]"
+- "Catch timeout exception if [system] doesn't respond within [timeframe]"
+- "Manage validation errors for [specific data requirements]"
+
+**Sub-processes:**
+- "Call [SubProcessName] for [specific functionality]"
+- "Invoke [ExternalService] integration process"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "✅ 1. Process Name and Description\\n[description text]\\n\\n✅ 2. Participants\\n[participants list]\\n\\n✅ 3. Trigger\\n[trigger text]\\n\\n✅ 4. Activities\\n[activities list]\\n\\n✅ 5. Decision Points\\n[decisions text]\\n\\n✅ 6. End Event\\n[end event text]\\n\\n✅ 7. Additional Elements\\n[additional elements]", "participants": ["participant1", "participant2", "system3", "service4"], "activities": ["activity1", "activity2", "activity3", "activity4"]}`;
+{"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Activity 1: Detailed action description", "Activity 2: Detailed action description", "Activity 3: Detailed action description", "Activity 4: Detailed action description", "Activity 5: Detailed action description", "Activity 6: Detailed action description"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
 
           // Call Gemini API directly from client-side only
           const { generateFlowAnalysis } = await import('../lib/gemini');
@@ -640,38 +693,90 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
           try {
             const flowData = JSON.parse(cleanedResult);
             
-            // Validate the structure and parse sections
-            if (flowData.description) {
+            // Enhanced structure parsing with direct field extraction
+            const flowDetails: FlowDetails = {
+              description: flowData.description || `Comprehensive ${flow.flowType} process analysis for ${flow.stakeholder}`,
+              processDescription: flowData.processDescription || `${flow.stakeholder} ${flow.flowType} Process`,
+              participants: Array.isArray(flowData.participants) ? flowData.participants : 
+                [flow.stakeholder, "System Administrator", "Database System", "External API", "Notification Service"],
+              trigger: flowData.trigger || `${flow.stakeholder} initiates ${flow.flowType} process`,
+              activities: Array.isArray(flowData.activities) ? flowData.activities : [
+                `${flow.stakeholder} submits ${flow.flowType} request`,
+                "System validates input data and permissions",
+                "Backend processes request with business logic",
+                "Database updates records and maintains data integrity",
+                "System generates response and confirmation",
+                "Notification service sends status update"
+              ],
+              decisionPoints: Array.isArray(flowData.decisionPoints) ? flowData.decisionPoints : [
+                "Exclusive Gateway: If validation passes, continue to processing; otherwise return error",
+                "Parallel Gateway: Execute data update and audit logging simultaneously",
+                "Inclusive Gateway: Based on request type, trigger additional notifications or workflows"
+              ],
+              endEvent: flowData.endEvent || `${flow.flowType} process completes successfully with all data updated`,
+              additionalElements: Array.isArray(flowData.additionalElements) ? flowData.additionalElements : [
+                "Messages: Email confirmation sent to stakeholder with process results",
+                "Timers: Business timer set for 24-hour response window",
+                "Data: ProcessRecord data object created with transaction details",
+                "Errors: Handle ValidationError and SystemTimeout exceptions"
+              ]
+            };
+
+            // Parse description sections if available for backward compatibility
+            if (flowData.description && typeof flowData.description === 'string') {
               const desc = flowData.description;
               
-              // Parse the structured sections from the description
-              const processDescMatch = desc.match(/✅ 1\. Process Name and Description\n([^✅]*)/);
+              const processDescMatch = desc.match(/✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/);
               const participantsMatch = desc.match(/✅ 2\. Participants[^✅]*\n([^✅]*)/);
-              const triggerMatch = desc.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
+              const triggerMatch = desc.match(/✅ 3\. Trigger[^✅]*\n([^✅]*)/);
               const activitiesMatch = desc.match(/✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/);
-              const decisionMatch = desc.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
-              const endEventMatch = desc.match(/✅ 6\. End Event\n([^✅]*)/);
-              const additionalMatch = desc.match(/✅ 7\. Additional Elements\n([^$]*)/);
+              const decisionMatch = desc.match(/✅ 5\. Decision Points[^✅]*\n([^✅]*)/);
+              const endEventMatch = desc.match(/✅ 6\. End Event[^✅]*\n([^✅]*)/);
+              const additionalMatch = desc.match(/✅ 7\. Additional Elements[^$]*/);
               
-              details[key] = {
-                description: flowData.description,
-                processDescription: processDescMatch ? processDescMatch[1].trim() : `${flow.flowType} Process for ${flow.stakeholder}`,
-                participants: participantsMatch ? 
-                  participantsMatch[1].trim().split('\n').filter((p: string) => p.trim() && (p.includes('-') || p.includes('*'))).map((p: string) => p.replace(/^[-*]\s*/, '').trim()) : 
-                  [flow.stakeholder, "System Backend", "Database Service"],
-                trigger: triggerMatch ? triggerMatch[1].trim() : `${flow.stakeholder} initiates ${flow.flowType} request`,
-                activities: activitiesMatch ? 
-                  activitiesMatch[1].trim().split('\n').filter((a: string) => a.trim() && /^\d+\./.test(a.trim())).map((a: string) => a.replace(/^\d+\.\s*/, '').trim()) : 
-                  [`${flow.stakeholder} initiates request`, "System processes request", "System responds with result"],
-                decisionPoints: decisionMatch ? decisionMatch[1].trim().split('\n').filter((d: string) => d.trim()) : [],
-                endEvent: endEventMatch ? endEventMatch[1].trim() : 'Process completes successfully',
-                additionalElements: additionalMatch ? 
-                  additionalMatch[1].trim().split('\n').filter((e: string) => e.trim() && (e.includes('Messages:') || e.includes('Timers:') || e.includes('Data'))) : 
-                  ['Messages: Confirmation notifications', 'Timers: Session timeout', 'Data: Form data and logs']
-              };
-            } else {
-              throw new Error('Invalid response structure');
+              // Override with parsed content if found
+              if (processDescMatch) flowDetails.processDescription = processDescMatch[1].trim();
+              if (triggerMatch) flowDetails.trigger = triggerMatch[1].trim();
+              if (endEventMatch) flowDetails.endEvent = endEventMatch[1].trim();
+              
+              if (participantsMatch) {
+                const parsedParticipants = participantsMatch[1].trim()
+                  .split('\n')
+                  .filter((p: string) => p.trim() && (p.includes('-') || p.includes('*') || p.includes(':')))
+                  .map((p: string) => p.replace(/^[-*:]\s*/, '').replace(/^Primary Actor:\s*/i, '').replace(/^Supporting Roles:\s*/i, '').replace(/^IT Systems:\s*/i, '').replace(/^External Entities:\s*/i, '').trim())
+                  .filter((p: string) => p.length > 0);
+                if (parsedParticipants.length > 0) flowDetails.participants = parsedParticipants;
+              }
+              
+              if (activitiesMatch) {
+                const parsedActivities = activitiesMatch[1].trim()
+                  .split('\n')
+                  .filter((a: string) => a.trim())
+                  .map((a: string) => a.replace(/^[-*\d.]\s*/, '').replace(/^Activity \d+:\s*/i, '').trim())
+                  .filter((a: string) => a.length > 0);
+                if (parsedActivities.length > 0) flowDetails.activities = parsedActivities;
+              }
+              
+              if (decisionMatch) {
+                const parsedDecisions = decisionMatch[1].trim()
+                  .split('\n')
+                  .filter((d: string) => d.trim() && (d.includes('Gateway') || d.includes('If') || d.includes('condition')))
+                  .map((d: string) => d.replace(/^[-*]\s*/, '').trim())
+                  .filter((d: string) => d.length > 0);
+                if (parsedDecisions.length > 0) flowDetails.decisionPoints = parsedDecisions;
+              }
+              
+              if (additionalMatch) {
+                const parsedAdditional = additionalMatch[0].replace(/✅ 7\. Additional Elements[^:]*:\s*/i, '').trim()
+                  .split('\n')
+                  .filter((e: string) => e.trim() && (e.includes('Messages:') || e.includes('Timers:') || e.includes('Data:') || e.includes('Errors:')))
+                  .map((e: string) => e.replace(/^[-*]\s*/, '').trim())
+                  .filter((e: string) => e.length > 0);
+                if (parsedAdditional.length > 0) flowDetails.additionalElements = parsedAdditional;
+              }
             }
+
+            details[key] = flowDetails;
           } catch (parseError) {
             console.error(`Failed to parse response for ${key}:`, parseError, 'Raw response:', result);
             
