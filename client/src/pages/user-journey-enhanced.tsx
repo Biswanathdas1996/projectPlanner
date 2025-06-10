@@ -619,16 +619,11 @@ Include relevant BPMN components like:
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 {"description": "✅ 1. Process Name and Description\\n[description text]\\n\\n✅ 2. Participants\\n[participants list]\\n\\n✅ 3. Trigger\\n[trigger text]\\n\\n✅ 4. Activities\\n[activities list]\\n\\n✅ 5. Decision Points\\n[decisions text]\\n\\n✅ 6. End Event\\n[end event text]\\n\\n✅ 7. Additional Elements\\n[additional elements]", "keyComponents": ["participant1", "participant2", "system3", "service4"], "processes": ["activity1", "activity2", "activity3", "activity4"]}`;
 
-          const response = await fetch('/api/gemini/generate-project-plan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ description: prompt })
-          });
-
-          if (!response.ok) throw new Error('Failed to generate flow details');
-
-          const result = await response.text();
-          console.log(`Response for ${key}:`, result);
+          // Call Gemini API directly from client-side only
+          const { generateFlowAnalysis } = await import('../lib/gemini');
+          
+          const result = await generateFlowAnalysis(prompt);
+          console.log(`Gemini response for ${key}:`, result);
           
           // Clean and parse the response
           let cleanedResult = result.trim();
