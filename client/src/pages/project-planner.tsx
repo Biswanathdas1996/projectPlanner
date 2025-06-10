@@ -246,7 +246,15 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setEditedPlanContent('');
   };
 
-
+  const toggleSuggestion = (suggestion: string) => {
+    setSelectedSuggestions(prev => {
+      if (prev.includes(suggestion)) {
+        return prev.filter(s => s !== suggestion);
+      } else {
+        return [...prev, suggestion];
+      }
+    });
+  };
 
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
@@ -279,8 +287,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
     localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
     setLocation('/');
   };
-
-
 
   const downloadPDF = async () => {
     setIsDownloadingPdf(true);
