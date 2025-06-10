@@ -28,7 +28,8 @@ import {
   Shield,
   Activity,
   Plus,
-  Trash2
+  Trash2,
+  BookOpen
 } from 'lucide-react';
 
 interface StakeholderFlow {
@@ -351,6 +352,12 @@ export default function UserJourneyEnhanced() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
+            <Link href="/user-stories">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
+                <BookOpen className="h-4 w-4 mr-2" />
+                User Stories
+              </Button>
+            </Link>
             <Link href="/bpmn-editor">
               <Button variant="outline">
                 <Navigation className="h-4 w-4 mr-2" />

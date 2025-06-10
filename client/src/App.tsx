@@ -20,6 +20,7 @@ function Router() {
       <Route path="/start-over" component={Landing} />
       <Route path="/landing" component={Landing} />
       <Route path="/user-journey" component={UserJourneyEnhanced} />
+      <Route path="/user-journey-enhanced" component={UserJourneyEnhanced} />
       <Route path="/user-journey-legacy" component={UserJourney} />
       <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
       <Route path="/user-stories" component={UserStoryGenerator} />
