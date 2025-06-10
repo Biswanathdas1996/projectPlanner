@@ -613,8 +613,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
@@ -856,29 +856,30 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 <p className="text-xs text-blue-600 mt-3">Click any example to use it as a starting point, then customize as needed.</p>
               </div>
               
-              <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-500">
+              <div className="flex justify-between items-center pt-2">
+                <div className="text-xs text-gray-400">
                   {projectInput.length}/1000 characters
                 </div>
                 <Button
                   onClick={handleGenerateProjectPlan}
                   disabled={!projectInput.trim() || isGeneratingPlan || isGeneratingSuggestions}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
                 >
                   {isGeneratingSuggestions ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Analyzing Project...
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      Analyzing...
                     </>
                   ) : isGeneratingPlan ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Generating Plan...
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      Generating...
                     </>
                   ) : (
                     <>
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Generate Project Plan
+                      <Sparkles className="h-3 w-3 mr-2" />
+                      Generate Plan
                     </>
                   )}
                 </Button>
@@ -889,32 +890,32 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
         {/* Step 2: Project Plan */}
         {currentStep === 'plan' && (
-          <Card className="mb-6 border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <CardTitle className="flex items-center justify-between text-xl">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <FileText className="h-5 w-5 text-white" />
+          <Card className="mb-6 border-0 shadow-sm bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-white" />
                   </div>
                   Generated Project Plan
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-1.5">
                   <Button
                     onClick={downloadPDF}
                     variant="outline"
                     size="sm"
                     disabled={isDownloadingPdf || isEditingPlan || isEnhancing || isGeneratingBpmn}
-                    className="border-green-300 text-green-600 hover:bg-green-50"
+                    className="border-green-200 text-green-600 hover:bg-green-50 text-xs px-2 py-1"
                   >
                     {isDownloadingPdf ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating PDF...
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        PDF...
                       </>
                     ) : (
                       <>
-                        <Download className="h-4 w-4 mr-2" />
-                        Download PDF
+                        <Download className="h-3 w-3 mr-1" />
+                        PDF
                       </>
                     )}
                   </Button>
@@ -924,17 +925,17 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       variant="outline"
                       size="sm"
                       disabled={isEditingPlan || isEnhancing || isGeneratingBpmn}
-                      className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                      className="border-purple-200 text-purple-600 hover:bg-purple-50 text-xs px-2 py-1"
                     >
                       {showBpmnScript ? (
                         <>
-                          <EyeOff className="h-4 w-4 mr-2" />
-                          Hide BPMN Script
+                          <EyeOff className="h-3 w-3 mr-1" />
+                          Hide
                         </>
                       ) : (
                         <>
-                          <Code className="h-4 w-4 mr-2" />
-                          View BPMN Script
+                          <Code className="h-3 w-3 mr-1" />
+                          BPMN
                         </>
                       )}
                     </Button>
@@ -944,10 +945,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       variant="outline"
                       size="sm"
                       disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
-                      className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                      className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs px-2 py-1"
                     >
-                      <Users className="h-4 w-4 mr-2" />
-                      User Journey Flows
+                      <Users className="h-3 w-3 mr-1" />
+                      Journey
                     </Button>
                   </Link>
                   <Button
@@ -955,10 +956,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     variant="outline"
                     size="sm"
                     disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
-                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50 text-xs px-2 py-1"
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit Plan
+                    <Edit className="h-3 w-3 mr-1" />
+                    Edit
                   </Button>
                 </div>
               </CardTitle>
