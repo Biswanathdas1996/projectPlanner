@@ -656,14 +656,17 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
               const endEventMatch = desc.match(/✅ 6\. End Event\n([^✅]*)/);
               const additionalMatch = desc.match(/✅ 7\. Additional Elements\n([^$]*)/);
               
+              const keyComponents = Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [];
+              const processes = Array.isArray(flowData.processes) ? flowData.processes : [];
+              
               details[key] = {
                 description: flowData.description,
-                keyComponents: Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [],
-                processes: Array.isArray(flowData.processes) ? flowData.processes : [],
+                keyComponents,
+                processes,
                 processDescription: processDescMatch ? processDescMatch[1].trim() : `${flow.flowType} Process for ${flow.stakeholder}`,
-                participants: Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [],
+                participants: keyComponents,
                 trigger: triggerMatch ? triggerMatch[1].trim() : `${flow.stakeholder} initiates ${flow.flowType} request`,
-                activities: Array.isArray(flowData.processes) ? flowData.processes : [],
+                activities: processes,
                 decisionPoints: decisionMatch ? decisionMatch[1].trim().split('\n').filter((d: string) => d.trim()) : [],
                 endEvent: endEventMatch ? endEventMatch[1].trim() : 'Process completes successfully',
                 additionalElements: additionalMatch ? 
@@ -680,6 +683,24 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
             const flowTypeWords = flow.flowType.toLowerCase().split(' ');
             const mainAction = flowTypeWords[0] || 'process';
             
+            const keyComponents = [
+              `${flow.stakeholder}`,
+              "System Backend", 
+              "Database Service",
+              "Authentication Module",
+              "Notification Service",
+              "External Services"
+            ];
+            
+            const processes = [
+              `${flow.stakeholder} authenticates and accesses system`,
+              `System validates ${mainAction} request and permissions`,
+              `Backend processes ${mainAction} with business logic`,
+              "Database updates records and maintains integrity",
+              "System generates confirmation and audit trail",
+              `Notification service sends confirmation to ${flow.stakeholder}`
+            ];
+
             details[key] = {
               description: `✅ 1. Process Name and Description
 ${flow.flowType} Process for ${flow.stakeholder}
@@ -712,40 +733,12 @@ Process concludes when ${flow.stakeholder} receives confirmation notification an
 Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures
 Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout
 Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`,
-              keyComponents: [
-                `${flow.stakeholder}`,
-                "System Backend", 
-                "Database Service",
-                "Authentication Module",
-                "Notification Service",
-                "External Services"
-              ],
-              processes: [
-                `${flow.stakeholder} authenticates and accesses system`,
-                `System validates ${mainAction} request and permissions`,
-                `Backend processes ${mainAction} with business logic`,
-                "Database updates records and maintains integrity",
-                "System generates confirmation and audit trail",
-                `Notification service sends confirmation to ${flow.stakeholder}`
-              ],
+              keyComponents,
+              processes,
               processDescription: `${flow.flowType} Process for ${flow.stakeholder}. This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
-              participants: [
-                `${flow.stakeholder}`,
-                "System Backend", 
-                "Database Service",
-                "Authentication Module",
-                "Notification Service",
-                "External Services"
-              ],
+              participants: keyComponents,
               trigger: `${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.`,
-              activities: [
-                `${flow.stakeholder} authenticates and accesses system`,
-                `System validates ${mainAction} request and permissions`,
-                `Backend processes ${mainAction} with business logic`,
-                "Database updates records and maintains integrity",
-                "System generates confirmation and audit trail",
-                `Notification service sends confirmation to ${flow.stakeholder}`
-              ],
+              activities: processes,
               decisionPoints: [
                 `If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.`,
                 `If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.`,
@@ -816,6 +809,45 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
   const updateEditedDescription = (description: string) => {
     if (editedFlowDetails) {
       setEditedFlowDetails({ ...editedFlowDetails, description });
+    }
+  };
+
+  // Individual section editing functions
+  const updateEditedField = (field: keyof FlowDetails, value: string | string[]) => {
+    if (editedFlowDetails) {
+      setEditedFlowDetails({ ...editedFlowDetails, [field]: value });
+    }
+  };
+
+  const addItemToField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', newItem: string) => {
+    if (editedFlowDetails && newItem.trim()) {
+      const currentItems = editedFlowDetails[field] as string[];
+      setEditedFlowDetails({ 
+        ...editedFlowDetails, 
+        [field]: [...currentItems, newItem.trim()] 
+      });
+    }
+  };
+
+  const removeItemFromField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number) => {
+    if (editedFlowDetails) {
+      const currentItems = editedFlowDetails[field] as string[];
+      setEditedFlowDetails({ 
+        ...editedFlowDetails, 
+        [field]: currentItems.filter((_, i) => i !== index) 
+      });
+    }
+  };
+
+  const updateItemInField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number, newValue: string) => {
+    if (editedFlowDetails && newValue.trim()) {
+      const currentItems = editedFlowDetails[field] as string[];
+      const updatedItems = [...currentItems];
+      updatedItems[index] = newValue.trim();
+      setEditedFlowDetails({ 
+        ...editedFlowDetails, 
+        [field]: updatedItems 
+      });
     }
   };
 
@@ -1746,7 +1778,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                     <>
                                       {/* BPMN Flow Analysis - 7 Section Structure */}
                                       <div className="space-y-3">
-                                        {/* Section 1: Process Name and Description */}
+                                        {/* Section 1: Process Description */}
                                         <div>
                                           <div className="flex items-center gap-2 mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
@@ -1754,11 +1786,11 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
-                                            {details.description.split('\n\n✅ 2.')[0].replace('✅ 1. Process Name and Description\n', '')}
+                                            {details.processDescription || details.description.split('\n\n✅ 2.')[0].replace('✅ 1. Process Name and Description\n', '')}
                                           </p>
                                         </div>
 
-                                        {/* Section 2: Participants (Swimlanes) */}
+                                        {/* Section 2: Participants (Swimlanes) - Editable */}
                                         <div>
                                           <div className="flex items-center gap-2 mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
@@ -1766,7 +1798,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <div className="flex flex-wrap gap-1">
-                                            {details.keyComponents?.map((participant, idx) => (
+                                            {(details.participants || details.keyComponents)?.map((participant, idx) => (
                                               <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
                                                 {participant}
                                               </Badge>
@@ -1782,14 +1814,14 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
-                                            {(() => {
+                                            {details.trigger || (() => {
                                               const triggerSection = details.description.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
                                               return triggerSection ? triggerSection[1].trim() : 'Process initiates when conditions are met';
                                             })()}
                                           </p>
                                         </div>
 
-                                        {/* Section 4: Activities */}
+                                        {/* Section 4: Activities - Editable */}
                                         <div>
                                           <div className="flex items-center gap-2 mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
@@ -1797,7 +1829,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <div className="space-y-1">
-                                            {details.processes?.map((activity, idx) => (
+                                            {(details.activities || details.processes)?.map((activity, idx) => (
                                               <div key={idx} className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
                                                 <span className="text-xs text-gray-600">{activity}</span>
@@ -1806,7 +1838,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                           </div>
                                         </div>
 
-                                        {/* Section 5: Decision Points */}
+                                        {/* Section 5: Decision Points - Editable */}
                                         <div>
                                           <div className="flex items-center gap-2 mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
@@ -1814,18 +1846,26 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <div className="text-xs text-gray-600 pl-2 border-l-2 border-yellow-200 space-y-1">
-                                            {(() => {
-                                              const decisionSection = details.description.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
-                                              if (decisionSection) {
-                                                return decisionSection[1].trim().split('\n').map((decision, idx) => (
-                                                  <div key={idx} className="flex items-start gap-2">
-                                                    <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                                                    <span>{decision.trim()}</span>
-                                                  </div>
-                                                ));
-                                              }
-                                              return <span>Standard validation and approval gates</span>;
-                                            })()}
+                                            {(details.decisionPoints && details.decisionPoints.length > 0) ? 
+                                              details.decisionPoints.map((decision, idx) => (
+                                                <div key={idx} className="flex items-start gap-2">
+                                                  <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                                                  <span>{decision.trim()}</span>
+                                                </div>
+                                              )) : 
+                                              (() => {
+                                                const decisionSection = details.description.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
+                                                if (decisionSection) {
+                                                  return decisionSection[1].trim().split('\n').map((decision, idx) => (
+                                                    <div key={idx} className="flex items-start gap-2">
+                                                      <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                                                      <span>{decision.trim()}</span>
+                                                    </div>
+                                                  ));
+                                                }
+                                                return <span>Standard validation and approval gates</span>;
+                                              })()
+                                            }
                                           </div>
                                         </div>
 
@@ -1837,14 +1877,14 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <p className="text-xs text-gray-600 pl-2 border-l-2 border-red-200">
-                                            {(() => {
+                                            {details.endEvent || (() => {
                                               const endSection = details.description.match(/✅ 6\. End Event\n([^✅]*)/);
                                               return endSection ? endSection[1].trim() : 'Process completes when all objectives are met';
                                             })()}
                                           </p>
                                         </div>
 
-                                        {/* Section 7: Additional Elements */}
+                                        {/* Section 7: Additional Elements - Editable */}
                                         <div>
                                           <div className="flex items-center gap-2 mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
@@ -1853,51 +1893,91 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                           </div>
                                           <div className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
                                             <div className="grid grid-cols-1 gap-1">
-                                              {(() => {
-                                                const additionalSection = details.description.match(/✅ 7\. Additional Elements\n([^$]*)/);
-                                                if (additionalSection) {
-                                                  const elements = additionalSection[1].trim().split('\n');
-                                                  return elements.map((element, idx) => {
-                                                    if (element.includes('Messages:')) {
-                                                      return (
-                                                        <div key={idx} className="flex items-center gap-2">
-                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
-                                                            📧 Messages
-                                                          </Badge>
-                                                          <span>{element.replace('Messages:', '').trim()}</span>
-                                                        </div>
-                                                      );
-                                                    } else if (element.includes('Timers:')) {
-                                                      return (
-                                                        <div key={idx} className="flex items-center gap-2">
-                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
-                                                            ⏱️ Timers
-                                                          </Badge>
-                                                          <span>{element.replace('Timers:', '').trim()}</span>
-                                                        </div>
-                                                      );
-                                                    } else if (element.includes('Data')) {
-                                                      return (
-                                                        <div key={idx} className="flex items-center gap-2">
-                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
-                                                            📄 Data
-                                                          </Badge>
-                                                          <span>{element.replace('Data Objects:', '').trim()}</span>
-                                                        </div>
-                                                      );
-                                                    }
-                                                    return null;
-                                                  });
-                                                }
-                                                return (
-                                                  <div className="flex items-center gap-2">
-                                                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
-                                                      📋 Standard
-                                                    </Badge>
-                                                    <span>Forms, notifications, and system logs</span>
-                                                  </div>
-                                                );
-                                              })()}
+                                              {(details.additionalElements && details.additionalElements.length > 0) ?
+                                                details.additionalElements.map((element, idx) => {
+                                                  if (element.includes('Messages:')) {
+                                                    return (
+                                                      <div key={idx} className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
+                                                          📧 Messages
+                                                        </Badge>
+                                                        <span>{element.replace('Messages:', '').trim()}</span>
+                                                      </div>
+                                                    );
+                                                  } else if (element.includes('Timers:')) {
+                                                    return (
+                                                      <div key={idx} className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
+                                                          ⏱️ Timers
+                                                        </Badge>
+                                                        <span>{element.replace('Timers:', '').trim()}</span>
+                                                      </div>
+                                                    );
+                                                  } else if (element.includes('Data')) {
+                                                    return (
+                                                      <div key={idx} className="flex items-center gap-2">
+                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
+                                                          📄 Data
+                                                        </Badge>
+                                                        <span>{element.replace('Data Objects:', '').trim()}</span>
+                                                      </div>
+                                                    );
+                                                  }
+                                                  return (
+                                                    <div key={idx} className="flex items-center gap-2">
+                                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+                                                        📋 Element
+                                                      </Badge>
+                                                      <span>{element}</span>
+                                                    </div>
+                                                  );
+                                                }) : 
+                                                (() => {
+                                                  const additionalSection = details.description.match(/✅ 7\. Additional Elements\n([^$]*)/);
+                                                  if (additionalSection) {
+                                                    const elements = additionalSection[1].trim().split('\n');
+                                                    return elements.map((element, idx) => {
+                                                      if (element.includes('Messages:')) {
+                                                        return (
+                                                          <div key={idx} className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
+                                                              📧 Messages
+                                                            </Badge>
+                                                            <span>{element.replace('Messages:', '').trim()}</span>
+                                                          </div>
+                                                        );
+                                                      } else if (element.includes('Timers:')) {
+                                                        return (
+                                                          <div key={idx} className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
+                                                              ⏱️ Timers
+                                                            </Badge>
+                                                            <span>{element.replace('Timers:', '').trim()}</span>
+                                                          </div>
+                                                        );
+                                                      } else if (element.includes('Data')) {
+                                                        return (
+                                                          <div key={idx} className="flex items-center gap-2">
+                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
+                                                              📄 Data
+                                                            </Badge>
+                                                            <span>{element.replace('Data Objects:', '').trim()}</span>
+                                                          </div>
+                                                        );
+                                                      }
+                                                      return null;
+                                                    });
+                                                  }
+                                                  return (
+                                                    <div className="flex items-center gap-2">
+                                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+                                                        📋 Standard
+                                                      </Badge>
+                                                      <span>Forms, notifications, and system logs</span>
+                                                    </div>
+                                                  );
+                                                })()
+                                              }
                                             </div>
                                           </div>
                                         </div>
