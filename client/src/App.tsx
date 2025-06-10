@@ -9,12 +9,13 @@ import UserJourney from "@/pages/user-journey";
 import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import UserStoryGenerator from "@/pages/user-story-generator";
 import Landing from "@/pages/landing";
+import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={ProjectPlanner} />
+      <Route path="/" component={HomeLanding} />
       <Route path="/plan" component={ProjectPlanner} />
       <Route path="/start-over" component={Landing} />
       <Route path="/landing" component={Landing} />
