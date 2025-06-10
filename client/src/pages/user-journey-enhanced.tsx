@@ -68,6 +68,10 @@ export default function UserJourneyEnhanced() {
   const [newFlowType, setNewFlowType] = useState<Record<string, string>>({});
   const [editingFlowType, setEditingFlowType] = useState<string | null>(null);
   const [editedFlowTypeName, setEditedFlowTypeName] = useState('');
+  
+  // Flow details generation state
+  const [isGeneratingFlowDetails, setIsGeneratingFlowDetails] = useState(false);
+  const [flowDetails, setFlowDetails] = useState<Record<string, { description: string; keyComponents: string[]; processes: string[] }>>({});
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -106,6 +110,16 @@ export default function UserJourneyEnhanced() {
         setStakeholderFlows(JSON.parse(savedStakeholderFlows));
       } catch (error) {
         console.error('Error parsing saved stakeholder flows:', error);
+      }
+    }
+
+    // Load saved flow details
+    const savedFlowDetails = localStorage.getItem('flowDetails');
+    if (savedFlowDetails) {
+      try {
+        setFlowDetails(JSON.parse(savedFlowDetails));
+      } catch (error) {
+        console.error('Error parsing saved flow details:', error);
       }
     }
 
@@ -524,6 +538,82 @@ export default function UserJourneyEnhanced() {
       flow => !(flow.stakeholder === stakeholder && flow.flowType === flowType)
     );
     updateStakeholderFlows(updatedFlows);
+  };
+
+  // Generate detailed flow analysis for all stakeholder flows
+  const generateFlowDetails = async () => {
+    if (!projectPlan && !projectDescription) {
+      setError('Please provide a project description or plan first');
+      return;
+    }
+
+    setIsGeneratingFlowDetails(true);
+    setError('');
+
+    try {
+      const allFlows: { stakeholder: string; flowType: string }[] = [];
+      
+      // Collect all stakeholder-flow combinations
+      Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
+        flowTypes.forEach(flowType => {
+          allFlows.push({ stakeholder, flowType });
+        });
+      });
+
+      const details: Record<string, { description: string; keyComponents: string[]; processes: string[] }> = {};
+
+      // Generate details for each flow
+      for (const flow of allFlows) {
+        const key = `${flow.stakeholder}-${flow.flowType}`;
+        
+        try {
+          const prompt = `
+Based on this project context:
+${projectPlan || projectDescription}
+
+Generate detailed analysis for the "${flow.flowType}" flow for stakeholder "${flow.stakeholder}":
+
+1. Flow Description: A clear 2-3 sentence description of what this flow encompasses
+2. Key Components: List 4-6 specific components, features, or elements involved in this flow
+3. Core Processes: List 3-5 main processes or steps that occur in this flow
+
+Return ONLY a JSON object in this exact format:
+{
+  "description": "description here",
+  "keyComponents": ["component1", "component2", "component3", "component4"],
+  "processes": ["process1", "process2", "process3"]
+}`;
+
+          const response = await fetch('/api/gemini/generate-project-plan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: prompt })
+          });
+
+          if (!response.ok) throw new Error('Failed to generate flow details');
+
+          const result = await response.text();
+          
+          // Parse JSON from response
+          const jsonMatch = result.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const flowData = JSON.parse(jsonMatch[0]);
+            details[key] = flowData;
+          }
+        } catch (err) {
+          console.error(`Failed to generate details for ${key}:`, err);
+        }
+      }
+
+      setFlowDetails(details);
+      localStorage.setItem('flowDetails', JSON.stringify(details));
+      
+    } catch (err) {
+      console.error('Error generating flow details:', err);
+      setError('Failed to generate flow details. Please try again.');
+    } finally {
+      setIsGeneratingFlowDetails(false);
+    }
   };
 
   if (isLoadingFromStorage) {
@@ -948,16 +1038,45 @@ export default function UserJourneyEnhanced() {
           </CardContent>
         </Card>
 
-        {/* Stakeholder-Based BPMN Diagrams */}
-        {stakeholderFlows.length > 0 && (
-          <Card className="border-0 shadow-sm bg-white">
+        {/* Generate Flow Details Button */}
+        {Object.keys(personaFlowTypes).length > 0 && Object.values(flowDetails).length === 0 && (
+          <Card className="mb-6">
+            <CardContent className="pt-6 text-center">
+              <div className="space-y-4">
+                <div>
+                  <Activity className="h-12 w-12 text-blue-500 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Generate Flow Analysis</h3>
+                  <p className="text-gray-600 text-sm">
+                    Generate detailed analysis for all stakeholder flows including descriptions, key components, and processes
+                  </p>
+                </div>
+                <Button 
+                  onClick={generateFlowDetails}
+                  disabled={isGeneratingFlowDetails}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2"
+                >
+                  {isGeneratingFlowDetails ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Activity className="h-4 w-4 mr-2" />
+                  )}
+                  Generate Flow Details
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Stakeholder Flow Analysis */}
+        {Object.values(flowDetails).length > 0 && (
+          <Card className="border-0 shadow-sm bg-white mb-6">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-800">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
                     <Shield className="h-4 w-4 text-white" />
                   </div>
-                  Stakeholder-Based BPMN Diagrams
+                  Stakeholder Flow Analysis
                 </div>
                 <Button 
                   onClick={generateAllBpmn}
@@ -970,13 +1089,13 @@ export default function UserJourneyEnhanced() {
                   ) : (
                     <Activity className="h-3 w-3 mr-1" />
                   )}
-                  Generate All
+                  Generate BPMN Diagrams
                 </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 pb-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {extractedStakeholders.map((stakeholder, stakeholderIndex) => {
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes], stakeholderIndex) => {
                   const colorVariants = [
                     'from-blue-500 to-cyan-600',
                     'from-emerald-500 to-teal-600', 
@@ -1007,79 +1126,125 @@ export default function UserJourneyEnhanced() {
                   const borderClass = borderVariants[stakeholderIndex % borderVariants.length];
                   
                   return (
-                    <div key={stakeholder} className={`border-2 ${borderClass} rounded-xl p-4 bg-gradient-to-br ${bgClass}`}>
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <div className={`w-6 h-6 bg-gradient-to-r ${colorClass} rounded-md flex items-center justify-center`}>
-                            <User className="h-3 w-3 text-white" />
+                    <div key={stakeholder} className={`border-2 ${borderClass} rounded-xl p-5 bg-gradient-to-br ${bgClass}`}>
+                      {/* Stakeholder Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-center`}>
+                            <User className="h-4 w-4 text-white" />
                           </div>
-                          <h3 className="text-sm font-semibold text-gray-800">{stakeholder}</h3>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-800">{stakeholder}</h3>
+                            <p className="text-xs text-gray-600">{flowTypes.length} flow types</p>
+                          </div>
                         </div>
                         <Button
                           onClick={() => addNewFlow(stakeholder)}
                           variant="outline"
                           size="sm"
-                          className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-white"
+                          className="text-xs px-3 py-1 h-8 border-gray-300 hover:bg-white"
                         >
                           <Plus className="h-3 w-3 mr-1" />
-                          Add
+                          Add Flow
                         </Button>
                       </div>
                       
-                      <div className="space-y-2">
-                        {stakeholderFlows
-                          .filter(flow => flow.stakeholder === stakeholder)
-                          .map((flow, index) => (
-                            <div key={`${flow.stakeholder}-${flow.flowType}-${index}`} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg p-3 shadow-sm">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-xs font-medium text-gray-700 truncate max-w-[150px]">{flow.flowType}</h4>
-                                <div className="flex items-center gap-1">
+                      {/* Flow Types */}
+                      <div className="space-y-4">
+                        {flowTypes.map((flowType, flowIndex) => {
+                          const flowKey = `${stakeholder}-${flowType}`;
+                          const details = flowDetails[flowKey];
+                          const existingFlow = stakeholderFlows.find(f => f.stakeholder === stakeholder && f.flowType === flowType);
+                          
+                          return (
+                            <div key={flowIndex} className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-lg p-4 shadow-sm">
+                              {/* Flow Header */}
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="text-sm font-semibold text-gray-800">{flowType}</h4>
+                                <div className="flex items-center gap-2">
                                   <Button
-                                    onClick={() => generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt)}
-                                    disabled={isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`]}
+                                    onClick={() => generateStakeholderBpmn(stakeholder, flowType, existingFlow?.customPrompt || '')}
+                                    disabled={isGeneratingBpmn[flowKey]}
                                     size="sm"
-                                    className={`text-xs px-2 py-1 h-6 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                    className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                   >
-                                    {isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`] ? (
+                                    {isGeneratingBpmn[flowKey] ? (
                                       <Loader2 className="h-3 w-3 animate-spin" />
                                     ) : (
-                                      'Generate'
+                                      'Generate BPMN'
                                     )}
                                   </Button>
                                   <Button
-                                    onClick={() => removeFlow(flow.stakeholder, flow.flowType)}
+                                    onClick={() => removeFlow(stakeholder, flowType)}
                                     variant="outline"
                                     size="sm"
-                                    className="text-xs px-1.5 py-1 h-6 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
+                                    className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
                                   >
                                     <Trash2 className="h-3 w-3" />
                                   </Button>
                                 </div>
                               </div>
-                            
-                              <div className="mb-2">
+
+                              {/* Flow Details */}
+                              {details && (
+                                <div className="space-y-3 mb-3">
+                                  {/* Description */}
+                                  <div>
+                                    <p className="text-xs text-gray-700 leading-relaxed">{details.description}</p>
+                                  </div>
+
+                                  {/* Key Components */}
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-600 mb-1">Key Components</h5>
+                                    <div className="flex flex-wrap gap-1">
+                                      {details.keyComponents?.map((component, idx) => (
+                                        <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                          {component}
+                                        </Badge>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  {/* Core Processes */}
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-600 mb-1">Core Processes</h5>
+                                    <div className="space-y-1">
+                                      {details.processes?.map((process, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                                          <span className="text-xs text-gray-600">{process}</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Custom Requirements */}
+                              <div className="mb-3">
                                 <label className="block text-xs font-medium text-gray-600 mb-1">
                                   Custom Requirements (Optional)
                                 </label>
                                 <Textarea
-                                  value={flow.customPrompt}
-                                  onChange={(e) => updateCustomPrompt(flow.stakeholder, flow.flowType, e.target.value)}
+                                  value={existingFlow?.customPrompt || ''}
+                                  onChange={(e) => updateCustomPrompt(stakeholder, flowType, e.target.value)}
                                   placeholder="Describe specific requirements for this flow..."
-                                  className="text-xs min-h-[60px] resize-none"
+                                  className="text-xs min-h-[60px] resize-none bg-white/80"
                                   rows={2}
                                 />
                               </div>
 
-                              {flow.bpmnXml && (
+                              {/* BPMN Diagram */}
+                              {existingFlow?.bpmnXml && (
                                 <div className="space-y-2">
                                   <div className="flex items-center justify-between">
                                     <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
                                       <CheckCircle className="h-3 w-3 mr-1" />
-                                      Generated
+                                      BPMN Generated
                                     </Badge>
                                     <div className="flex items-center gap-1">
                                       <Button
-                                        onClick={() => copyXmlToClipboard(flow.bpmnXml)}
+                                        onClick={() => copyXmlToClipboard(existingFlow.bpmnXml)}
                                         variant="outline"
                                         size="sm"
                                         className="text-xs px-2 py-1 h-6 border-gray-300"
@@ -1089,7 +1254,7 @@ export default function UserJourneyEnhanced() {
                                       </Button>
                                       <Link href="/bpmn-editor">
                                         <Button
-                                          onClick={() => openInEditor(flow.bpmnXml)}
+                                          onClick={() => openInEditor(existingFlow.bpmnXml)}
                                           size="sm"
                                           className="text-xs px-2 py-1 h-6 bg-gray-600 hover:bg-gray-700 text-white"
                                         >
@@ -1100,14 +1265,15 @@ export default function UserJourneyEnhanced() {
                                     </div>
                                   </div>
                                   <InlineBpmnViewer
-                                    bpmnXml={flow.bpmnXml}
-                                    title={`${flow.stakeholder} - ${flow.flowType}`}
+                                    bpmnXml={existingFlow.bpmnXml}
+                                    title={`${stakeholder} - ${flowType}`}
                                     height="280px"
                                   />
                                 </div>
                               )}
                             </div>
-                          ))}
+                          );
+                        })}
                       </div>
                     </div>
                   );
