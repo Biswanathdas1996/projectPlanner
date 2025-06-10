@@ -3,7 +3,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Landing from "@/pages/landing";
 import BpmnEditor from "@/pages/bpmn-editor";
 import ProjectPlanner from "@/pages/project-planner";
 import UserJourney from "@/pages/user-journey";
@@ -14,10 +13,8 @@ import NotFound from "@/pages/not-found";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Landing} />
-      <Route path="/home" component={Landing} />
+      <Route path="/" component={ProjectPlanner} />
       <Route path="/plan" component={ProjectPlanner} />
-      <Route path="/planner" component={ProjectPlanner} />
       <Route path="/user-journey" component={UserJourneyEnhanced} />
       <Route path="/user-journey-legacy" component={UserJourney} />
       <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
