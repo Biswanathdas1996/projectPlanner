@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { generateUserJourneyFlows, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
+import { NavigationBar } from '@/components/navigation-bar';
 import { Link } from 'wouter';
 import {
   Users,
