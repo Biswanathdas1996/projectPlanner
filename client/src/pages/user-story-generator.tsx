@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { NavigationBar } from '@/components/navigation-bar';
 
 interface UserStory {
   id: string;
@@ -322,24 +323,23 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          User Story Generator
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
-          Generate user stories in Gherkin format from your BPMN workflows and export to JIRA
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <NavigationBar title="User Story Generator" />
+      <div className="container mx-auto px-4 py-8 max-w-7xl">
+        <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
+          <p className="text-gray-600 dark:text-gray-300">
+            Generate user stories in Gherkin format from your BPMN workflows and export to JIRA
+          </p>
+        </div>
 
-      {error && (
-        <Alert className="mb-6 border-red-200 bg-red-50 dark:bg-red-900/20">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-700 dark:text-red-300">
-            {error}
-          </AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <Alert className="mb-6 border-red-200 bg-red-50 dark:bg-red-900/20">
+            <AlertCircle className="h-4 w-4 text-red-600" />
+            <AlertDescription className="text-red-700 dark:text-red-300">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
 
       {generationStatus && (
         <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-900/20">
@@ -597,6 +597,7 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
           </Card>
         </TabsContent>
       </Tabs>
+      </div>
     </div>
   );
 }
