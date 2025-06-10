@@ -13,6 +13,7 @@ import {
   Sparkles,
   FileText,
   ArrowRight,
+  ArrowDown,
   Loader2,
   CheckCircle,
   AlertTriangle,
@@ -35,6 +36,7 @@ import {
   Eye,
   EyeOff,
   Users,
+  BookOpen,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -673,62 +675,137 @@ Return the complete enhanced project plan as HTML with all existing content plus
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="AI Project Planner" showBackButton={false} />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="text-white h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Transform ideas into comprehensive workflows</p>
-            </div>
-          </div>
-        </div>
+        
 
-        {/* Compact Progress Steps */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('input') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
-                getStepStatus('input') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
-                }`}>
-                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '1'}
-                </div>
-                Input
+        {/* Enhanced Progress Steps */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100 shadow-sm">
+            <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center flex items-center justify-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="h-3 w-3 text-white" />
               </div>
-              
-              <ArrowRight className="h-3 w-3 text-gray-300" />
-              
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
+              AI-Powered Development Workflow
+            </h2>
+            
+            <div className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6">
+              {/* Step 1: Input */}
+              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
+                getStepStatus('input') === 'active' ? 'bg-blue-100 shadow-md scale-105' :
+                getStepStatus('input') === 'completed' ? 'bg-green-100 shadow-sm' : 'bg-white shadow-sm hover:shadow-md'
               }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
+                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white shadow-lg' :
+                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '2'}
+                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
+                   getStepStatus('input') === 'active' ? <Sparkles className="h-5 w-5" /> : '1'}
                 </div>
-                Plan
+                <h3 className={`font-semibold text-sm mb-1 ${
+                  getStepStatus('input') === 'active' ? 'text-blue-700' :
+                  getStepStatus('input') === 'completed' ? 'text-green-700' : 'text-gray-600'
+                }`}>
+                  Project Input
+                </h3>
+                <p className="text-xs text-gray-500 max-w-20">Describe your vision</p>
               </div>
-              
-              <ArrowRight className="h-3 w-3 text-gray-300" />
-              
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('diagram') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
+
+              <div className="hidden lg:block">
+                <ArrowRight className="h-5 w-5 text-gray-300" />
+              </div>
+              <div className="lg:hidden">
+                <ArrowDown className="h-5 w-5 text-gray-300" />
+              </div>
+
+              {/* Step 2: Plan */}
+              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
+                getStepStatus('plan') === 'active' ? 'bg-blue-100 shadow-md scale-105' :
+                getStepStatus('plan') === 'completed' ? 'bg-green-100 shadow-sm' : 'bg-white shadow-sm hover:shadow-md'
               }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
+                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white shadow-lg' :
+                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '3'}
+                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
+                   getStepStatus('plan') === 'active' ? <FileText className="h-5 w-5" /> : '2'}
                 </div>
-                Diagram
+                <h3 className={`font-semibold text-sm mb-1 ${
+                  getStepStatus('plan') === 'active' ? 'text-blue-700' :
+                  getStepStatus('plan') === 'completed' ? 'text-green-700' : 'text-gray-600'
+                }`}>
+                  Smart Planning
+                </h3>
+                <p className="text-xs text-gray-500 max-w-20">AI-generated roadmap</p>
               </div>
+
+              <div className="hidden lg:block">
+                <ArrowRight className="h-5 w-5 text-gray-300" />
+              </div>
+              <div className="lg:hidden">
+                <ArrowDown className="h-5 w-5 text-gray-300" />
+              </div>
+
+              {/* Step 3: Stakeholder & Process Mapping */}
+              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
+                currentStep === 'diagram' || getStepStatus('diagram') === 'completed' ? 'bg-blue-100 shadow-md scale-105' :
+                'bg-white shadow-sm hover:shadow-md'
+              }`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
+                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white shadow-md' :
+                  currentStep === 'diagram' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-200 text-gray-600'
+                }`}>
+                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
+                   currentStep === 'diagram' ? <Users className="h-5 w-5" /> : '3'}
+                </div>
+                <h3 className={`font-semibold text-sm mb-1 ${
+                  currentStep === 'diagram' ? 'text-blue-700' :
+                  getStepStatus('diagram') === 'completed' ? 'text-green-700' : 'text-gray-600'
+                }`}>
+                  Process Mapping
+                </h3>
+                <p className="text-xs text-gray-500 max-w-20">Stakeholder flows</p>
+              </div>
+
+              <div className="hidden lg:block">
+                <ArrowRight className="h-5 w-5 text-gray-300" />
+              </div>
+              <div className="lg:hidden">
+                <ArrowDown className="h-5 w-5 text-gray-300" />
+              </div>
+
+              {/* Step 4: User Stories */}
+              <div className="flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 bg-white shadow-sm hover:shadow-md">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all bg-gray-200 text-gray-600">
+                  <BookOpen className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-sm mb-1 text-gray-600">
+                  User Stories
+                </h3>
+                <p className="text-xs text-gray-500 max-w-20">Detailed scenarios</p>
+              </div>
+
+              <div className="hidden lg:block">
+                <ArrowRight className="h-5 w-5 text-gray-300" />
+              </div>
+              <div className="lg:hidden">
+                <ArrowDown className="h-5 w-5 text-gray-300" />
+              </div>
+
+              {/* Step 5: Code Generation */}
+              <div className="flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 bg-white shadow-sm hover:shadow-md">
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all bg-gray-200 text-gray-600">
+                  <Code className="h-5 w-5" />
+                </div>
+                <h3 className="font-semibold text-sm mb-1 text-gray-600">
+                  Code Ready
+                </h3>
+                <p className="text-xs text-gray-500 max-w-20">Implementation</p>
+              </div>
+            </div>
+
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Transform your ideas into production-ready applications with AI-powered workflow automation
+              </p>
             </div>
           </div>
         </div>
