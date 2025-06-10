@@ -746,7 +746,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
     }
   };
 
-  // Generate swimlane BPMN from flow details
+  // Generate swimlane BPMN from flow details using client-side Gemini API
   const generateSwimlaneFromDetails = async (stakeholder: string, flowType: string) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
