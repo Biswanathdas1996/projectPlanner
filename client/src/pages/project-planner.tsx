@@ -518,18 +518,38 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         cleanedContent.includes('<style>');
     
     if (isHtmlContent) {
+      // Create a blob URL for the iframe content
+      const blob = new Blob([cleanedContent], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
+      
       return (
         <div className="w-full">
-          <div 
-            className="project-plan-content"
-            dangerouslySetInnerHTML={{ __html: cleanedContent }}
-            style={{
-              minHeight: '500px',
-              backgroundColor: '#ffffff',
-              borderRadius: '8px',
-              padding: '0'
-            }}
-          />
+          <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">Project Plan Preview</span>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+              </div>
+            </div>
+            <iframe
+              src={blobUrl}
+              className="project-plan-content w-full"
+              style={{
+                minHeight: '600px',
+                height: '80vh',
+                border: 'none',
+                backgroundColor: '#ffffff'
+              }}
+              title="Project Plan Content"
+              sandbox="allow-same-origin"
+              onLoad={() => {
+                // Clean up blob URL after iframe loads
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+              }}
+            />
+          </div>
         </div>
       );
     }
