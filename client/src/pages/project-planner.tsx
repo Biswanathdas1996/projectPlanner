@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { NavigationBar } from '@/components/navigation-bar';
 import { Link, useLocation } from 'wouter';
 import {
   Sparkles,
@@ -614,6 +615,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <NavigationBar title="AI Project Planner" showBackButton={false} />
       <div className="max-w-5xl mx-auto px-4 py-6">
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
@@ -622,24 +624,9 @@ Return the complete enhanced project plan as HTML with all existing content plus
               <Sparkles className="text-white h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Project Planner
-              </h1>
               <p className="text-gray-500 text-sm">Transform ideas into comprehensive workflows</p>
             </div>
           </div>
-          
-          {(currentStep !== 'input' || projectPlan || generatedBpmnXml) && (
-            <Button
-              onClick={resetPlanner}
-              variant="outline"
-              size="sm"
-              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-            >
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Start Over
-            </Button>
-          )}
         </div>
 
         {/* Compact Progress Steps */}
