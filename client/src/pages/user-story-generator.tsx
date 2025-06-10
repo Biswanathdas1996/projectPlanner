@@ -341,7 +341,7 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
           </Alert>
         )}
 
-      {generationStatus && (
+        {generationStatus && (
         <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-900/20">
           <CheckCircle className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-700 dark:text-green-300">

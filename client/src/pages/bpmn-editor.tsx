@@ -10,6 +10,7 @@ import { HelpPanel } from '@/components/help-panel';
 import { ContextualToolbar } from '@/components/contextual-toolbar';
 import { useBpmn } from '@/hooks/use-bpmn';
 import { validateBpmnFile } from '@/lib/bpmn-utils';
+import { NavigationBar } from '@/components/navigation-bar';
 import { Link } from 'wouter';
 import {
   Plus,
@@ -166,15 +167,10 @@ export default function BpmnEditor() {
 
   return (
     <div className="h-screen bg-gray-50 font-roboto" onKeyDown={handleKeyDown} tabIndex={0}>
+      <NavigationBar title="BPMN Editor" showBackButton={false} />
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 h-16 flex items-center justify-between px-6 relative z-50">
+      <header className="bg-white shadow-sm border-b border-gray-200 h-12 flex items-center justify-between px-6 relative z-50">
         <div className="flex items-center space-x-6">
-          <Link href="/user-journey">
-            <Button variant="ghost" size="sm" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back
-            </Button>
-          </Link>
           
           <div className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
