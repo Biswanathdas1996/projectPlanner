@@ -935,63 +935,63 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
   return cleanedText;
 }
 
-export async function generateBpmnXml(projectPlan: string): Promise<string> {
-  if (!projectPlan.trim()) {
-    throw new Error("Project plan is required");
+export async function generateBpmnXml(flowContent: string): Promise<string> {
+  if (!flowContent.trim()) {
+    throw new Error("Flow content is required");
   }
 
   const model = genAI.getGenerativeModel({ 
     model: "gemini-2.0-flash",
     generationConfig: {
-      temperature: 0.3,
-      topK: 40,
-      topP: 0.95,
+      temperature: 0.2,
+      topK: 30,
+      topP: 0.8,
       maxOutputTokens: 4096,
     }
   });
 
-  const prompt = `Generate a comprehensive BPMN 2.0 XML workflow diagram based on this project plan: "${projectPlan}"
+  const prompt = `Generate a BPMN 2.0 XML diagram based on this structured flow content:
 
-CRITICAL REQUIREMENTS:
-1. **Valid BPMN 2.0 XML Structure**
-   - Proper XML declaration and BPMN namespace
-   - Valid BPMN elements with correct IDs
-   - Proper process flow with start/end events
-   - Include decision gateways for business logic
-   - Add user tasks, service tasks, and script tasks
-   - Include sequence flows connecting all elements
+${flowContent}
 
-2. **Essential BPMN Elements to Include**:
-   - startEvent (circle)
-   - endEvent (circle with thick border)
-   - userTask (rectangle) for user interactions
-   - serviceTask (rectangle with gear icon) for system processes
-   - exclusiveGateway (diamond) for decision points
-   - parallelGateway (diamond with plus) for parallel flows
-   - sequenceFlow (arrows) connecting elements
+CRITICAL MAPPING REQUIREMENTS:
+1. **Parse Content Sections** - Extract and map each section to BPMN elements:
+   • **Participants/Swimlanes** → bpmn2:participant elements with pools
+   • **Trigger/Start Event** → bpmn2:startEvent with name from trigger
+   • **Activities/Tasks** → bpmn2:userTask or bpmn2:serviceTask elements
+   • **Decision Points** → bpmn2:exclusiveGateway elements
+   • **End Event** → bpmn2:endEvent with name from content
+   • **Additional Elements** → relevant BPMN elements as appropriate
 
-3. **Process Flow Structure**:
-   - Start with project initiation
-   - Include requirements gathering phase
-   - Add design and architecture phase
-   - Include development iterations
-   - Add testing and quality assurance
-   - Include deployment and launch
-   - End with project completion
+2. **BPMN 2.0 XML Structure**:
+   - Use bpmn2: namespace prefix consistently
+   - Include proper XML declaration
+   - Valid BPMN definitions element
+   - Include collaboration for swimlanes if participants exist
+   - Process element containing all flow elements
+   - BPMNDiagram for visual layout
 
-4. **ID Naming Convention**:
-   - Use descriptive, valid XML IDs (no spaces, special chars)
-   - StartEvent_1, UserTask_Requirements, Gateway_Decision_1
-   - Process_ProjectWorkflow
-   - SequenceFlow_1, SequenceFlow_2, etc.
+3. **Element Creation Rules**:
+   - Create one swimlane for each participant listed
+   - Map trigger content to start event name
+   - Convert each activity item to a task element
+   - Transform decision points into gateway elements
+   - Use end event content for end event name
+   - Connect elements with sequenceFlow in logical order
 
-5. **Visual Layout (bpmndi:BPMNDiagram)**:
-   - Include proper positioning coordinates
-   - Logical left-to-right flow
-   - Adequate spacing between elements
-   - Professional swimlane layout if applicable
+4. **ID Generation**:
+   - Clean names for valid XML IDs (no spaces/special chars)
+   - Use descriptive IDs: StartEvent_1, Task_ActivityName, Gateway_DecisionName
+   - Ensure all IDs are unique within the document
 
-EXAMPLE STRUCTURE:
+5. **Visual Layout Requirements**:
+   - Include bpmndi:BPMNDiagram with proper coordinates
+   - Arrange elements left-to-right in process flow
+   - Use realistic positioning (start at x=200, increment by ~150)
+   - Set swimlane heights appropriately
+   - Include all shape and edge definitions
+
+TEMPLATE STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
@@ -999,20 +999,31 @@ EXAMPLE STRUCTURE:
                    xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
                    id="Definitions_1" 
                    targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn2:process id="Process_ProjectWorkflow" isExecutable="true">
-    [Process elements here]
+  
+  <bpmn2:collaboration id="Collaboration_1">
+    <!-- Create participant for each swimlane from content -->
+  </bpmn2:collaboration>
+  
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <!-- Map content sections to BPMN elements -->
+    <!-- Start event from trigger -->
+    <!-- Tasks from activities -->
+    <!-- Gateways from decision points -->
+    <!-- End event from end event content -->
+    <!-- Sequence flows connecting all elements -->
   </bpmn2:process>
+  
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    [Diagram elements here]
+    <!-- Visual layout with coordinates -->
   </bpmndi:BPMNDiagram>
+  
 </bpmn2:definitions>
 
 VALIDATION REQUIREMENTS:
-- XML must be well-formed and valid
-- All BPMN elements must have proper IDs
-- Sequence flows must connect valid elements
-- Process must have clear start and end points
-- Include meaningful labels and descriptions
+- All referenced IDs must exist
+- Sequence flows must connect valid source/target elements
+- Each process element must be visually represented in diagram
+- XML must be well-formed and valid BPMN 2.0
 
 Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
 
@@ -1035,12 +1046,11 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
   }
 
   // Validate essential BPMN elements are present
-  const requiredElements = ['bpmn2:process', 'bpmn2:startEvent', 'bpmn2:endEvent', 'bpmndi:BPMNDiagram'];
+  const requiredElements = ['bpmn2:process', 'bpmn2:startEvent', 'bpmn2:endEvent'];
   const missingElements = requiredElements.filter(element => !cleanedText.includes(element));
   
   if (missingElements.length > 0) {
     console.warn('BPMN XML missing elements:', missingElements);
-    // Continue anyway as some elements might be optional
   }
 
   return cleanedText;
