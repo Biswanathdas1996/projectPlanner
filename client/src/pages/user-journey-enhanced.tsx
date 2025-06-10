@@ -1,0 +1,611 @@
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { generateUserJourneyFlows, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
+import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
+import { Link } from 'wouter';
+import {
+  Users,
+  ArrowRight,
+  Loader2,
+  CheckCircle,
+  AlertTriangle,
+  ArrowLeft,
+  Download,
+  Copy,
+  Eye,
+  EyeOff,
+  Navigation,
+  Workflow,
+  User,
+  Settings,
+  Shield,
+  Activity,
+  Plus,
+  Trash2
+} from 'lucide-react';
+
+interface StakeholderFlow {
+  stakeholder: string;
+  flowType: string;
+  bpmnXml: string;
+  customPrompt: string;
+}
+
+export default function UserJourneyEnhanced() {
+  const [projectPlan, setProjectPlan] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [userJourneyFlows, setUserJourneyFlows] = useState<string>('');
+  const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>([]);
+  const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
+  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<Record<string, boolean>>({});
+  const [isExtractingStakeholders, setIsExtractingStakeholders] = useState(false);
+  const [error, setError] = useState('');
+  const [showFlowDetails, setShowFlowDetails] = useState(false);
+  const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
+  const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
+  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
+  const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
+
+  // Load data from localStorage when component mounts
+  useEffect(() => {
+    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
+    const savedUserJourneyFlows = localStorage.getItem(STORAGE_KEYS.USER_JOURNEY_FLOWS);
+    const savedStakeholders = localStorage.getItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS);
+    const savedFlowTypes = localStorage.getItem(STORAGE_KEYS.PERSONA_FLOW_TYPES);
+
+    if (savedProjectDescription) {
+      setProjectDescription(savedProjectDescription);
+    }
+    if (savedProjectPlan) {
+      setProjectPlan(savedProjectPlan);
+    }
+    if (savedUserJourneyFlows) {
+      setUserJourneyFlows(savedUserJourneyFlows);
+    }
+    if (savedStakeholders) {
+      try {
+        setExtractedStakeholders(JSON.parse(savedStakeholders));
+      } catch (error) {
+        console.error('Error parsing saved stakeholders:', error);
+      }
+    }
+    if (savedFlowTypes) {
+      try {
+        setPersonaFlowTypes(JSON.parse(savedFlowTypes));
+      } catch (error) {
+        console.error('Error parsing saved flow types:', error);
+      }
+    }
+
+    setIsLoadingFromStorage(false);
+
+    // Auto-extract stakeholders if we have a project plan
+    const planContent = savedProjectPlan || savedProjectDescription;
+    if (planContent && !savedStakeholders) {
+      setAutoGenerationStatus('Extracting stakeholders from project plan...');
+      extractProjectStakeholders().finally(() => {
+        setAutoGenerationStatus('');
+      });
+    }
+  }, []);
+
+  // Extract stakeholders from project plan
+  const extractProjectStakeholders = async () => {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
+      setError('No project plan available. Please generate a project plan first.');
+      return;
+    }
+
+    setIsExtractingStakeholders(true);
+    setError('');
+
+    try {
+      const { stakeholders, flowTypes } = await extractStakeholdersFromProject(planContent);
+      setExtractedStakeholders(stakeholders);
+      setPersonaFlowTypes(flowTypes);
+      
+      // Initialize stakeholder flows based on extracted data
+      const initialFlows: StakeholderFlow[] = [];
+      stakeholders.forEach(stakeholder => {
+        flowTypes[stakeholder]?.forEach(flowType => {
+          initialFlows.push({
+            stakeholder,
+            flowType,
+            bpmnXml: '',
+            customPrompt: ''
+          });
+        });
+      });
+      setStakeholderFlows(initialFlows);
+      
+      localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(stakeholders));
+      localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(flowTypes));
+    } catch (error) {
+      console.error('Error extracting stakeholders:', error);
+      setError('Failed to extract stakeholders from project plan. Please try again.');
+    } finally {
+      setIsExtractingStakeholders(false);
+    }
+  };
+
+  // Generate user journey flows overview
+  const generateFlows = async () => {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
+      setError('No project plan available. Please generate a project plan first.');
+      return;
+    }
+
+    setIsGeneratingFlows(true);
+    setError('');
+
+    try {
+      const flows = await generateUserJourneyFlows(planContent);
+      setUserJourneyFlows(flows);
+      localStorage.setItem(STORAGE_KEYS.USER_JOURNEY_FLOWS, flows);
+    } catch (error) {
+      console.error('Error generating user journey flows:', error);
+      setError('Failed to generate user journey flows. Please try again.');
+    } finally {
+      setIsGeneratingFlows(false);
+    }
+  };
+
+  // Generate BPMN for a specific stakeholder flow
+  const generateStakeholderBpmn = async (stakeholder: string, flowType: string, customPrompt?: string) => {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
+      setError('No project plan available. Please generate a project plan first.');
+      return;
+    }
+
+    const flowKey = `${stakeholder}-${flowType}`;
+    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
+    setError('');
+
+    try {
+      const bpmn = await generatePersonaBpmnFlowWithType(planContent, stakeholder, flowType, customPrompt);
+      
+      setStakeholderFlows(prev => 
+        prev.map(flow => 
+          flow.stakeholder === stakeholder && flow.flowType === flowType
+            ? { ...flow, bpmnXml: bpmn }
+            : flow
+        )
+      );
+      
+      // Save the latest generated BPMN to localStorage for editor
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmn);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (error) {
+      console.error(`Error generating ${stakeholder} ${flowType} BPMN:`, error);
+      setError(`Failed to generate ${stakeholder} ${flowType} BPMN diagram. Please try again.`);
+    } finally {
+      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
+  // Generate all BPMN diagrams
+  const generateAllBpmn = async () => {
+    for (const flow of stakeholderFlows) {
+      await generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt);
+      // Add delay to avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+  };
+
+  // Add a new flow type for a stakeholder
+  const addNewFlow = (stakeholder: string) => {
+    const newFlowType = `Custom Flow ${Date.now()}`;
+    setStakeholderFlows(prev => [
+      ...prev,
+      {
+        stakeholder,
+        flowType: newFlowType,
+        bpmnXml: '',
+        customPrompt: ''
+      }
+    ]);
+  };
+
+  // Remove a flow
+  const removeFlow = (stakeholder: string, flowType: string) => {
+    setStakeholderFlows(prev => 
+      prev.filter(flow => !(flow.stakeholder === stakeholder && flow.flowType === flowType))
+    );
+  };
+
+  // Update custom prompt for a flow
+  const updateCustomPrompt = (stakeholder: string, flowType: string, prompt: string) => {
+    setStakeholderFlows(prev => 
+      prev.map(flow => 
+        flow.stakeholder === stakeholder && flow.flowType === flowType
+          ? { ...flow, customPrompt: prompt }
+          : flow
+      )
+    );
+  };
+
+  // Download user journeys
+  const downloadUserJourneys = () => {
+    if (!userJourneyFlows) {
+      setError('No user journey flows available to download');
+      return;
+    }
+
+    const blob = new Blob([userJourneyFlows], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const projectName = projectDescription.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const timestamp = new Date().toISOString().slice(0, 10);
+    
+    link.href = url;
+    link.download = `user-journey-flows-${projectName}-${timestamp}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  // Copy XML to clipboard
+  const copyXmlToClipboard = (xml: string) => {
+    navigator.clipboard.writeText(xml).then(() => {
+      // Show success feedback
+    }).catch(err => {
+      console.error('Failed to copy XML:', err);
+    });
+  };
+
+  // Navigate to editor with specific diagram
+  const openInEditor = (bpmnXml: string) => {
+    if (bpmnXml) {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    }
+  };
+
+  if (isLoadingFromStorage) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+          <p className="text-gray-600">Loading user journey data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center space-x-4">
+            <Link href="/project-planner">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Planner
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Enhanced User Journey & BPMN Flows</h1>
+              <p className="text-gray-600 mt-1">Stakeholder-based BPMN workflow generation with multiple flows per persona</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Link href="/bpmn-editor">
+              <Button variant="outline">
+                <Navigation className="h-4 w-4 mr-2" />
+                BPMN Editor
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Auto-generation Status */}
+        {autoGenerationStatus && (
+          <Card className="mb-6 border-blue-200 bg-blue-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-3">
+                <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+                <span className="text-blue-800 font-medium">{autoGenerationStatus}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Error Display */}
+        {error && (
+          <Card className="mb-6 border-red-200 bg-red-50">
+            <CardContent className="pt-6">
+              <div className="flex items-center space-x-3">
+                <AlertTriangle className="h-5 w-5 text-red-600" />
+                <span className="text-red-800">{error}</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Project Plan Summary */}
+        {(projectPlan || projectDescription) && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Workflow className="h-5 w-5 mr-2" />
+                Project Context
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-700 line-clamp-3">
+                  {projectPlan || projectDescription}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Stakeholder Extraction Section */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                Stakeholder Analysis
+              </div>
+              <Button 
+                onClick={extractProjectStakeholders}
+                disabled={isExtractingStakeholders || !projectPlan && !projectDescription}
+                size="sm"
+              >
+                {isExtractingStakeholders ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : (
+                  <Activity className="h-4 w-4 mr-2" />
+                )}
+                Extract Stakeholders
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {extractedStakeholders.length > 0 ? (
+              <div className="space-y-4">
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Identified Stakeholders</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {extractedStakeholders.map((stakeholder, index) => (
+                      <Badge key={index} variant="secondary">
+                        {stakeholder}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Flow Types per Stakeholder</h4>
+                  {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes]) => (
+                    <div key={stakeholder} className="mb-3 p-3 bg-gray-50 rounded-lg">
+                      <div className="font-medium text-sm text-gray-700 mb-1">{stakeholder}</div>
+                      <div className="flex flex-wrap gap-1">
+                        {flowTypes.map((flowType, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {flowType}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                Extract stakeholders from your project plan to see persona-based workflow analysis
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* User Journey Flows Overview */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center">
+                <Workflow className="h-5 w-5 mr-2" />
+                User Journey Flows Overview
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  onClick={generateFlows}
+                  disabled={isGeneratingFlows || !projectPlan && !projectDescription}
+                  size="sm"
+                >
+                  {isGeneratingFlows ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Workflow className="h-4 w-4 mr-2" />
+                  )}
+                  Generate Overview
+                </Button>
+                {userJourneyFlows && (
+                  <Button onClick={downloadUserJourneys} variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download
+                  </Button>
+                )}
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userJourneyFlows ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFlowDetails(!showFlowDetails)}
+                  >
+                    {showFlowDetails ? (
+                      <>
+                        <EyeOff className="h-4 w-4 mr-2" />
+                        Hide Details
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4 mr-2" />
+                        Show Details
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {showFlowDetails && (
+                  <div 
+                    className="bg-white border rounded-lg p-4 max-h-96 overflow-y-auto"
+                    dangerouslySetInnerHTML={{ __html: userJourneyFlows }}
+                  />
+                )}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                Generate user journey flows overview to see comprehensive workflow analysis
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Stakeholder-Based BPMN Diagrams */}
+        {stakeholderFlows.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Shield className="h-5 w-5 mr-2" />
+                  Stakeholder-Based BPMN Diagrams
+                </div>
+                <Button 
+                  onClick={generateAllBpmn}
+                  disabled={Object.values(isGeneratingBpmn).some(Boolean)}
+                  size="sm"
+                >
+                  {Object.values(isGeneratingBpmn).some(Boolean) ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Activity className="h-4 w-4 mr-2" />
+                  )}
+                  Generate All BPMN
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {extractedStakeholders.map(stakeholder => (
+                  <div key={stakeholder} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-lg font-semibold text-gray-900">{stakeholder}</h3>
+                      <Button
+                        onClick={() => addNewFlow(stakeholder)}
+                        variant="outline"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Flow
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      {stakeholderFlows
+                        .filter(flow => flow.stakeholder === stakeholder)
+                        .map((flow, index) => (
+                          <div key={`${flow.stakeholder}-${flow.flowType}-${index}`} className="border rounded-lg p-4 bg-gray-50">
+                            <div className="flex items-center justify-between mb-3">
+                              <h4 className="font-medium text-gray-800">{flow.flowType}</h4>
+                              <div className="flex items-center space-x-2">
+                                <Button
+                                  onClick={() => generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt)}
+                                  disabled={isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`]}
+                                  size="sm"
+                                >
+                                  {isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`] ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    'Generate BPMN'
+                                  )}
+                                </Button>
+                                <Button
+                                  onClick={() => removeFlow(flow.stakeholder, flow.flowType)}
+                                  variant="outline"
+                                  size="sm"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                            
+                            <div className="mb-3">
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Custom Requirements (Optional)
+                              </label>
+                              <Textarea
+                                value={flow.customPrompt}
+                                onChange={(e) => updateCustomPrompt(flow.stakeholder, flow.flowType, e.target.value)}
+                                placeholder={`Describe specific requirements for ${flow.stakeholder} ${flow.flowType}...`}
+                                className="text-sm"
+                                rows={2}
+                              />
+                            </div>
+
+                            {flow.bpmnXml && (
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <Badge variant="secondary">
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    BPMN Generated
+                                  </Badge>
+                                  <div className="flex items-center space-x-2">
+                                    <Button
+                                      onClick={() => copyXmlToClipboard(flow.bpmnXml)}
+                                      variant="outline"
+                                      size="sm"
+                                    >
+                                      <Copy className="h-4 w-4 mr-2" />
+                                      Copy XML
+                                    </Button>
+                                    <Link href="/bpmn-editor">
+                                      <Button
+                                        onClick={() => openInEditor(flow.bpmnXml)}
+                                        size="sm"
+                                      >
+                                        <Navigation className="h-4 w-4 mr-2" />
+                                        View in Editor
+                                      </Button>
+                                    </Link>
+                                  </div>
+                                </div>
+                                <InlineBpmnViewer
+                                  bpmnXml={flow.bpmnXml}
+                                  title={`${flow.stakeholder} - ${flow.flowType}`}
+                                  height="300px"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}

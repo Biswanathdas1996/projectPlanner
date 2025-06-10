@@ -21,6 +21,8 @@ export const STORAGE_KEYS = {
   USER_JOURNEY_FLOWS: 'bpmn-user-journey-flows',
   PERSONA_BPMN_FLOWS: 'bpmn-persona-flows',
   PERSONA_PROMPTS: 'bpmn-persona-prompts',
+  EXTRACTED_STAKEHOLDERS: 'bpmn-extracted-stakeholders',
+  PERSONA_FLOW_TYPES: 'bpmn-persona-flow-types',
   GENERATED_BPMN_XML: 'bpmn-generated-xml',
 } as const;
 
