@@ -118,49 +118,60 @@ export default function UserStoryGenerator() {
     setGenerationStatus('Analyzing workflow and generating user stories...');
 
     try {
-      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate comprehensive user stories in Gherkin format:
+      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate 2-3 user stories in Gherkin format.
 
 BPMN XML: ${flow.bpmnXml}
 Custom Requirements: ${flow.customPrompt}
 
-Please generate user stories that include:
-1. Clear "As a [role], I want [goal] so that [benefit]" format
-2. Detailed acceptance criteria
-3. Gherkin scenarios with Given/When/Then format
-4. Appropriate priority and story points estimation
-5. Relevant labels and epic categorization
+IMPORTANT: Respond ONLY with a valid JSON array. No explanations, no markdown formatting, just the JSON array.
 
-Format the response as a JSON array of user stories with the following structure:
-{
-  "title": "Story title",
-  "asA": "user role",
-  "iWant": "what they want",
-  "soThat": "the benefit",
-  "acceptanceCriteria": ["criteria 1", "criteria 2"],
-  "priority": "High|Medium|Low|Critical",
-  "storyPoints": 1-13,
-  "epic": "Epic name",
-  "labels": ["label1", "label2"],
-  "gherkinScenarios": [
-    {
-      "title": "Scenario title",
-      "given": ["Given step 1", "Given step 2"],
-      "when": ["When step 1"],
-      "then": ["Then step 1", "Then step 2"]
-    }
-  ]
-}`;
+Example format:
+[
+  {
+    "title": "User Login Authentication",
+    "asA": "registered user",
+    "iWant": "to securely log into my account",
+    "soThat": "I can access my personal dashboard",
+    "acceptanceCriteria": ["Valid credentials allow access", "Invalid credentials show error message"],
+    "priority": "High",
+    "storyPoints": 5,
+    "epic": "User Management",
+    "labels": ["authentication", "security"],
+    "gherkinScenarios": [
+      {
+        "title": "Successful login with valid credentials",
+        "given": ["I am on the login page", "I have valid credentials"],
+        "when": ["I enter my username and password", "I click the login button"],
+        "then": ["I should be redirected to my dashboard", "I should see a welcome message"]
+      }
+    ]
+  }
+]
+
+Generate the JSON array now:`;
 
       const response = await generateCustomSuggestions(prompt);
       
       try {
         // Extract JSON from response - response is string array, join first
         const responseText = Array.isArray(response) ? response.join(' ') : String(response);
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+        console.log('Raw response:', responseText);
+        
+        // Try to find JSON array in the response
+        let jsonMatch = responseText.match(/\[[\s\S]*?\]/);
+        if (!jsonMatch) {
+          // Try to find JSON objects and wrap them in an array
+          const objectMatches = responseText.match(/\{[\s\S]*?\}/g);
+          if (objectMatches) {
+            jsonMatch = [`[${objectMatches.join(',')}]`];
+          }
+        }
+        
         if (!jsonMatch) {
           throw new Error('No valid JSON found in response');
         }
         
+        console.log('Extracted JSON:', jsonMatch[0]);
         const generatedStories = JSON.parse(jsonMatch[0]);
         
         // Add IDs and process stories
@@ -179,7 +190,39 @@ Format the response as a JSON array of user stories with the following structure
         
       } catch (parseError) {
         console.error('Error parsing generated stories:', parseError);
-        setError('Failed to parse generated user stories. Please try again.');
+        
+        // Create fallback user stories based on the flow information
+        const fallbackStories: UserStory[] = [
+          {
+            id: `story-${Date.now()}-fallback`,
+            title: `${flow.stakeholder} ${flow.flowType} Workflow`,
+            asA: flow.stakeholder.toLowerCase(),
+            iWant: `to complete the ${flow.flowType.toLowerCase()} process`,
+            soThat: "I can achieve my goals efficiently",
+            acceptanceCriteria: [
+              "The workflow can be initiated successfully",
+              "All required steps are completed",
+              "The outcome meets expectations"
+            ],
+            priority: "Medium" as const,
+            storyPoints: 5,
+            epic: `${flow.stakeholder} Experience`,
+            labels: [flow.stakeholder.toLowerCase(), flow.flowType.toLowerCase()],
+            gherkinScenarios: [
+              {
+                id: `scenario-${Date.now()}-fallback`,
+                title: `Complete ${flow.flowType} workflow`,
+                given: [`I am a ${flow.stakeholder.toLowerCase()}`, "I have access to the system"],
+                when: [`I start the ${flow.flowType.toLowerCase()} process`],
+                then: ["The workflow should proceed smoothly", "I should reach the desired outcome"]
+              }
+            ]
+          }
+        ];
+        
+        setUserStories(prev => [...prev, ...fallbackStories]);
+        setGenerationStatus('Generated fallback user story. AI response parsing failed but basic story created.');
+        setTimeout(() => setGenerationStatus(''), 4000);
       }
       
     } catch (error) {
