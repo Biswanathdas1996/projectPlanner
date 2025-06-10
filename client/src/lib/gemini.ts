@@ -991,56 +991,41 @@ CRITICAL MAPPING REQUIREMENTS:
    - Set swimlane heights appropriately
    - Include all shape and edge definitions
 
-CRITICAL BPMN 2.0 XML REQUIREMENTS:
-1. ALL visual elements MUST use self-closing tags with " />"
-2. NEVER use separate closing tags for: dc:Bounds, di:waypoint, bpmndi:BPMNLabel
-3. Proper namespace declarations in definitions element
-4. Valid element references and connections
-
-EXACT TEMPLATE TO FOLLOW:
+TEMPLATE STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   id="Definitions_1" 
+                   targetNamespace="http://bpmn.io/schema/bpmn">
+  
   <bpmn2:collaboration id="Collaboration_1">
-    <bpmn2:participant id="Pool_Main" name="Participant_Name" processRef="Process_1" />
+    <!-- Create participant for each swimlane from content -->
   </bpmn2:collaboration>
+  
   <bpmn2:process id="Process_1" isExecutable="true">
-    <bpmn2:startEvent id="StartEvent_1" name="Start_Name" />
-    <bpmn2:userTask id="Task_1" name="Task_Name" />
-    <bpmn2:endEvent id="EndEvent_1" name="End_Name" />
-    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
-    <bpmn2:sequenceFlow id="Flow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
+    <!-- Map content sections to BPMN elements -->
+    <!-- Start event from trigger -->
+    <!-- Tasks from activities -->
+    <!-- Gateways from decision points -->
+    <!-- End event from end event content -->
+    <!-- Sequence flows connecting all elements -->
   </bpmn2:process>
+  
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
-      <bpmndi:BPMNShape id="Pool_Main_di" bpmnElement="Pool_Main" isHorizontal="true">
-        <dc:Bounds x="80" y="80" width="600" height="250" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="150" y="150" width="36" height="36" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
-        <dc:Bounds x="250" y="130" width="100" height="80" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="400" y="150" width="36" height="36" />
-        <bpmndi:BPMNLabel />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
-        <di:waypoint x="186" y="168" />
-        <di:waypoint x="250" y="170" />
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
-        <di:waypoint x="350" y="170" />
-        <di:waypoint x="400" y="168" />
-      </bpmndi:BPMNEdge>
-    </bpmndi:BPMNPlane>
+    <!-- Visual layout with coordinates -->
   </bpmndi:BPMNDiagram>
+  
 </bpmn2:definitions>
 
-CRITICAL: Return ONLY valid BPMN 2.0 XML with self-closing visual tags. No explanations or markdown.`;
+VALIDATION REQUIREMENTS:
+- All referenced IDs must exist
+- Sequence flows must connect valid source/target elements
+- Each process element must be visually represented in diagram
+- XML must be well-formed and valid BPMN 2.0
+
+Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
@@ -1055,63 +1040,6 @@ CRITICAL: Return ONLY valid BPMN 2.0 XML with self-closing visual tags. No expla
     cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
-  // Fix common XML issues that cause parsing errors
-  cleanedText = cleanedText
-    // Fix visual elements that should be self-closing
-    .replace(/<bpmndi:BPMNShape([^>]*?)>(\s*<\/bpmndi:BPMNShape>)?/g, '<bpmndi:BPMNShape$1 />')
-    .replace(/<bpmndi:BPMNEdge([^>]*?)>(\s*<\/bpmndi:BPMNEdge>)?/g, '<bpmndi:BPMNEdge$1 />')
-    .replace(/<dc:Bounds([^>]*?)>(\s*<\/dc:Bounds>)?/g, '<dc:Bounds$1 />')
-    .replace(/<di:waypoint([^>]*?)>(\s*<\/di:waypoint>)?/g, '<di:waypoint$1 />')
-    .replace(/<bpmndi:BPMNLabel([^>]*?)>(\s*<\/bpmndi:BPMNLabel>)?/g, '<bpmndi:BPMNLabel$1 />')
-    // Remove any leftover closing tags
-    .replace(/<\/bpmndi:BPMNShape>/g, '')
-    .replace(/<\/bpmndi:BPMNEdge>/g, '')
-    .replace(/<\/dc:Bounds>/g, '')
-    .replace(/<\/di:waypoint>/g, '')
-    .replace(/<\/bpmndi:BPMNLabel>/g, '')
-    // Fix malformed self-closing tags
-    .replace(/\/\s*\/>/g, ' />')
-    .replace(/\s+\/>/g, ' />')
-    .replace(/>\s*\/>/g, ' />')
-    // Ensure proper spacing
-    .replace(/>\s+</g, '>\n<')
-    .replace(/\s+xmlns:/g, ' xmlns:')
-    .trim();
-
-  // Validate XML structure more thoroughly
-  try {
-    // Basic XML validation - check for balanced tags
-    const tagStack: string[] = [];
-    const tagRegex = /<\/?([a-zA-Z0-9:]+)[^>]*>/g;
-    let match;
-    
-    while ((match = tagRegex.exec(cleanedText)) !== null) {
-      const fullTag = match[0];
-      const tagName = match[1];
-      
-      if (fullTag.includes('/>')) {
-        // Self-closing tag, no action needed
-        continue;
-      } else if (fullTag.startsWith('</')) {
-        // Closing tag
-        if (tagStack.length === 0 || tagStack[tagStack.length - 1] !== tagName) {
-          console.warn(`Unmatched closing tag: ${tagName}`);
-        } else {
-          tagStack.pop();
-        }
-      } else {
-        // Opening tag
-        tagStack.push(tagName);
-      }
-    }
-    
-    if (tagStack.length > 0) {
-      console.warn('Unclosed tags detected:', tagStack);
-    }
-  } catch (validationError) {
-    console.warn('XML validation warning:', validationError);
-  }
-
   // Basic validation - ensure it starts with XML declaration
   if (!cleanedText.startsWith('<?xml') && !cleanedText.startsWith('<bpmn2:definitions')) {
     throw new Error('Generated BPMN XML is not properly formatted');
@@ -1123,11 +1051,6 @@ CRITICAL: Return ONLY valid BPMN 2.0 XML with self-closing visual tags. No expla
   
   if (missingElements.length > 0) {
     console.warn('BPMN XML missing elements:', missingElements);
-  }
-
-  // Ensure the XML ends properly
-  if (!cleanedText.trim().endsWith('</bpmn2:definitions>')) {
-    console.warn('BPMN XML may be truncated - missing closing definitions tag');
   }
 
   return cleanedText;
