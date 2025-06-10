@@ -56,9 +56,7 @@ export function WorkflowProgress({ currentStep, completedSteps = [] }: WorkflowP
             <span className={`text-sm font-medium hidden sm:block ${
               getStepStatus('input') === 'active' ? 'text-blue-700' :
               getStepStatus('input') === 'completed' ? 'text-green-700' : 'text-gray-600'
-            }`}>
-              Input
-            </span>
+            }`}>Describe Idea</span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
