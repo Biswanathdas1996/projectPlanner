@@ -293,77 +293,211 @@ Return the complete enhanced project plan as HTML with all existing content plus
   };
 
   const downloadPDF = async () => {
+    if (!projectPlan) {
+      setError('No project plan available to download');
+      return;
+    }
+
     setIsDownloadingPdf(true);
+    setError('');
     
     try {
       // Import libraries dynamically
       const html2canvas = (await import('html2canvas')).default;
       const jsPDF = (await import('jspdf')).default;
       
-      // Find the project plan content element
-      const element = document.querySelector('.project-plan-content');
-      if (!element) {
-        setError('No project plan content found to download');
-        return;
+      // Clean the project plan content to remove code block markers
+      let cleanedContent = projectPlan.trim();
+      
+      // Remove ```html and ``` markers if present
+      if (cleanedContent.startsWith('```html')) {
+        cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+      }
+      if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
       }
 
-      // Create a temporary container for PDF generation
-      const tempContainer = document.createElement('div');
-      tempContainer.style.position = 'absolute';
-      tempContainer.style.top = '-9999px';
-      tempContainer.style.left = '-9999px';
-      tempContainer.style.width = '1200px';
-      tempContainer.style.backgroundColor = '#ffffff';
-      tempContainer.style.padding = '40px';
-      tempContainer.style.fontFamily = 'Arial, sans-serif';
-      
-      // Clone the content
-      const clonedElement = element.cloneNode(true) as HTMLElement;
-      tempContainer.appendChild(clonedElement);
-      document.body.appendChild(tempContainer);
+      // Check if it's HTML content
+      const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
+                          cleanedContent.startsWith('<html') || 
+                          cleanedContent.startsWith('<div') || 
+                          cleanedContent.includes('<style>');
 
-      // Generate canvas from the content
-      const canvas = await html2canvas(tempContainer, {
-        scale: 2,
-        useCORS: true,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        width: 1200,
-        height: tempContainer.scrollHeight
-      });
+      if (isHtmlContent) {
+        // For HTML content, create a temporary iframe to properly render it
+        const tempIframe = document.createElement('iframe');
+        tempIframe.style.position = 'absolute';
+        tempIframe.style.top = '-9999px';
+        tempIframe.style.left = '-9999px';
+        tempIframe.style.width = '1200px';
+        tempIframe.style.height = '8000px';
+        tempIframe.style.border = 'none';
+        tempIframe.style.backgroundColor = '#ffffff';
+        
+        document.body.appendChild(tempIframe);
 
-      // Remove temporary container
-      document.body.removeChild(tempContainer);
+        // Write content to iframe
+        const iframeDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
+        if (!iframeDoc) {
+          throw new Error('Cannot access iframe document');
+        }
 
-      // Create PDF
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+        iframeDoc.open();
+        iframeDoc.write(cleanedContent);
+        iframeDoc.close();
 
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+        // Wait for content to render
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Add additional pages if needed
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        // Get the actual content height
+        const body = iframeDoc.body;
+        const html = iframeDoc.documentElement;
+        const contentHeight = Math.max(
+          body?.scrollHeight || 0,
+          body?.offsetHeight || 0,
+          html?.scrollHeight || 0,
+          html?.offsetHeight || 0
+        );
+
+        // Adjust iframe height to content
+        tempIframe.style.height = `${contentHeight + 100}px`;
+
+        // Wait for final rendering
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Generate canvas from iframe content
+        const canvas = await html2canvas(iframeDoc.body, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: 1200,
+          height: contentHeight
+        });
+
+        // Remove temporary iframe
+        document.body.removeChild(tempIframe);
+
+        // Create PDF with proper page handling
+        const imgData = canvas.toDataURL('image/png', 0.95);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 190; // A4 width in mm with margins
+        const pageHeight = 277; // A4 height in mm with margins
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Add first page
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
         heightLeft -= pageHeight;
+
+        // Add additional pages if needed
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        // Generate filename
+        const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `project_plan_${projectName}_${timestamp}.pdf`;
+
+        // Download PDF
+        pdf.save(filename);
+
+      } else {
+        // For non-HTML content, create a styled container
+        const tempContainer = document.createElement('div');
+        tempContainer.style.position = 'absolute';
+        tempContainer.style.top = '-9999px';
+        tempContainer.style.left = '-9999px';
+        tempContainer.style.width = '1200px';
+        tempContainer.style.backgroundColor = '#ffffff';
+        tempContainer.style.padding = '40px';
+        tempContainer.style.fontFamily = 'Arial, sans-serif';
+        tempContainer.style.fontSize = '14px';
+        tempContainer.style.lineHeight = '1.6';
+        tempContainer.style.color = '#333333';
+
+        // Convert text content to HTML with proper formatting
+        const formattedContent = cleanedContent
+          .split('\n')
+          .map(line => {
+            const trimmedLine = line.trim();
+            if (!trimmedLine) return '<br>';
+            
+            // Format headers
+            if (trimmedLine.startsWith('#')) {
+              const level = (trimmedLine.match(/^#+/) || [''])[0].length;
+              const text = trimmedLine.replace(/^#+\s*/, '');
+              return `<h${Math.min(level, 6)} style="color: #2563eb; margin: 1.5em 0 0.5em 0;">${text}</h${Math.min(level, 6)}>`;
+            }
+            
+            // Format bullet points
+            if (trimmedLine.match(/^[\*\-]\s+/)) {
+              const text = trimmedLine.replace(/^[\*\-]\s+/, '');
+              return `<div style="margin: 0.5em 0; padding-left: 20px;">• ${text}</div>`;
+            }
+            
+            // Format numbered lists
+            if (trimmedLine.match(/^\d+\./)) {
+              return `<div style="margin: 0.5em 0; padding-left: 20px;">${trimmedLine}</div>`;
+            }
+            
+            // Regular paragraphs
+            return `<p style="margin: 1em 0;">${trimmedLine}</p>`;
+          })
+          .join('');
+
+        tempContainer.innerHTML = formattedContent;
+        document.body.appendChild(tempContainer);
+
+        // Generate canvas from the content
+        const canvas = await html2canvas(tempContainer, {
+          scale: 1.5,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          width: 1200,
+          height: tempContainer.scrollHeight
+        });
+
+        // Remove temporary container
+        document.body.removeChild(tempContainer);
+
+        // Create PDF
+        const imgData = canvas.toDataURL('image/png', 0.95);
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        const imgWidth = 190; // A4 width in mm with margins
+        const pageHeight = 277; // A4 height in mm with margins
+        const imgHeight = (canvas.height * imgWidth) / canvas.width;
+        let heightLeft = imgHeight;
+        let position = 0;
+
+        // Add first page
+        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+
+        // Add additional pages if needed
+        while (heightLeft >= 0) {
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+
+        // Generate filename
+        const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const filename = `project_plan_${projectName}_${timestamp}.pdf`;
+
+        // Download PDF
+        pdf.save(filename);
       }
-
-      // Generate filename
-      const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
-      const timestamp = new Date().toISOString().slice(0, 10);
-      const filename = `project_plan_${projectName}_${timestamp}.pdf`;
-
-      // Download PDF
-      pdf.save(filename);
       
     } catch (error) {
       console.error('Error generating PDF:', error);
