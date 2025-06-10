@@ -1057,27 +1057,60 @@ CRITICAL: Return ONLY valid BPMN 2.0 XML with self-closing visual tags. No expla
 
   // Fix common XML issues that cause parsing errors
   cleanedText = cleanedText
-    // Fix unclosed visual elements - more comprehensive approach
-    .replace(/<(bpmndi:BPMNShape[^>]*?)(?<!\/)>/g, '<$1 />')
+    // Fix visual elements that should be self-closing
+    .replace(/<bpmndi:BPMNShape([^>]*?)>(\s*<\/bpmndi:BPMNShape>)?/g, '<bpmndi:BPMNShape$1 />')
+    .replace(/<bpmndi:BPMNEdge([^>]*?)>(\s*<\/bpmndi:BPMNEdge>)?/g, '<bpmndi:BPMNEdge$1 />')
+    .replace(/<dc:Bounds([^>]*?)>(\s*<\/dc:Bounds>)?/g, '<dc:Bounds$1 />')
+    .replace(/<di:waypoint([^>]*?)>(\s*<\/di:waypoint>)?/g, '<di:waypoint$1 />')
+    .replace(/<bpmndi:BPMNLabel([^>]*?)>(\s*<\/bpmndi:BPMNLabel>)?/g, '<bpmndi:BPMNLabel$1 />')
+    // Remove any leftover closing tags
     .replace(/<\/bpmndi:BPMNShape>/g, '')
-    .replace(/<(bpmndi:BPMNEdge[^>]*?)(?<!\/)>/g, '<$1 />')
     .replace(/<\/bpmndi:BPMNEdge>/g, '')
-    .replace(/<(dc:Bounds[^>]*?)(?<!\/)>/g, '<$1 />')
     .replace(/<\/dc:Bounds>/g, '')
-    .replace(/<(di:waypoint[^>]*?)(?<!\/)>/g, '<$1 />')
     .replace(/<\/di:waypoint>/g, '')
-    .replace(/<(bpmndi:BPMNLabel[^>]*?)(?<!\/)>/g, '<$1 />')
     .replace(/<\/bpmndi:BPMNLabel>/g, '')
-    // Clean up malformed tags
+    // Fix malformed self-closing tags
     .replace(/\/\s*\/>/g, ' />')
     .replace(/\s+\/>/g, ' />')
-    .replace(/>\s*\/>/g, ' />');
-
-  // Additional cleanup for common Gemini formatting issues
-  cleanedText = cleanedText
+    .replace(/>\s*\/>/g, ' />')
+    // Ensure proper spacing
+    .replace(/>\s+</g, '>\n<')
     .replace(/\s+xmlns:/g, ' xmlns:')
-    .replace(/>\s+</g, '><')
     .trim();
+
+  // Validate XML structure more thoroughly
+  try {
+    // Basic XML validation - check for balanced tags
+    const tagStack: string[] = [];
+    const tagRegex = /<\/?([a-zA-Z0-9:]+)[^>]*>/g;
+    let match;
+    
+    while ((match = tagRegex.exec(cleanedText)) !== null) {
+      const fullTag = match[0];
+      const tagName = match[1];
+      
+      if (fullTag.includes('/>')) {
+        // Self-closing tag, no action needed
+        continue;
+      } else if (fullTag.startsWith('</')) {
+        // Closing tag
+        if (tagStack.length === 0 || tagStack[tagStack.length - 1] !== tagName) {
+          console.warn(`Unmatched closing tag: ${tagName}`);
+        } else {
+          tagStack.pop();
+        }
+      } else {
+        // Opening tag
+        tagStack.push(tagName);
+      }
+    }
+    
+    if (tagStack.length > 0) {
+      console.warn('Unclosed tags detected:', tagStack);
+    }
+  } catch (validationError) {
+    console.warn('XML validation warning:', validationError);
+  }
 
   // Basic validation - ensure it starts with XML declaration
   if (!cleanedText.startsWith('<?xml') && !cleanedText.startsWith('<bpmn2:definitions')) {
