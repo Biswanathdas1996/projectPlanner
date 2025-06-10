@@ -746,6 +746,114 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
     }
   };
 
+  // Generate swimlane BPMN from flow details
+  const generateSwimlaneFromDetails = async (stakeholder: string, flowType: string) => {
+    const flowKey = `${stakeholder}-${flowType}`;
+    const details = flowDetails[flowKey];
+    
+    if (!details) {
+      setError('Flow details not found. Please generate flow details first.');
+      return;
+    }
+
+    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
+    setError('');
+
+    try {
+      const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on these specifications:
+
+STAKEHOLDER: ${stakeholder}
+FLOW TYPE: ${flowType}
+DESCRIPTION: ${details.description}
+
+KEY COMPONENTS:
+${details.keyComponents.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n')}
+
+CORE PROCESSES:
+${details.processes.map((proc, idx) => `${idx + 1}. ${proc}`).join('\n')}
+
+Create a BPMN 2.0 XML with swimlanes representing different actors/systems involved in this flow. Include:
+- Participant pools for main actors (${stakeholder}, System, External Services)
+- Process flows connecting the core processes in logical sequence
+- Service tasks for key components
+- Proper BPMN 2.0 XML structure with swimlanes
+- Start and end events
+- Gateways where decisions are needed
+
+Return ONLY valid BPMN 2.0 XML without any markdown formatting or explanations.`;
+
+      const response = await fetch('/api/gemini/generate-bpmn-json', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          projectPlan: prompt,
+          stakeholder,
+          flowType,
+          customPrompt: `Swimlane diagram for ${flowType} with detailed process flow including ${details.keyComponents.join(', ')}`
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to generate BPMN');
+
+      const bpmnXml = await response.text();
+      
+      // Update stakeholder flows with generated BPMN
+      const updatedFlows = [...stakeholderFlows];
+      const existingFlowIndex = updatedFlows.findIndex(
+        flow => flow.stakeholder === stakeholder && flow.flowType === flowType
+      );
+
+      if (existingFlowIndex >= 0) {
+        updatedFlows[existingFlowIndex] = {
+          ...updatedFlows[existingFlowIndex],
+          bpmnXml
+        };
+      } else {
+        updatedFlows.push({
+          stakeholder,
+          flowType,
+          bpmnXml,
+          customPrompt: ''
+        });
+      }
+
+      updateStakeholderFlows(updatedFlows);
+
+    } catch (err) {
+      console.error('Error generating swimlane BPMN:', err);
+      setError('Failed to generate BPMN diagram. Please try again.');
+    } finally {
+      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
+  // Generate all swimlane diagrams
+  const generateAllSwimlanes = async () => {
+    const allFlows: { stakeholder: string; flowType: string }[] = [];
+    
+    // Collect all stakeholder-flow combinations that have details
+    Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
+      flowTypes.forEach(flowType => {
+        const flowKey = `${stakeholder}-${flowType}`;
+        if (flowDetails[flowKey]) {
+          allFlows.push({ stakeholder, flowType });
+        }
+      });
+    });
+
+    if (allFlows.length === 0) {
+      setError('No flow details available. Please generate flow details first.');
+      return;
+    }
+
+    // Generate swimlanes for all flows sequentially
+    for (const flow of allFlows) {
+      await generateSwimlaneFromDetails(flow.stakeholder, flow.flowType);
+      // Small delay to avoid overwhelming the API
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -1209,7 +1317,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                   Stakeholder Flow Analysis
                 </div>
                 <Button 
-                  onClick={generateAllBpmn}
+                  onClick={generateAllSwimlanes}
                   disabled={Object.values(isGeneratingBpmn).some(Boolean)}
                   size="sm"
                   className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
@@ -1219,7 +1327,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                   ) : (
                     <Activity className="h-3 w-3 mr-1" />
                   )}
-                  Generate BPMN Diagrams
+                  Generate All Swimlanes
                 </Button>
               </CardTitle>
             </CardHeader>
@@ -1303,8 +1411,8 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                                     </Button>
                                   )}
                                   <Button
-                                    onClick={() => generateStakeholderBpmn(stakeholder, flowType, existingFlow?.customPrompt || '')}
-                                    disabled={isGeneratingBpmn[flowKey]}
+                                    onClick={() => generateSwimlaneFromDetails(stakeholder, flowType)}
+                                    disabled={isGeneratingBpmn[flowKey] || !details}
                                     size="sm"
                                     className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                   >
@@ -1469,19 +1577,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                                 </div>
                               )}
 
-                              {/* Custom Requirements */}
-                              <div className="mb-3">
-                                <label className="block text-xs font-medium text-gray-600 mb-1">
-                                  Custom Requirements (Optional)
-                                </label>
-                                <Textarea
-                                  value={existingFlow?.customPrompt || ''}
-                                  onChange={(e) => updateCustomPrompt(stakeholder, flowType, e.target.value)}
-                                  placeholder="Describe specific requirements for this flow..."
-                                  className="text-xs min-h-[60px] resize-none bg-white/80"
-                                  rows={2}
-                                />
-                              </div>
+                              
 
                               {/* BPMN Diagram */}
                               {existingFlow?.bpmnXml && (
