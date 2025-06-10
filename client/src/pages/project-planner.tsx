@@ -722,7 +722,13 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       <Checkbox
                         id={suggestion}
                         checked={selectedSuggestions.includes(suggestion)}
-                        onCheckedChange={() => toggleSuggestion(suggestion)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedSuggestions(prev => [...prev, suggestion]);
+                          } else {
+                            setSelectedSuggestions(prev => prev.filter(s => s !== suggestion));
+                          }
+                        }}
                         className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
                       />
                       <label
