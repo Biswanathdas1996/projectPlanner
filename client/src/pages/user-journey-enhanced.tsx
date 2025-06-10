@@ -555,6 +555,8 @@ export default function UserJourneyEnhanced() {
     updateStakeholderFlows(updatedFlows);
   };
 
+
+
   // Generate detailed flow analysis for all stakeholder flows
   const generateFlowDetails = async () => {
     if (!projectPlan && !projectDescription) {
@@ -817,42 +819,40 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
   };
 
   // Individual section editing functions
-  const updateEditedField = (field: keyof FlowDetails, value: string | string[]) => {
-    if (editedFlowDetails) {
-      setEditedFlowDetails({ ...editedFlowDetails, [field]: value });
-    }
+  const updateEditedField = (field: keyof FlowDetails, value: string) => {
+    if (!editedFlowDetails) return;
+    setEditedFlowDetails(prev => ({
+      ...prev!,
+      [field]: value
+    }));
   };
 
-  const addItemToField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', newItem: string) => {
-    if (editedFlowDetails && newItem.trim()) {
-      const currentItems = editedFlowDetails[field] as string[];
-      setEditedFlowDetails({ 
-        ...editedFlowDetails, 
-        [field]: [...currentItems, newItem.trim()] 
-      });
-    }
+  const addItemToField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', defaultValue: string) => {
+    if (!editedFlowDetails) return;
+    setEditedFlowDetails(prev => ({
+      ...prev!,
+      [field]: [...(prev![field] || []), defaultValue]
+    }));
+  };
+
+  const updateItemInField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number, value: string) => {
+    if (!editedFlowDetails) return;
+    setEditedFlowDetails(prev => {
+      const newArray = [...(prev![field] || [])];
+      newArray[index] = value;
+      return {
+        ...prev!,
+        [field]: newArray
+      };
+    });
   };
 
   const removeItemFromField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number) => {
-    if (editedFlowDetails) {
-      const currentItems = editedFlowDetails[field] as string[];
-      setEditedFlowDetails({ 
-        ...editedFlowDetails, 
-        [field]: currentItems.filter((_, i) => i !== index) 
-      });
-    }
-  };
-
-  const updateItemInField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number, newValue: string) => {
-    if (editedFlowDetails && newValue.trim()) {
-      const currentItems = editedFlowDetails[field] as string[];
-      const updatedItems = [...currentItems];
-      updatedItems[index] = newValue.trim();
-      setEditedFlowDetails({ 
-        ...editedFlowDetails, 
-        [field]: updatedItems 
-      });
-    }
+    if (!editedFlowDetails) return;
+    setEditedFlowDetails(prev => ({
+      ...prev!,
+      [field]: (prev![field] || []).filter((_, i) => i !== index)
+    }));
   };
 
 
