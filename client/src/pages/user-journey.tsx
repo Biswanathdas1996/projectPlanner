@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { generateUserJourneyFlows, generatePersonaBpmnFlow } from '@/lib/gemini';
+import { generateUserJourneyFlows, generatePersonaBpmnFlow, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
 import { Link } from 'wouter';
@@ -30,7 +30,7 @@ export default function UserJourney() {
   const [projectPlan, setProjectPlan] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
   const [userJourneyFlows, setUserJourneyFlows] = useState<string>('');
-  const [personaBpmnFlows, setPersonaBpmnFlows] = useState<Record<string, string>>({});
+  const [personaBpmnFlows, setPersonaBpmnFlows] = useState<Record<string, Record<string, string>>>({});
   const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
   const [isGeneratingPersonaBpmn, setIsGeneratingPersonaBpmn] = useState<Record<string, boolean>>({});
   const [error, setError] = useState('');
@@ -38,13 +38,9 @@ export default function UserJourney() {
   const [activePersona, setActivePersona] = useState<string | null>(null);
   const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-  const [personaPrompts, setPersonaPrompts] = useState<Record<string, string>>({
-    guest: '',
-    'logged-in': '',
-    admin: '',
-    power: '',
-    mobile: ''
-  });
+  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
+  const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
+  const [personaPrompts, setPersonaPrompts] = useState<Record<string, Record<string, string>>>({});
 
   // Load data from localStorage when component mounts and auto-generate BPMN
   useEffect(() => {
