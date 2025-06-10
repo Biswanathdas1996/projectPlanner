@@ -469,26 +469,150 @@ export default function HomeLanding() {
           </div>
         </section>
 
-        {/* Footer */}
-        <footer className="py-12 px-6 border-t border-gray-200 bg-white bg-opacity-50">
-          <div className="max-w-6xl mx-auto text-center">
-            <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-5 w-5 text-white" />
+        {/* Enhanced Footer */}
+        <footer className="py-16 px-6 border-t border-cyan-400/20 bg-gradient-to-b from-black via-gray-900 to-black">
+          <div className="max-w-6xl mx-auto">
+            {/* Main Footer Content */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+              {/* Brand Section */}
+              <div className="md:col-span-1">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+                    <Brain className="h-6 w-6 text-white" />
+                  </div>
+                  <span className="text-lg font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+                    AI Project Planner
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                  Transform your project ideas into comprehensive plans with the power of artificial intelligence.
+                </p>
+                <div className="flex space-x-3">
+                  <div className="w-8 h-8 bg-cyan-500/20 hover:bg-cyan-500/30 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                    <Globe className="h-4 w-4 text-cyan-400" />
+                  </div>
+                  <div className="w-8 h-8 bg-blue-500/20 hover:bg-blue-500/30 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                    <Code2 className="h-4 w-4 text-blue-400" />
+                  </div>
+                  <div className="w-8 h-8 bg-purple-500/20 hover:bg-purple-500/30 rounded-lg flex items-center justify-center cursor-pointer transition-colors">
+                    <Brain className="h-4 w-4 text-purple-400" />
+                  </div>
+                </div>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                AI Project Planner
-              </span>
+
+              {/* Platform Links */}
+              <div>
+                <h3 className="text-white font-semibold mb-4 text-sm">Platform</h3>
+                <ul className="space-y-3">
+                  <li>
+                    <Link href="/start-over" className="text-gray-400 hover:text-cyan-400 text-sm transition-colors">
+                      Project Planner
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/start-over" className="text-gray-400 hover:text-cyan-400 text-sm transition-colors">
+                      User Journey
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/start-over" className="text-gray-400 hover:text-cyan-400 text-sm transition-colors">
+                      User Stories
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/start-over" className="text-gray-400 hover:text-cyan-400 text-sm transition-colors">
+                      BPMN Editor
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Features */}
+              <div>
+                <h3 className="text-white font-semibold mb-4 text-sm">Features</h3>
+                <ul className="space-y-3">
+                  <li className="text-gray-400 text-sm flex items-center">
+                    <Zap className="h-3 w-3 mr-2 text-cyan-400" />
+                    AI-Powered Planning
+                  </li>
+                  <li className="text-gray-400 text-sm flex items-center">
+                    <GitBranch className="h-3 w-3 mr-2 text-blue-400" />
+                    BPMN 2.0 Diagrams
+                  </li>
+                  <li className="text-gray-400 text-sm flex items-center">
+                    <Users className="h-3 w-3 mr-2 text-purple-400" />
+                    Stakeholder Workflows
+                  </li>
+                  <li className="text-gray-400 text-sm flex items-center">
+                    <Download className="h-3 w-3 mr-2 text-green-400" />
+                    Multi-Format Export
+                  </li>
+                </ul>
+              </div>
+
+              {/* Technology */}
+              <div>
+                <h3 className="text-white font-semibold mb-4 text-sm">Technology</h3>
+                <div className="space-y-3">
+                  <div className="backdrop-blur-lg bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-lg p-3 border border-cyan-400/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Brain className="h-4 w-4 text-cyan-400" />
+                      <span className="text-white text-sm font-medium">Powered by</span>
+                    </div>
+                    <p className="text-cyan-300 text-xs">Google Gemini AI</p>
+                  </div>
+                  <div className="backdrop-blur-lg bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-lg p-3 border border-blue-400/20">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Code2 className="h-4 w-4 text-blue-400" />
+                      <span className="text-white text-sm font-medium">Built with</span>
+                    </div>
+                    <p className="text-blue-300 text-xs">React & TypeScript</p>
+                  </div>
+                </div>
+              </div>
             </div>
-            <p className="text-gray-600 mb-4">
-              Powered by Google Gemini AI • Built with React & TypeScript
-            </p>
-            <div className="flex justify-center space-x-6 text-sm text-gray-500">
-              <span>© 2024 AI Project Planner</span>
-              <span>•</span>
-              <span>BPMN 2.0 Compliant</span>
-              <span>•</span>
-              <span>Enterprise Ready</span>
+
+            {/* Divider */}
+            <div className="h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent mb-8"></div>
+
+            {/* Bottom Footer */}
+            <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <div className="flex items-center space-x-6 text-sm text-gray-500">
+                <span>© 2025 AI Project Planner</span>
+                <span className="hidden md:inline">•</span>
+                <span className="flex items-center">
+                  <Shield className="h-3 w-3 mr-1 text-green-400" />
+                  Enterprise Ready
+                </span>
+                <span className="hidden md:inline">•</span>
+                <span className="flex items-center">
+                  <CheckCircle className="h-3 w-3 mr-1 text-blue-400" />
+                  BPMN 2.0 Compliant
+                </span>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 px-3 py-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-full border border-green-400/30">
+                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                  <span className="text-green-300 text-xs font-medium">Live & Ready</span>
+                </div>
+                <Link href="/start-over">
+                  <Button size="sm" className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white px-4 py-2 text-xs rounded-lg shadow-lg shadow-blue-500/25">
+                    <Rocket className="h-3 w-3 mr-1" />
+                    Get Started
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Tech Stack Pills */}
+            <div className="flex flex-wrap justify-center gap-2 mt-8 pt-8 border-t border-gray-800">
+              <span className="px-3 py-1 bg-cyan-500/10 text-cyan-300 rounded-full text-xs border border-cyan-500/20">Gemini AI</span>
+              <span className="px-3 py-1 bg-blue-500/10 text-blue-300 rounded-full text-xs border border-blue-500/20">React</span>
+              <span className="px-3 py-1 bg-purple-500/10 text-purple-300 rounded-full text-xs border border-purple-500/20">TypeScript</span>
+              <span className="px-3 py-1 bg-indigo-500/10 text-indigo-300 rounded-full text-xs border border-indigo-500/20">Vite</span>
+              <span className="px-3 py-1 bg-green-500/10 text-green-300 rounded-full text-xs border border-green-500/20">BPMN.js</span>
+              <span className="px-3 py-1 bg-pink-500/10 text-pink-300 rounded-full text-xs border border-pink-500/20">Tailwind CSS</span>
             </div>
           </div>
         </footer>
