@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import BpmnEditor from "@/pages/bpmn-editor";
 import ProjectPlanner from "@/pages/project-planner";
 import UserJourney from "@/pages/user-journey";
+import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,8 +14,11 @@ function Router() {
     <Switch>
       <Route path="/" component={ProjectPlanner} />
       <Route path="/plan" component={ProjectPlanner} />
-      <Route path="/user-journey" component={UserJourney} />
+      <Route path="/user-journey" component={UserJourneyEnhanced} />
+      <Route path="/user-journey-legacy" component={UserJourney} />
+      <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
       <Route path="/editor" component={BpmnEditor} />
+      <Route path="/bpmn-editor" component={BpmnEditor} />
       <Route path="/diagram" component={BpmnEditor} />
       <Route component={NotFound} />
     </Switch>
