@@ -615,7 +615,7 @@ Include relevant BPMN components like:
 - Data: "[object name], [form name]"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "✅ 1. Process Name and Description\\n[description text]\\n\\n✅ 2. Participants\\n[participants list]\\n\\n✅ 3. Trigger\\n[trigger text]\\n\\n✅ 4. Activities\\n[activities list]\\n\\n✅ 5. Decision Points\\n[decisions text]\\n\\n✅ 6. End Event\\n[end event text]\\n\\n✅ 7. Additional Elements\\n[additional elements]", "keyComponents": ["participant1", "participant2", "system3", "service4"], "processes": ["activity1", "activity2", "activity3", "activity4"]}`;
+{"description": "✅ 1. Process Name and Description\\n[description text]\\n\\n✅ 2. Participants\\n[participants list]\\n\\n✅ 3. Trigger\\n[trigger text]\\n\\n✅ 4. Activities\\n[activities list]\\n\\n✅ 5. Decision Points\\n[decisions text]\\n\\n✅ 6. End Event\\n[end event text]\\n\\n✅ 7. Additional Elements\\n[additional elements]", "participants": ["participant1", "participant2", "system3", "service4"], "activities": ["activity1", "activity2", "activity3", "activity4"]}`;
 
           // Call Gemini API directly from client-side only
           const { generateFlowAnalysis } = await import('../lib/gemini');
@@ -651,19 +651,16 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
               const endEventMatch = desc.match(/✅ 6\. End Event\n([^✅]*)/);
               const additionalMatch = desc.match(/✅ 7\. Additional Elements\n([^$]*)/);
               
-              const keyComponents = Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [];
-              const processes = Array.isArray(flowData.processes) ? flowData.processes : [];
-              
               details[key] = {
                 description: flowData.description,
                 processDescription: processDescMatch ? processDescMatch[1].trim() : `${flow.flowType} Process for ${flow.stakeholder}`,
                 participants: participantsMatch ? 
                   participantsMatch[1].trim().split('\n').filter((p: string) => p.trim() && (p.includes('-') || p.includes('*'))).map((p: string) => p.replace(/^[-*]\s*/, '').trim()) : 
-                  keyComponents,
+                  [flow.stakeholder, "System Backend", "Database Service"],
                 trigger: triggerMatch ? triggerMatch[1].trim() : `${flow.stakeholder} initiates ${flow.flowType} request`,
                 activities: activitiesMatch ? 
                   activitiesMatch[1].trim().split('\n').filter((a: string) => a.trim() && /^\d+\./.test(a.trim())).map((a: string) => a.replace(/^\d+\.\s*/, '').trim()) : 
-                  processes,
+                  [`${flow.stakeholder} initiates request`, "System processes request", "System responds with result"],
                 decisionPoints: decisionMatch ? decisionMatch[1].trim().split('\n').filter((d: string) => d.trim()) : [],
                 endEvent: endEventMatch ? endEventMatch[1].trim() : 'Process completes successfully',
                 additionalElements: additionalMatch ? 
@@ -934,7 +931,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
   };
 
   // Generate fallback BPMN when API fails
-  const generateFallbackBpmn = (stakeholder: string, flowType: string, details: { description: string; keyComponents: string[]; processes: string[] }) => {
+  const generateFallbackBpmn = (stakeholder: string, flowType: string, details: { description: string; participants: string[]; activities: string[] }) => {
     // Create valid XML IDs by removing special characters
     const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
     const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
@@ -942,19 +939,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
     const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
     const poolId = `Pool_${cleanStakeholder}`;
     
-    // Generate process elements based on core processes
-    const processElements = details.processes.map((process, index) => {
+    // Generate process elements based on activities
+    const processElements = details.activities.map((activity, index) => {
       const taskId = `Activity_${index + 1}`;
       return `
-    <bpmn:serviceTask id="${taskId}" name="${process}" />`;
+    <bpmn:serviceTask id="${taskId}" name="${activity}" />`;
     }).join('');
 
-    // Generate sequence flows between processes
-    const sequenceFlows = details.processes.map((_, index) => {
+    // Generate sequence flows between activities
+    const sequenceFlows = details.activities.map((_, index) => {
       if (index === 0) {
         return `
     <bpmn:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Activity_${index + 1}" />`;
-      } else if (index === details.processes.length - 1) {
+      } else if (index === details.activities.length - 1) {
         return `
     <bpmn:sequenceFlow id="Flow_${index}_end" sourceRef="Activity_${index + 1}" targetRef="EndEvent_1" />`;
       } else {
@@ -985,28 +982,28 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
           <dc:Bounds x="208" y="205" width="44" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      ${details.processes.map((process, index) => `
+      ${details.activities.map((activity, index) => `
       <bpmndi:BPMNShape id="Activity_${index + 1}_di" bpmnElement="Activity_${index + 1}">
         <dc:Bounds x="${300 + (index * 150)}" y="140" width="100" height="80" />
       </bpmndi:BPMNShape>`).join('')}
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="${320 + (details.processes.length * 150)}" y="162" width="36" height="36" />
+        <dc:Bounds x="${320 + (details.activities.length * 150)}" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="324" y="205" width="28" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      ${details.processes.map((_, index) => {
+      ${details.activities.map((_, index) => {
         if (index === 0) {
           return `
       <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
         <di:waypoint x="248" y="180" />
         <di:waypoint x="${300 + (index * 150)}" y="180" />
       </bpmndi:BPMNEdge>`;
-        } else if (index === details.processes.length - 1) {
+        } else if (index === details.activities.length - 1) {
           return `
       <bpmndi:BPMNEdge id="Flow_${index}_end_di" bpmnElement="Flow_${index}_end">
         <di:waypoint x="${400 + (index * 150)}" y="180" />
-        <di:waypoint x="${320 + (details.processes.length * 150)}" y="180" />
+        <di:waypoint x="${320 + (details.activities.length * 150)}" y="180" />
       </bpmndi:BPMNEdge>`;
         } else {
           return `
