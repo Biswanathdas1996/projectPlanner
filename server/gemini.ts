@@ -5,9 +5,10 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 export async function generateProjectPlan(req: Request, res: Response) {
   try {
-    const { projectDescription } = req.body;
+    const { projectDescription, description } = req.body;
+    const content = projectDescription || description;
     
-    if (!projectDescription || typeof projectDescription !== 'string') {
+    if (!content || typeof content !== 'string') {
       return res.status(400).json({ error: 'Project description is required' });
     }
 
@@ -16,7 +17,7 @@ export async function generateProjectPlan(req: Request, res: Response) {
     const prompt = `
 You are a business process analyst. Create a detailed project plan for the following project description:
 
-"${projectDescription}"
+"${content}"
 
 Please provide a structured response with:
 1. Project Overview (2-3 sentences)
