@@ -722,111 +722,126 @@ export default function UserJourneyEnhanced() {
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-2 text-sm">Flow Types Overview</h4>
-                  <div className="grid grid-cols-1 gap-3">
-                    {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes]) => (
-                      <div key={stakeholder} className="border border-gray-200 rounded-lg p-3 bg-gradient-to-r from-gray-50 to-blue-50">
-                        <div className="font-medium text-sm text-gray-800 mb-2 flex items-center">
-                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
-                          {stakeholder}
-                          <Badge variant="outline" className="ml-auto text-xs px-1.5 py-0.5">
-                            {flowTypes.length}
-                          </Badge>
-                        </div>
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Flow Types Management</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes], stakeholderIndex) => {
+                      const colorVariants = [
+                        { bg: 'from-blue-50 to-indigo-50', border: 'border-blue-200', accent: 'bg-blue-500', text: 'text-blue-800' },
+                        { bg: 'from-emerald-50 to-teal-50', border: 'border-emerald-200', accent: 'bg-emerald-500', text: 'text-emerald-800' },
+                        { bg: 'from-purple-50 to-pink-50', border: 'border-purple-200', accent: 'bg-purple-500', text: 'text-purple-800' },
+                        { bg: 'from-orange-50 to-red-50', border: 'border-orange-200', accent: 'bg-orange-500', text: 'text-orange-800' },
+                        { bg: 'from-cyan-50 to-blue-50', border: 'border-cyan-200', accent: 'bg-cyan-500', text: 'text-cyan-800' },
+                        { bg: 'from-green-50 to-emerald-50', border: 'border-green-200', accent: 'bg-green-500', text: 'text-green-800' }
+                      ];
+                      const variant = colorVariants[stakeholderIndex % colorVariants.length];
+                      
+                      return (
+                        <div key={stakeholder} className={`border ${variant.border} rounded-lg p-3 bg-gradient-to-br ${variant.bg} shadow-sm`}>
+                          {/* Stakeholder Header */}
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <div className={`w-3 h-3 ${variant.accent} rounded-full`}></div>
+                              <span className={`font-medium text-sm ${variant.text}`}>{stakeholder}</span>
+                            </div>
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-white/80">
+                              {flowTypes.length}
+                            </Badge>
+                          </div>
                         
-                        {/* Add new flow type input */}
-                        <div className="flex items-center gap-2 mb-2">
-                          <Input
-                            value={newFlowType[stakeholder] || ''}
-                            onChange={(e) => setNewFlowType(prev => ({ ...prev, [stakeholder]: e.target.value }))}
-                            placeholder="Add flow type..."
-                            className="text-xs h-7 flex-1"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                addFlowType(stakeholder);
-                              }
-                            }}
-                          />
-                          <Button
-                            onClick={() => addFlowType(stakeholder)}
-                            size="sm"
-                            className="h-7 px-2 bg-green-600 hover:bg-green-700 text-white"
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                        </div>
+                          {/* Add Flow Type */}
+                          <div className="flex items-center gap-1 mb-2">
+                            <Input
+                              value={newFlowType[stakeholder] || ''}
+                              onChange={(e) => setNewFlowType(prev => ({ ...prev, [stakeholder]: e.target.value }))}
+                              placeholder="Add flow type..."
+                              className="text-xs h-6 flex-1 bg-white/80 border-white/50"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  addFlowType(stakeholder);
+                                }
+                              }}
+                            />
+                            <Button
+                              onClick={() => addFlowType(stakeholder)}
+                              size="sm"
+                              className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </Button>
+                          </div>
                         
-                        {/* Flow types list */}
-                        <div className="flex flex-wrap gap-1">
-                          {flowTypes.map((flowType, index) => {
-                            const editKey = `${stakeholder}-${flowType}`;
-                            const isEditing = editingFlowType === editKey;
-                            
-                            return (
-                              <div key={index} className="relative group">
-                                {isEditing ? (
-                                  <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-2 py-1">
-                                    <Input
-                                      value={editedFlowTypeName}
-                                      onChange={(e) => setEditedFlowTypeName(e.target.value)}
-                                      className="text-xs h-5 w-20 border-0 p-0 focus:ring-0"
-                                      onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          saveFlowTypeEdit(stakeholder, flowType);
-                                        } else if (e.key === 'Escape') {
-                                          cancelFlowTypeEdit();
-                                        }
-                                      }}
-                                      autoFocus
-                                    />
-                                    <Button
-                                      onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
-                                      size="sm"
-                                      className="h-4 w-4 p-0 bg-green-600 hover:bg-green-700"
-                                    >
-                                      <Save className="h-2.5 w-2.5" />
-                                    </Button>
-                                    <Button
-                                      onClick={cancelFlowTypeEdit}
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-4 w-4 p-0 border-gray-300"
-                                    >
-                                      <X className="h-2.5 w-2.5" />
-                                    </Button>
-                                  </div>
-                                ) : (
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs px-1.5 py-0.5 bg-white border-gray-300 cursor-pointer hover:bg-gray-50 pr-1"
-                                  >
-                                    {flowType}
-                                    <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Flow Types Grid */}
+                          <div className="flex flex-wrap gap-1">
+                            {flowTypes.map((flowType, index) => {
+                              const editKey = `${stakeholder}-${flowType}`;
+                              const isEditing = editingFlowType === editKey;
+                              
+                              return (
+                                <div key={index} className="relative group">
+                                  {isEditing ? (
+                                    <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-1.5 py-0.5">
+                                      <Input
+                                        value={editedFlowTypeName}
+                                        onChange={(e) => setEditedFlowTypeName(e.target.value)}
+                                        className="text-xs h-4 w-16 border-0 p-0 focus:ring-0"
+                                        onKeyDown={(e) => {
+                                          if (e.key === 'Enter') {
+                                            saveFlowTypeEdit(stakeholder, flowType);
+                                          } else if (e.key === 'Escape') {
+                                            cancelFlowTypeEdit();
+                                          }
+                                        }}
+                                        autoFocus
+                                      />
                                       <Button
-                                        onClick={() => startEditingFlowType(stakeholder, flowType)}
+                                        onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
                                         size="sm"
-                                        variant="ghost"
-                                        className="h-3 w-3 p-0 hover:bg-blue-200"
+                                        className="h-3 w-3 p-0 bg-green-500 hover:bg-green-600"
                                       >
-                                        <Edit3 className="h-2 w-2" />
+                                        <Save className="h-2 w-2" />
                                       </Button>
                                       <Button
-                                        onClick={() => deleteFlowType(stakeholder, flowType)}
+                                        onClick={cancelFlowTypeEdit}
                                         size="sm"
-                                        variant="ghost"
-                                        className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                        variant="outline"
+                                        className="h-3 w-3 p-0 border-gray-300"
                                       >
                                         <X className="h-2 w-2" />
                                       </Button>
                                     </div>
-                                  </Badge>
-                                )}
-                              </div>
-                            );
-                          })}
+                                  ) : (
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs px-1.5 py-0.5 bg-white/90 border-white/60 cursor-pointer hover:bg-white pr-1 group"
+                                    >
+                                      <span className="truncate max-w-[80px]">{flowType}</span>
+                                      <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button
+                                          onClick={() => startEditingFlowType(stakeholder, flowType)}
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-3 w-3 p-0 hover:bg-blue-200"
+                                        >
+                                          <Edit3 className="h-2 w-2" />
+                                        </Button>
+                                        <Button
+                                          onClick={() => deleteFlowType(stakeholder, flowType)}
+                                          size="sm"
+                                          variant="ghost"
+                                          className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                        >
+                                          <X className="h-2 w-2" />
+                                        </Button>
+                                      </div>
+                                    </Badge>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>
