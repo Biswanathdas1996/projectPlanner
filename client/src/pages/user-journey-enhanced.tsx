@@ -72,6 +72,10 @@ export default function UserJourneyEnhanced() {
   // Flow details generation state
   const [isGeneratingFlowDetails, setIsGeneratingFlowDetails] = useState(false);
   const [flowDetails, setFlowDetails] = useState<Record<string, { description: string; keyComponents: string[]; processes: string[] }>>({});
+  
+  // Flow details editing state
+  const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(null);
+  const [editedFlowDetails, setEditedFlowDetails] = useState<{ description: string; keyComponents: string[]; processes: string[] } | null>(null);
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -657,6 +661,91 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
     }
   };
 
+  // Flow details editing functions
+  const startEditingFlowDetails = (flowKey: string) => {
+    const details = flowDetails[flowKey];
+    if (details) {
+      setEditingFlowDetails(flowKey);
+      setEditedFlowDetails({
+        description: details.description,
+        keyComponents: [...details.keyComponents],
+        processes: [...details.processes]
+      });
+    }
+  };
+
+  const saveFlowDetailsEdit = () => {
+    if (editingFlowDetails && editedFlowDetails) {
+      const updatedFlowDetails = {
+        ...flowDetails,
+        [editingFlowDetails]: editedFlowDetails
+      };
+      setFlowDetails(updatedFlowDetails);
+      localStorage.setItem('flowDetails', JSON.stringify(updatedFlowDetails));
+      setEditingFlowDetails(null);
+      setEditedFlowDetails(null);
+    }
+  };
+
+  const cancelFlowDetailsEdit = () => {
+    setEditingFlowDetails(null);
+    setEditedFlowDetails(null);
+  };
+
+  const updateEditedDescription = (description: string) => {
+    if (editedFlowDetails) {
+      setEditedFlowDetails({ ...editedFlowDetails, description });
+    }
+  };
+
+  const updateEditedKeyComponent = (index: number, value: string) => {
+    if (editedFlowDetails) {
+      const newComponents = [...editedFlowDetails.keyComponents];
+      newComponents[index] = value;
+      setEditedFlowDetails({ ...editedFlowDetails, keyComponents: newComponents });
+    }
+  };
+
+  const addEditedKeyComponent = () => {
+    if (editedFlowDetails) {
+      setEditedFlowDetails({
+        ...editedFlowDetails,
+        keyComponents: [...editedFlowDetails.keyComponents, 'New Component']
+      });
+    }
+  };
+
+  const removeEditedKeyComponent = (index: number) => {
+    if (editedFlowDetails) {
+      const newComponents = editedFlowDetails.keyComponents.filter((_, i) => i !== index);
+      setEditedFlowDetails({ ...editedFlowDetails, keyComponents: newComponents });
+    }
+  };
+
+  const updateEditedProcess = (index: number, value: string) => {
+    if (editedFlowDetails) {
+      const newProcesses = [...editedFlowDetails.processes];
+      newProcesses[index] = value;
+      setEditedFlowDetails({ ...editedFlowDetails, processes: newProcesses });
+    }
+  };
+
+  const addEditedProcess = () => {
+    if (editedFlowDetails) {
+      setEditedFlowDetails({
+        ...editedFlowDetails,
+        processes: [...editedFlowDetails.processes, 'New Process']
+      });
+    }
+  };
+
+  const removeEditedProcess = (index: number) => {
+    if (editedFlowDetails) {
+      const newProcesses = editedFlowDetails.processes.filter((_, i) => i !== index);
+      setEditedFlowDetails({ ...editedFlowDetails, processes: newProcesses });
+    }
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -1203,6 +1292,16 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                               <div className="flex items-center justify-between mb-3">
                                 <h4 className="text-sm font-semibold text-gray-800">{flowType}</h4>
                                 <div className="flex items-center gap-2">
+                                  {details && editingFlowDetails !== flowKey && (
+                                    <Button
+                                      onClick={() => startEditingFlowDetails(flowKey)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-blue-50"
+                                    >
+                                      <Edit3 className="h-3 w-3" />
+                                    </Button>
+                                  )}
                                   <Button
                                     onClick={() => generateStakeholderBpmn(stakeholder, flowType, existingFlow?.customPrompt || '')}
                                     disabled={isGeneratingBpmn[flowKey]}
@@ -1229,35 +1328,144 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                               {/* Flow Details */}
                               {details && (
                                 <div className="space-y-3 mb-3">
-                                  {/* Description */}
-                                  <div>
-                                    <p className="text-xs text-gray-700 leading-relaxed">{details.description}</p>
-                                  </div>
-
-                                  {/* Key Components */}
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-600 mb-1">Key Components</h5>
-                                    <div className="flex flex-wrap gap-1">
-                                      {details.keyComponents?.map((component, idx) => (
-                                        <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
-                                          {component}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
-
-                                  {/* Core Processes */}
-                                  <div>
-                                    <h5 className="text-xs font-medium text-gray-600 mb-1">Core Processes</h5>
-                                    <div className="space-y-1">
-                                      {details.processes?.map((process, idx) => (
-                                        <div key={idx} className="flex items-center gap-2">
-                                          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-                                          <span className="text-xs text-gray-600">{process}</span>
+                                  {editingFlowDetails === flowKey && editedFlowDetails ? (
+                                    /* Edit Mode */
+                                    <div className="space-y-4 p-3 bg-blue-50/50 rounded-lg border border-blue-200">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <h5 className="text-xs font-semibold text-blue-800">Editing Flow Details</h5>
+                                        <div className="flex items-center gap-1">
+                                          <Button
+                                            onClick={saveFlowDetailsEdit}
+                                            size="sm"
+                                            className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                          >
+                                            <Save className="h-3 w-3 mr-1" />
+                                            Save
+                                          </Button>
+                                          <Button
+                                            onClick={cancelFlowDetailsEdit}
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-6 px-2 border-gray-300"
+                                          >
+                                            <X className="h-3 w-3" />
+                                          </Button>
                                         </div>
-                                      ))}
+                                      </div>
+
+                                      {/* Edit Description */}
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Description</label>
+                                        <Textarea
+                                          value={editedFlowDetails.description}
+                                          onChange={(e) => updateEditedDescription(e.target.value)}
+                                          className="text-xs min-h-[60px] resize-none"
+                                          rows={3}
+                                        />
+                                      </div>
+
+                                      {/* Edit Key Components */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Key Components</label>
+                                          <Button
+                                            onClick={addEditedKeyComponent}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.keyComponents.map((component, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={component}
+                                                onChange={(e) => updateEditedKeyComponent(idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeEditedKeyComponent(idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Edit Core Processes */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Core Processes</label>
+                                          <Button
+                                            onClick={addEditedProcess}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.processes.map((process, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={process}
+                                                onChange={(e) => updateEditedProcess(idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeEditedProcess(idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
+                                  ) : (
+                                    /* Display Mode */
+                                    <>
+                                      {/* Description */}
+                                      <div>
+                                        <p className="text-xs text-gray-700 leading-relaxed">{details.description}</p>
+                                      </div>
+
+                                      {/* Key Components */}
+                                      <div>
+                                        <h5 className="text-xs font-medium text-gray-600 mb-1">Key Components</h5>
+                                        <div className="flex flex-wrap gap-1">
+                                          {details.keyComponents?.map((component, idx) => (
+                                            <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                              {component}
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Core Processes */}
+                                      <div>
+                                        <h5 className="text-xs font-medium text-gray-600 mb-1">Core Processes</h5>
+                                        <div className="space-y-1">
+                                          {details.processes?.map((process, idx) => (
+                                            <div key={idx} className="flex items-center gap-2">
+                                              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
+                                              <span className="text-xs text-gray-600">{process}</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    </>
+                                  )}
                                 </div>
                               )}
 
