@@ -262,17 +262,18 @@ MANDATORY VISUAL ELEMENTS FOR EACH SECTION:
    - Include budget breakdowns, resource allocation, and performance metrics
 
 FORMATTING REQUIREMENTS:
-- Complete HTML document with embedded CSS
-- Professional corporate styling with advanced visual elements
+- Complete HTML document with embedded CSS that matches the application's blue-purple gradient theme
+- Use the application's color palette: blue (#3B82F6), purple (#8B5CF6), cyan (#06B6D4), gray gradients
+- Professional corporate styling with rounded corners (8px-12px), subtle shadows, and glassmorphism effects
 - Responsive design for all devices with mobile-optimized tables and diagrams
-- Clear visual hierarchy with consistent typography
-- Color-coded sections for easy navigation
-- Interactive table of contents with anchor links
-- Professional charts, diagrams, and data visualizations
-- CSS-based progress bars, timelines, and visual indicators
-- Print-friendly styling with page breaks
-- Accessibility-compliant markup with proper ARIA labels
-- Interactive hover effects and expandable sections
+- Typography: Use system fonts (ui-sans-serif, system-ui, sans-serif) with proper line heights (1.6)
+- Color scheme: White/light gray backgrounds (#F8FAFC, #F1F5F9), dark text (#1F2937), blue accent colors
+- Interactive table of contents with anchor links using gradient backgrounds
+- Professional charts, diagrams, and data visualizations with the theme colors
+- CSS-based progress bars using blue-purple gradients and rounded styling
+- Print-friendly styling with page breaks and consistent spacing
+- Accessibility-compliant markup with proper ARIA labels and focus states
+- Hover effects using the theme's blue/purple color transitions
 
 VISUAL ELEMENT EXAMPLES TO INCLUDE:
 
@@ -293,9 +294,83 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
     <tr><th>Feature</th><th>Priority</th><th>Effort</th><th>Status</th></tr>
   </thead>
   <tbody>
-    <tr><td>User Auth</td><td>High</td><td>5 days</td><td class="status-complete">✓</td></tr>
+    <tr><td>User Auth</td><td><span class="priority-high">High</span></td><td>5 days</td><td class="status-complete">✓ Complete</td></tr>
   </tbody>
 </table>
+
+**Required CSS Classes for Theme Consistency:**
+<style>
+.project-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.project-table th {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  color: white;
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+}
+.project-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+.project-table tr:hover {
+  background: #F8FAFC;
+}
+.priority-high { 
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.status-complete {
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.timeline-bar {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+}
+.section-header {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E5E7EB 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin: 2rem 0 1rem 0;
+  border-left: 4px solid #3B82F6;
+}
+.flow-diagram {
+  background: #F8FAFC;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  margin: 1rem 0;
+}
+.tree-view {
+  background: #F8FAFC;
+  border: 1px solid #E5E7EB;
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+  margin: 1rem 0;
+}
+</style>
 
 **Sample Tree View Template:**
 <pre class="tree-view">

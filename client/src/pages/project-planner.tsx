@@ -911,17 +911,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </Button>
                   
                   
-                  <Link href="/user-stories">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
-                      className="border-orange-200 text-orange-600 hover:bg-orange-50 text-xs px-2 py-1"
-                    >
-                      <FileText className="h-3 w-3 mr-1" />
-                      Stories
-                    </Button>
-                  </Link>
+                  
                   <Button
                     onClick={startEditingPlan}
                     variant="outline"
