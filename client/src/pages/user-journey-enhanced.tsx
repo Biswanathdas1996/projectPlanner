@@ -46,8 +46,6 @@ interface StakeholderFlow {
 
 interface FlowDetails {
   description: string;
-  keyComponents: string[];
-  processes: string[];
   processDescription: string;
   participants: string[];
   trigger: string;
@@ -641,12 +639,14 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
             const flowData = JSON.parse(cleanedResult);
             
             // Validate the structure and parse sections
-            if (flowData.description && flowData.keyComponents && flowData.processes) {
+            if (flowData.description) {
               const desc = flowData.description;
               
               // Parse the structured sections from the description
               const processDescMatch = desc.match(/✅ 1\. Process Name and Description\n([^✅]*)/);
+              const participantsMatch = desc.match(/✅ 2\. Participants[^✅]*\n([^✅]*)/);
               const triggerMatch = desc.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
+              const activitiesMatch = desc.match(/✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/);
               const decisionMatch = desc.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
               const endEventMatch = desc.match(/✅ 6\. End Event\n([^✅]*)/);
               const additionalMatch = desc.match(/✅ 7\. Additional Elements\n([^$]*)/);
@@ -656,12 +656,14 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
               
               details[key] = {
                 description: flowData.description,
-                keyComponents,
-                processes,
                 processDescription: processDescMatch ? processDescMatch[1].trim() : `${flow.flowType} Process for ${flow.stakeholder}`,
-                participants: keyComponents,
+                participants: participantsMatch ? 
+                  participantsMatch[1].trim().split('\n').filter((p: string) => p.trim() && (p.includes('-') || p.includes('*'))).map((p: string) => p.replace(/^[-*]\s*/, '').trim()) : 
+                  keyComponents,
                 trigger: triggerMatch ? triggerMatch[1].trim() : `${flow.stakeholder} initiates ${flow.flowType} request`,
-                activities: processes,
+                activities: activitiesMatch ? 
+                  activitiesMatch[1].trim().split('\n').filter((a: string) => a.trim() && /^\d+\./.test(a.trim())).map((a: string) => a.replace(/^\d+\.\s*/, '').trim()) : 
+                  processes,
                 decisionPoints: decisionMatch ? decisionMatch[1].trim().split('\n').filter((d: string) => d.trim()) : [],
                 endEvent: endEventMatch ? endEventMatch[1].trim() : 'Process completes successfully',
                 additionalElements: additionalMatch ? 
@@ -728,12 +730,24 @@ Process concludes when ${flow.stakeholder} receives confirmation notification an
 Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures
 Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout
 Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`,
-              keyComponents,
-              processes,
               processDescription: `${flow.flowType} Process for ${flow.stakeholder}. This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
-              participants: keyComponents,
+              participants: [
+                flow.stakeholder,
+                "System Backend",
+                "Database Service", 
+                "Authentication Module",
+                "Notification Service",
+                "External Services"
+              ],
               trigger: `${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.`,
-              activities: processes,
+              activities: [
+                `${flow.stakeholder} authenticates and accesses the system`,
+                `System validates ${mainAction} request and permissions`,
+                `Backend processes ${mainAction} with business logic validation`,
+                `Database updates records and maintains data integrity`,
+                `System generates confirmation and audit trail`,
+                `Notification service sends confirmation to ${flow.stakeholder}`
+              ],
               decisionPoints: [
                 `If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.`,
                 `If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.`,
@@ -770,12 +784,10 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
       setEditingFlowDetails(flowKey);
       setEditedFlowDetails({
         description: details.description,
-        keyComponents: [...details.keyComponents],
-        processes: [...details.processes],
         processDescription: details.processDescription || '',
-        participants: [...(details.participants || details.keyComponents)],
+        participants: [...(details.participants || [])],
         trigger: details.trigger || '',
-        activities: [...(details.activities || details.processes)],
+        activities: [...(details.activities || [])],
         decisionPoints: [...(details.decisionPoints || [])],
         endEvent: details.endEvent || '',
         additionalElements: [...(details.additionalElements || [])]
@@ -846,53 +858,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
     }
   };
 
-  const updateEditedKeyComponent = (index: number, value: string) => {
-    if (editedFlowDetails) {
-      const newComponents = [...editedFlowDetails.keyComponents];
-      newComponents[index] = value;
-      setEditedFlowDetails({ ...editedFlowDetails, keyComponents: newComponents });
-    }
-  };
 
-  const addEditedKeyComponent = () => {
-    if (editedFlowDetails) {
-      setEditedFlowDetails({
-        ...editedFlowDetails,
-        keyComponents: [...editedFlowDetails.keyComponents, 'New Component']
-      });
-    }
-  };
-
-  const removeEditedKeyComponent = (index: number) => {
-    if (editedFlowDetails) {
-      const newComponents = editedFlowDetails.keyComponents.filter((_, i) => i !== index);
-      setEditedFlowDetails({ ...editedFlowDetails, keyComponents: newComponents });
-    }
-  };
-
-  const updateEditedProcess = (index: number, value: string) => {
-    if (editedFlowDetails) {
-      const newProcesses = [...editedFlowDetails.processes];
-      newProcesses[index] = value;
-      setEditedFlowDetails({ ...editedFlowDetails, processes: newProcesses });
-    }
-  };
-
-  const addEditedProcess = () => {
-    if (editedFlowDetails) {
-      setEditedFlowDetails({
-        ...editedFlowDetails,
-        processes: [...editedFlowDetails.processes, 'New Process']
-      });
-    }
-  };
-
-  const removeEditedProcess = (index: number) => {
-    if (editedFlowDetails) {
-      const newProcesses = editedFlowDetails.processes.filter((_, i) => i !== index);
-      setEditedFlowDetails({ ...editedFlowDetails, processes: newProcesses });
-    }
-  };
 
   // Generate swimlane BPMN from flow details using client-side Gemini API
   const generateSwimlaneFromDetails = async (stakeholder: string, flowType: string) => {
