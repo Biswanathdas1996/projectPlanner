@@ -163,6 +163,11 @@ export default function Landing() {
       
       // Auto-generate BPMN diagram
       await handleGenerateBpmnDiagram(plan);
+      
+      // Navigate to /plan after successful generation
+      setTimeout(() => {
+        setLocation('/plan');
+      }, 1000); // Small delay to show completion
     } catch (error) {
       console.error('Error generating project plan:', error);
       setError('Failed to generate project plan. Please try again.');
