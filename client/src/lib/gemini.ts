@@ -300,6 +300,27 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
 
 **Required CSS Classes for Theme Consistency:**
 <style>
+/* Ensure full document height visibility */
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  color: #1F2937;
+  background: #F8FAFC;
+}
+
+.document-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  min-height: 100vh;
+  background: white;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
 .project-table {
   width: 100%;
   border-collapse: collapse;
@@ -345,6 +366,7 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
   border-radius: 12px;
   position: relative;
   overflow: hidden;
+  margin: 0.5rem 0;
 }
 .section-header {
   background: linear-gradient(135deg, #F8FAFC 0%, #E5E7EB 100%);
@@ -352,6 +374,7 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
   border-radius: 12px;
   margin: 2rem 0 1rem 0;
   border-left: 4px solid #3B82F6;
+  page-break-inside: avoid;
 }
 .flow-diagram {
   background: #F8FAFC;
@@ -360,6 +383,8 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
   padding: 1rem;
   font-family: 'Courier New', monospace;
   margin: 1rem 0;
+  overflow-x: auto;
+  white-space: pre;
 }
 .tree-view {
   background: #F8FAFC;
@@ -369,6 +394,61 @@ VISUAL ELEMENT EXAMPLES TO INCLUDE:
   font-family: 'Courier New', monospace;
   line-height: 1.5;
   margin: 1rem 0;
+  overflow-x: auto;
+  white-space: pre;
+}
+
+/* Ensure content sections have proper spacing */
+.content-section {
+  margin: 2rem 0;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.content-section:last-child {
+  border-bottom: none;
+  padding-bottom: 4rem;
+}
+
+/* Table of contents styling */
+.toc {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  margin: 2rem 0;
+}
+
+.toc a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.toc a:hover {
+  background: rgba(255, 255, 255, 0.1);
+  padding-left: 1rem;
+  transition: all 0.3s ease;
+}
+
+/* Print styles */
+@media print {
+  .document-container {
+    max-width: none;
+    margin: 0;
+    padding: 1rem;
+    box-shadow: none;
+  }
+  
+  .section-header {
+    page-break-after: avoid;
+  }
+  
+  .project-table {
+    page-break-inside: avoid;
+  }
 }
 </style>
 

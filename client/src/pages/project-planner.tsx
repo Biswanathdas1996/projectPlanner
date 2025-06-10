@@ -538,54 +538,71 @@ Return the complete enhanced project plan as HTML with all existing content plus
             </div>
             <iframe
               src={blobUrl}
-              className="project-plan-content w-full"
+              className="project-plan-content w-full min-h-[800px]"
               style={{
                 border: 'none',
                 backgroundColor: '#ffffff',
-                overflow: 'hidden'
+                overflow: 'auto',
+                height: '1200px' // Start with larger default height
               }}
               title="Project Plan Content"
               sandbox="allow-same-origin allow-scripts"
               onLoad={(e) => {
                 const iframe = e.target as HTMLIFrameElement;
-                try {
-                  // Wait a moment for content to render
-                  setTimeout(() => {
+                
+                const adjustHeight = () => {
+                  try {
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
                     if (iframeDoc) {
                       const body = iframeDoc.body;
                       const html = iframeDoc.documentElement;
                       
-                      // Get the actual content height
-                      const height = Math.max(
+                      // Multiple attempts to get accurate height
+                      const measurements = [
                         body?.scrollHeight || 0,
                         body?.offsetHeight || 0,
-                        html?.clientHeight || 0,
                         html?.scrollHeight || 0,
-                        html?.offsetHeight || 0
-                      );
+                        html?.offsetHeight || 0,
+                        html?.clientHeight || 0
+                      ];
                       
-                      // Set iframe height to content height with some padding
-                      iframe.style.height = `${Math.max(height + 20, 400)}px`;
+                      // Get the maximum measurement
+                      const contentHeight = Math.max(...measurements);
                       
-                      // Remove scroll bars from iframe content
+                      // Calculate final height with generous padding
+                      const finalHeight = Math.max(contentHeight + 100, 800);
+                      
+                      // Apply the height
+                      iframe.style.height = `${finalHeight}px`;
+                      
+                      // Ensure content doesn't get cut off
                       if (body) {
-                        body.style.overflow = 'hidden';
+                        body.style.overflow = 'visible';
                         body.style.margin = '0';
                         body.style.padding = '20px';
+                        body.style.minHeight = 'auto';
                       }
                       if (html) {
-                        html.style.overflow = 'hidden';
+                        html.style.overflow = 'visible';
+                        html.style.minHeight = 'auto';
                       }
+                      
+                      console.log('Iframe height adjusted to:', finalHeight, 'Content measurements:', measurements);
                     }
-                  }, 100);
-                } catch (error) {
-                  // Fallback height if cross-origin or other issues
-                  iframe.style.height = '600px';
-                }
+                  } catch (error) {
+                    console.error('Height adjustment failed:', error);
+                    // More generous fallback height
+                    iframe.style.height = '1500px';
+                  }
+                };
+                
+                // Multiple timing attempts for height adjustment
+                setTimeout(adjustHeight, 100);
+                setTimeout(adjustHeight, 500);
+                setTimeout(adjustHeight, 1000);
                 
                 // Clean up blob URL after iframe loads
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
               }}
             />
           </div>
