@@ -47,7 +47,7 @@ export default function HomeLanding() {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/plan">
+            <Link href="/start-over">
               <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                 Start Planning
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -75,16 +75,18 @@ export default function HomeLanding() {
             </p>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
-              <Link href="/plan">
+              <Link href="/start-over">
                 <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 text-lg">
                   <Rocket className="h-5 w-5 mr-2" />
                   Get Started Free
                 </Button>
               </Link>
-              <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-blue-200 hover:bg-blue-50">
-                <MonitorSpeaker className="h-5 w-5 mr-2" />
-                Watch Demo
-              </Button>
+              <Link href="/start-over">
+                <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-blue-200 hover:bg-blue-50">
+                  <MonitorSpeaker className="h-5 w-5 mr-2" />
+                  Watch Demo
+                </Button>
+              </Link>
             </div>
 
             {/* Stats */}
@@ -377,7 +379,7 @@ export default function HomeLanding() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Link href="/plan">
+              <Link href="/start-over">
                 <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group bg-gradient-to-br from-blue-50 to-blue-100">
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -395,7 +397,7 @@ export default function HomeLanding() {
                 </Card>
               </Link>
 
-              <Link href="/user-journey">
+              <Link href="/start-over">
                 <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group bg-gradient-to-br from-purple-50 to-purple-100">
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -413,7 +415,7 @@ export default function HomeLanding() {
                 </Card>
               </Link>
 
-              <Link href="/user-stories">
+              <Link href="/start-over">
                 <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group bg-gradient-to-br from-indigo-50 to-indigo-100">
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -431,7 +433,7 @@ export default function HomeLanding() {
                 </Card>
               </Link>
 
-              <Link href="/editor">
+              <Link href="/start-over">
                 <Card className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer group bg-gradient-to-br from-green-50 to-green-100">
                   <CardContent className="p-6 text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
@@ -467,7 +469,7 @@ export default function HomeLanding() {
                     Join thousands of teams using AI-powered project planning to deliver better results faster.
                   </p>
                   <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Link href="/plan">
+                    <Link href="/start-over">
                       <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg font-semibold">
                         <Rocket className="h-5 w-5 mr-2" />
                         Start Your First Project
