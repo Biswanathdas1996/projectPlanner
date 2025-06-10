@@ -82,6 +82,9 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       } catch (error: any) {
         console.error(`Error loading BPMN diagram for ${title}:`, error);
         
+        // Log the raw XML for debugging
+        console.log('Raw XML Content (first 500 chars):', bpmnXml.substring(0, 500));
+        
         let errorMessage = 'Failed to render BPMN diagram';
         if (error.message) {
           errorMessage += `: ${error.message}`;
@@ -93,6 +96,9 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           ).join('; ');
           errorMessage += `. Validation errors: ${warningDetails}`;
         }
+        
+        // Add common troubleshooting info
+        errorMessage += '\n\nCommon causes:\n• API returned HTML error page instead of BPMN XML\n• Invalid BPMN XML structure or missing required elements\n• Network connectivity issues with Gemini API\n• BPMN.js library failed to parse the XML content';
         
         setError(errorMessage);
         setIsLoading(false);

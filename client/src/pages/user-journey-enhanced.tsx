@@ -1088,82 +1088,83 @@ Additional Elements: ${structuredContent.additionalElements.join('; ')}
 Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events, tasks, and gateways.
       `.trim();
 
-      let bpmnXml;
-      try {
-        bpmnXml = await generateBpmnXml(contentPrompt);
-        console.log('Successfully generated BPMN XML:', bpmnXml.substring(0, 200) + '...');
-      } catch (bpmnError) {
-        console.error('Gemini BPMN generation failed, creating fallback:', bpmnError);
-        
-        // Create fallback BPMN XML directly from structured content
-        const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
-        const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_');
-        
-        const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
-        const poolId = `Pool_${cleanStakeholder}`;
-        
-        // Generate task elements from activities
-        const taskElements = structuredContent.activities.map((activity, index) => {
-          const taskId = `Task_${index + 1}`;
-          return `    <bpmn2:userTask id="${taskId}" name="${activity.replace(/"/g, '&quot;')}" />`;
-        }).join('\n');
-        
-        // Generate sequence flows
-        const flowElements: string[] = [];
-        structuredContent.activities.forEach((_, index) => {
-          if (index === 0) {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`);
-          }
-          if (index < structuredContent.activities.length - 1) {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_${index + 2}" sourceRef="Task_${index + 1}" targetRef="Task_${index + 2}" />`);
-          } else {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_end" sourceRef="Task_${index + 1}" targetRef="EndEvent_1" />`);
-          }
-        });
-        
-        // Generate visual elements
-        const taskShapes = structuredContent.activities.map((activity, index) => {
-          const x = 200 + (index * 150);
-          return `      <bpmndi:BPMNShape id="Task_${index + 1}_di" bpmnElement="Task_${index + 1}">
+      // Always use the reliable fallback BPMN generation to avoid parsing errors
+      console.log('Generating reliable BPMN XML from structured content...');
+      
+      const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
+      const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_');
+      
+      const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
+      const poolId = `Pool_${cleanStakeholder}`;
+      
+      // Generate task elements from activities with proper XML escaping
+      const taskElements = structuredContent.activities.map((activity, index) => {
+        const taskId = `Task_${index + 1}`;
+        const activityName = activity.replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return `    <bpmn2:userTask id="${taskId}" name="${activityName.substring(0, 80)}" />`;
+      }).join('\n');
+      
+      // Generate sequence flows
+      const flowElements: string[] = [];
+      structuredContent.activities.forEach((_, index) => {
+        if (index === 0) {
+          flowElements.push(`    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`);
+        }
+        if (index < structuredContent.activities.length - 1) {
+          flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_${index + 2}" sourceRef="Task_${index + 1}" targetRef="Task_${index + 2}" />`);
+        } else {
+          flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_end" sourceRef="Task_${index + 1}" targetRef="EndEvent_1" />`);
+        }
+      });
+      
+      // Generate visual elements with proper self-closing tags
+      const taskShapes = structuredContent.activities.map((_, index) => {
+        const x = 200 + (index * 150);
+        return `      <bpmndi:BPMNShape id="Task_${index + 1}_di" bpmnElement="Task_${index + 1}">
         <dc:Bounds x="${x}" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
-        }).join('\n');
-        
-        const flowEdges: string[] = [];
-        structuredContent.activities.forEach((_, index) => {
-          if (index === 0) {
-            flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
+      }).join('\n');
+      
+      const flowEdges: string[] = [];
+      structuredContent.activities.forEach((_, index) => {
+        if (index === 0) {
+          flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
         <di:waypoint x="148" y="180" />
         <di:waypoint x="200" y="180" />
       </bpmndi:BPMNEdge>`);
-          }
-          if (index < structuredContent.activities.length - 1) {
-            const x1 = 300 + (index * 150);
-            const x2 = 200 + ((index + 1) * 150);
-            flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_${index + 2}_di" bpmnElement="Flow_${index + 1}_${index + 2}">
+        }
+        if (index < structuredContent.activities.length - 1) {
+          const x1 = 300 + (index * 150);
+          const x2 = 200 + ((index + 1) * 150);
+          flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_${index + 2}_di" bpmnElement="Flow_${index + 1}_${index + 2}">
         <di:waypoint x="${x1}" y="180" />
         <di:waypoint x="${x2}" y="180" />
       </bpmndi:BPMNEdge>`);
-          } else {
-            const x1 = 300 + (index * 150);
-            const x2 = x1 + 100;
-            flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_end_di" bpmnElement="Flow_${index + 1}_end">
+        } else {
+          const x1 = 300 + (index * 150);
+          const x2 = x1 + 100;
+          flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_end_di" bpmnElement="Flow_${index + 1}_end">
         <di:waypoint x="${x1}" y="180" />
         <di:waypoint x="${x2}" y="180" />
       </bpmndi:BPMNEdge>`);
-          }
-        });
-        
-        bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
+        }
+      });
+      
+      // Escape text content for XML
+      const triggerName = structuredContent.trigger.replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 50);
+      const endEventName = structuredContent.endEvent.replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').substring(0, 50);
+      const stakeholderName = stakeholder.replace(/"/g, '&quot;').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      
+      const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn2:collaboration id="Collaboration_1">
-    <bpmn2:participant id="${poolId}" name="${stakeholder}" processRef="${processId}" />
+    <bpmn2:participant id="${poolId}" name="${stakeholderName}" processRef="${processId}" />
   </bpmn2:collaboration>
   <bpmn2:process id="${processId}" isExecutable="true">
-    <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.substring(0, 50)}..." />
+    <bpmn2:startEvent id="StartEvent_1" name="${triggerName}" />
 ${taskElements}
-    <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.substring(0, 50)}..." />
+    <bpmn2:endEvent id="EndEvent_1" name="${endEventName}" />
 ${flowElements.join('\n')}
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -1185,7 +1186,8 @@ ${flowEdges.join('\n')}
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>`;
-      }
+      
+      console.log('Generated reliable BPMN XML successfully');
       
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
