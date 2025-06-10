@@ -2,6 +2,30 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
+export async function generateFlowAnalysis(
+  prompt: string,
+): Promise<string> {
+  if (!prompt.trim()) {
+    throw new Error("Prompt is required");
+  }
+
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.3,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 2048,
+    }
+  });
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  const text = response.text();
+
+  return text;
+}
+
 export async function generateCustomSuggestions(
   projectDescription: string,
 ): Promise<string[]> {
