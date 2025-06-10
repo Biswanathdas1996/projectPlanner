@@ -44,6 +44,19 @@ interface StakeholderFlow {
   customPrompt: string;
 }
 
+interface FlowDetails {
+  description: string;
+  keyComponents: string[];
+  processes: string[];
+  processDescription: string;
+  participants: string[];
+  trigger: string;
+  activities: string[];
+  decisionPoints: string[];
+  endEvent: string;
+  additionalElements: string[];
+}
+
 export default function UserJourneyEnhanced() {
   const [projectPlan, setProjectPlan] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
@@ -71,11 +84,11 @@ export default function UserJourneyEnhanced() {
   
   // Flow details generation state
   const [isGeneratingFlowDetails, setIsGeneratingFlowDetails] = useState(false);
-  const [flowDetails, setFlowDetails] = useState<Record<string, { description: string; keyComponents: string[]; processes: string[] }>>({});
+  const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>({});
   
   // Flow details editing state
   const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(null);
-  const [editedFlowDetails, setEditedFlowDetails] = useState<{ description: string; keyComponents: string[]; processes: string[] } | null>(null);
+  const [editedFlowDetails, setEditedFlowDetails] = useState<FlowDetails | null>(null);
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -564,7 +577,7 @@ export default function UserJourneyEnhanced() {
         });
       });
 
-      const details: Record<string, { description: string; keyComponents: string[]; processes: string[] }> = {};
+      const details: Record<string, FlowDetails> = {};
 
       // Generate details for each flow
       for (const flow of allFlows) {
@@ -632,12 +645,30 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
           try {
             const flowData = JSON.parse(cleanedResult);
             
-            // Validate the structure
+            // Validate the structure and parse sections
             if (flowData.description && flowData.keyComponents && flowData.processes) {
+              const desc = flowData.description;
+              
+              // Parse the structured sections from the description
+              const processDescMatch = desc.match(/✅ 1\. Process Name and Description\n([^✅]*)/);
+              const triggerMatch = desc.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
+              const decisionMatch = desc.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
+              const endEventMatch = desc.match(/✅ 6\. End Event\n([^✅]*)/);
+              const additionalMatch = desc.match(/✅ 7\. Additional Elements\n([^$]*)/);
+              
               details[key] = {
                 description: flowData.description,
                 keyComponents: Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [],
-                processes: Array.isArray(flowData.processes) ? flowData.processes : []
+                processes: Array.isArray(flowData.processes) ? flowData.processes : [],
+                processDescription: processDescMatch ? processDescMatch[1].trim() : `${flow.flowType} Process for ${flow.stakeholder}`,
+                participants: Array.isArray(flowData.keyComponents) ? flowData.keyComponents : [],
+                trigger: triggerMatch ? triggerMatch[1].trim() : `${flow.stakeholder} initiates ${flow.flowType} request`,
+                activities: Array.isArray(flowData.processes) ? flowData.processes : [],
+                decisionPoints: decisionMatch ? decisionMatch[1].trim().split('\n').filter((d: string) => d.trim()) : [],
+                endEvent: endEventMatch ? endEventMatch[1].trim() : 'Process completes successfully',
+                additionalElements: additionalMatch ? 
+                  additionalMatch[1].trim().split('\n').filter((e: string) => e.trim() && (e.includes('Messages:') || e.includes('Timers:') || e.includes('Data'))) : 
+                  ['Messages: Confirmation notifications', 'Timers: Session timeout', 'Data: Form data and logs']
               };
             } else {
               throw new Error('Invalid response structure');
@@ -696,6 +727,35 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                 "Database updates records and maintains integrity",
                 "System generates confirmation and audit trail",
                 `Notification service sends confirmation to ${flow.stakeholder}`
+              ],
+              processDescription: `${flow.flowType} Process for ${flow.stakeholder}. This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
+              participants: [
+                `${flow.stakeholder}`,
+                "System Backend", 
+                "Database Service",
+                "Authentication Module",
+                "Notification Service",
+                "External Services"
+              ],
+              trigger: `${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.`,
+              activities: [
+                `${flow.stakeholder} authenticates and accesses system`,
+                `System validates ${mainAction} request and permissions`,
+                `Backend processes ${mainAction} with business logic`,
+                "Database updates records and maintains integrity",
+                "System generates confirmation and audit trail",
+                `Notification service sends confirmation to ${flow.stakeholder}`
+              ],
+              decisionPoints: [
+                `If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.`,
+                `If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.`,
+                `If validation errors occur, return to ${flow.stakeholder} for correction; otherwise complete process.`
+              ],
+              endEvent: `Process concludes when ${flow.stakeholder} receives confirmation notification and all system records are successfully updated with audit trail completed.`,
+              additionalElements: [
+                `Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures`,
+                `Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout`,
+                `Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`
               ]
             };
           }
@@ -723,7 +783,14 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
       setEditedFlowDetails({
         description: details.description,
         keyComponents: [...details.keyComponents],
-        processes: [...details.processes]
+        processes: [...details.processes],
+        processDescription: details.processDescription || '',
+        participants: [...(details.participants || details.keyComponents)],
+        trigger: details.trigger || '',
+        activities: [...(details.activities || details.processes)],
+        decisionPoints: [...(details.decisionPoints || [])],
+        endEvent: details.endEvent || '',
+        additionalElements: [...(details.additionalElements || [])]
       });
     }
   };
