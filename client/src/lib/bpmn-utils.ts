@@ -24,6 +24,8 @@ export const STORAGE_KEYS = {
   EXTRACTED_STAKEHOLDERS: 'bpmn-extracted-stakeholders',
   PERSONA_FLOW_TYPES: 'bpmn-persona-flow-types',
   GENERATED_BPMN_XML: 'bpmn-generated-xml',
+  STAKEHOLDER_FLOWS: 'bpmn-stakeholder-flows',
+  STAKEHOLDER_FLOW_DATA: 'bpmn-stakeholder-flow-data',
 } as const;
 
 export function generateId(): string {

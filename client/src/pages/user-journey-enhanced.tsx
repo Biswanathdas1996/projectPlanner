@@ -58,6 +58,7 @@ export default function UserJourneyEnhanced() {
     const savedUserJourneyFlows = localStorage.getItem(STORAGE_KEYS.USER_JOURNEY_FLOWS);
     const savedStakeholders = localStorage.getItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS);
     const savedFlowTypes = localStorage.getItem(STORAGE_KEYS.PERSONA_FLOW_TYPES);
+    const savedStakeholderFlows = localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS);
 
     if (savedProjectDescription) {
       setProjectDescription(savedProjectDescription);
@@ -82,6 +83,13 @@ export default function UserJourneyEnhanced() {
         console.error('Error parsing saved flow types:', error);
       }
     }
+    if (savedStakeholderFlows) {
+      try {
+        setStakeholderFlows(JSON.parse(savedStakeholderFlows));
+      } catch (error) {
+        console.error('Error parsing saved stakeholder flows:', error);
+      }
+    }
 
     setIsLoadingFromStorage(false);
 
@@ -94,6 +102,21 @@ export default function UserJourneyEnhanced() {
       });
     }
   }, []);
+
+  // Save stakeholder flows to localStorage
+  const saveStakeholderFlowsToStorage = (flows: StakeholderFlow[]) => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STAKEHOLDER_FLOWS, JSON.stringify(flows));
+    } catch (error) {
+      console.error('Error saving stakeholder flows to localStorage:', error);
+    }
+  };
+
+  // Update stakeholder flows and save to localStorage
+  const updateStakeholderFlows = (newFlows: StakeholderFlow[]) => {
+    setStakeholderFlows(newFlows);
+    saveStakeholderFlowsToStorage(newFlows);
+  };
 
   // Extract stakeholders from project plan
   const extractProjectStakeholders = async () => {
@@ -123,7 +146,7 @@ export default function UserJourneyEnhanced() {
           });
         });
       });
-      setStakeholderFlows(initialFlows);
+      updateStakeholderFlows(initialFlows);
       
       localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(stakeholders));
       localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(flowTypes));
@@ -173,13 +196,12 @@ export default function UserJourneyEnhanced() {
     try {
       const bpmn = await generatePersonaBpmnFlowWithType(planContent, stakeholder, flowType, customPrompt);
       
-      setStakeholderFlows(prev => 
-        prev.map(flow => 
-          flow.stakeholder === stakeholder && flow.flowType === flowType
-            ? { ...flow, bpmnXml: bpmn }
-            : flow
-        )
+      const updatedFlows = stakeholderFlows.map(flow => 
+        flow.stakeholder === stakeholder && flow.flowType === flowType
+          ? { ...flow, bpmnXml: bpmn }
+          : flow
       );
+      updateStakeholderFlows(updatedFlows);
       
       // Save the latest generated BPMN to localStorage for editor
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
@@ -205,33 +227,34 @@ export default function UserJourneyEnhanced() {
   // Add a new flow type for a stakeholder
   const addNewFlow = (stakeholder: string) => {
     const newFlowType = `Custom Flow ${Date.now()}`;
-    setStakeholderFlows(prev => [
-      ...prev,
+    const updatedFlows = [
+      ...stakeholderFlows,
       {
         stakeholder,
         flowType: newFlowType,
         bpmnXml: '',
         customPrompt: ''
       }
-    ]);
+    ];
+    updateStakeholderFlows(updatedFlows);
   };
 
   // Remove a flow
   const removeFlow = (stakeholder: string, flowType: string) => {
-    setStakeholderFlows(prev => 
-      prev.filter(flow => !(flow.stakeholder === stakeholder && flow.flowType === flowType))
+    const updatedFlows = stakeholderFlows.filter(flow => 
+      !(flow.stakeholder === stakeholder && flow.flowType === flowType)
     );
+    updateStakeholderFlows(updatedFlows);
   };
 
   // Update custom prompt for a flow
   const updateCustomPrompt = (stakeholder: string, flowType: string, prompt: string) => {
-    setStakeholderFlows(prev => 
-      prev.map(flow => 
-        flow.stakeholder === stakeholder && flow.flowType === flowType
-          ? { ...flow, customPrompt: prompt }
-          : flow
-      )
+    const updatedFlows = stakeholderFlows.map(flow => 
+      flow.stakeholder === stakeholder && flow.flowType === flowType
+        ? { ...flow, customPrompt: prompt }
+        : flow
     );
+    updateStakeholderFlows(updatedFlows);
   };
 
   // Download user journeys
