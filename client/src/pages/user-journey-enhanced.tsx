@@ -279,6 +279,32 @@ export default function UserJourneyEnhanced() {
     URL.revokeObjectURL(url);
   };
 
+  // Export all stakeholder data with BPMN XML
+  const exportAllData = () => {
+    const exportData = {
+      extractedStakeholders,
+      personaFlowTypes,
+      stakeholderFlows,
+      userJourneyFlows,
+      projectDescription,
+      projectPlan,
+      timestamp: new Date().toISOString(),
+      version: '1.0'
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    const timestamp = new Date().toISOString().split('T')[0];
+    link.href = url;
+    link.download = `stakeholder-bpmn-data-${timestamp}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Copy XML to clipboard
   const copyXmlToClipboard = (xml: string) => {
     navigator.clipboard.writeText(xml).then(() => {
@@ -386,18 +412,29 @@ export default function UserJourneyEnhanced() {
                 <Users className="h-5 w-5 mr-2" />
                 Stakeholder Analysis
               </div>
-              <Button 
-                onClick={extractProjectStakeholders}
-                disabled={isExtractingStakeholders || !projectPlan && !projectDescription}
-                size="sm"
-              >
-                {isExtractingStakeholders ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Activity className="h-4 w-4 mr-2" />
-                )}
-                Extract Stakeholders
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={exportAllData}
+                  disabled={stakeholderFlows.length === 0}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Data
+                </Button>
+                <Button 
+                  onClick={extractProjectStakeholders}
+                  disabled={isExtractingStakeholders || !projectPlan && !projectDescription}
+                  size="sm"
+                >
+                  {isExtractingStakeholders ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Activity className="h-4 w-4 mr-2" />
+                  )}
+                  Extract Stakeholders
+                </Button>
+              </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
