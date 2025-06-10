@@ -8,16 +8,20 @@ import ProjectPlanner from "@/pages/project-planner";
 import UserJourney from "@/pages/user-journey";
 import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import UserStoryGenerator from "@/pages/user-story-generator";
+import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={ProjectPlanner} />
+      <Route path="/" component={Landing} />
+      <Route path="/home" component={Landing} />
       <Route path="/plan" component={ProjectPlanner} />
+      <Route path="/planner" component={ProjectPlanner} />
       <Route path="/user-journey" component={UserJourneyEnhanced} />
       <Route path="/user-journey-legacy" component={UserJourney} />
       <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
+      <Route path="/stakeholders" component={UserJourneyEnhanced} />
       <Route path="/user-stories" component={UserStoryGenerator} />
       <Route path="/stories" component={UserStoryGenerator} />
       <Route path="/gherkin" component={UserStoryGenerator} />
