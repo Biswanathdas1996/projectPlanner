@@ -681,17 +681,25 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
           // Clean and parse the response
           let cleanedResult = result.trim();
           
-          // Remove markdown code blocks if present
-          cleanedResult = cleanedResult.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+          // Remove markdown code blocks more aggressively
+          cleanedResult = cleanedResult.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
+          cleanedResult = cleanedResult.replace(/^json\s*\n?/gi, '');
           
-          // Remove any extra text before or after JSON
-          const jsonMatch = cleanedResult.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            cleanedResult = jsonMatch[0];
+          // Extract JSON from the response - find the outermost braces
+          const startBrace = cleanedResult.indexOf('{');
+          const endBrace = cleanedResult.lastIndexOf('}');
+          
+          if (startBrace !== -1 && endBrace !== -1 && endBrace > startBrace) {
+            cleanedResult = cleanedResult.substring(startBrace, endBrace + 1);
           }
           
+          // Final cleanup - remove any remaining non-JSON text
+          cleanedResult = cleanedResult.trim();
+          
           try {
+            console.log(`Attempting to parse JSON for ${key}:`, cleanedResult);
             const flowData = JSON.parse(cleanedResult);
+            console.log(`Successfully parsed JSON for ${key}:`, flowData);
             
             // Enhanced structure parsing with direct field extraction
             const flowDetails: FlowDetails = {
@@ -779,8 +787,9 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
             details[key] = flowDetails;
           } catch (parseError) {
             console.error(`Failed to parse response for ${key}:`, parseError, 'Raw response:', result);
+            console.error('Cleaned result that failed:', cleanedResult);
             
-            // Generate structured fallback with 7-section BPMN format
+            // Generate structured fallback with comprehensive BPMN format
             const flowTypeWords = flow.flowType.toLowerCase().split(' ');
             const mainAction = flowTypeWords[0] || 'process';
             
