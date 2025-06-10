@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
 export async function generateCustomSuggestions(
   projectDescription: string,
@@ -1020,4 +1020,68 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
   }
 
   return cleanedText;
+}
+
+export async function generateSwimlaneXml(
+  stakeholder: string,
+  flowType: string,
+  details: { description: string; keyComponents: string[]; processes: string[] }
+): Promise<string> {
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.0-flash",
+    generationConfig: {
+      temperature: 0.7,
+      topK: 40,
+      topP: 0.95,
+      maxOutputTokens: 4096,
+    }
+  });
+
+  const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on these specifications:
+
+STAKEHOLDER: ${stakeholder}
+FLOW TYPE: ${flowType}
+DESCRIPTION: ${details.description}
+
+KEY COMPONENTS:
+${details.keyComponents.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n')}
+
+CORE PROCESSES:
+${details.processes.map((proc, idx) => `${idx + 1}. ${proc}`).join('\n')}
+
+Create a BPMN 2.0 XML with proper swimlane structure including:
+- Participant pools for different actors/systems involved in this flow
+- Process flows with start events, service tasks, and end events
+- Proper BPMN 2.0 XML namespace declarations
+- Valid diagram interchange (DI) elements for visual layout
+- Sequence flows connecting all elements
+- Swimlanes representing main actors (${stakeholder}, System, External Services)
+
+Requirements:
+- Return ONLY valid BPMN 2.0 XML
+- No markdown formatting or explanations
+- Include proper xmlns declarations
+- Use collaboration with participant pools for swimlanes
+- Include bpmndi:BPMNDiagram for visual layout
+- Process flows connecting the core processes in logical sequence
+- Service tasks for key components
+- Start and end events
+- Gateways where decisions are needed
+
+Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
+
+  const result = await model.generateContent(prompt);
+  const response = await result.response;
+  let text = response.text();
+
+  // Clean up response to extract XML
+  text = text.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
+  
+  // Validate it starts with XML declaration or BPMN element
+  if (!text.startsWith('<?xml') && !text.startsWith('<bpmn')) {
+    console.error('Invalid BPMN XML response:', text);
+    throw new Error('Generated content is not valid BPMN XML');
+  }
+
+  return text;
 }

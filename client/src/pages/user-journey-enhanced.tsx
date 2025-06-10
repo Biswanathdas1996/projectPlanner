@@ -760,72 +760,9 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
     setError('');
 
     try {
-      const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on these specifications:
-
-STAKEHOLDER: ${stakeholder}
-FLOW TYPE: ${flowType}
-DESCRIPTION: ${details.description}
-
-KEY COMPONENTS:
-${details.keyComponents.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n')}
-
-CORE PROCESSES:
-${details.processes.map((proc, idx) => `${idx + 1}. ${proc}`).join('\n')}
-
-Create a BPMN 2.0 XML with swimlanes representing different actors/systems involved in this flow. Include:
-- Participant pools for main actors (${stakeholder}, System, External Services)
-- Process flows connecting the core processes in logical sequence
-- Service tasks for key components
-- Proper BPMN 2.0 XML structure with swimlanes
-- Start and end events
-- Gateways where decisions are needed
-
-Return ONLY valid BPMN 2.0 XML without any markdown formatting or explanations.`;
-
-      const response = await fetch('/api/gemini/generate-bpmn-json', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          projectPlan: prompt,
-          stakeholder,
-          flowType,
-          customPrompt: `Swimlane diagram for ${flowType} with detailed process flow including ${details.keyComponents.join(', ')}`
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to generate BPMN');
-
-      const result = await response.text();
-      console.log(`BPMN Response for ${flowKey}:`, result);
-      
-      // Clean and extract BPMN XML from response
-      let bpmnXml = result.trim();
-      
-      // Remove HTML wrapper if present
-      if (bpmnXml.includes('<html>')) {
-        console.error('Received HTML instead of BPMN XML:', result);
-        throw new Error('Invalid response format - received HTML instead of BPMN XML');
-      }
-      
-      // Extract XML from markdown if present
-      if (bpmnXml.includes('```xml')) {
-        const xmlMatch = bpmnXml.match(/```xml\s*([\s\S]*?)\s*```/);
-        if (xmlMatch) {
-          bpmnXml = xmlMatch[1].trim();
-        }
-      } else if (bpmnXml.includes('```')) {
-        const xmlMatch = bpmnXml.match(/```\s*([\s\S]*?)\s*```/);
-        if (xmlMatch) {
-          bpmnXml = xmlMatch[1].trim();
-        }
-      }
-      
-      // Validate it's XML starting with <?xml or <bpmn
-      if (!bpmnXml.startsWith('<?xml') && !bpmnXml.startsWith('<bpmn')) {
-        console.error('Invalid BPMN XML format, generating fallback:', bpmnXml);
-        // Generate a fallback BPMN diagram based on the flow details
-        bpmnXml = generateFallbackBpmn(stakeholder, flowType, details);
-      }
+      // Call Gemini API directly from client
+      const { generateSwimlaneXml } = await import('../lib/gemini');
+      const bpmnXml = await generateSwimlaneXml(stakeholder, flowType, details);
       
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
