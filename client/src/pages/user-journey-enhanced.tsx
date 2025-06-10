@@ -533,10 +533,11 @@ export default function UserJourneyEnhanced() {
                   </Button>
                 </div>
                 {showFlowDetails && (
-                  <div 
-                    className="bg-white border rounded-lg p-4 max-h-96 overflow-y-auto"
-                    dangerouslySetInnerHTML={{ __html: userJourneyFlows }}
-                  />
+                  <div className="bg-white border rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap text-sm text-gray-700 font-mono">
+                      {userJourneyFlows}
+                    </pre>
+                  </div>
                 )}
               </div>
             ) : (
