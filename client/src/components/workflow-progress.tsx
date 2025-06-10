@@ -100,9 +100,7 @@ export function WorkflowProgress({ currentStep, completedSteps = [] }: WorkflowP
             <span className={`text-sm font-medium hidden sm:block ${
               getStepStatus('diagram') === 'active' ? 'text-blue-700' :
               getStepStatus('diagram') === 'completed' ? 'text-green-700' : 'text-gray-600'
-            }`}>
-              Mapping
-            </span>
+            }`}>Stakeholder & Process Mapping </span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
