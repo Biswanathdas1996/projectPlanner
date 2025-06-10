@@ -1109,7 +1109,7 @@ Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events
         }).join('\n');
         
         // Generate sequence flows
-        const flowElements = [];
+        const flowElements: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
             flowElements.push(`    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`);
@@ -1130,7 +1130,7 @@ Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events
       </bpmndi:BPMNShape>`;
         }).join('\n');
         
-        const flowEdges = [];
+        const flowEdges: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
             flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">

@@ -1040,6 +1040,18 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
     cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
+  // Fix common XML issues that cause parsing errors
+  cleanedText = cleanedText
+    // Ensure self-closing tags are properly closed - simpler approach
+    .replace(/<bpmndi:BPMNEdge([^>]*?)>/g, '<bpmndi:BPMNEdge$1 />')
+    .replace(/<dc:Bounds([^>]*?)>/g, '<dc:Bounds$1 />')
+    .replace(/<di:waypoint([^>]*?)>/g, '<di:waypoint$1 />')
+    .replace(/<bpmndi:BPMNLabel([^>]*?)>/g, '<bpmndi:BPMNLabel$1 />')
+    .replace(/<bpmndi:BPMNShape([^>]*?)>/g, '<bpmndi:BPMNShape$1 />')
+    // Fix double slashes that might occur
+    .replace(/\/\s*\/>/g, ' />')
+    .replace(/\s+\/>/g, ' />');
+
   // Basic validation - ensure it starts with XML declaration
   if (!cleanedText.startsWith('<?xml') && !cleanedText.startsWith('<bpmn2:definitions')) {
     throw new Error('Generated BPMN XML is not properly formatted');
@@ -1051,6 +1063,11 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
   
   if (missingElements.length > 0) {
     console.warn('BPMN XML missing elements:', missingElements);
+  }
+
+  // Ensure the XML ends properly
+  if (!cleanedText.trim().endsWith('</bpmn2:definitions>')) {
+    console.warn('BPMN XML may be truncated - missing closing definitions tag');
   }
 
   return cleanedText;
