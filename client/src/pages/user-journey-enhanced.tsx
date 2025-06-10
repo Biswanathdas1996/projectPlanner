@@ -483,124 +483,168 @@ export default function UserJourneyEnhanced() {
 
         {/* Stakeholder-Based BPMN Diagrams */}
         {stakeholderFlows.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Shield className="h-5 w-5 mr-2" />
+          <Card className="border-0 shadow-sm bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <Shield className="h-4 w-4 text-white" />
+                  </div>
                   Stakeholder-Based BPMN Diagrams
                 </div>
                 <Button 
                   onClick={generateAllBpmn}
                   disabled={Object.values(isGeneratingBpmn).some(Boolean)}
                   size="sm"
+                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
                 >
                   {Object.values(isGeneratingBpmn).some(Boolean) ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
                   ) : (
-                    <Activity className="h-4 w-4 mr-2" />
+                    <Activity className="h-3 w-3 mr-1" />
                   )}
-                  Generate All BPMN
+                  Generate All
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                {extractedStakeholders.map(stakeholder => (
-                  <div key={stakeholder} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900">{stakeholder}</h3>
-                      <Button
-                        onClick={() => addNewFlow(stakeholder)}
-                        variant="outline"
-                        size="sm"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Add Flow
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {stakeholderFlows
-                        .filter(flow => flow.stakeholder === stakeholder)
-                        .map((flow, index) => (
-                          <div key={`${flow.stakeholder}-${flow.flowType}-${index}`} className="border rounded-lg p-4 bg-gray-50">
-                            <div className="flex items-center justify-between mb-3">
-                              <h4 className="font-medium text-gray-800">{flow.flowType}</h4>
-                              <div className="flex items-center space-x-2">
-                                <Button
-                                  onClick={() => generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt)}
-                                  disabled={isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`]}
-                                  size="sm"
-                                >
-                                  {isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`] ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    'Generate BPMN'
-                                  )}
-                                </Button>
-                                <Button
-                                  onClick={() => removeFlow(flow.stakeholder, flow.flowType)}
-                                  variant="outline"
-                                  size="sm"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="mb-3">
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Custom Requirements (Optional)
-                              </label>
-                              <Textarea
-                                value={flow.customPrompt}
-                                onChange={(e) => updateCustomPrompt(flow.stakeholder, flow.flowType, e.target.value)}
-                                placeholder={`Describe specific requirements for ${flow.stakeholder} ${flow.flowType}...`}
-                                className="text-sm"
-                                rows={2}
-                              />
-                            </div>
-
-                            {flow.bpmnXml && (
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <Badge variant="secondary">
-                                    <CheckCircle className="h-3 w-3 mr-1" />
-                                    BPMN Generated
-                                  </Badge>
-                                  <div className="flex items-center space-x-2">
-                                    <Button
-                                      onClick={() => copyXmlToClipboard(flow.bpmnXml)}
-                                      variant="outline"
-                                      size="sm"
-                                    >
-                                      <Copy className="h-4 w-4 mr-2" />
-                                      Copy XML
-                                    </Button>
-                                    <Link href="/bpmn-editor">
-                                      <Button
-                                        onClick={() => openInEditor(flow.bpmnXml)}
-                                        size="sm"
-                                      >
-                                        <Navigation className="h-4 w-4 mr-2" />
-                                        View in Editor
-                                      </Button>
-                                    </Link>
-                                  </div>
+            <CardContent className="px-6 pb-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {extractedStakeholders.map((stakeholder, stakeholderIndex) => {
+                  const colorVariants = [
+                    'from-blue-500 to-cyan-600',
+                    'from-emerald-500 to-teal-600', 
+                    'from-orange-500 to-red-600',
+                    'from-purple-500 to-pink-600',
+                    'from-indigo-500 to-blue-600',
+                    'from-green-500 to-emerald-600'
+                  ];
+                  const bgVariants = [
+                    'from-blue-50 to-cyan-50',
+                    'from-emerald-50 to-teal-50',
+                    'from-orange-50 to-red-50', 
+                    'from-purple-50 to-pink-50',
+                    'from-indigo-50 to-blue-50',
+                    'from-green-50 to-emerald-50'
+                  ];
+                  const borderVariants = [
+                    'border-blue-200',
+                    'border-emerald-200',
+                    'border-orange-200',
+                    'border-purple-200', 
+                    'border-indigo-200',
+                    'border-green-200'
+                  ];
+                  
+                  const colorClass = colorVariants[stakeholderIndex % colorVariants.length];
+                  const bgClass = bgVariants[stakeholderIndex % bgVariants.length];
+                  const borderClass = borderVariants[stakeholderIndex % borderVariants.length];
+                  
+                  return (
+                    <div key={stakeholder} className={`border-2 ${borderClass} rounded-xl p-4 bg-gradient-to-br ${bgClass}`}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-6 h-6 bg-gradient-to-r ${colorClass} rounded-md flex items-center justify-center`}>
+                            <User className="h-3 w-3 text-white" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-gray-800">{stakeholder}</h3>
+                        </div>
+                        <Button
+                          onClick={() => addNewFlow(stakeholder)}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-white"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        {stakeholderFlows
+                          .filter(flow => flow.stakeholder === stakeholder)
+                          .map((flow, index) => (
+                            <div key={`${flow.stakeholder}-${flow.flowType}-${index}`} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-lg p-3 shadow-sm">
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-xs font-medium text-gray-700 truncate max-w-[150px]">{flow.flowType}</h4>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    onClick={() => generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt)}
+                                    disabled={isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`]}
+                                    size="sm"
+                                    className={`text-xs px-2 py-1 h-6 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                  >
+                                    {isGeneratingBpmn[`${flow.stakeholder}-${flow.flowType}`] ? (
+                                      <Loader2 className="h-3 w-3 animate-spin" />
+                                    ) : (
+                                      'Generate'
+                                    )}
+                                  </Button>
+                                  <Button
+                                    onClick={() => removeFlow(flow.stakeholder, flow.flowType)}
+                                    variant="outline"
+                                    size="sm"
+                                    className="text-xs px-1.5 py-1 h-6 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
                                 </div>
-                                <InlineBpmnViewer
-                                  bpmnXml={flow.bpmnXml}
-                                  title={`${flow.stakeholder} - ${flow.flowType}`}
-                                  height="300px"
+                              </div>
+                            
+                              <div className="mb-2">
+                                <label className="block text-xs font-medium text-gray-600 mb-1">
+                                  Custom Requirements (Optional)
+                                </label>
+                                <Textarea
+                                  value={flow.customPrompt}
+                                  onChange={(e) => updateCustomPrompt(flow.stakeholder, flow.flowType, e.target.value)}
+                                  placeholder="Describe specific requirements for this flow..."
+                                  className="text-xs min-h-[60px] resize-none"
+                                  rows={2}
                                 />
                               </div>
-                            )}
-                          </div>
-                        ))}
+
+                              {flow.bpmnXml && (
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      Generated
+                                    </Badge>
+                                    <div className="flex items-center gap-1">
+                                      <Button
+                                        onClick={() => copyXmlToClipboard(flow.bpmnXml)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs px-2 py-1 h-6 border-gray-300"
+                                      >
+                                        <Copy className="h-3 w-3 mr-1" />
+                                        Copy
+                                      </Button>
+                                      <Link href="/bpmn-editor">
+                                        <Button
+                                          onClick={() => openInEditor(flow.bpmnXml)}
+                                          size="sm"
+                                          className="text-xs px-2 py-1 h-6 bg-gray-600 hover:bg-gray-700 text-white"
+                                        >
+                                          <Navigation className="h-3 w-3 mr-1" />
+                                          Editor
+                                        </Button>
+                                      </Link>
+                                    </div>
+                                  </div>
+                                  <InlineBpmnViewer
+                                    bpmnXml={flow.bpmnXml}
+                                    title={`${flow.stakeholder} - ${flow.flowType}`}
+                                    height="280px"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
