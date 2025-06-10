@@ -352,18 +352,6 @@ export default function UserJourneyEnhanced() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <Link href="/user-stories">
-              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white">
-                <BookOpen className="h-4 w-4 mr-2" />
-                User Stories
-              </Button>
-            </Link>
-            <Link href="/bpmn-editor">
-              <Button variant="outline">
-                <Navigation className="h-4 w-4 mr-2" />
-                BPMN Editor
-              </Button>
-            </Link>
           </div>
         </div>
 
@@ -719,6 +707,16 @@ export default function UserJourneyEnhanced() {
             </CardContent>
           </Card>
         )}
+
+        {/* Navigation Button at Bottom */}
+        <div className="mt-8 flex justify-center">
+          <Link href="/user-stories">
+            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 text-lg">
+              <BookOpen className="h-5 w-5 mr-3" />
+              Continue to User Stories
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
