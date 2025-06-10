@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
+import { WorkflowProgress } from '@/components/workflow-progress';
 import { Link, useLocation } from 'wouter';
 import {
   Sparkles,
@@ -677,95 +678,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
       <div className="max-w-7xl mx-auto px-4 py-6">
         
 
-        {/* Compact Progress Steps */}
-        <div className="mb-6">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100 shadow-sm">
-            <div className="flex items-center justify-center gap-3 lg:gap-4">
-              {/* Step 1: Input */}
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                getStepStatus('input') === 'active' ? 'bg-blue-100 shadow-md' :
-                getStepStatus('input') === 'completed' ? 'bg-green-100' : 'bg-white'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
-                   getStepStatus('input') === 'active' ? <Sparkles className="h-4 w-4" /> : '1'}
-                </div>
-                <span className={`text-sm font-medium hidden sm:block ${
-                  getStepStatus('input') === 'active' ? 'text-blue-700' :
-                  getStepStatus('input') === 'completed' ? 'text-green-700' : 'text-gray-600'
-                }`}>
-                  Input
-                </span>
-              </div>
-
-              <ArrowRight className="h-4 w-4 text-gray-300" />
-
-              {/* Step 2: Plan */}
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-100 shadow-md' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-100' : 'bg-white'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
-                   getStepStatus('plan') === 'active' ? <FileText className="h-4 w-4" /> : '2'}
-                </div>
-                <span className={`text-sm font-medium hidden sm:block ${
-                  getStepStatus('plan') === 'active' ? 'text-blue-700' :
-                  getStepStatus('plan') === 'completed' ? 'text-green-700' : 'text-gray-600'
-                }`}>
-                  Plan
-                </span>
-              </div>
-
-              <ArrowRight className="h-4 w-4 text-gray-300" />
-
-              {/* Step 3: Process Mapping */}
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
-                currentStep === 'diagram' || getStepStatus('diagram') === 'completed' ? 'bg-blue-100 shadow-md' : 'bg-white'
-              }`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' :
-                  currentStep === 'diagram' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
-                }`}>
-                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
-                   currentStep === 'diagram' ? <Users className="h-4 w-4" /> : '3'}
-                </div>
-                <span className={`text-sm font-medium hidden sm:block ${
-                  currentStep === 'diagram' ? 'text-blue-700' :
-                  getStepStatus('diagram') === 'completed' ? 'text-green-700' : 'text-gray-600'
-                }`}>
-                  Mapping
-                </span>
-              </div>
-
-              <ArrowRight className="h-4 w-4 text-gray-300" />
-
-              {/* Step 4: User Stories */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-600">
-                  <BookOpen className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium text-gray-600 hidden sm:block">Stories</span>
-              </div>
-
-              <ArrowRight className="h-4 w-4 text-gray-300" />
-
-              {/* Step 5: Code */}
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-600">
-                  <Code className="h-4 w-4" />
-                </div>
-                <span className="text-sm font-medium text-gray-600 hidden sm:block">Code</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <WorkflowProgress currentStep={currentStep} />
 
         {/* Error Display */}
         {error && (
