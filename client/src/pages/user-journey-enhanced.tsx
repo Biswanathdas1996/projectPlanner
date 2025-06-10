@@ -1677,33 +1677,162 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                   ) : (
                                     /* Display Mode */
                                     <>
-                                      {/* Description */}
-                                      <div>
-                                        <p className="text-xs text-gray-700 leading-relaxed">{details.description}</p>
-                                      </div>
-
-                                      {/* Key Components */}
-                                      <div>
-                                        <h5 className="text-xs font-medium text-gray-600 mb-1">Key Components</h5>
-                                        <div className="flex flex-wrap gap-1">
-                                          {details.keyComponents?.map((component, idx) => (
-                                            <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
-                                              {component}
+                                      {/* BPMN Flow Analysis - 7 Section Structure */}
+                                      <div className="space-y-3">
+                                        {/* Section 1: Process Name and Description */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
+                                              ✅ 1. Process & Description
                                             </Badge>
-                                          ))}
+                                          </div>
+                                          <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
+                                            {details.description.split('\n\n✅ 2.')[0].replace('✅ 1. Process Name and Description\n', '')}
+                                          </p>
                                         </div>
-                                      </div>
 
-                                      {/* Core Processes */}
-                                      <div>
-                                        <h5 className="text-xs font-medium text-gray-600 mb-1">Core Processes</h5>
-                                        <div className="space-y-1">
-                                          {details.processes?.map((process, idx) => (
-                                            <div key={idx} className="flex items-center gap-2">
-                                              <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
-                                              <span className="text-xs text-gray-600">{process}</span>
+                                        {/* Section 2: Participants (Swimlanes) */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
+                                              ✅ 2. Participants (Swimlanes)
+                                            </Badge>
+                                          </div>
+                                          <div className="flex flex-wrap gap-1">
+                                            {details.keyComponents?.map((participant, idx) => (
+                                              <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                                {participant}
+                                              </Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Section 3: Trigger (Start Event) */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
+                                              ✅ 3. Trigger (Start Event)
+                                            </Badge>
+                                          </div>
+                                          <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
+                                            {(() => {
+                                              const triggerSection = details.description.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
+                                              return triggerSection ? triggerSection[1].trim() : 'Process initiates when conditions are met';
+                                            })()}
+                                          </p>
+                                        </div>
+
+                                        {/* Section 4: Activities */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
+                                              ✅ 4. Activities (Tasks)
+                                            </Badge>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {details.processes?.map((activity, idx) => (
+                                              <div key={idx} className="flex items-center gap-2">
+                                                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                                                <span className="text-xs text-gray-600">{activity}</span>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        </div>
+
+                                        {/* Section 5: Decision Points */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
+                                              ✅ 5. Decision Points (Gateways)
+                                            </Badge>
+                                          </div>
+                                          <div className="text-xs text-gray-600 pl-2 border-l-2 border-yellow-200 space-y-1">
+                                            {(() => {
+                                              const decisionSection = details.description.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
+                                              if (decisionSection) {
+                                                return decisionSection[1].trim().split('\n').map((decision, idx) => (
+                                                  <div key={idx} className="flex items-start gap-2">
+                                                    <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                                                    <span>{decision.trim()}</span>
+                                                  </div>
+                                                ));
+                                              }
+                                              return <span>Standard validation and approval gates</span>;
+                                            })()}
+                                          </div>
+                                        </div>
+
+                                        {/* Section 6: End Event */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0">
+                                              ✅ 6. End Event
+                                            </Badge>
+                                          </div>
+                                          <p className="text-xs text-gray-600 pl-2 border-l-2 border-red-200">
+                                            {(() => {
+                                              const endSection = details.description.match(/✅ 6\. End Event\n([^✅]*)/);
+                                              return endSection ? endSection[1].trim() : 'Process completes when all objectives are met';
+                                            })()}
+                                          </p>
+                                        </div>
+
+                                        {/* Section 7: Additional Elements */}
+                                        <div>
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
+                                              ✅ 7. Additional Elements
+                                            </Badge>
+                                          </div>
+                                          <div className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
+                                            <div className="grid grid-cols-1 gap-1">
+                                              {(() => {
+                                                const additionalSection = details.description.match(/✅ 7\. Additional Elements\n([^$]*)/);
+                                                if (additionalSection) {
+                                                  const elements = additionalSection[1].trim().split('\n');
+                                                  return elements.map((element, idx) => {
+                                                    if (element.includes('Messages:')) {
+                                                      return (
+                                                        <div key={idx} className="flex items-center gap-2">
+                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
+                                                            📧 Messages
+                                                          </Badge>
+                                                          <span>{element.replace('Messages:', '').trim()}</span>
+                                                        </div>
+                                                      );
+                                                    } else if (element.includes('Timers:')) {
+                                                      return (
+                                                        <div key={idx} className="flex items-center gap-2">
+                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
+                                                            ⏱️ Timers
+                                                          </Badge>
+                                                          <span>{element.replace('Timers:', '').trim()}</span>
+                                                        </div>
+                                                      );
+                                                    } else if (element.includes('Data')) {
+                                                      return (
+                                                        <div key={idx} className="flex items-center gap-2">
+                                                          <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
+                                                            📄 Data
+                                                          </Badge>
+                                                          <span>{element.replace('Data Objects:', '').trim()}</span>
+                                                        </div>
+                                                      );
+                                                    }
+                                                    return null;
+                                                  });
+                                                }
+                                                return (
+                                                  <div className="flex items-center gap-2">
+                                                    <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
+                                                      📋 Standard
+                                                    </Badge>
+                                                    <span>Forms, notifications, and system logs</span>
+                                                  </div>
+                                                );
+                                              })()}
                                             </div>
-                                          ))}
+                                          </div>
                                         </div>
                                       </div>
                                     </>

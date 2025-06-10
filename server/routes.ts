@@ -8,6 +8,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/generate-plan", generateProjectPlan);
   app.post("/api/generate-bpmn", generateBpmnJson);
   app.post("/api/gemini/generate-bpmn-json", generateBpmnXml);
+  app.post("/api/gemini/generate-project-plan", generateProjectPlan);
 
   const httpServer = createServer(app);
 
