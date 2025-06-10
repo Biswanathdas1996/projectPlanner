@@ -1666,73 +1666,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         />
                                       </div>
 
-                                      {/* Edit Key Components */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Key Components</label>
-                                          <Button
-                                            onClick={addEditedKeyComponent}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.keyComponents.map((component, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={component}
-                                                onChange={(e) => updateEditedKeyComponent(idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeEditedKeyComponent(idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
 
-                                      {/* Edit Core Processes */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Core Processes</label>
-                                          <Button
-                                            onClick={addEditedProcess}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.processes.map((process, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={process}
-                                                onChange={(e) => updateEditedProcess(idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeEditedProcess(idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
                                     </div>
                                   ) : (
                                     /* Display Mode */
@@ -1759,7 +1693,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <div className="flex flex-wrap gap-1">
-                                            {(details.participants || details.keyComponents)?.map((participant, idx) => (
+                                            {details.participants?.map((participant, idx) => (
                                               <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
                                                 {participant}
                                               </Badge>
@@ -1790,7 +1724,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                             </Badge>
                                           </div>
                                           <div className="space-y-1">
-                                            {(details.activities || details.processes)?.map((activity, idx) => (
+                                            {details.activities?.map((activity, idx) => (
                                               <div key={idx} className="flex items-center gap-2">
                                                 <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
                                                 <span className="text-xs text-gray-600">{activity}</span>
