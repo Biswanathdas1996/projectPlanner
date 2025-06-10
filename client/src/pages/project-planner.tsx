@@ -615,78 +615,77 @@ Return the complete enhanced project plan as HTML with all existing content plus
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-4xl mx-auto px-6">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex-1"></div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Sparkles className="text-white h-6 w-6" />
-              </div>
-              <h1 className="text-3xl font-bold text-gray-900">AI Project Planner</h1>
+        {/* Compact Header */}
+        <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Sparkles className="text-white h-5 w-5" />
             </div>
-            <div className="flex-1 flex justify-end">
-              {(currentStep !== 'input' || projectPlan || generatedBpmnXml) && (
-                <Button
-                  onClick={resetPlanner}
-                  variant="outline"
-                  size="sm"
-                  className="border-red-300 text-red-600 hover:bg-red-50"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Start Over
-                </Button>
-              )}
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                AI Project Planner
+              </h1>
+              <p className="text-gray-500 text-sm">Transform ideas into comprehensive workflows</p>
             </div>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Transform your project ideas into structured BPMN workflows. 
-            Get comprehensive planning with architecture diagrams and visual process flows.
-          </p>
+          
+          {(currentStep !== 'input' || projectPlan || generatedBpmnXml) && (
+            <Button
+              onClick={resetPlanner}
+              variant="outline"
+              size="sm"
+              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+            >
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Start Over
+            </Button>
+          )}
         </div>
 
-        {/* Progress Steps */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="flex items-center space-x-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('input') === 'active' ? 'bg-blue-100 text-blue-700' :
-              getStepStatus('input') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
-                getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+        {/* Compact Progress Steps */}
+        <div className="flex items-center justify-center mb-6">
+          <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
+            <div className="flex items-center space-x-3">
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                getStepStatus('input') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
+                getStepStatus('input') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
               }`}>
-                {getStepStatus('input') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '1'}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
+                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                }`}>
+                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '1'}
+                </div>
+                Input
               </div>
-              Project Input
-            </div>
-            
-            <ArrowRight className="h-4 w-4 text-gray-400" />
-            
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('plan') === 'active' ? 'bg-blue-100 text-blue-700' :
-              getStepStatus('plan') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+              
+              <ArrowRight className="h-3 w-3 text-gray-300" />
+              
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                getStepStatus('plan') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
+                getStepStatus('plan') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
               }`}>
-                {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '2'}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
+                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                }`}>
+                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '2'}
+                </div>
+                Plan
               </div>
-              Generate Plan
-            </div>
-            
-            <ArrowRight className="h-4 w-4 text-gray-400" />
-            
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${
-              getStepStatus('diagram') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-            }`}>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+              
+              <ArrowRight className="h-3 w-3 text-gray-300" />
+              
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                getStepStatus('diagram') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
               }`}>
-                {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-4 w-4" /> : '3'}
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
+                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
+                }`}>
+                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '3'}
+                </div>
+                Diagram
               </div>
-              Visual Diagram
             </div>
           </div>
         </div>
@@ -789,16 +788,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
         {/* Step 1: Project Input */}
         {currentStep === 'input' && (
-          <Card className="mb-6 border-0 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-50 to-purple-50 border-b">
-              <CardTitle className="flex items-center gap-3 text-xl">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-5 w-5 text-white" />
+          <Card className="mb-6 border-0 shadow-sm bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Sparkles className="h-4 w-4 text-white" />
                 </div>
                 Describe Your Project
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-6 space-y-4">
+            <CardContent className="px-6 pb-6 space-y-4">
               <p className="text-gray-600">
                 Provide a detailed description of your project. Include features, requirements, and any specific goals you want to achieve.
               </p>
@@ -811,47 +810,47 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 disabled={isGeneratingPlan}
               />
               
-              {/* Example Projects Section */}
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="text-sm font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  Example Projects
+              {/* Compact Example Projects Section */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Quick Start Examples
                 </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Social Media Platform</h5>
-                    <p className="text-xs text-gray-600">User profiles, messaging, content sharing, news feed, admin dashboard</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Social Media</h5>
+                    <p className="text-xs text-gray-500">Profiles, messaging, content sharing</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Project Management Tool</h5>
-                    <p className="text-xs text-gray-600">Task tracking, team collaboration, Gantt charts, budget tracking</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Project Management</h5>
+                    <p className="text-xs text-gray-500">Tasks, collaboration, timelines</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Learning Management System</h5>
-                    <p className="text-xs text-gray-600">Course creation, video streaming, quizzes, certifications, mobile app</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Learning Platform</h5>
+                    <p className="text-xs text-gray-500">Courses, quizzes, certifications</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Personal Finance App</h5>
-                    <p className="text-xs text-gray-600">Expense tracking, investment portfolio, AI advice, bank integration</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Finance App</h5>
+                    <p className="text-xs text-gray-500">Expense tracking, investments</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Healthcare Platform</h5>
-                    <p className="text-xs text-gray-600">Patient records, telemedicine, appointments, billing, compliance</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Healthcare Platform</h5>
+                    <p className="text-xs text-gray-500">Records, telemedicine, billing</p>
                   </div>
                   
-                  <div className="bg-white rounded-lg p-3 border border-blue-100 hover:border-blue-300 transition-colors cursor-pointer"
+                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                        onClick={() => setProjectInput("Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.")}>
-                    <h5 className="font-medium text-gray-800 text-sm mb-1">Smart Home IoT Platform</h5>
-                    <p className="text-xs text-gray-600">Device management, automation, energy monitoring, voice control</p>
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">IoT Platform</h5>
+                    <p className="text-xs text-gray-500">Smart devices, automation</p>
                   </div>
                 </div>
                 <p className="text-xs text-blue-600 mt-3">Click any example to use it as a starting point, then customize as needed.</p>
