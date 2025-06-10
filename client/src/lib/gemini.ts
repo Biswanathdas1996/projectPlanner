@@ -136,93 +136,193 @@ MANDATORY SECTIONS (ALL MUST BE INCLUDED):
 
 1. **Executive Summary**
    - Project purpose and vision
-   - Key objectives and success metrics
+   - Key objectives and success metrics table
    - Target audience and market analysis
-   - Budget estimation and ROI projections
+   - Budget estimation with cost breakdown table
+   - ROI projections with timeline chart
+   - **VISUALS**: Executive dashboard table, ROI timeline chart, stakeholder tree view
 
 2. **Technical Architecture & Infrastructure**
-   - Complete technology stack with specific versions
-   - System architecture diagrams (described in detail)
-   - Database design and data flow
-   - Security architecture and compliance requirements
-   - Scalability and performance considerations
-   - Third-party integrations and APIs
+   - Complete technology stack comparison table
+   - System architecture flow diagram (ASCII art)
+   - Database design with entity relationship tree
+   - Security architecture flow diagram
+   - Scalability progression timeline
+   - Third-party integrations dependency tree
+   - **VISUALS**: Architecture flow diagram, technology stack table, integration tree view
 
 3. **Detailed Feature Specifications**
-   - Core functionality with user stories
-   - Advanced features and capabilities
+   - Core functionality comparison table
+   - User stories with priority matrix table
    - User roles and permissions matrix
-   - Feature prioritization (MVP vs future phases)
-   - Acceptance criteria for each feature
+   - Feature prioritization tree (MVP → Future phases)
+   - Acceptance criteria checklist tables
+   - **VISUALS**: Feature tree hierarchy, user stories table, permissions matrix
 
 4. **Development Methodology & Timeline**
-   - Project phases with specific deliverables
-   - Detailed timeline with milestones (weeks/months)
-   - Team structure and resource allocation
-   - Development methodology (Agile/Scrum sprints)
-   - Dependencies and critical path analysis
+   - Project phases timeline (Gantt-style)
+   - Sprint planning table with deliverables
+   - Team structure organization chart tree
+   - Resource allocation timeline chart
+   - Dependencies flow diagram
+   - Critical path analysis with timeline
+   - **VISUALS**: Gantt timeline, team org tree, dependency flow diagram
 
 5. **User Experience & Interface Design**
-   - User persona definitions
-   - User journey mapping
-   - Wireframes and mockup descriptions
-   - Accessibility requirements (WCAG compliance)
-   - Mobile responsiveness strategy
+   - User persona comparison table
+   - User journey flow diagrams (ASCII)
+   - Wireframe description with layout tree
+   - Accessibility compliance checklist table
+   - Responsive design breakpoint table
+   - **VISUALS**: User journey flowcharts, persona comparison table, design tree structure
 
 6. **Quality Assurance & Testing Strategy**
-   - Testing methodologies (unit, integration, e2e)
-   - Performance testing requirements
-   - Security testing protocols
-   - User acceptance testing procedures
-   - Bug tracking and resolution processes
+   - Testing methodology comparison table
+   - Test case execution timeline
+   - Quality metrics dashboard table
+   - Bug severity classification table
+   - Testing workflow flow diagram
+   - **VISUALS**: Testing workflow diagram, QA timeline, metrics dashboard table
 
 7. **Deployment & DevOps Strategy**
-   - Environment setup (dev, staging, production)
-   - CI/CD pipeline configuration
-   - Monitoring and logging systems
-   - Backup and disaster recovery plans
-   - Maintenance and support procedures
+   - Environment progression flow diagram
+   - CI/CD pipeline flow chart (ASCII)
+   - Deployment timeline with milestones
+   - Infrastructure monitoring table
+   - Backup strategy timeline
+   - **VISUALS**: CI/CD flow diagram, deployment timeline, infrastructure table
 
 8. **Risk Management & Mitigation**
-   - Technical risks and solutions
-   - Business risks and contingencies
-   - Resource and timeline risks
-   - Security and compliance risks
-   - Market and competitive risks
+   - Risk assessment matrix table
+   - Risk mitigation flow diagram
+   - Risk probability timeline
+   - Contingency planning tree structure
+   - Impact vs likelihood chart
+   - **VISUALS**: Risk matrix table, mitigation flow diagram, contingency tree
 
 9. **Stakeholder Management**
-   - Key stakeholders and their roles
-   - Communication plan and reporting
-   - Approval processes and sign-offs
-   - Change management procedures
+   - Stakeholder hierarchy tree
+   - Communication plan timeline
+   - Responsibility assignment matrix (RACI)
+   - Approval workflow diagram
+   - Change management process flow
+   - **VISUALS**: Stakeholder org tree, communication timeline, RACI matrix
 
 10. **Post-Launch Strategy**
-    - User onboarding and training
-    - Performance monitoring KPIs
-    - Feature enhancement roadmap
-    - Marketing and growth strategies
-    - Long-term maintenance planning
+    - Launch timeline with milestones
+    - KPI tracking dashboard table
+    - Feature roadmap timeline
+    - Growth strategy flow diagram
+    - Maintenance schedule table
+    - **VISUALS**: Launch timeline, KPI dashboard, roadmap timeline, growth flow diagram
+
+MANDATORY VISUAL ELEMENTS FOR EACH SECTION:
+
+1. **Flow Diagrams**: ASCII/Unicode flowcharts with boxes (┌─┐│└┘), arrows (→↓←↑), and decision diamonds (◊)
+   Example: 
+   ┌─────────────┐    ┌─────────────┐
+   │   Start     │ →  │   Process   │
+   └─────────────┘    └─────────────┘
+
+2. **Tabular Data**: Professional HTML tables with headers, alternating row colors, and responsive design
+   - Include comparison tables, feature matrices, cost breakdowns, and data summaries
+   - Use proper table headers, sorting indicators, and status badges
+
+3. **Tree Views**: Hierarchical structures using text-based indentation and Unicode tree characters (├──└──│)
+   Example:
+   ├── Executive Summary
+   │   ├── Objectives
+   │   └── Budget Analysis
+   └── Technical Architecture
+
+4. **Timeline Views**: Gantt-style representations using CSS progress bars and milestone markers
+   - Show project phases, dependencies, and critical paths
+   - Include percentage completion and milestone dates
+
+5. **Progress Indicators**: CSS-based progress bars with percentages and status colors
+   - Green for completed tasks, yellow for in-progress, red for blocked
+
+6. **Charts & Graphs**: Data visualizations using CSS bar charts, pie charts with Unicode characters
+   - Include budget breakdowns, resource allocation, and performance metrics
 
 FORMATTING REQUIREMENTS:
 - Complete HTML document with embedded CSS
-- Professional corporate styling
-- Responsive design for all devices
+- Professional corporate styling with advanced visual elements
+- Responsive design for all devices with mobile-optimized tables and diagrams
 - Clear visual hierarchy with consistent typography
 - Color-coded sections for easy navigation
-- Interactive table of contents
-- Professional charts and diagrams (ASCII/Unicode)
-- Print-friendly styling
-- Accessibility-compliant markup
+- Interactive table of contents with anchor links
+- Professional charts, diagrams, and data visualizations
+- CSS-based progress bars, timelines, and visual indicators
+- Print-friendly styling with page breaks
+- Accessibility-compliant markup with proper ARIA labels
+- Interactive hover effects and expandable sections
+
+VISUAL ELEMENT EXAMPLES TO INCLUDE:
+
+**Sample Flow Diagram Template:**
+<pre class="flow-diagram">
+┌─────────────┐    ┌─────────────┐    ◊─────────────◊
+│ Requirements│ →  │   Design    │ →  │  Approved?   │
+└─────────────┘    └─────────────┘    └──────┬──────┘
+                                            ↓ Yes
+                                   ┌─────────────┐
+                                   │ Development │
+                                   └─────────────┘
+</pre>
+
+**Sample Table Template:**
+<table class="project-table">
+  <thead>
+    <tr><th>Feature</th><th>Priority</th><th>Effort</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>User Auth</td><td>High</td><td>5 days</td><td class="status-complete">✓</td></tr>
+  </tbody>
+</table>
+
+**Sample Tree View Template:**
+<pre class="tree-view">
+Project Structure
+├── Frontend Development
+│   ├── React Components
+│   ├── State Management
+│   └── UI/UX Design
+├── Backend Development
+│   ├── API Development
+│   ├── Database Design
+│   └── Authentication
+└── DevOps & Deployment
+    ├── CI/CD Pipeline
+    └── Infrastructure Setup
+</pre>
+
+**Sample Timeline Template:**
+<div class="timeline">
+  <div class="timeline-item">
+    <div class="timeline-bar" style="width: 75%; background-color: #4CAF50;"></div>
+    <span>Phase 1: Planning (75% Complete)</span>
+  </div>
+</div>
 
 QUALITY STANDARDS:
-- Each section must be substantial (minimum 200 words)
-- Include specific, actionable details
-- Provide realistic timelines and estimates
-- Use industry-standard terminology
-- Include measurable success criteria
-- Address scalability from day one
+- Each section must be substantial (minimum 300 words)
+- Include specific, actionable details with quantifiable metrics
+- Provide realistic timelines with buffer considerations
+- Use industry-standard terminology and best practices
+- Include measurable success criteria with KPIs
+- Address scalability, security, and maintainability from day one
+- Every section MUST include the specified visual elements
 
-Return ONLY the complete HTML document with embedded CSS. The document must be production-ready and comprehensive enough for actual project implementation.`;
+CRITICAL VISUAL REQUIREMENTS:
+- Minimum 3 tables per section with real data
+- At least 2 flow diagrams showing process workflows
+- 1 tree structure showing hierarchical organization
+- Timeline charts with specific dates and milestones
+- Progress indicators showing completion percentages
+- All visuals must be styled with professional CSS
+
+Return ONLY the complete HTML document with embedded CSS. The document must be production-ready, visually rich, and comprehensive enough for actual project implementation.`;
 
   const result = await model.generateContent(prompt);
   const response = await result.response;
