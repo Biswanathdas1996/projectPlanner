@@ -1049,7 +1049,7 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
 export async function generateSwimlaneXml(
   stakeholder: string,
   flowType: string,
-  details: { description: string; keyComponents: string[]; processes: string[] }
+  details: { description: string; participants: string[]; activities: string[] }
 ): Promise<string> {
   const model = genAI.getGenerativeModel({ 
     model: "gemini-2.0-flash",
@@ -1071,11 +1071,11 @@ STAKEHOLDER: ${stakeholder}
 FLOW TYPE: ${flowType}
 DESCRIPTION: ${details.description}
 
-KEY COMPONENTS:
-${details.keyComponents.map((comp, idx) => `${idx + 1}. ${comp}`).join('\n')}
+PARTICIPANTS:
+${details.participants.map((participant, idx) => `${idx + 1}. ${participant}`).join('\n')}
 
-CORE PROCESSES:
-${details.processes.map((proc, idx) => `${idx + 1}. ${proc}`).join('\n')}
+ACTIVITIES:
+${details.activities.map((activity, idx) => `${idx + 1}. ${activity}`).join('\n')}
 
 Create a BPMN 2.0 XML with proper swimlane structure including:
 - Participant pools for different actors/systems involved in this flow
