@@ -930,6 +930,86 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
     }
   };
 
+  // Generate BPMN XML directly from flow content box
+  const generateBpmnFromContent = async (stakeholder: string, flowType: string) => {
+    const flowKey = `${stakeholder}-${flowType}`;
+    const details = flowDetails[flowKey];
+    
+    if (!details) {
+      setError('Flow details not found. Please generate flow details first.');
+      return;
+    }
+
+    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
+    setError('');
+
+    try {
+      // Create structured content from flow details
+      const structuredContent = {
+        processName: `${stakeholder} - ${flowType}`,
+        processDescription: details.processDescription || details.description,
+        participants: details.participants || [],
+        trigger: details.trigger || 'Process starts',
+        activities: details.activities || [],
+        decisionPoints: details.decisionPoints || [],
+        endEvent: details.endEvent || 'Process completes',
+        additionalElements: details.additionalElements || []
+      };
+
+      // Generate BPMN XML using Gemini API with structured content
+      const { generateBpmnXml } = await import('../lib/gemini');
+      
+      // Create a comprehensive prompt from the structured content
+      const contentPrompt = `
+Process: ${structuredContent.processName}
+Description: ${structuredContent.processDescription}
+
+Participants/Swimlanes: ${structuredContent.participants.join(', ')}
+Trigger: ${structuredContent.trigger}
+Activities: ${structuredContent.activities.join('; ')}
+Decision Points: ${structuredContent.decisionPoints.join('; ')}
+End Event: ${structuredContent.endEvent}
+Additional Elements: ${structuredContent.additionalElements.join('; ')}
+
+Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events, tasks, and gateways.
+      `.trim();
+
+      const bpmnXml = await generateBpmnXml(contentPrompt);
+      
+      // Update stakeholder flows with generated BPMN
+      const updatedFlows = [...stakeholderFlows];
+      const existingFlowIndex = updatedFlows.findIndex(
+        flow => flow.stakeholder === stakeholder && flow.flowType === flowType
+      );
+
+      if (existingFlowIndex >= 0) {
+        updatedFlows[existingFlowIndex] = {
+          ...updatedFlows[existingFlowIndex],
+          bpmnXml
+        };
+      } else {
+        updatedFlows.push({
+          stakeholder,
+          flowType,
+          bpmnXml,
+          customPrompt: ''
+        });
+      }
+
+      updateStakeholderFlows(updatedFlows);
+      
+      // Save the latest generated BPMN to localStorage for editor
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (error) {
+      console.error(`Error generating BPMN from content for ${stakeholder} ${flowType}:`, error);
+      setError(`Failed to generate BPMN diagram from content. Please try again.`);
+    } finally {
+      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
   // Generate fallback BPMN when API fails
   const generateFallbackBpmn = (stakeholder: string, flowType: string, details: { description: string; participants: string[]; activities: string[] }) => {
     // Create valid XML IDs by removing special characters
@@ -1602,7 +1682,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                     </Button>
                                   )}
                                   <Button
-                                    onClick={() => generateSwimlaneFromDetails(stakeholder, flowType)}
+                                    onClick={() => generateBpmnFromContent(stakeholder, flowType)}
                                     disabled={isGeneratingBpmn[flowKey] || !details}
                                     size="sm"
                                     className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
