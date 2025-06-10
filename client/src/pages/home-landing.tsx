@@ -449,7 +449,7 @@ export default function HomeLanding() {
                   <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
                     Join thousands of teams using AI-powered project planning to deliver better results faster.
                   </p>
-                  <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <div className="flex flex-col sm:flex-row justify-center gap-4 mb-6">
                     <Link href="/start-over">
                       <Button size="lg" className="bg-white text-gray-900 hover:bg-gray-100 px-8 py-4 text-lg font-semibold">
                         <Rocket className="h-5 w-5 mr-2" />
@@ -460,6 +460,16 @@ export default function HomeLanding() {
                       <Button variant="outline" size="lg" className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 text-lg">
                         <Sparkles className="h-5 w-5 mr-2" />
                         Explore Features
+                      </Button>
+                    </Link>
+                  </div>
+                  
+                  {/* Additional Navigation */}
+                  <div className="flex justify-center">
+                    <Link href="/user-stories">
+                      <Button variant="ghost" size="lg" className="text-blue-200 hover:text-white hover:bg-white/10 px-6 py-3 text-base">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate User Stories
                       </Button>
                     </Link>
                   </div>
