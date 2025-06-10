@@ -677,135 +677,92 @@ Return the complete enhanced project plan as HTML with all existing content plus
       <div className="max-w-7xl mx-auto px-4 py-6">
         
 
-        {/* Enhanced Progress Steps */}
-        <div className="mb-8">
-          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4 text-center flex items-center justify-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Sparkles className="h-3 w-3 text-white" />
-              </div>
-              AI-Powered Development Workflow
-            </h2>
-            
-            <div className="flex flex-col lg:flex-row items-center justify-center gap-4 lg:gap-6">
+        {/* Compact Progress Steps */}
+        <div className="mb-6">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100 shadow-sm">
+            <div className="flex items-center justify-center gap-3 lg:gap-4">
               {/* Step 1: Input */}
-              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
-                getStepStatus('input') === 'active' ? 'bg-blue-100 shadow-md scale-105' :
-                getStepStatus('input') === 'completed' ? 'bg-green-100 shadow-sm' : 'bg-white shadow-sm hover:shadow-md'
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                getStepStatus('input') === 'active' ? 'bg-blue-100 shadow-md' :
+                getStepStatus('input') === 'completed' ? 'bg-green-100' : 'bg-white'
               }`}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white shadow-lg' :
-                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-600'
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
+                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
-                   getStepStatus('input') === 'active' ? <Sparkles className="h-5 w-5" /> : '1'}
+                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
+                   getStepStatus('input') === 'active' ? <Sparkles className="h-4 w-4" /> : '1'}
                 </div>
-                <h3 className={`font-semibold text-sm mb-1 ${
+                <span className={`text-sm font-medium hidden sm:block ${
                   getStepStatus('input') === 'active' ? 'text-blue-700' :
                   getStepStatus('input') === 'completed' ? 'text-green-700' : 'text-gray-600'
                 }`}>
-                  Project Input
-                </h3>
-                <p className="text-xs text-gray-500 max-w-20">Describe your vision</p>
+                  Input
+                </span>
               </div>
 
-              <div className="hidden lg:block">
-                <ArrowRight className="h-5 w-5 text-gray-300" />
-              </div>
-              <div className="lg:hidden">
-                <ArrowDown className="h-5 w-5 text-gray-300" />
-              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300" />
 
               {/* Step 2: Plan */}
-              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-100 shadow-md scale-105' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-100 shadow-sm' : 'bg-white shadow-sm hover:shadow-md'
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                getStepStatus('plan') === 'active' ? 'bg-blue-100 shadow-md' :
+                getStepStatus('plan') === 'completed' ? 'bg-green-100' : 'bg-white'
               }`}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white shadow-lg' :
-                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white shadow-md' : 'bg-gray-200 text-gray-600'
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
+                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
-                   getStepStatus('plan') === 'active' ? <FileText className="h-5 w-5" /> : '2'}
+                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
+                   getStepStatus('plan') === 'active' ? <FileText className="h-4 w-4" /> : '2'}
                 </div>
-                <h3 className={`font-semibold text-sm mb-1 ${
+                <span className={`text-sm font-medium hidden sm:block ${
                   getStepStatus('plan') === 'active' ? 'text-blue-700' :
                   getStepStatus('plan') === 'completed' ? 'text-green-700' : 'text-gray-600'
                 }`}>
-                  Smart Planning
-                </h3>
-                <p className="text-xs text-gray-500 max-w-20">AI-generated roadmap</p>
+                  Plan
+                </span>
               </div>
 
-              <div className="hidden lg:block">
-                <ArrowRight className="h-5 w-5 text-gray-300" />
-              </div>
-              <div className="lg:hidden">
-                <ArrowDown className="h-5 w-5 text-gray-300" />
-              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300" />
 
-              {/* Step 3: Stakeholder & Process Mapping */}
-              <div className={`flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 ${
-                currentStep === 'diagram' || getStepStatus('diagram') === 'completed' ? 'bg-blue-100 shadow-md scale-105' :
-                'bg-white shadow-sm hover:shadow-md'
+              {/* Step 3: Process Mapping */}
+              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${
+                currentStep === 'diagram' || getStepStatus('diagram') === 'completed' ? 'bg-blue-100 shadow-md' : 'bg-white'
               }`}>
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all ${
-                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white shadow-md' :
-                  currentStep === 'diagram' ? 'bg-blue-500 text-white shadow-lg' : 'bg-gray-200 text-gray-600'
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' :
+                  currentStep === 'diagram' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-6 w-6" /> : 
-                   currentStep === 'diagram' ? <Users className="h-5 w-5" /> : '3'}
+                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-4 w-4" /> : 
+                   currentStep === 'diagram' ? <Users className="h-4 w-4" /> : '3'}
                 </div>
-                <h3 className={`font-semibold text-sm mb-1 ${
+                <span className={`text-sm font-medium hidden sm:block ${
                   currentStep === 'diagram' ? 'text-blue-700' :
                   getStepStatus('diagram') === 'completed' ? 'text-green-700' : 'text-gray-600'
                 }`}>
-                  Process Mapping
-                </h3>
-                <p className="text-xs text-gray-500 max-w-20">Stakeholder flows</p>
+                  Mapping
+                </span>
               </div>
 
-              <div className="hidden lg:block">
-                <ArrowRight className="h-5 w-5 text-gray-300" />
-              </div>
-              <div className="lg:hidden">
-                <ArrowDown className="h-5 w-5 text-gray-300" />
-              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300" />
 
               {/* Step 4: User Stories */}
-              <div className="flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 bg-white shadow-sm hover:shadow-md">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all bg-gray-200 text-gray-600">
-                  <BookOpen className="h-5 w-5" />
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-600">
+                  <BookOpen className="h-4 w-4" />
                 </div>
-                <h3 className="font-semibold text-sm mb-1 text-gray-600">
-                  User Stories
-                </h3>
-                <p className="text-xs text-gray-500 max-w-20">Detailed scenarios</p>
+                <span className="text-sm font-medium text-gray-600 hidden sm:block">Stories</span>
               </div>
 
-              <div className="hidden lg:block">
-                <ArrowRight className="h-5 w-5 text-gray-300" />
-              </div>
-              <div className="lg:hidden">
-                <ArrowDown className="h-5 w-5 text-gray-300" />
-              </div>
+              <ArrowRight className="h-4 w-4 text-gray-300" />
 
-              {/* Step 5: Code Generation */}
-              <div className="flex flex-col items-center text-center p-4 rounded-xl transition-all duration-300 bg-white shadow-sm hover:shadow-md">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all bg-gray-200 text-gray-600">
-                  <Code className="h-5 w-5" />
+              {/* Step 5: Code */}
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-600">
+                  <Code className="h-4 w-4" />
                 </div>
-                <h3 className="font-semibold text-sm mb-1 text-gray-600">
-                  Code Ready
-                </h3>
-                <p className="text-xs text-gray-500 max-w-20">Implementation</p>
+                <span className="text-sm font-medium text-gray-600 hidden sm:block">Code</span>
               </div>
-            </div>
-
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                Transform your ideas into production-ready applications with AI-powered workflow automation
-              </p>
             </div>
           </div>
         </div>
