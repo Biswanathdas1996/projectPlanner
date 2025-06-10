@@ -1652,17 +1652,174 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
                                       </div>
 
-                                      {/* Edit Description */}
+                                      {/* Edit Process Description */}
                                       <div>
-                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Description</label>
+                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Process Description</label>
                                         <Textarea
-                                          value={editedFlowDetails.description}
-                                          onChange={(e) => updateEditedDescription(e.target.value)}
+                                          value={editedFlowDetails.processDescription}
+                                          onChange={(e) => updateEditedField('processDescription', e.target.value)}
                                           className="text-xs min-h-[60px] resize-none"
                                           rows={3}
                                         />
                                       </div>
 
+                                      {/* Edit Participants */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Participants (Swimlanes)</label>
+                                          <Button
+                                            onClick={() => addItemToField('participants', 'New Participant')}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.participants.map((participant, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={participant}
+                                                onChange={(e) => updateItemInField('participants', idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeItemFromField('participants', idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Edit Trigger */}
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Trigger (Start Event)</label>
+                                        <Textarea
+                                          value={editedFlowDetails.trigger}
+                                          onChange={(e) => updateEditedField('trigger', e.target.value)}
+                                          className="text-xs min-h-[40px] resize-none"
+                                          rows={2}
+                                        />
+                                      </div>
+
+                                      {/* Edit Activities */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Activities (Tasks)</label>
+                                          <Button
+                                            onClick={() => addItemToField('activities', 'New Activity')}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.activities.map((activity, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={activity}
+                                                onChange={(e) => updateItemInField('activities', idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeItemFromField('activities', idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Edit Decision Points */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Decision Points (Gateways)</label>
+                                          <Button
+                                            onClick={() => addItemToField('decisionPoints', 'If condition, then action; otherwise alternative')}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.decisionPoints.map((decision, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={decision}
+                                                onChange={(e) => updateItemInField('decisionPoints', idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeItemFromField('decisionPoints', idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+
+                                      {/* Edit End Event */}
+                                      <div>
+                                        <label className="text-xs font-medium text-gray-600 mb-1 block">End Event</label>
+                                        <Textarea
+                                          value={editedFlowDetails.endEvent}
+                                          onChange={(e) => updateEditedField('endEvent', e.target.value)}
+                                          className="text-xs min-h-[40px] resize-none"
+                                          rows={2}
+                                        />
+                                      </div>
+
+                                      {/* Edit Additional Elements */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                          <label className="text-xs font-medium text-gray-600">Additional Elements</label>
+                                          <Button
+                                            onClick={() => addItemToField('additionalElements', 'Messages: New notification')}
+                                            size="sm"
+                                            variant="outline"
+                                            className="h-5 px-1.5 text-xs"
+                                          >
+                                            <Plus className="h-2.5 w-2.5" />
+                                          </Button>
+                                        </div>
+                                        <div className="space-y-1">
+                                          {editedFlowDetails.additionalElements.map((element, idx) => (
+                                            <div key={idx} className="flex items-center gap-1">
+                                              <Input
+                                                value={element}
+                                                onChange={(e) => updateItemInField('additionalElements', idx, e.target.value)}
+                                                className="text-xs h-6 flex-1"
+                                              />
+                                              <Button
+                                                onClick={() => removeItemFromField('additionalElements', idx)}
+                                                size="sm"
+                                                variant="outline"
+                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                              >
+                                                <X className="h-2.5 w-2.5" />
+                                              </Button>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
 
                                     </div>
                                   ) : (
@@ -1671,11 +1828,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                       {/* BPMN Flow Analysis - 7 Section Structure */}
                                       <div className="space-y-3">
                                         {/* Section 1: Process Description */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
                                               ✅ 1. Process & Description
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
                                             {details.processDescription || details.description.split('\n\n✅ 2.')[0].replace('✅ 1. Process Name and Description\n', '')}
@@ -1683,11 +1848,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 2: Participants (Swimlanes) - Editable */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
                                               ✅ 2. Participants (Swimlanes)
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <div className="flex flex-wrap gap-1">
                                             {details.participants?.map((participant, idx) => (
@@ -1699,11 +1872,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 3: Trigger (Start Event) */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
                                               ✅ 3. Trigger (Start Event)
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
                                             {details.trigger || (() => {
@@ -1714,11 +1895,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 4: Activities - Editable */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
                                               ✅ 4. Activities (Tasks)
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <div className="space-y-1">
                                             {details.activities?.map((activity, idx) => (
@@ -1731,11 +1920,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 5: Decision Points - Editable */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
                                               ✅ 5. Decision Points (Gateways)
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <div className="text-xs text-gray-600 pl-2 border-l-2 border-yellow-200 space-y-1">
                                             {(details.decisionPoints && details.decisionPoints.length > 0) ? 
@@ -1762,11 +1959,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 6: End Event */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0">
                                               ✅ 6. End Event
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <p className="text-xs text-gray-600 pl-2 border-l-2 border-red-200">
                                             {details.endEvent || (() => {
@@ -1777,11 +1982,19 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                                         </div>
 
                                         {/* Section 7: Additional Elements - Editable */}
-                                        <div>
-                                          <div className="flex items-center gap-2 mb-1">
+                                        <div className="group">
+                                          <div className="flex items-center justify-between mb-1">
                                             <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
                                               ✅ 7. Additional Elements
                                             </Badge>
+                                            <Button
+                                              onClick={() => startEditingFlowDetails(flowKey)}
+                                              variant="ghost"
+                                              size="sm"
+                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                              <Edit3 className="h-3 w-3" />
+                                            </Button>
                                           </div>
                                           <div className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
                                             <div className="grid grid-cols-1 gap-1">
