@@ -31,24 +31,43 @@ import {
 
 export default function HomeLanding() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-black text-white relative overflow-hidden">
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-blue-950 to-purple-950"></div>
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse delay-2000"></div>
+      </div>
+      
+      {/* Grid Pattern Overlay */}
+      <div className="absolute inset-0 opacity-10">
+        <div 
+          className="w-full h-full" 
+          style={{
+            backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(59, 130, 246, 0.3) 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
+          }}
+        ></div>
+      </div>
+      
+      <div className="max-w-7xl mx-auto relative z-10">
         {/* Navigation Header */}
-        <header className="flex items-center justify-between p-6">
+        <header className="flex items-center justify-between p-6 backdrop-blur-lg bg-white/5 border-b border-white/10">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/25">
+              <Brain className="h-7 w-7 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                 AI Project Planner
               </h1>
-              <p className="text-xs text-gray-500">Powered by Gemini AI</p>
+              <p className="text-xs text-cyan-300 font-medium">Powered by Gemini AI</p>
             </div>
           </div>
           <div className="flex items-center space-x-4">
             <Link href="/start-over">
-              <Button size="sm" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+              <Button size="sm" className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-400 hover:via-blue-400 hover:to-purple-500 shadow-lg shadow-blue-500/25 border-0">
                 Start Planning
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
@@ -57,174 +76,180 @@ export default function HomeLanding() {
         </header>
 
         {/* Hero Section */}
-        <section className="text-center py-20 px-6">
-          <div className="max-w-4xl mx-auto">
-            <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full mb-6">
-              <Star className="h-4 w-4 mr-2" />
-              <span className="text-sm font-medium">AI-Powered Project Planning Platform</span>
+        <section className="text-center py-24 px-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 backdrop-blur-lg border border-cyan-400/30 rounded-full mb-8 shadow-lg shadow-cyan-500/10">
+              <Brain className="h-5 w-5 mr-3 text-cyan-400" />
+              <span className="text-sm font-medium bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">Next-Generation AI Planning Platform</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-              Transform Your
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent"> Ideas </span>
-              Into Reality
+            <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight">
+              <span className="bg-gradient-to-r from-white via-cyan-300 to-blue-300 bg-clip-text text-transparent">Transform</span>
+              <br />
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent animate-pulse">Ideas</span>
+              <span className="text-white"> Into</span>
+              <br />
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Reality</span>
             </h1>
             
-            <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-              Generate comprehensive project plans, stakeholder workflows, and user stories with AI-powered insights in minutes, not weeks.
+            <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed font-light">
+              Harness the power of <span className="text-cyan-400 font-semibold">artificial intelligence</span> to generate comprehensive project plans, 
+              stakeholder workflows, and user stories in <span className="text-purple-400 font-semibold">minutes, not weeks</span>.
             </p>
             
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-12">
+            <div className="flex flex-col sm:flex-row justify-center gap-6 mb-16">
               <Link href="/start-over">
-                <Button size="lg" className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 px-8 py-4 text-lg">
-                  <Rocket className="h-5 w-5 mr-2" />
-                  Get Started Free
+                <Button size="lg" className="bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-600 hover:from-cyan-400 hover:via-blue-400 hover:to-purple-500 px-10 py-5 text-lg font-semibold shadow-2xl shadow-blue-500/25 border-0 rounded-xl">
+                  <Zap className="h-6 w-6 mr-3" />
+                  Launch AI Planning
                 </Button>
               </Link>
               <Link href="/start-over">
-                <Button variant="outline" size="lg" className="px-8 py-4 text-lg border-2 border-blue-200 hover:bg-blue-50">
-                  <MonitorSpeaker className="h-5 w-5 mr-2" />
-                  Watch Demo
+                <Button variant="outline" size="lg" className="px-10 py-5 text-lg border-2 border-cyan-400/50 text-cyan-300 hover:bg-cyan-400/10 hover:border-cyan-300 backdrop-blur-lg bg-white/5 rounded-xl shadow-lg">
+                  <Brain className="h-6 w-6 mr-3" />
+                  Explore AI Features
                 </Button>
               </Link>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-blue-600 mb-1">10+</div>
-                <div className="text-sm text-gray-600">Project Sections</div>
+            {/* AI Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+              <div className="text-center backdrop-blur-lg bg-white/5 rounded-2xl p-6 border border-cyan-400/20">
+                <div className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent mb-2">10+</div>
+                <div className="text-sm text-cyan-300 font-medium">AI Sections</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-purple-600 mb-1">BPMN 2.0</div>
-                <div className="text-sm text-gray-600">Compliant Diagrams</div>
+              <div className="text-center backdrop-blur-lg bg-white/5 rounded-2xl p-6 border border-purple-400/20">
+                <div className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">BPMN 2.0</div>
+                <div className="text-sm text-purple-300 font-medium">Smart Diagrams</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-indigo-600 mb-1">100%</div>
-                <div className="text-sm text-gray-600">AI Generated</div>
+              <div className="text-center backdrop-blur-lg bg-white/5 rounded-2xl p-6 border border-blue-400/20">
+                <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent mb-2">100%</div>
+                <div className="text-sm text-blue-300 font-medium">AI Powered</div>
               </div>
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600 mb-1">∞</div>
-                <div className="text-sm text-gray-600">Customizable</div>
+              <div className="text-center backdrop-blur-lg bg-white/5 rounded-2xl p-6 border border-green-400/20">
+                <div className="text-4xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent mb-2">∞</div>
+                <div className="text-sm text-green-300 font-medium">Possibilities</div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Process Flow Infographic */}
-        <section className="py-20 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-4">How It Works</h2>
-              <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-                Four simple steps to transform your project idea into a comprehensive plan with stakeholder workflows
+        {/* AI Process Flow */}
+        <section className="py-24 px-6">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-20">
+              <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-white via-cyan-300 to-purple-300 bg-clip-text text-transparent">
+                AI-Powered Workflow
+              </h2>
+              <p className="text-xl text-gray-300 max-w-3xl mx-auto font-light">
+                Experience the future of project planning with our advanced AI system that transforms ideas into actionable plans
               </p>
             </div>
 
             <div className="relative">
-              {/* Connection Lines */}
-              <div className="hidden lg:block absolute top-24 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-blue-300 to-purple-300"></div>
+              {/* Glowing Connection Lines */}
+              <div className="hidden lg:block absolute top-32 left-1/4 right-1/4 h-1 bg-gradient-to-r from-cyan-500/50 via-blue-500/50 to-purple-500/50 rounded-full shadow-lg shadow-blue-500/25"></div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
                 {/* Step 1 */}
-                <div className="relative">
-                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-blue-100 hover:shadow-xl transition-all duration-300 group">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Edit className="h-8 w-8 text-white" />
+                <div className="relative group">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-purple-500/10 rounded-3xl p-8 border border-cyan-400/30 hover:border-cyan-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-cyan-500/20">
+                    <div className="w-20 h-20 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/25">
+                      <Edit className="h-10 w-10 text-white" />
                     </div>
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      1
+                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg">
+                      01
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-gray-900">Describe Your Project</h3>
-                    <p className="text-gray-600 mb-4">
-                      Simply describe your project idea, features, and requirements. Our AI understands natural language.
+                    <h3 className="text-2xl font-bold mb-4 text-white">Neural Input Processing</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Advanced NLP algorithms analyze your project description and extract key requirements with human-like understanding.
                     </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-blue-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Natural language input
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-cyan-300">
+                        <Zap className="h-4 w-4 mr-3" />
+                        Natural Language Processing
                       </div>
-                      <div className="flex items-center text-sm text-blue-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Smart suggestions
+                      <div className="flex items-center text-sm text-cyan-300">
+                        <Brain className="h-4 w-4 mr-3" />
+                        Context Understanding
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Step 2 */}
-                <div className="relative">
-                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-purple-100 hover:shadow-xl transition-all duration-300 group">
-                    <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Brain className="h-8 w-8 text-white" />
+                <div className="relative group">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 rounded-3xl p-8 border border-purple-400/30 hover:border-purple-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20">
+                    <div className="w-20 h-20 bg-gradient-to-r from-purple-400 via-pink-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-purple-500/25">
+                      <Brain className="h-10 w-10 text-white" />
                     </div>
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      2
+                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg">
+                      02
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-gray-900">AI Analysis & Planning</h3>
-                    <p className="text-gray-600 mb-4">
-                      Advanced AI generates comprehensive project plans with 10 mandatory sections and visual elements.
+                    <h3 className="text-2xl font-bold mb-4 text-white">AI Strategic Planning</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Gemini AI generates comprehensive project architecture with technical specifications and visual representations.
                     </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-purple-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Technical architecture
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-purple-300">
+                        <Sparkles className="h-4 w-4 mr-3" />
+                        Deep Learning Analysis
                       </div>
-                      <div className="flex items-center text-sm text-purple-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Visual diagrams
+                      <div className="flex items-center text-sm text-purple-300">
+                        <Layout className="h-4 w-4 mr-3" />
+                        Intelligent Architecture
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Step 3 */}
-                <div className="relative">
-                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-indigo-100 hover:shadow-xl transition-all duration-300 group">
-                    <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Users className="h-8 w-8 text-white" />
+                <div className="relative group">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-cyan-500/10 rounded-3xl p-8 border border-blue-400/30 hover:border-blue-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-blue-500/20">
+                    <div className="w-20 h-20 bg-gradient-to-r from-blue-400 via-indigo-500 to-cyan-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/25">
+                      <Users className="h-10 w-10 text-white" />
                     </div>
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-indigo-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      3
+                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg">
+                      03
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-gray-900">Stakeholder Workflows</h3>
-                    <p className="text-gray-600 mb-4">
-                      Generate BPMN 2.0 compliant diagrams for each stakeholder persona with customizable flows.
+                    <h3 className="text-2xl font-bold mb-4 text-white">Autonomous Workflow Generation</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Self-learning algorithms create BPMN 2.0 compliant stakeholder journeys with adaptive flow optimization.
                     </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-indigo-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        BPMN 2.0 compliant
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-blue-300">
+                        <GitBranch className="h-4 w-4 mr-3" />
+                        Adaptive Flow Logic
                       </div>
-                      <div className="flex items-center text-sm text-indigo-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Multi-persona support
+                      <div className="flex items-center text-sm text-blue-300">
+                        <Target className="h-4 w-4 mr-3" />
+                        Multi-Persona Mapping
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Step 4 */}
-                <div className="relative">
-                  <div className="bg-white rounded-2xl p-8 shadow-lg border border-green-100 hover:shadow-xl transition-all duration-300 group">
-                    <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                      <Download className="h-8 w-8 text-white" />
+                <div className="relative group">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-3xl p-8 border border-green-400/30 hover:border-green-400/50 transition-all duration-500 hover:shadow-2xl hover:shadow-green-500/20">
+                    <div className="w-20 h-20 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-500/25">
+                      <Rocket className="h-10 w-10 text-white" />
                     </div>
-                    <div className="absolute -top-4 -right-4 w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      4
+                    <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl flex items-center justify-center text-sm font-bold shadow-lg">
+                      04
                     </div>
-                    <h3 className="text-xl font-bold mb-3 text-gray-900">Export & Collaborate</h3>
-                    <p className="text-gray-600 mb-4">
-                      Export to PDF, JIRA, or Gherkin feature files. Share with your team and start development.
+                    <h3 className="text-2xl font-bold mb-4 text-white">Intelligent Deployment</h3>
+                    <p className="text-gray-300 mb-6 leading-relaxed">
+                      Smart export system generates production-ready formats with automated team collaboration integration.
                     </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-sm text-green-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Multiple formats
+                    <div className="space-y-3">
+                      <div className="flex items-center text-sm text-green-300">
+                        <Download className="h-4 w-4 mr-3" />
+                        Multi-Format Export
                       </div>
-                      <div className="flex items-center text-sm text-green-600">
-                        <CheckCircle className="h-4 w-4 mr-2" />
-                        Team collaboration
+                      <div className="flex items-center text-sm text-green-300">
+                        <Globe className="h-4 w-4 mr-3" />
+                        Team Synchronization
                       </div>
                     </div>
                   </div>
