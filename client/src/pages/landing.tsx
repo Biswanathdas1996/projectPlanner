@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
+import { WorkflowProgress } from '@/components/workflow-progress';
 import { Link, useLocation } from 'wouter';
 import {
   Sparkles,
@@ -357,53 +358,7 @@ export default function Landing() {
           </div>
         </div>
 
-        {/* Compact Progress Steps */}
-        <div className="flex items-center justify-center mb-6">
-          <div className="bg-white rounded-lg p-3 shadow-sm border border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('input') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
-                getStepStatus('input') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('input') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('input') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
-                }`}>
-                  {getStepStatus('input') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '1'}
-                </div>
-                Input
-              </div>
-              
-              <ArrowRight className="h-3 w-3 text-gray-300" />
-              
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('plan') === 'active' ? 'bg-blue-100 text-blue-700 shadow-sm' :
-                getStepStatus('plan') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('plan') === 'active' ? 'bg-blue-500 text-white' :
-                  getStepStatus('plan') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
-                }`}>
-                  {getStepStatus('plan') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '2'}
-                </div>
-                Plan
-              </div>
-              
-              <ArrowRight className="h-3 w-3 text-gray-300" />
-              
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                getStepStatus('diagram') === 'completed' ? 'bg-green-100 text-green-700' : 'bg-gray-50 text-gray-500'
-              }`}>
-                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                  getStepStatus('diagram') === 'completed' ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'
-                }`}>
-                  {getStepStatus('diagram') === 'completed' ? <CheckCircle className="h-3 w-3" /> : '3'}
-                </div>
-                Diagram
-              </div>
-            </div>
-          </div>
-        </div>
+        <WorkflowProgress />
 
         {/* Error Display */}
         {error && (
