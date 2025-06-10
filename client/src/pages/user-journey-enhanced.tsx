@@ -63,6 +63,11 @@ export default function UserJourneyEnhanced() {
   const [newStakeholderName, setNewStakeholderName] = useState('');
   const [editingStakeholder, setEditingStakeholder] = useState<string | null>(null);
   const [editedStakeholderName, setEditedStakeholderName] = useState('');
+  
+  // Flow type management state
+  const [newFlowType, setNewFlowType] = useState<Record<string, string>>({});
+  const [editingFlowType, setEditingFlowType] = useState<string | null>(null);
+  const [editedFlowTypeName, setEditedFlowTypeName] = useState('');
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -437,6 +442,90 @@ export default function UserJourneyEnhanced() {
     updateStakeholderFlows(updatedFlows);
   };
 
+  // Flow Type Management Functions
+  const addFlowType = (stakeholder: string) => {
+    const trimmedFlowType = newFlowType[stakeholder]?.trim();
+    if (!trimmedFlowType) {
+      setError('Flow type name cannot be empty');
+      return;
+    }
+    
+    const currentFlowTypes = personaFlowTypes[stakeholder] || [];
+    if (currentFlowTypes.includes(trimmedFlowType)) {
+      setError('Flow type already exists for this stakeholder');
+      return;
+    }
+    
+    const updatedFlowTypes = {
+      ...personaFlowTypes,
+      [stakeholder]: [...currentFlowTypes, trimmedFlowType]
+    };
+    setPersonaFlowTypes(updatedFlowTypes);
+    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+    
+    setNewFlowType(prev => ({ ...prev, [stakeholder]: '' }));
+    setError('');
+  };
+
+  const startEditingFlowType = (stakeholder: string, flowType: string) => {
+    const key = `${stakeholder}-${flowType}`;
+    setEditingFlowType(key);
+    setEditedFlowTypeName(flowType);
+  };
+
+  const saveFlowTypeEdit = (stakeholder: string, originalFlowType: string) => {
+    const trimmedName = editedFlowTypeName.trim();
+    if (!trimmedName) {
+      setError('Flow type name cannot be empty');
+      return;
+    }
+    
+    const currentFlowTypes = personaFlowTypes[stakeholder] || [];
+    if (trimmedName !== originalFlowType && currentFlowTypes.includes(trimmedName)) {
+      setError('Flow type already exists for this stakeholder');
+      return;
+    }
+    
+    const updatedFlowTypes = {
+      ...personaFlowTypes,
+      [stakeholder]: currentFlowTypes.map(ft => ft === originalFlowType ? trimmedName : ft)
+    };
+    setPersonaFlowTypes(updatedFlowTypes);
+    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+    
+    // Update stakeholder flows with new flow type name
+    const updatedFlows = stakeholderFlows.map(flow => 
+      flow.stakeholder === stakeholder && flow.flowType === originalFlowType
+        ? { ...flow, flowType: trimmedName }
+        : flow
+    );
+    updateStakeholderFlows(updatedFlows);
+    
+    setEditingFlowType(null);
+    setEditedFlowTypeName('');
+    setError('');
+  };
+
+  const cancelFlowTypeEdit = () => {
+    setEditingFlowType(null);
+    setEditedFlowTypeName('');
+  };
+
+  const deleteFlowType = (stakeholder: string, flowType: string) => {
+    const updatedFlowTypes = {
+      ...personaFlowTypes,
+      [stakeholder]: (personaFlowTypes[stakeholder] || []).filter(ft => ft !== flowType)
+    };
+    setPersonaFlowTypes(updatedFlowTypes);
+    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
+    
+    // Remove from stakeholder flows
+    const updatedFlows = stakeholderFlows.filter(
+      flow => !(flow.stakeholder === stakeholder && flow.flowType === flowType)
+    );
+    updateStakeholderFlows(updatedFlows);
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -634,27 +723,107 @@ export default function UserJourneyEnhanced() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-800 mb-2 text-sm">Flow Types Overview</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 gap-3">
                     {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes]) => (
                       <div key={stakeholder} className="border border-gray-200 rounded-lg p-3 bg-gradient-to-r from-gray-50 to-blue-50">
-                        <div className="font-medium text-sm text-gray-800 mb-1.5 flex items-center">
+                        <div className="font-medium text-sm text-gray-800 mb-2 flex items-center">
                           <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
                           {stakeholder}
                           <Badge variant="outline" className="ml-auto text-xs px-1.5 py-0.5">
                             {flowTypes.length}
                           </Badge>
                         </div>
+                        
+                        {/* Add new flow type input */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <Input
+                            value={newFlowType[stakeholder] || ''}
+                            onChange={(e) => setNewFlowType(prev => ({ ...prev, [stakeholder]: e.target.value }))}
+                            placeholder="Add flow type..."
+                            className="text-xs h-7 flex-1"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                addFlowType(stakeholder);
+                              }
+                            }}
+                          />
+                          <Button
+                            onClick={() => addFlowType(stakeholder)}
+                            size="sm"
+                            className="h-7 px-2 bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        
+                        {/* Flow types list */}
                         <div className="flex flex-wrap gap-1">
-                          {flowTypes.slice(0, 3).map((flowType, index) => (
-                            <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5 bg-white border-gray-300">
-                              {flowType}
-                            </Badge>
-                          ))}
-                          {flowTypes.length > 3 && (
-                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600">
-                              +{flowTypes.length - 3} more
-                            </Badge>
-                          )}
+                          {flowTypes.map((flowType, index) => {
+                            const editKey = `${stakeholder}-${flowType}`;
+                            const isEditing = editingFlowType === editKey;
+                            
+                            return (
+                              <div key={index} className="relative group">
+                                {isEditing ? (
+                                  <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-2 py-1">
+                                    <Input
+                                      value={editedFlowTypeName}
+                                      onChange={(e) => setEditedFlowTypeName(e.target.value)}
+                                      className="text-xs h-5 w-20 border-0 p-0 focus:ring-0"
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          saveFlowTypeEdit(stakeholder, flowType);
+                                        } else if (e.key === 'Escape') {
+                                          cancelFlowTypeEdit();
+                                        }
+                                      }}
+                                      autoFocus
+                                    />
+                                    <Button
+                                      onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
+                                      size="sm"
+                                      className="h-4 w-4 p-0 bg-green-600 hover:bg-green-700"
+                                    >
+                                      <Save className="h-2.5 w-2.5" />
+                                    </Button>
+                                    <Button
+                                      onClick={cancelFlowTypeEdit}
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-4 w-4 p-0 border-gray-300"
+                                    >
+                                      <X className="h-2.5 w-2.5" />
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs px-1.5 py-0.5 bg-white border-gray-300 cursor-pointer hover:bg-gray-50 pr-1"
+                                  >
+                                    {flowType}
+                                    <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                      <Button
+                                        onClick={() => startEditingFlowType(stakeholder, flowType)}
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-3 w-3 p-0 hover:bg-blue-200"
+                                      >
+                                        <Edit3 className="h-2 w-2" />
+                                      </Button>
+                                      <Button
+                                        onClick={() => deleteFlowType(stakeholder, flowType)}
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                      >
+                                        <X className="h-2 w-2" />
+                                      </Button>
+                                    </div>
+                                  </Badge>
+                                )}
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     ))}
