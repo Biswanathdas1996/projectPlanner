@@ -132,7 +132,23 @@ export async function generateProjectPlan(
 
   const prompt = `Create a comprehensive, detailed project plan for: "${projectDescription}"
 
-MANDATORY SECTIONS (ALL MUST BE INCLUDED):
+CRITICAL REQUIREMENT: The document MUST start with a Table of Contents and include ALL 10 sections with exact numbering and titles as shown below.
+
+MANDATORY STRUCTURE:
+
+**Table of Contents**
+1. Executive Summary
+2. Technical Architecture & Infrastructure
+3. Detailed Feature Specifications
+4. Development Methodology & Timeline
+5. User Experience & Interface Design
+6. Quality Assurance & Testing Strategy
+7. Deployment & DevOps Strategy
+8. Risk Management & Mitigation
+9. Stakeholder Management
+10. Post-Launch Strategy
+
+MANDATORY SECTIONS (ALL MUST BE INCLUDED WITH EXACT TITLES):
 
 1. **Executive Summary**
    - Project purpose and vision
@@ -328,33 +344,89 @@ Return ONLY the complete HTML document with embedded CSS. The document must be p
   const response = await result.response;
   const text = response.text();
   
-  // Validate the response contains required sections
+  // Validate the response contains all required sections with exact titles
   const requiredSections = [
-    'Executive Summary',
-    'Technical Architecture',
-    'Feature Specifications',
-    'Development Methodology',
-    'User Experience',
-    'Quality Assurance',
-    'Deployment',
-    'Risk Management',
-    'Stakeholder Management',
-    'Post-Launch Strategy'
+    'Table of Contents',
+    '1. Executive Summary',
+    '2. Technical Architecture & Infrastructure',
+    '3. Detailed Feature Specifications',
+    '4. Development Methodology & Timeline',
+    '5. User Experience & Interface Design',
+    '6. Quality Assurance & Testing Strategy',
+    '7. Deployment & DevOps Strategy',
+    '8. Risk Management & Mitigation',
+    '9. Stakeholder Management',
+    '10. Post-Launch Strategy'
   ];
   
   const missingSections = requiredSections.filter(section => 
-    !text.toLowerCase().includes(section.toLowerCase())
+    !text.includes(section)
   );
   
-  if (missingSections.length > 3) {
-    // If too many sections are missing, retry with a more specific prompt
-    const retryPrompt = `${prompt}
+  if (missingSections.length > 0) {
+    console.warn(`Retrying generation - missing sections: ${missingSections.join(', ')}`);
+    
+    // First retry with enhanced specificity
+    const retryPrompt = `Create a comprehensive project plan for: "${projectDescription}"
 
-CRITICAL: The response MUST include ALL 10 mandatory sections listed above. Do not skip any sections. Each section must be comprehensive and detailed.`;
+ABSOLUTE REQUIREMENT: Include EXACTLY these sections in this order:
+
+Table of Contents
+1. Executive Summary
+2. Technical Architecture & Infrastructure
+3. Detailed Feature Specifications
+4. Development Methodology & Timeline
+5. User Experience & Interface Design
+6. Quality Assurance & Testing Strategy
+7. Deployment & DevOps Strategy
+8. Risk Management & Mitigation
+9. Stakeholder Management
+10. Post-Launch Strategy
+
+Each section must include:
+- Flow diagrams using ASCII characters
+- Professional HTML tables with data
+- Tree structures for hierarchical organization
+- Timeline charts with milestones
+- Progress indicators
+
+The document must be complete HTML with embedded CSS styling. Do not skip or merge any sections.`;
     
     const retryResult = await model.generateContent(retryPrompt);
     const retryResponse = await retryResult.response;
-    return retryResponse.text();
+    const retryText = retryResponse.text();
+    
+    // Validate retry attempt
+    const stillMissing = requiredSections.filter(section => !retryText.includes(section));
+    
+    if (stillMissing.length > 0) {
+      console.warn(`Second validation failed - still missing: ${stillMissing.join(', ')}`);
+      
+      // Final attempt with ultra-specific prompt
+      const finalPrompt = `Generate HTML project plan with these EXACT headings:
+
+<h1>Table of Contents</h1>
+<h2>1. Executive Summary</h2>
+<h2>2. Technical Architecture & Infrastructure</h2>
+<h2>3. Detailed Feature Specifications</h2>
+<h2>4. Development Methodology & Timeline</h2>
+<h2>5. User Experience & Interface Design</h2>
+<h2>6. Quality Assurance & Testing Strategy</h2>
+<h2>7. Deployment & DevOps Strategy</h2>
+<h2>8. Risk Management & Mitigation</h2>
+<h2>9. Stakeholder Management</h2>
+<h2>10. Post-Launch Strategy</h2>
+
+For project: "${projectDescription}"
+
+Include visual elements: tables, flow diagrams, tree structures, timelines in each section.`;
+      
+      const finalResult = await model.generateContent(finalPrompt);
+      const finalResponse = await finalResult.response;
+      return finalResponse.text();
+    }
+    
+    return retryText;
   }
   
   return text;
