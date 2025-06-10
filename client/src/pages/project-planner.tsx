@@ -672,7 +672,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="AI Project Planner" showBackButton={false} />
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Compact Header */}
         <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-3">
@@ -962,38 +962,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       </>
                     )}
                   </Button>
-                  {generatedBpmnXml && (
-                    <Button
-                      onClick={() => setShowBpmnScript(!showBpmnScript)}
-                      variant="outline"
-                      size="sm"
-                      disabled={isEditingPlan || isEnhancing || isGeneratingBpmn}
-                      className="border-purple-200 text-purple-600 hover:bg-purple-50 text-xs px-2 py-1"
-                    >
-                      {showBpmnScript ? (
-                        <>
-                          <EyeOff className="h-3 w-3 mr-1" />
-                          Hide
-                        </>
-                      ) : (
-                        <>
-                          <Code className="h-3 w-3 mr-1" />
-                          BPMN
-                        </>
-                      )}
-                    </Button>
-                  )}
-                  <Link href="/user-journey">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
-                      className="border-indigo-200 text-indigo-600 hover:bg-indigo-50 text-xs px-2 py-1"
-                    >
-                      <Users className="h-3 w-3 mr-1" />
-                      Journey
-                    </Button>
-                  </Link>
+                  
+                  
                   <Link href="/user-stories">
                     <Button
                       variant="outline"
@@ -1348,23 +1318,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     </Button>
                   </Link>
                   
-                  <Button
-                    onClick={handleGenerateBpmnDiagram}
-                    disabled={isGeneratingBpmn || isEnhancing}
-                    className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white shadow-lg"
-                  >
-                    {isGeneratingBpmn ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Creating Visual Diagram...
-                      </>
-                    ) : (
-                      <>
-                        <Workflow className="h-4 w-4 mr-2" />
-                        Create Visual Diagram
-                      </>
-                    )}
-                  </Button>
+                  
                 </div>
               </div>
             </CardContent>
