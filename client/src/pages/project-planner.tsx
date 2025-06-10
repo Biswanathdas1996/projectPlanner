@@ -537,14 +537,50 @@ Return the complete enhanced project plan as HTML with all existing content plus
               src={blobUrl}
               className="project-plan-content w-full"
               style={{
-                minHeight: '600px',
-                height: '80vh',
                 border: 'none',
-                backgroundColor: '#ffffff'
+                backgroundColor: '#ffffff',
+                overflow: 'hidden'
               }}
               title="Project Plan Content"
-              sandbox="allow-same-origin"
-              onLoad={() => {
+              sandbox="allow-same-origin allow-scripts"
+              onLoad={(e) => {
+                const iframe = e.target as HTMLIFrameElement;
+                try {
+                  // Wait a moment for content to render
+                  setTimeout(() => {
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                    if (iframeDoc) {
+                      const body = iframeDoc.body;
+                      const html = iframeDoc.documentElement;
+                      
+                      // Get the actual content height
+                      const height = Math.max(
+                        body?.scrollHeight || 0,
+                        body?.offsetHeight || 0,
+                        html?.clientHeight || 0,
+                        html?.scrollHeight || 0,
+                        html?.offsetHeight || 0
+                      );
+                      
+                      // Set iframe height to content height with some padding
+                      iframe.style.height = `${Math.max(height + 20, 400)}px`;
+                      
+                      // Remove scroll bars from iframe content
+                      if (body) {
+                        body.style.overflow = 'hidden';
+                        body.style.margin = '0';
+                        body.style.padding = '20px';
+                      }
+                      if (html) {
+                        html.style.overflow = 'hidden';
+                      }
+                    }
+                  }, 100);
+                } catch (error) {
+                  // Fallback height if cross-origin or other issues
+                  iframe.style.height = '600px';
+                }
+                
                 // Clean up blob URL after iframe loads
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
               }}
