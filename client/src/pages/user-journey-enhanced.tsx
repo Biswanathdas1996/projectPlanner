@@ -370,12 +370,10 @@ export default function UserJourneyEnhanced() {
         {/* Error Display */}
         {error && (
           <Card className="mb-6 border-red-200 bg-red-50">
-            <CardContent className="pt-6">
-              <div className="flex items-center space-x-3">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
-                <span className="text-red-800">{error}</span>
-              </div>
-            </CardContent>
+            <div className="flex items-center space-x-3">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <span className="text-red-800">{error}</span>
+            </div>
           </Card>
         )}
 
@@ -431,39 +429,56 @@ export default function UserJourneyEnhanced() {
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-4">
             {extractedStakeholders.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Identified Stakeholders</h4>
+                  <h4 className="font-semibold text-gray-800 mb-2 text-sm">Identified Stakeholders ({extractedStakeholders.length})</h4>
                   <div className="flex flex-wrap gap-2">
                     {extractedStakeholders.map((stakeholder, index) => (
-                      <Badge key={index} variant="secondary">
+                      <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800 hover:bg-blue-200">
+                        <Users className="h-3 w-3 mr-1" />
                         {stakeholder}
                       </Badge>
                     ))}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Flow Types per Stakeholder</h4>
-                  {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes]) => (
-                    <div key={stakeholder} className="mb-3 p-3 bg-gray-50 rounded-lg">
-                      <div className="font-medium text-sm text-gray-700 mb-1">{stakeholder}</div>
-                      <div className="flex flex-wrap gap-1">
-                        {flowTypes.map((flowType, index) => (
-                          <Badge key={index} variant="outline" className="text-xs">
-                            {flowType}
+                  <h4 className="font-semibold text-gray-800 mb-2 text-sm">Flow Types Overview</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes]) => (
+                      <div key={stakeholder} className="border border-gray-200 rounded-lg p-3 bg-gradient-to-r from-gray-50 to-blue-50">
+                        <div className="font-medium text-sm text-gray-800 mb-1.5 flex items-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full mr-2"></div>
+                          {stakeholder}
+                          <Badge variant="outline" className="ml-auto text-xs px-1.5 py-0.5">
+                            {flowTypes.length}
                           </Badge>
-                        ))}
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {flowTypes.slice(0, 3).map((flowType, index) => (
+                            <Badge key={index} variant="outline" className="text-xs px-1.5 py-0.5 bg-white border-gray-300">
+                              {flowType}
+                            </Badge>
+                          ))}
+                          {flowTypes.length > 3 && (
+                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600">
+                              +{flowTypes.length - 3} more
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
             ) : (
-              <p className="text-gray-500 text-center py-8">
-                Extract stakeholders from your project plan to see persona-based workflow analysis
-              </p>
+              <div className="text-center py-6">
+                <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-gray-500 text-sm">
+                  Extract stakeholders from your project plan to see persona-based workflow analysis
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
