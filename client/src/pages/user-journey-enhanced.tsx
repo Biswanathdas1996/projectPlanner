@@ -571,17 +571,40 @@ export default function UserJourneyEnhanced() {
         const key = `${flow.stakeholder}-${flow.flowType}`;
         
         try {
-          const prompt = `Based on this project context:
+          const prompt = `Generate comprehensive BPMN flow analysis for ${flow.stakeholder} - ${flow.flowType} based on project context:
 ${projectPlan || projectDescription}
 
-Generate detailed analysis for the "${flow.flowType}" flow for stakeholder "${flow.stakeholder}":
+Create detailed BPMN-focused analysis following this structure:
 
-1. Flow Description: A clear 2-3 sentence description of what this flow encompasses
-2. Key Components: List 4-6 specific components, features, or elements involved in this flow  
-3. Core Processes: List 3-5 main processes or steps that occur in this flow
+✅ 1. Process Name and Description
+Clearly describe what this ${flow.flowType} process is and why it exists for ${flow.stakeholder}.
+
+✅ 2. Participants (Swimlanes / Pools and Lanes)  
+List all roles, departments, or systems involved. These define the swimlanes.
+Include: ${flow.stakeholder}, relevant departments, IT systems, external services.
+
+✅ 3. Trigger (Start Event)
+Describe what specific event or condition starts this ${flow.flowType} process for ${flow.stakeholder}.
+
+✅ 4. Sequence of Activities (Tasks / Actions)
+Provide 4-6 step-by-step breakdown of tasks, including who performs each task.
+Make activities specific to ${flow.flowType} workflow.
+
+✅ 5. Decision Points (Gateways)
+List 2-3 key decision points where conditions affect the flow.
+Format each as: "If [condition], then [action]; otherwise [alternative action]"
+
+✅ 6. End Event
+Describe how and when this ${flow.flowType} process concludes for ${flow.stakeholder}.
+
+✅ 7. Additional Elements
+Include relevant BPMN components like:
+- Messages: "Email sent to [recipient]"  
+- Timers: "Wait [duration] for [condition]"
+- Data: "[object name], [form name]"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "description here", "keyComponents": ["component1", "component2", "component3", "component4"], "processes": ["process1", "process2", "process3"]}`;
+{"description": "✅ 1. Process Name and Description\\n[description text]\\n\\n✅ 2. Participants\\n[participants list]\\n\\n✅ 3. Trigger\\n[trigger text]\\n\\n✅ 4. Activities\\n[activities list]\\n\\n✅ 5. Decision Points\\n[decisions text]\\n\\n✅ 6. End Event\\n[end event text]\\n\\n✅ 7. Additional Elements\\n[additional elements]", "keyComponents": ["participant1", "participant2", "system3", "service4"], "processes": ["activity1", "activity2", "activity3", "activity4"]}`;
 
           const response = await fetch('/api/gemini/generate-project-plan', {
             method: 'POST',
@@ -622,26 +645,57 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
           } catch (parseError) {
             console.error(`Failed to parse response for ${key}:`, parseError, 'Raw response:', result);
             
-            // Generate contextual fallback based on flow type and stakeholder
+            // Generate structured fallback with 7-section BPMN format
             const flowTypeWords = flow.flowType.toLowerCase().split(' ');
-            const stakeholderWords = flow.stakeholder.toLowerCase().split(' ');
+            const mainAction = flowTypeWords[0] || 'process';
             
             details[key] = {
-              description: `This flow manages ${flow.flowType.toLowerCase()} activities for ${flow.stakeholder}. It encompasses the core processes and interactions required to successfully complete ${flowTypeWords[0]}-related tasks. The system ensures proper validation, processing, and completion of all ${flowTypeWords[0]} operations.`,
+              description: `✅ 1. Process Name and Description
+${flow.flowType} Process for ${flow.stakeholder}
+
+This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully with proper validation and confirmation.
+
+✅ 2. Participants (Swimlanes / Pools and Lanes)
+${flow.stakeholder}, System Backend, Database Service, Authentication Module, Notification Service, External Services
+
+✅ 3. Trigger (Start Event)
+${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.
+
+✅ 4. Sequence of Activities (Tasks / Actions)
+1. ${flow.stakeholder} authenticates and accesses the system
+2. System validates ${mainAction} request and permissions
+3. Backend processes ${mainAction} with business logic validation
+4. Database updates records and maintains data integrity
+5. System generates confirmation and audit trail
+6. Notification service sends confirmation to ${flow.stakeholder}
+
+✅ 5. Decision Points (Gateways)
+If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.
+If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.
+If validation errors occur, return to ${flow.stakeholder} for correction; otherwise complete process.
+
+✅ 6. End Event
+Process concludes when ${flow.stakeholder} receives confirmation notification and all system records are successfully updated with audit trail completed.
+
+✅ 7. Additional Elements
+Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures
+Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout
+Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`,
               keyComponents: [
-                `${flow.flowType} Dashboard`,
-                `${flowTypeWords[0] ? flowTypeWords[0].charAt(0).toUpperCase() + flowTypeWords[0].slice(1) : 'Process'} Engine`,
-                'Authentication Module',
-                'Data Validation Layer',
-                'Notification System',
-                'Audit & Logging'
+                `${flow.stakeholder}`,
+                "System Backend", 
+                "Database Service",
+                "Authentication Module",
+                "Notification Service",
+                "External Services"
               ],
               processes: [
-                `Initiate ${flow.flowType}`,
-                'Authenticate & Authorize',
-                `Process ${flowTypeWords[0] || 'Request'}`,
-                'Validate Results',
-                'Complete & Notify'
+                `${flow.stakeholder} authenticates and accesses system`,
+                `System validates ${mainAction} request and permissions`,
+                `Backend processes ${mainAction} with business logic`,
+                "Database updates records and maintains integrity",
+                "System generates confirmation and audit trail",
+                `Notification service sends confirmation to ${flow.stakeholder}`
               ]
             };
           }
