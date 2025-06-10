@@ -10,6 +10,7 @@ import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import UserStoryGenerator from "@/pages/user-story-generator";
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
+import HtmlDemo from "@/pages/html-demo";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/editor" component={BpmnEditor} />
       <Route path="/bpmn-editor" component={BpmnEditor} />
       <Route path="/diagram" component={BpmnEditor} />
+      <Route path="/html-demo" component={HtmlDemo} />
       <Route component={NotFound} />
     </Switch>
   );
