@@ -35,6 +35,7 @@ import {
   Settings,
   Shield,
   Activity,
+  Trash2,
   Plus,
   BookOpen,
   Edit3,
@@ -2107,11 +2108,12 @@ Data Objects: Request form, User profile`,
                               </div>
                               <div className="flex items-center gap-2">
                                 <Button
+                                  onClick={() => deleteStakeholder(stakeholder)}
                                   variant="outline"
                                   size="sm"
-                                  className="h-7 px-2 text-xs bg-white/60 hover:bg-white/80"
+                                  className="h-7 px-2 text-xs bg-white/60 hover:bg-red-50 border-red-200 text-red-600 hover:text-red-700"
                                 >
-                                  <Settings className="h-3 w-3" />
+                                  <Trash2 className="h-3 w-3" />
                                 </Button>
                               </div>
                             </div>
