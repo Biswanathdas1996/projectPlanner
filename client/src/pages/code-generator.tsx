@@ -271,7 +271,7 @@ export default function CodeGenerator() {
               {/* Frontend Framework */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <Label htmlFor="framework" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                  <Monitor className="h-4 w-4 text-green-600" />
+                  <Globe className="h-4 w-4 text-green-600" />
                   Frontend Framework
                 </Label>
                 <Select
@@ -340,7 +340,7 @@ export default function CodeGenerator() {
               {/* Styling */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <Label htmlFor="styling" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                  <Palette className="h-4 w-4 text-pink-600" />
+                  <Layers className="h-4 w-4 text-pink-600" />
                   Styling
                 </Label>
                 <Select
@@ -363,7 +363,7 @@ export default function CodeGenerator() {
               {/* Deployment */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <Label htmlFor="deployment" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
-                  <Cloud className="h-4 w-4 text-indigo-600" />
+                  <Zap className="h-4 w-4 text-indigo-600" />
                   Deployment
                 </Label>
                 <Select
