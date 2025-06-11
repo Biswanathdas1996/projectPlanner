@@ -561,29 +561,7 @@ export default function Landing() {
         {/* Landing Page Content */}
         {currentStep === 'input' && !projectInput && (
           <div className="space-y-12">
-            {/* Hero Section */}
-            <div className="text-center py-16 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl text-white relative overflow-hidden">
-              <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-              <div className="relative z-10">
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-3xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                  <Sparkles className="h-10 w-10 text-white" />
-                </div>
-                <h1 className="text-4xl md:text-5xl font-bold mb-4">AI Project Planner</h1>
-                <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto mb-8">
-                  Transform your ideas into comprehensive project plans with AI-powered insights, visual diagrams, and stakeholder workflows
-                </p>
-                <div className="flex justify-center">
-                  <Button 
-                    onClick={() => document.getElementById('start-section')?.scrollIntoView({ behavior: 'smooth' })}
-                    size="lg" 
-                    className="bg-white text-blue-600 hover:bg-blue-50 font-semibold px-8 py-3"
-                  >
-                    Get Started
-                    <ArrowRight className="h-5 w-5 ml-2" />
-                  </Button>
-                </div>
-              </div>
-            </div>
+
 
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
