@@ -340,43 +340,13 @@
         stroke-width: 2px !important;
       }
       
-      /* Force element interaction priority */
-      .djs-element {
-        cursor: move !important;
-        pointer-events: all !important;
-        position: relative !important;
-        z-index: 999 !important;
+      /* Basic element styling without conflicts */
+      .djs-element:hover {
+        cursor: move;
       }
       
-      .djs-element .djs-visual {
-        pointer-events: all !important;
-        cursor: move !important;
-      }
-      
-      /* Disable canvas panning on element areas */
-      .djs-shape:hover {
-        cursor: move !important;
-      }
-      
-      .djs-shape:hover ~ .viewport {
-        pointer-events: none !important;
-      }
-      
-      /* Dragging states */
       .djs-dragging {
-        opacity: 0.7 !important;
-        cursor: grabbing !important;
-      }
-      
-      /* Ensure background canvas only responds to empty areas */
-      .djs-container .viewport {
-        pointer-events: auto;
-      }
-      
-      /* Override any conflicting pointer events */
-      .djs-shape, .djs-connection {
-        pointer-events: all !important;
-        cursor: move !important;
+        opacity: 0.7;
       }
       
       /* Connection points visibility */
