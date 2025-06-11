@@ -227,24 +227,6 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => {
-                  if (projectInput) {
-                    performMarketResearch();
-                  }
-                }}
-                disabled={isResearching || !projectInput}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 text-blue-700 border-blue-300 hover:bg-blue-100"
-              >
-                {isResearching ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Search className="h-4 w-4" />
-                )}
-                Generate Enhanced Data
-              </Button>
-              <Button
                 onClick={resetResearch}
                 variant="outline"
                 size="sm"
@@ -702,6 +684,93 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
               </CardContent>
             </Card>
 
+            {/* Similar Products Section */}
+            <Card className="border-0 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50 border-b">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <Globe className="h-6 w-6 text-cyan-600" />
+                  Similar Products & Solutions
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="mb-4">
+                  <p className="text-gray-600 text-sm">
+                    Products and platforms that offer similar functionality to your project idea
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {researchData.competitors.map((competitor, index) => (
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-white"
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-semibold text-gray-900 text-sm">
+                          {competitor.name}
+                        </h4>
+                        {competitor.website && (
+                          <a
+                            href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
+                            title={`Visit ${competitor.name} website`}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                      
+                      <p className="text-xs text-gray-600 mb-3 line-clamp-3">
+                        {competitor.description}
+                      </p>
+                      
+                      <div className="space-y-2">
+                        {competitor.website && (
+                          <div className="bg-gray-50 rounded p-2">
+                            <div className="text-xs text-gray-500 mb-1">Website:</div>
+                            <a
+                              href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-blue-600 hover:text-blue-800 hover:underline break-all"
+                            >
+                              {competitor.website.replace(/^https?:\/\//, '')}
+                            </a>
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-500">Market Position:</span>
+                          <Badge variant="outline" className="text-xs">
+                            {competitor.marketPosition}
+                          </Badge>
+                        </div>
+                        
+                        {competitor.pricing && (
+                          <div className="flex items-center justify-between text-xs">
+                            <span className="text-gray-500">Pricing:</span>
+                            <span className="font-medium text-green-600">
+                              {competitor.pricing}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {researchData.competitors.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <Globe className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                    <p>No similar products found in the current research.</p>
+                    <p className="text-sm">Try generating enhanced data for more results.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Market Insights */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Opportunities */}
@@ -827,15 +896,7 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                   </Button>
                 </Link>
 
-                <Link href="/user-journey">
-                  <Button
-                    variant="outline"
-                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    User Journey Flows
-                  </Button>
-                </Link>
+                
               </div>
             </div>
           </div>
