@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { AlertCircle, FileX } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { AlertCircle, FileX, ZoomIn, ZoomOut, Move, RotateCcw } from 'lucide-react';
 
 interface SimpleBpmnViewerProps {
   bpmnXml: string;
@@ -21,6 +21,11 @@ interface BpmnElement {
 
 export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpmnViewerProps) {
   const [error, setError] = useState<string | null>(null);
+  const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const svgRef = useRef<SVGSVGElement>(null);
 
   // Parse BPMN XML and extract basic elements
   const parseBpmnElements = (xml: string): BpmnElement[] => {
@@ -115,6 +120,49 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
   };
 
   const elements = parseBpmnElements(bpmnXml);
+
+  // Handle zoom
+  const handleZoomIn = () => {
+    setScale(prev => Math.min(prev * 1.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setScale(prev => Math.max(prev / 1.2, 0.3));
+  };
+
+  const handleReset = () => {
+    setScale(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  // Handle mouse events for dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({
+      x: e.clientX - pan.x,
+      y: e.clientY - pan.y
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    setPan({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Handle wheel zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY > 0 ? 0.9 : 1.1;
+    setScale(prev => Math.max(0.3, Math.min(3, prev * delta)));
+  };
   
   if (!bpmnXml) {
     return (
@@ -171,11 +219,58 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
 
   return (
     <div className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white">
-      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+      <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
         <h4 className="text-sm font-medium text-gray-700">{title} - BPMN Flow</h4>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={handleZoomOut}
+            className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded"
+            title="Zoom Out"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </button>
+          <span className="text-xs text-gray-500 min-w-[3rem] text-center">
+            {Math.round(scale * 100)}%
+          </span>
+          <button
+            onClick={handleZoomIn}
+            className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded"
+            title="Zoom In"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded ml-1"
+            title="Reset View"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </button>
+          <div className="flex items-center text-xs text-gray-500 ml-2">
+            <Move className="h-3 w-3 mr-1" />
+            Drag to pan
+          </div>
+        </div>
       </div>
-      <div style={{ height }} className="overflow-auto">
-        <svg width={svgWidth} height={svgHeight} className="w-full">
+      <div 
+        style={{ height }} 
+        className="overflow-hidden cursor-grab active:cursor-grabbing"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+      >
+        <svg 
+          ref={svgRef}
+          width={svgWidth} 
+          height={svgHeight} 
+          className="w-full h-full"
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
+            transformOrigin: 'center center'
+          }}
+        >
           {/* Draw sequence flows (arrows) */}
           {flows.map(flow => {
             const sourceElement = elements.find(e => e.id === flow.sourceRef);
