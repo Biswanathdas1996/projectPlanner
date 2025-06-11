@@ -156,63 +156,106 @@ export default function UserStoryGenerator() {
         const activities = details?.activities || [];
         const trigger = details?.trigger || '';
         
-        const prompt = `Based on the following stakeholder flow analysis, generate 2-3 comprehensive JIRA-compliant user stories.
+        const participants = details?.participants || [];
+        const decisionPoints = details?.decisionPoints || [];
+        const endEvent = details?.endEvent || '';
+        const additionalElements = details?.additionalElements || [];
+
+        const prompt = `Based on the following comprehensive stakeholder flow analysis, generate 2-3 detailed JIRA-compliant user stories that include complete process flows and user journey mapping.
 
 STAKEHOLDER: ${flow.stakeholder}
 FLOW TYPE: ${flow.flowType}
 PROJECT CONTEXT: ${projectName}
 
-FLOW ANALYSIS:
+COMPLETE FLOW ANALYSIS:
 ${flowDescription}
 
-PROCESS DESCRIPTION:
+DETAILED PROCESS DESCRIPTION:
 ${processDescription}
 
-TRIGGER/START EVENT:
+PROCESS TRIGGER/START EVENT:
 ${trigger}
 
-KEY ACTIVITIES:
-${activities.join(', ')}
+PROCESS PARTICIPANTS (Swimlanes):
+${participants.join(', ')}
 
-CUSTOM REQUIREMENTS:
+KEY ACTIVITIES/TASKS IN SEQUENCE:
+${activities.map((activity, index) => `${index + 1}. ${activity}`).join('\n')}
+
+DECISION POINTS/GATEWAYS:
+${decisionPoints.join(', ')}
+
+END EVENT/COMPLETION:
+${endEvent}
+
+ADDITIONAL PROCESS ELEMENTS:
+${additionalElements.join(', ')}
+
+CUSTOM BUSINESS REQUIREMENTS:
 ${flow.customPrompt}
 
-BPMN XML (for technical reference):
-${flow.bpmnXml.substring(0, 500)}...
+TECHNICAL BPMN REFERENCE:
+${flow.bpmnXml.substring(0, 800)}...
 
-Generate user stories that are:
-1. JIRA-compliant with proper format
-2. Include comprehensive acceptance criteria
-3. Have realistic story points (1-13 Fibonacci scale)
-4. Include Gherkin scenarios for testing
-5. Proper priority assignment
-6. Relevant labels and epic assignment
+Generate comprehensive user stories that include:
+1. Complete user journey from start to finish
+2. Detailed process flow steps in acceptance criteria
+3. All stakeholder interactions and touchpoints
+4. System behavior at each decision point
+5. Error handling and alternative paths
+6. Integration points with other systems/participants
+7. Data flow and validation requirements
+8. User experience considerations throughout the journey
+9. Performance and scalability requirements
+10. Security and compliance checkpoints
+
+Each user story must be JIRA-compliant with:
+- Realistic story points (1-13 Fibonacci scale) based on complexity
+- Comprehensive acceptance criteria covering the entire process flow
+- Multiple Gherkin scenarios including happy path, edge cases, and error conditions
+- Proper priority assignment based on business value
+- Relevant labels including process stages and stakeholder roles
+- Epic assignment that groups related workflow components
 
 IMPORTANT: Respond ONLY with a valid JSON array. No explanations, no markdown formatting.
 
 Example format:
 [
   {
-    "title": "View Project Progress Reports",
+    "title": "Complete End-to-End Project Progress Report Generation and Review Process",
     "asA": "project manager",
-    "iWant": "to view comprehensive project progress reports",
-    "soThat": "I can make informed decisions and track project health",
+    "iWant": "to execute the complete project progress reporting workflow from initiation to stakeholder review",
+    "soThat": "I can ensure comprehensive project visibility and enable data-driven decision making across all stakeholders",
     "acceptanceCriteria": [
-      "Reports display current project status with visual indicators",
-      "Data is updated in real-time or near real-time",
-      "Reports can be filtered by date range, team, or milestone",
-      "Export functionality available for sharing with stakeholders"
+      "Process initiates when project manager accesses the reporting dashboard",
+      "System validates user permissions and project access rights",
+      "Report request is authenticated and logged for audit purposes",
+      "Data retrieval process aggregates information from all connected systems",
+      "Progress indicators show real-time status during report generation",
+      "Generated report includes all required sections: status, milestones, risks, resources",
+      "Report validation ensures data accuracy and completeness before presentation",
+      "Stakeholder notification system alerts relevant parties of report availability",
+      "Export functionality supports multiple formats (PDF, Excel, PowerPoint)",
+      "Version control maintains report history and change tracking",
+      "Access controls ensure only authorized stakeholders can view sensitive data",
+      "System handles concurrent access and large data volumes efficiently"
     ],
     "priority": "High",
-    "storyPoints": 8,
-    "epic": "Project Management Dashboard",
-    "labels": ["reporting", "dashboard", "project-management"],
+    "storyPoints": 13,
+    "epic": "Project Management Reporting Workflow",
+    "labels": ["project-management", "reporting", "workflow", "dashboard", "stakeholder-communication", "data-aggregation"],
     "gherkinScenarios": [
       {
-        "title": "Successfully access project progress reports",
-        "given": ["I am logged in as a project manager", "I have access to the dashboard"],
-        "when": ["I navigate to the reports section", "I select the progress reports option"],
-        "then": ["I should see a comprehensive list of project reports", "Each report should show key metrics and status indicators"]
+        "title": "Successful end-to-end report generation with stakeholder review",
+        "given": ["I am authenticated as a project manager", "I have access to the project dashboard", "All data sources are available and synchronized", "Project has active milestones and team members"],
+        "when": ["I navigate to the reporting section", "I select the comprehensive progress report option", "I configure report parameters including date range and stakeholder groups", "I initiate the report generation process"],
+        "then": ["The system validates my permissions and project access", "Progress indicators show data collection from all integrated systems", "Report is generated with all required sections and accurate data", "Stakeholders receive automated notifications", "I can export the report in multiple formats", "The report is saved with proper version control"]
+      },
+      {
+        "title": "Handle report generation timeout and recovery",
+        "given": ["I am generating a large project report", "Data sources are experiencing high latency", "Report generation exceeds normal processing time"],
+        "when": ["The system encounters a timeout during data aggregation", "I choose to retry the report generation"],
+        "then": ["The system gracefully handles the timeout without data loss", "I receive clear error messaging with recommended actions", "Retry mechanism attempts generation with optimized parameters", "Partial report data is preserved for subsequent attempts", "System logs the incident for performance analysis"]
       }
     ]
   }
@@ -259,50 +302,102 @@ Example format:
           
           newUserStories.push(...processedStories);
         } else {
-          // Create comprehensive fallback story with flow details
+          // Create comprehensive fallback story with detailed flow analysis
+          const fallbackAcceptanceCriteria = [
+            `Process initiates when ${flow.stakeholder.toLowerCase()} triggers: ${trigger || 'workflow start event'}`,
+            "System validates user authentication and authorization for the process",
+            "All required data inputs are collected and validated according to business rules"
+          ];
+
+          // Add process flow steps from activities
+          if (activities.length > 0) {
+            activities.forEach((activity, index) => {
+              fallbackAcceptanceCriteria.push(`Step ${index + 1}: ${activity} is completed successfully`);
+            });
+          }
+
+          // Add participant interactions
+          if (participants.length > 0) {
+            fallbackAcceptanceCriteria.push(`System coordinates interactions between: ${participants.join(', ')}`);
+          }
+
+          // Add decision point handling
+          if (decisionPoints.length > 0) {
+            fallbackAcceptanceCriteria.push(`Decision gateways are processed: ${decisionPoints.join(', ')}`);
+          }
+
+          // Add completion criteria
+          fallbackAcceptanceCriteria.push(
+            endEvent ? `Process concludes with: ${endEvent}` : "Workflow reaches successful completion state",
+            "All stakeholders receive appropriate notifications of process completion",
+            "Audit trail captures all process steps and decisions for compliance",
+            "System maintains data integrity throughout the entire workflow"
+          );
+
           const fallbackStory: UserStory = {
             id: `story-${Date.now()}-${i}-fallback`,
-            title: `${flow.stakeholder} - ${flow.flowType}`,
+            title: `Complete ${flow.stakeholder} ${flow.flowType} End-to-End Process`,
             asA: flow.stakeholder.toLowerCase(),
-            iWant: `to execute the ${flow.flowType.toLowerCase()} workflow`,
-            soThat: "I can complete my tasks effectively and achieve the intended business outcomes",
-            acceptanceCriteria: [
-              "The workflow can be initiated from the correct entry point",
-              "All process steps are completed in the correct sequence",
-              "System validates inputs and provides appropriate feedback",
-              "The workflow concludes with the expected end state",
-              "Audit trail is maintained for compliance purposes"
-            ],
+            iWant: `to execute the complete ${flow.flowType.toLowerCase()} workflow from initiation to completion`,
+            soThat: "I can achieve my business objectives through a well-defined, efficient process that meets all requirements and compliance standards",
+            acceptanceCriteria: fallbackAcceptanceCriteria,
             priority: "Medium" as const,
-            storyPoints: 8,
-            epic: `${flow.stakeholder} Experience`,
+            storyPoints: activities.length > 5 ? 13 : activities.length > 2 ? 8 : 5,
+            epic: `${flow.stakeholder} ${flow.flowType} Workflow`,
             labels: [
               flow.stakeholder.toLowerCase().replace(/\s+/g, '-'),
               flow.flowType.toLowerCase().replace(/\s+/g, '-'),
+              "end-to-end-process",
               "workflow",
-              "business-process"
+              "business-process",
+              ...(participants.length > 0 ? ["multi-stakeholder"] : []),
+              ...(decisionPoints.length > 0 ? ["decision-gateway"] : [])
             ],
             gherkinScenarios: [
               {
-                id: `scenario-${Date.now()}-${i}-fallback`,
-                title: `Successfully complete ${flow.flowType} workflow`,
+                id: `scenario-${Date.now()}-${i}-fallback-happy`,
+                title: `Successfully complete end-to-end ${flow.flowType} process`,
                 given: [
                   `I am authenticated as a ${flow.stakeholder.toLowerCase()}`,
-                  "I have the necessary permissions and access rights",
-                  "The system is available and responsive"
+                  "I have all necessary permissions and access rights",
+                  "All required systems and data sources are available",
+                  ...(participants.length > 0 ? [`All participants are available: ${participants.slice(0, 3).join(', ')}`] : [])
                 ],
                 when: [
-                  `I navigate to the ${flow.flowType.toLowerCase()} section`,
-                  "I initiate the workflow process",
-                  "I complete all required steps and inputs"
+                  trigger ? `The process is triggered by: ${trigger}` : `I initiate the ${flow.flowType.toLowerCase()} process`,
+                  "I proceed through each required process step",
+                  ...(activities.slice(0, 3).map(activity => `I complete: ${activity}`)),
+                  ...(decisionPoints.length > 0 ? ["I navigate through decision points successfully"] : [])
                 ],
                 then: [
-                  "The workflow should process successfully",
-                  "I should receive confirmation of completion",
-                  "The system should update relevant data and records",
-                  "I should be able to view the results or proceed to next steps"
+                  "Each process step is completed according to business rules",
+                  "All stakeholder interactions are properly coordinated",
+                  "Data validation and business rule checks pass successfully",
+                  endEvent ? `The process concludes with: ${endEvent}` : "The workflow reaches successful completion",
+                  "I receive confirmation of successful process completion",
+                  "All relevant parties are notified of the outcome"
                 ]
-              }
+              },
+              ...(decisionPoints.length > 0 ? [{
+                id: `scenario-${Date.now()}-${i}-fallback-decision`,
+                title: `Handle decision points and alternative paths`,
+                given: [
+                  `I am in the middle of the ${flow.flowType.toLowerCase()} process`,
+                  "I encounter a decision gateway requiring evaluation",
+                  "Multiple process paths are available based on conditions"
+                ],
+                when: [
+                  "I reach a decision point in the workflow",
+                  "The system evaluates the decision criteria",
+                  "I am presented with appropriate next steps"
+                ],
+                then: [
+                  "The system correctly evaluates all decision conditions",
+                  "I am guided to the appropriate process path",
+                  "The workflow continues seamlessly based on the decision outcome",
+                  "All decision rationale is logged for audit purposes"
+                ]
+              }] : [])
             ]
           };
           
@@ -346,11 +441,60 @@ Example format:
       const flowKey = `${flow.stakeholder}-${flow.flowType}`;
       const details = flowDetails[flowKey];
       const flowDescription = details?.description || 'Flow analysis not available';
+      const processDescription = details?.processDescription || '';
+      const activities = details?.activities || [];
+      const trigger = details?.trigger || '';
+      const participants = details?.participants || [];
+      const decisionPoints = details?.decisionPoints || [];
+      const endEvent = details?.endEvent || '';
+      const additionalElements = details?.additionalElements || [];
       
-      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate 2-3 comprehensive user stories.
+      const prompt = `Based on the following comprehensive stakeholder flow analysis, generate 2-3 detailed JIRA-compliant user stories that include complete process flows and user journey mapping.
 
-BPMN XML: ${flow.bpmnXml}
-Custom Requirements: ${flow.customPrompt}
+STAKEHOLDER: ${flow.stakeholder}
+FLOW TYPE: ${flow.flowType}
+
+COMPLETE FLOW ANALYSIS:
+${flowDescription}
+
+DETAILED PROCESS DESCRIPTION:
+${processDescription}
+
+PROCESS TRIGGER/START EVENT:
+${trigger}
+
+PROCESS PARTICIPANTS (Swimlanes):
+${participants.join(', ')}
+
+KEY ACTIVITIES/TASKS IN SEQUENCE:
+${activities.map((activity, index) => `${index + 1}. ${activity}`).join('\n')}
+
+DECISION POINTS/GATEWAYS:
+${decisionPoints.join(', ')}
+
+END EVENT/COMPLETION:
+${endEvent}
+
+ADDITIONAL PROCESS ELEMENTS:
+${additionalElements.join(', ')}
+
+CUSTOM BUSINESS REQUIREMENTS:
+${flow.customPrompt}
+
+TECHNICAL BPMN REFERENCE:
+${flow.bpmnXml.substring(0, 800)}...
+
+Generate comprehensive user stories that include:
+1. Complete user journey from start to finish
+2. Detailed process flow steps in acceptance criteria
+3. All stakeholder interactions and touchpoints
+4. System behavior at each decision point
+5. Error handling and alternative paths
+6. Integration points with other systems/participants
+7. Data flow and validation requirements
+8. User experience considerations throughout the journey
+
+Each user story must be JIRA-compliant with comprehensive acceptance criteria covering the entire process flow.
 
 IMPORTANT: Respond ONLY with a valid JSON array. No explanations, no markdown formatting, just the JSON array.
 
