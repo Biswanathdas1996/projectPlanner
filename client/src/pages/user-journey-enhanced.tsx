@@ -1264,8 +1264,8 @@ Data Objects: Request form, User profile`,
     }
   };
 
-  // Generate BPMN XML directly from flow content box
-  const generateBpmnFromContent = async (
+  // Generate BPMN XML using AI (Gemini)
+  const generateBpmnWithAI = async (
     stakeholder: string,
     flowType: string,
   ) => {
@@ -1281,40 +1281,9 @@ Data Objects: Request form, User profile`,
     setError("");
 
     try {
-      // Create structured content from flow details
-      const structuredContent = {
-        processName: `${stakeholder} - ${flowType}`,
-        processDescription: details.processDescription || details.description,
-        participants: details.participants || [],
-        trigger: details.trigger || "Process starts",
-        activities: details.activities || [],
-        decisionPoints: details.decisionPoints || [],
-        endEvent: details.endEvent || "Process completes",
-        additionalElements: details.additionalElements || [],
-      };
-
-      console.log("✅ Structured content from 7 sections:", {
-        "1. Process & Description": structuredContent.processName,
-        "2. Participants": structuredContent.participants,
-        "3. Trigger": structuredContent.trigger,
-        "4. Activities": structuredContent.activities,
-        "5. Decision Points": structuredContent.decisionPoints,
-        "6. End Event": structuredContent.endEvent,
-        "7. Additional Elements": structuredContent.additionalElements,
-      });
-
-      // Generate BPMN XML using structured generator (no AI required)
-      const { generateStructuredBpmn } = await import("../lib/structured-bpmn-generator");
-
-      console.log("✅ Generating BPMN using structured data converter...");
-
-      // Generate BPMN directly from structured content without AI
-      const bpmnXml = generateStructuredBpmn(structuredContent);
-
-      console.log(
-        "✅ Generated BPMN 2.0 XML from structured data",
-        bpmnXml.substring(0, 200) + "..."
-      );
+      // Call Gemini API directly from client
+      const { generateSwimlaneXml } = await import("../lib/gemini");
+      const bpmnXml = await generateSwimlaneXml(stakeholder, flowType, details);
 
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
@@ -1344,13 +1313,82 @@ Data Objects: Request form, User profile`,
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error(
-        `Error generating BPMN from content for ${stakeholder} ${flowType}:`,
-        error,
+      console.error(`Error generating AI BPMN for ${stakeholder} ${flowType}:`, error);
+      setError(`Failed to generate AI BPMN diagram. Please try again.`);
+    } finally {
+      setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
+  // Generate BPMN XML directly from structured data (No AI)
+  const generateStructuredBpmn = async (
+    stakeholder: string,
+    flowType: string,
+  ) => {
+    const flowKey = `${stakeholder}-${flowType}`;
+    const details = flowDetails[flowKey];
+
+    if (!details) {
+      setError("Flow details not found. Please generate flow details first.");
+      return;
+    }
+
+    setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
+
+    try {
+      // Create structured content from flow details
+      const structuredContent = {
+        processName: `${stakeholder} - ${flowType}`,
+        processDescription: details.processDescription || details.description,
+        participants: details.participants || [],
+        trigger: details.trigger || "Process starts",
+        activities: details.activities || [],
+        decisionPoints: details.decisionPoints || [],
+        endEvent: details.endEvent || "Process completes",
+        additionalElements: details.additionalElements || [],
+      };
+
+      console.log("✅ Generating BPMN using structured data converter...");
+
+      // Generate BPMN XML using structured generator (no AI required)
+      const { generateStructuredBpmn } = await import("../lib/structured-bpmn-generator");
+
+      // Generate BPMN directly from structured content without AI
+      const bpmnXml = generateStructuredBpmn(structuredContent);
+
+      console.log(bpmnXml);
+
+      // Update stakeholder flows with generated BPMN
+      const updatedFlows = [...stakeholderFlows];
+      const existingFlowIndex = updatedFlows.findIndex(
+        (flow) =>
+          flow.stakeholder === stakeholder && flow.flowType === flowType,
       );
-      setError(
-        `Failed to generate BPMN diagram from content. Please try again.`,
-      );
+
+      if (existingFlowIndex >= 0) {
+        updatedFlows[existingFlowIndex] = {
+          ...updatedFlows[existingFlowIndex],
+          bpmnXml,
+        };
+      } else {
+        updatedFlows.push({
+          stakeholder,
+          flowType,
+          bpmnXml,
+          customPrompt: "",
+        });
+      }
+
+      updateStakeholderFlows(updatedFlows);
+
+      // Save the latest generated BPMN to localStorage for editor
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (error) {
+      console.error(`Error generating structured BPMN for ${stakeholder} ${flowType}:`, error);
+      setError(`Failed to generate structured BPMN diagram. Please try again.`);
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
@@ -2181,7 +2219,7 @@ Data Objects: Request form, User profile`,
                                       )}
                                     <Button
                                       onClick={() =>
-                                        generateBpmnFromContent(
+                                        generateBpmnWithAI(
                                           stakeholder,
                                           flowType,
                                         )
