@@ -77,18 +77,34 @@ export function useBpmnEditor() {
 
       modelerRef.current = modeler;
 
-      // Enable basic event tracking for modifications
-      const eventBus = modeler.get('eventBus');
-      
-      // Track diagram changes for auto-save
-      eventBus.on('commandStack.changed', () => {
-        setIsModified(true);
-      });
-
-      // Ensure palette is visible and ready for editing
-      const palette = modeler.get('palette');
-      if (palette) {
-        palette.open();
+      // Verify and configure editing capabilities
+      try {
+        const palette = modeler.get('palette');
+        const move = modeler.get('move');
+        const dragging = modeler.get('dragging');
+        const modeling = modeler.get('modeling');
+        
+        console.log('🎯 BPMN Editor Services Check:', {
+          palette: !!palette,
+          move: !!move,
+          dragging: !!dragging,
+          modeling: !!modeling,
+          paletteOpen: palette ? 'opening...' : 'unavailable'
+        });
+        
+        if (palette) {
+          palette.open();
+        }
+        
+        // Ensure dragging is enabled
+        if (dragging && move) {
+          console.log('✅ Drag services available');
+        } else {
+          console.log('❌ Missing drag services');
+        }
+        
+      } catch (error) {
+        console.error('Error configuring editor services:', error);
       }
 
       // Enhanced element selection handler
@@ -114,7 +130,7 @@ export function useBpmnEditor() {
         }
       });
 
-      // Enhanced change tracking with auto-save
+      // Enhanced change tracking with auto-save (single handler)
       modeler.on('commandStack.changed', async () => {
         setIsModified(true);
         setStatus('Modified');
