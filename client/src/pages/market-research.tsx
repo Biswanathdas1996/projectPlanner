@@ -94,8 +94,7 @@ export default function MarketResearch() {
     setError('');
     
     // Clear localStorage data
-    localStorage.removeItem(STORAGE_KEYS.MARKET_RESEARCH_DATA);
-    localStorage.removeItem(STORAGE_KEYS.MARKET_RESEARCH_TIMESTAMP);
+    clearMarketResearchData();
   };
 
   const exportResearchData = () => {
