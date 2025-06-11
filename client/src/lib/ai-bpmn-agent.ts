@@ -210,7 +210,26 @@ Generate the complete BPMN 2.0 XML:`;
       xml = xml.substring(xmlStart);
     }
 
+    // Fix duplicate IDs by making them unique
+    xml = this.fixDuplicateIds(xml);
+
     return xml;
+  }
+
+  private fixDuplicateIds(xml: string): string {
+    const timestamp = Date.now();
+    const usedIds = new Set<string>();
+    
+    // Find and replace duplicate IDs
+    return xml.replace(/id="([^"]+)"/g, (match, id) => {
+      if (usedIds.has(id)) {
+        const newId = `${id}_${timestamp}_${Math.random().toString(36).substr(2, 5)}`;
+        usedIds.add(newId);
+        return `id="${newId}"`;
+      }
+      usedIds.add(id);
+      return match;
+    });
   }
 
   private enhanceBpmnStructure(xml: string, data: StructuredWorkflowData, options: BpmnGenerationOptions): string {

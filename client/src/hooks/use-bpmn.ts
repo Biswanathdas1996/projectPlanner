@@ -148,21 +148,31 @@ export function useBpmn() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage with proper updates
   const saveToStorage = useCallback(async () => {
     if (!modelerRef.current) return;
 
     try {
       const result = await modelerRef.current.saveXML({ format: true });
+      
+      // Update the current XML state
+      setDiagramXml(result.xml);
+      
+      // Save to both storage keys for compatibility
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, result.xml);
-      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, new Date().toISOString());
-      showNotification('Diagram saved successfully!', 'success');
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, result.xml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+      
+      showNotification('Diagram saved successfully', 'success');
       setStatus('Saved');
+      
+      // Trigger XML view update
+      updateXmlView();
     } catch (error) {
       console.error('Error saving diagram:', error);
       showNotification('Failed to save diagram', 'error');
     }
-  }, [showNotification]);
+  }, [showNotification, updateXmlView]);
 
   // Convert legacy JSON format to BPMN XML with swimlanes
   const convertJsonToBpmnXml = useCallback((jsonData: any): string => {
@@ -591,6 +601,8 @@ export function useBpmn() {
   const activateConnectionMode = useCallback(() => {
     showNotification('Connection mode activated', 'warning');
   }, [showNotification]);
+
+
 
   // Initialize modeler on mount
   useEffect(() => {
