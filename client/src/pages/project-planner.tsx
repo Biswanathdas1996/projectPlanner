@@ -48,12 +48,7 @@ export default function ProjectPlanner() {
   const [projectPlan, setProjectPlan] = useState('');
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>(() => {
-    const path = window.location.pathname;
-    if (path === '/plan') return 'plan';
-    if (path === '/diagram') return 'diagram';
-    return 'input';
-  });
+  const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
   const [error, setError] = useState('');
   const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>('');
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
@@ -94,6 +89,15 @@ export default function ProjectPlanner() {
     }
     if (savedDiagram) {
       setGeneratedBpmnXml(savedDiagram);
+    }
+
+    // Set current step based on route
+    if (location === '/plan') {
+      setCurrentStep('plan');
+    } else if (location === '/diagram') {
+      setCurrentStep('diagram');
+    } else {
+      setCurrentStep('input');
     }
 
     // Clear any previous progress states when component loads
