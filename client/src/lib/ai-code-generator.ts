@@ -33,11 +33,9 @@ export class AICodeGenerator {
   private readonly retryDelay = 2000;
 
   constructor() {
-    const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
-    
     try {
-      const genAI = new GoogleGenerativeAI(apiKey);
-      this.gemini = genAI.getGenerativeModel({ model: "gemini-pro" });
+      const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+      this.gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       console.log("AI Code Generator initialized with Gemini successfully");
     } catch (error) {
       console.error("Failed to initialize Gemini:", error);
@@ -179,7 +177,7 @@ Extract and return JSON with:
 Respond with valid JSON only.
     `;
 
-    const result = await this.gemini.generateContent(prompt);
+    const result = await this.retryableRequest(() => this.gemini.generateContent(prompt));
     const response = await result.response;
     const text = response.text();
     
@@ -352,6 +350,31 @@ Return only the markdown content.
     const result = await this.gemini.generateContent(prompt);
     const response = await result.response;
     return response.text();
+  }
+
+  private async retryableRequest(requestFn: () => Promise<any>): Promise<any> {
+    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+      try {
+        console.log(`API attempt ${attempt}/${this.maxRetries}`);
+        const result = await requestFn();
+        console.log(`API request successful on attempt ${attempt}`);
+        return result;
+      } catch (error: any) {
+        console.error(`Attempt ${attempt} failed:`, {
+          message: error?.message,
+          status: error?.status,
+          statusText: error?.statusText,
+          name: error?.name,
+          cause: error?.cause
+        });
+        
+        if (attempt === this.maxRetries) {
+          throw new Error(`Gemini API failed after ${this.maxRetries} attempts: ${error?.message || 'Unknown error'}`);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+      }
+    }
   }
 
   private getTechStack(config: CodeGenerationConfig): string[] {
