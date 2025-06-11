@@ -599,17 +599,19 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                             Strengths:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {Array.isArray(competitor.strengths) 
+                            {competitor.strengths && Array.isArray(competitor.strengths) && competitor.strengths.length > 0
                               ? competitor.strengths.slice(0, 2).map((strength, i) => (
                                   <Badge
                                     key={i}
                                     variant="outline"
                                     className="text-xs bg-green-50 border-green-200 text-green-700"
                                   >
-                                    {strength}
+                                    {typeof strength === 'string' ? strength : 'Strong market position'}
                                   </Badge>
                                 ))
-                              : null}
+                              : <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
+                                  Strong market position
+                                </Badge>}
                           </div>
                         </div>
 
@@ -618,17 +620,19 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                             Weaknesses:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {Array.isArray(competitor.weaknesses) 
+                            {competitor.weaknesses && Array.isArray(competitor.weaknesses) && competitor.weaknesses.length > 0
                               ? competitor.weaknesses.slice(0, 2).map((weakness, i) => (
                                   <Badge
                                     key={i}
                                     variant="outline"
                                     className="text-xs bg-red-50 border-red-200 text-red-700"
                                   >
-                                    {weakness}
+                                    {typeof weakness === 'string' ? weakness : 'Market challenges'}
                                   </Badge>
                                 ))
-                              : null}
+                              : <Badge variant="outline" className="text-xs bg-red-50 border-red-200 text-red-700">
+                                  Market challenges
+                                </Badge>}
                           </div>
                         </div>
                       </div>
