@@ -34,17 +34,17 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       const elements: BpmnElement[] = [];
       console.log('Parsing BPMN XML, length:', xml.length);
       
-      // Extract start events
-      const startEventMatches = xml.match(/<bpmn2:startEvent[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      // Extract start events (support both self-closing and with content)
+      const startEventMatches = xml.match(/<bpmn2?:startEvent[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:startEvent>)/g);
       console.log('Start events found:', startEventMatches?.length || 0);
       if (startEventMatches) {
         startEventMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          if (idMatch && nameMatch) {
+          if (idMatch) {
             elements.push({
               id: idMatch[1],
-              name: nameMatch[1],
+              name: nameMatch ? nameMatch[1] : 'Start',
               type: 'startEvent',
               x: 50,
               y: 100,
@@ -55,17 +55,17 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         });
       }
 
-      // Extract user tasks
-      const taskMatches = xml.match(/<bpmn2:userTask[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      // Extract user tasks and service tasks
+      const taskMatches = xml.match(/<bpmn2?:(?:userTask|serviceTask|task)[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:(?:userTask|serviceTask|task)>)/g);
       console.log('User tasks found:', taskMatches?.length || 0);
       if (taskMatches) {
         taskMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          if (idMatch && nameMatch) {
+          if (idMatch) {
             elements.push({
               id: idMatch[1],
-              name: nameMatch[1],
+              name: nameMatch ? nameMatch[1] : `Task ${index + 1}`,
               type: 'userTask',
               x: 150 + (index * 180),
               y: 80,
@@ -77,17 +77,17 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       }
 
       // Extract gateways (decision points)
-      const exclusiveGatewayMatches = xml.match(/<bpmn2:exclusiveGateway[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      const exclusiveGatewayMatches = xml.match(/<bpmn2?:exclusiveGateway[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:exclusiveGateway>)/g);
       console.log('Exclusive gateways found:', exclusiveGatewayMatches?.length || 0);
       if (exclusiveGatewayMatches) {
         exclusiveGatewayMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          if (idMatch && nameMatch) {
+          if (idMatch) {
             const taskCount = taskMatches ? taskMatches.length : 0;
             elements.push({
               id: idMatch[1],
-              name: nameMatch[1],
+              name: nameMatch ? nameMatch[1] : `Gateway ${index + 1}`,
               type: 'exclusiveGateway',
               x: 150 + (taskCount * 180) + 50,
               y: 80,
@@ -99,18 +99,18 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       }
 
       // Extract parallel gateways
-      const parallelGatewayMatches = xml.match(/<bpmn2:parallelGateway[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      const parallelGatewayMatches = xml.match(/<bpmn2?:parallelGateway[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:parallelGateway>)/g);
       console.log('Parallel gateways found:', parallelGatewayMatches?.length || 0);
       if (parallelGatewayMatches) {
         parallelGatewayMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          if (idMatch && nameMatch) {
+          if (idMatch) {
             const taskCount = taskMatches ? taskMatches.length : 0;
             const gatewayCount = exclusiveGatewayMatches ? exclusiveGatewayMatches.length : 0;
             elements.push({
               id: idMatch[1],
-              name: nameMatch[1],
+              name: nameMatch ? nameMatch[1] : `Parallel Gateway ${index + 1}`,
               type: 'parallelGateway',
               x: 150 + ((taskCount + gatewayCount) * 180) + 50,
               y: 80,
@@ -122,19 +122,19 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       }
 
       // Extract end events
-      const endEventMatches = xml.match(/<bpmn2:endEvent[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      const endEventMatches = xml.match(/<bpmn2?:endEvent[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:endEvent>)/g);
       console.log('End events found:', endEventMatches?.length || 0);
       if (endEventMatches) {
         endEventMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          if (idMatch && nameMatch) {
+          if (idMatch) {
             const taskCount = taskMatches ? taskMatches.length : 0;
             const gatewayCount = (exclusiveGatewayMatches ? exclusiveGatewayMatches.length : 0) + 
                                  (parallelGatewayMatches ? parallelGatewayMatches.length : 0);
             elements.push({
               id: idMatch[1],
-              name: nameMatch[1],
+              name: nameMatch ? nameMatch[1] : 'End',
               type: 'endEvent',
               x: 150 + ((taskCount + gatewayCount) * 180) + 50,
               y: 100,
@@ -146,7 +146,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       }
 
       // Extract sequence flows (including conditional flows)
-      const flowMatches = xml.match(/<bpmn2:sequenceFlow[^>]*>[\s\S]*?<\/bpmn2:sequenceFlow>|<bpmn2:sequenceFlow[^>]*\/>/g);
+      const flowMatches = xml.match(/<bpmn2?:sequenceFlow[^>]*(?:\/>|>[\s\S]*?<\/bpmn2?:sequenceFlow>)/g);
       console.log('Sequence flows found:', flowMatches?.length || 0);
       if (flowMatches) {
         flowMatches.forEach(match => {
@@ -154,7 +154,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
           const sourceMatch = match.match(/sourceRef="([^"]*)"/);
           const targetMatch = match.match(/targetRef="([^"]*)"/);
           const nameMatch = match.match(/name="([^"]*)"/);
-          const conditionMatch = match.match(/<bpmn2:conditionExpression[^>]*>([^<]*)<\/bpmn2:conditionExpression>/);
+          const conditionMatch = match.match(/<bpmn2?:conditionExpression[^>]*>([^<]*)<\/bpmn2?:conditionExpression>/);
           
           if (idMatch && sourceMatch && targetMatch) {
             elements.push({
@@ -163,7 +163,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
               type: 'sequenceFlow',
               sourceRef: sourceMatch[1],
               targetRef: targetMatch[1],
-              condition: conditionMatch ? conditionMatch[1] : undefined
+              condition: conditionMatch ? conditionMatch[1] : nameMatch ? nameMatch[1] : undefined
             });
           }
         });
