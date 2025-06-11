@@ -21,7 +21,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
-import { generateCustomSuggestions } from '@/lib/gemini';
+import { generateCustomSuggestions, generateFlowAnalysis } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
@@ -55,6 +55,17 @@ interface StakeholderFlow {
   customPrompt: string;
 }
 
+interface FlowDetails {
+  description: string;
+  processDescription: string;
+  participants: string[];
+  trigger: string;
+  activities: string[];
+  decisionPoints: string[];
+  endEvent: string;
+  additionalElements: string[];
+}
+
 export default function UserStoryGenerator() {
   const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>([]);
   const [userStories, setUserStories] = useState<UserStory[]>([]);
@@ -63,6 +74,21 @@ export default function UserStoryGenerator() {
   const [error, setError] = useState('');
   const [generationStatus, setGenerationStatus] = useState('');
   const [projectName, setProjectName] = useState('');
+  const [projectDescription, setProjectDescription] = useState('');
+  const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>({});
+  const [isGeneratingUserStories, setIsGeneratingUserStories] = useState(false);
+  const [userStoryGenerationProgress, setUserStoryGenerationProgress] = useState<{
+    current: number;
+    total: number;
+    currentFlow: string;
+    status: string;
+  }>({
+    current: 0,
+    total: 0,
+    currentFlow: '',
+    status: ''
+  });
+  const [showUserStories, setShowUserStories] = useState(true);
   const [jiraConfig, setJiraConfig] = useState({
     projectKey: '',
     issueType: 'Story',
@@ -80,7 +106,7 @@ export default function UserStoryGenerator() {
       }
     }
 
-    const savedStories = localStorage.getItem('user_stories');
+    const savedStories = localStorage.getItem('generated_user_stories');
     if (savedStories) {
       try {
         setUserStories(JSON.parse(savedStories));
@@ -89,16 +115,32 @@ export default function UserStoryGenerator() {
       }
     }
 
-    const savedProjectName = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
-    if (savedProjectName) {
-      setProjectName(savedProjectName.substring(0, 100));
+    const savedFlowDetails = localStorage.getItem(STORAGE_KEYS.FLOW_DETAILS);
+    if (savedFlowDetails) {
+      try {
+        setFlowDetails(JSON.parse(savedFlowDetails));
+      } catch (e) {
+        console.error('Error loading flow details:', e);
+      }
+    }
+
+    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    if (savedProjectDescription) {
+      setProjectDescription(savedProjectDescription);
+      setProjectName(savedProjectDescription.substring(0, 100));
+    }
+
+    const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
+    if (savedProjectPlan && !savedProjectDescription) {
+      setProjectDescription(savedProjectPlan);
+      setProjectName(savedProjectPlan.substring(0, 100));
     }
   }, []);
 
   // Save user stories to localStorage
   useEffect(() => {
     if (userStories.length > 0) {
-      localStorage.setItem('user_stories', JSON.stringify(userStories));
+      localStorage.setItem('generated_user_stories', JSON.stringify(userStories));
     }
   }, [userStories]);
 
@@ -233,6 +275,256 @@ Generate the JSON array now:`;
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  // Generate user stories from stakeholder flows based on flow details
+  const generateUserStoriesFromFlows = async () => {
+    if (stakeholderFlows.length === 0) {
+      setError('No stakeholder flows found. Please generate flows first.');
+      return;
+    }
+
+    setIsGeneratingUserStories(true);
+    setError('');
+    
+    const newUserStories: UserStory[] = [];
+    
+    // Update progress tracking
+    setUserStoryGenerationProgress({
+      current: 0,
+      total: stakeholderFlows.length,
+      currentFlow: '',
+      status: 'Starting user story generation...'
+    });
+
+    for (let i = 0; i < stakeholderFlows.length; i++) {
+      const flow = stakeholderFlows[i];
+      const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+      const flowDetail = flowDetails[flowKey];
+      
+      // Update progress
+      setUserStoryGenerationProgress({
+        current: i + 1,
+        total: stakeholderFlows.length,
+        currentFlow: `${flow.stakeholder} - ${flow.flowType}`,
+        status: `Generating stories for ${flow.stakeholder}...`
+      });
+
+      try {
+        // Create a comprehensive prompt using both flow details and project context
+        const contextualPrompt = `
+**Project Context:**
+${projectDescription}
+
+**Stakeholder:** ${flow.stakeholder}
+**Flow Type:** ${flow.flowType}
+**Custom Requirements:** ${flow.customPrompt}
+
+**Flow Details:**
+${flowDetail ? `
+- Process Description: ${flowDetail.processDescription}
+- Participants: ${flowDetail.participants.join(', ')}
+- Trigger: ${flowDetail.trigger}
+- Key Activities: ${flowDetail.activities.join(', ')}
+- Decision Points: ${flowDetail.decisionPoints.join(', ')}
+- End Event: ${flowDetail.endEvent}
+- Additional Elements: ${flowDetail.additionalElements.join(', ')}
+` : 'Using BPMN XML analysis for flow understanding'}
+
+**Task:** Generate 2-4 comprehensive user stories for this stakeholder flow. Each story should be relevant to the specific activities and decision points in the workflow.
+
+**CRITICAL:** Respond with ONLY a valid JSON array. No explanations, no markdown, no text before or after the JSON.
+
+Required JSON format:
+[
+  {
+    "title": "Clear, actionable story title",
+    "asA": "specific user role or stakeholder",
+    "iWant": "specific functionality or capability",
+    "soThat": "clear business value or benefit",
+    "acceptanceCriteria": ["testable criteria 1", "testable criteria 2", "testable criteria 3"],
+    "priority": "Critical|High|Medium|Low",
+    "storyPoints": 1-13,
+    "epic": "relevant epic name",
+    "labels": ["tag1", "tag2", "tag3"],
+    "gherkinScenarios": [
+      {
+        "title": "scenario description",
+        "given": ["precondition 1", "precondition 2"],
+        "when": ["action 1", "action 2"],
+        "then": ["expected result 1", "expected result 2"]
+      }
+    ]
+  }
+]
+
+Generate the JSON array:`;
+
+        const response = await generateCustomSuggestions(contextualPrompt);
+        
+        try {
+          // Process the AI response to extract JSON
+          const responseText = Array.isArray(response) ? response.join(' ') : String(response);
+          console.log(`Processing response for ${flow.stakeholder} - ${flow.flowType}:`, responseText.substring(0, 200));
+          
+          // Extract JSON array from response
+          let jsonMatch = responseText.match(/\[[\s\S]*?\]/);
+          if (!jsonMatch) {
+            // Try to find individual JSON objects and wrap them
+            const objectMatches = responseText.match(/\{[\s\S]*?\}/g);
+            if (objectMatches) {
+              jsonMatch = [`[${objectMatches.join(',')}]`];
+            }
+          }
+          
+          if (!jsonMatch) {
+            throw new Error('No valid JSON found in AI response');
+          }
+          
+          const generatedStories = JSON.parse(jsonMatch[0]);
+          
+          // Process and enhance the generated stories
+          const processedStories: UserStory[] = generatedStories.map((story: any, index: number) => ({
+            id: `story-${flow.stakeholder}-${flow.flowType}-${Date.now()}-${index}`,
+            stakeholder: flow.stakeholder,
+            flowType: flow.flowType,
+            title: story.title || `${flow.stakeholder} ${flow.flowType} Story`,
+            asA: story.asA || flow.stakeholder.toLowerCase(),
+            iWant: story.iWant || `to complete ${flow.flowType.toLowerCase()}`,
+            soThat: story.soThat || 'I can achieve my goals efficiently',
+            acceptanceCriteria: Array.isArray(story.acceptanceCriteria) 
+              ? story.acceptanceCriteria 
+              : ['System functions as expected', 'User receives appropriate feedback'],
+            priority: ['Critical', 'High', 'Medium', 'Low'].includes(story.priority) 
+              ? story.priority 
+              : 'Medium',
+            storyPoints: (typeof story.storyPoints === 'number' && story.storyPoints >= 1 && story.storyPoints <= 13) 
+              ? story.storyPoints 
+              : 3,
+            epic: story.epic || `${flow.stakeholder} Workflows`,
+            labels: Array.isArray(story.labels) 
+              ? story.labels 
+              : [flow.stakeholder.toLowerCase(), flow.flowType.toLowerCase()],
+            gherkinScenarios: (story.gherkinScenarios || []).map((scenario: any, scenarioIndex: number) => ({
+              id: `scenario-${flow.stakeholder}-${Date.now()}-${index}-${scenarioIndex}`,
+              title: scenario.title || `${flow.flowType} scenario`,
+              given: Array.isArray(scenario.given) ? scenario.given : ['I am authenticated'],
+              when: Array.isArray(scenario.when) ? scenario.when : ['I perform the action'],
+              then: Array.isArray(scenario.then) ? scenario.then : ['The system responds correctly']
+            }))
+          }));
+
+          newUserStories.push(...processedStories);
+          console.log(`Generated ${processedStories.length} stories for ${flow.stakeholder} - ${flow.flowType}`);
+          
+        } catch (parseError) {
+          console.error(`Error parsing stories for ${flow.stakeholder} - ${flow.flowType}:`, parseError);
+          
+          // Create intelligent fallback stories based on flow details
+          const fallbackStories: UserStory[] = [];
+          
+          if (flowDetail) {
+            // Generate stories based on activities
+            flowDetail.activities.slice(0, 2).forEach((activity, index) => {
+              fallbackStories.push({
+                id: `story-${flow.stakeholder}-${flow.flowType}-fallback-${Date.now()}-${index}`,
+                stakeholder: flow.stakeholder,
+                flowType: flow.flowType,
+                title: `${flow.stakeholder} ${activity}`,
+                asA: flow.stakeholder.toLowerCase(),
+                iWant: `to ${activity.toLowerCase()}`,
+                soThat: 'I can progress through the workflow efficiently',
+                acceptanceCriteria: [
+                  `${activity} completes successfully`,
+                  'Appropriate feedback is provided',
+                  'Next steps are clearly indicated'
+                ],
+                priority: 'Medium' as const,
+                storyPoints: 3,
+                epic: `${flow.stakeholder} Core Workflows`,
+                labels: [flow.stakeholder.toLowerCase(), activity.toLowerCase().replace(/\s+/g, '-')],
+                gherkinScenarios: [
+                  {
+                    id: `scenario-fallback-${Date.now()}-${index}`,
+                    title: `${activity} execution`,
+                    given: ['I have the necessary permissions', 'The system is available'],
+                    when: [`I initiate ${activity.toLowerCase()}`],
+                    then: ['The activity completes successfully', 'I receive confirmation']
+                  }
+                ]
+              });
+            });
+          } else {
+            // Basic fallback story
+            fallbackStories.push({
+              id: `story-${flow.stakeholder}-${flow.flowType}-basic-fallback-${Date.now()}`,
+              stakeholder: flow.stakeholder,
+              flowType: flow.flowType,
+              title: `${flow.stakeholder} ${flow.flowType} Process`,
+              asA: flow.stakeholder.toLowerCase(),
+              iWant: `to complete the ${flow.flowType.toLowerCase()} process`,
+              soThat: 'I can achieve my business objectives',
+              acceptanceCriteria: [
+                'Process completes within expected timeframe',
+                'All required validations pass',
+                'Appropriate notifications are sent'
+              ],
+              priority: 'Medium' as const,
+              storyPoints: 5,
+              epic: `${flow.stakeholder} Workflows`,
+              labels: [flow.stakeholder.toLowerCase(), flow.flowType.toLowerCase()],
+              gherkinScenarios: [
+                {
+                  id: `scenario-basic-fallback-${Date.now()}`,
+                  title: `Complete ${flow.flowType.toLowerCase()} process`,
+                  given: ['I am authenticated and authorized', 'The system is operational'],
+                  when: [`I start the ${flow.flowType.toLowerCase()} process`],
+                  then: ['The process completes successfully', 'I receive appropriate confirmation']
+                }
+              ]
+            });
+          }
+
+          newUserStories.push(...fallbackStories);
+          console.log(`Created ${fallbackStories.length} fallback stories for ${flow.stakeholder} - ${flow.flowType}`);
+        }
+        
+        // Small delay to prevent overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+      } catch (error) {
+        console.error(`Error processing ${flow.stakeholder} - ${flow.flowType}:`, error);
+        // Continue with next flow even if one fails
+      }
+    }
+
+    // Update the user stories state with all generated stories
+    setUserStories(prev => {
+      // Remove duplicates and merge with existing stories
+      const existingIds = new Set(prev.map(story => story.id));
+      const uniqueNewStories = newUserStories.filter(story => !existingIds.has(story.id));
+      return [...prev, ...uniqueNewStories];
+    });
+
+    // Final progress update
+    setUserStoryGenerationProgress({
+      current: stakeholderFlows.length,
+      total: stakeholderFlows.length,
+      currentFlow: '',
+      status: `✅ Generated ${newUserStories.length} user stories successfully!`
+    });
+
+    // Clear progress after delay
+    setTimeout(() => {
+      setUserStoryGenerationProgress({
+        current: 0,
+        total: 0,
+        currentFlow: '',
+        status: ''
+      });
+    }, 3000);
+
+    setIsGeneratingUserStories(false);
   };
 
   // Export to JIRA format
