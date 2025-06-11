@@ -11,6 +11,7 @@ declare global {
   interface Window {
     BpmnJS: any;
     BpmnModeler: any;
+    BpmnViewer: any;
   }
 }
 
@@ -61,17 +62,13 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
         console.log('Available BPMN constructors:', {
           BpmnJS: !!window.BpmnJS,
           BpmnModeler: !!window.BpmnModeler,
+          BpmnViewer: !!window.BpmnViewer,
           windowKeys: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
         });
 
-        // Try different BPMN constructor patterns
-        let BpmnConstructor = window.BpmnJS || window.BpmnModeler || (window as any).BpmnViewer;
+        // Use the BpmnViewer constructor from the loaded library
+        const BpmnConstructor = window.BpmnViewer || window.BpmnJS || window.BpmnModeler;
         
-        // Check if the script loaded a different global
-        if (!BpmnConstructor && typeof (window as any).BpmnJS !== 'undefined') {
-          BpmnConstructor = (window as any).BpmnJS;
-        }
-
         if (!BpmnConstructor) {
           throw new Error('BPMN library constructor not found. Available globals: ' + 
             Object.keys(window).filter(key => key.toLowerCase().includes('bpmn')).join(', '));
@@ -130,7 +127,7 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       }
 
       // Check for BPMN library availability
-      const BpmnLibrary = window.BpmnJS || window.BpmnModeler;
+      const BpmnLibrary = window.BpmnViewer || window.BpmnJS || window.BpmnModeler;
       if (!BpmnLibrary) {
         setError('BPMN.js library not loaded. Please refresh the page.');
         setIsLoading(false);
