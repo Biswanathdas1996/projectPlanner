@@ -108,12 +108,14 @@ Generate detailed market research with the following structure:
 Provide a comprehensive overview of the market space, including total addressable market, current market conditions, and growth trajectory.
 
 === COMPREHENSIVE COMPETITOR ANALYSIS ===
-List 15-20 real companies that offer similar or adjacent solutions. For each competitor, provide:
+List 15-20 real companies that offer similar or adjacent solutions. For each competitor, provide SPECIFIC NUMERICAL DATA:
 - Company name and website URL
 - Founded year and headquarters location
 - Business model and revenue streams
-- Market capitalization or valuation (in millions/billions USD)
-- Annual revenue and employee count
+- Market capitalization (provide specific amounts like "$145.2B", "$28.5B", "$3.1B", etc.)
+- Annual revenue (provide specific amounts like "$50.3B", "$12.8B", "$890M", etc.)
+- Employee count (provide specific numbers like "156,000", "45,200", "8,500", etc.)
+- Valuation for private companies (provide specific amounts like "$12.4B", "$2.8B", etc.)
 - Key features and value proposition
 - Pricing model and typical price ranges
 - Target market and customer base
@@ -121,6 +123,8 @@ List 15-20 real companies that offer similar or adjacent solutions. For each com
 - Strengths and competitive advantages
 - Weaknesses and market gaps
 - Recent funding rounds or financial milestones
+
+IMPORTANT: Use real, research-backed financial data. Do not use placeholder values like "N/A", "Various", or vague ranges. Provide specific numbers based on recent public information and industry knowledge.
 
 === MARKET SIZE AND TRENDS ===
 - Total addressable market (TAM) size and projections
@@ -151,6 +155,14 @@ List 15-20 real companies that offer similar or adjacent solutions. For each com
 - Competitive response risks
 
 Focus on providing specific, actionable intelligence based on real market knowledge. Include actual company names, realistic pricing data, and credible market size estimates.
+
+CRITICAL: For each competitor, provide exact financial figures:
+- Market Cap: Use specific amounts like "$45.2B", "$3.1B", "$890M" (never "N/A" or "Private")
+- Revenue: Use specific amounts like "$12.8B", "$450M", "$89M" (never "Undisclosed")  
+- Employees: Use specific numbers like "45,200", "8,500", "1,200" (never "Unknown")
+- For private companies, provide valuation estimates like "$5.2B", "$1.8B"
+
+Use real financial data from public sources and industry knowledge. Every competitor must have numerical values for these metrics.
 `;
 
     try {
