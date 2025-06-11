@@ -26,6 +26,8 @@ export const STORAGE_KEYS = {
   GENERATED_BPMN_XML: 'bpmn-generated-xml',
   STAKEHOLDER_FLOWS: 'bpmn-stakeholder-flows',
   STAKEHOLDER_FLOW_DATA: 'bpmn-stakeholder-flow-data',
+  MARKET_RESEARCH_DATA: 'bpmn-market-research-data',
+  MARKET_RESEARCH_TIMESTAMP: 'bpmn-market-research-timestamp',
 } as const;
 
 export function generateId(): string {
