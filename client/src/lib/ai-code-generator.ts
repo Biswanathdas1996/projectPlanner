@@ -28,20 +28,18 @@ export interface GenerationProgress {
 }
 
 export class AICodeGenerator {
-  private openai: OpenAI;
+  private gemini: any;
   private readonly maxRetries = 3;
   private readonly retryDelay = 2000;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("OpenAI API key is required. Please set VITE_OPENAI_API_KEY in your environment variables.");
+      throw new Error("Gemini API key is required. Please set VITE_GEMINI_API_KEY in your environment variables.");
     }
     
-    this.openai = new OpenAI({
-      apiKey: apiKey,
-      dangerouslyAllowBrowser: true
-    });
+    const genAI = new GoogleGenerativeAI(apiKey);
+    this.gemini = genAI.getGenerativeModel({ model: "gemini-pro" });
   }
 
   async generateCompleteProject(
@@ -51,13 +49,13 @@ export class AICodeGenerator {
     onProgress?: (progress: GenerationProgress) => void
   ): Promise<ProjectStructure> {
     const tasks = [
-      "Analyzing project requirements",
-      "Generating folder structure", 
-      "Creating frontend components",
-      "Building backend API",
-      "Designing database schema",
-      "Setting up configuration files",
-      "Finalizing project structure"
+      "Analyzing Requirements",
+      "Generating Folder Structure", 
+      "Creating Frontend Files",
+      "Building Backend Files",
+      "Designing Database Schema",
+      "Setting up Configuration",
+      "Finalizing Documentation"
     ];
 
     try {
@@ -120,15 +118,16 @@ export class AICodeGenerator {
       });
 
       const packageJson = await this.generatePackageJson(requirements, config);
-      const readme = await this.generateReadme(requirements, config);
 
-      // Step 7: Finalize
+      // Step 7: Generate documentation
       onProgress?.({
         current: 7,
         total: tasks.length,
-        status: "Project generation completed successfully!",
+        status: "Creating project documentation...",
         currentTask: tasks[6]
       });
+
+      const readme = await this.generateReadme(requirements, config);
 
       return {
         folderStructure,
@@ -177,35 +176,35 @@ Extract and return JSON with:
 Respond with valid JSON only.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert software architect. Analyze requirements and return structured JSON."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.3
-    });
-
-    return JSON.parse(response.choices[0].message.content || "{}");
+    const result = await this.gemini.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      console.error("Failed to parse JSON response:", text);
+      return {
+        coreFeatures: ["Authentication", "Dashboard", "Data Management"],
+        userRoles: ["admin", "user"],
+        entities: ["User", "Project"],
+        apiEndpoints: ["/api/auth", "/api/users", "/api/projects"],
+        uiComponents: ["Header", "Sidebar", "Dashboard"],
+        businessLogic: ["User management", "Data processing"]
+      };
+    }
   }
 
   private async generateFolderStructure(requirements: any, config: CodeGenerationConfig): Promise<string> {
     const prompt = `
 Create a comprehensive folder structure for a ${config.framework} project with ${config.backend} backend.
 
-Requirements: ${JSON.stringify(requirements, null, 2)}
+Requirements: ${JSON.stringify(requirements)}
 
-Generate a detailed folder structure that includes:
-- Frontend structure optimized for ${config.framework}
-- Backend structure for ${config.backend}
-- Database migrations and seeds
+Include:
+- Source code organization
+- Component structure
+- Asset management
 - Configuration files
 - Documentation
 - Testing structure
@@ -214,69 +213,38 @@ Generate a detailed folder structure that includes:
 Return only the folder structure in tree format.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert in project structure design. Create well-organized, scalable folder structures."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.2
-    });
-
-    return response.choices[0].message.content || "";
+    const result = await this.gemini.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   }
 
   private async generateFrontendFiles(requirements: any, config: CodeGenerationConfig): Promise<{ [key: string]: string }> {
     const files: { [key: string]: string } = {};
 
-    // Generate key frontend files based on requirements
     const filePrompts = [
       {
         name: "App.tsx",
-        prompt: `Create the main App component for a ${config.framework} application with routing and layout based on these requirements: ${JSON.stringify(requirements)}`
+        prompt: `Create the main App component for a ${config.framework} application with routing and layout based on these requirements: ${JSON.stringify(requirements)}. Return only the complete file content.`
       },
       {
-        name: "components/Dashboard.tsx",
-        prompt: `Create a Dashboard component that displays key metrics and data based on stakeholder needs: ${JSON.stringify(requirements)}`
+        name: "components/Dashboard.tsx", 
+        prompt: `Create a Dashboard component that displays key metrics and data based on stakeholder needs: ${JSON.stringify(requirements)}. Return only the complete file content.`
       },
       {
         name: "hooks/useAuth.tsx",
-        prompt: `Create an authentication hook with login, logout, and user state management for: ${JSON.stringify(requirements)}`
+        prompt: `Create an authentication hook with login, logout, and user state management for: ${JSON.stringify(requirements)}. Return only the complete file content.`
       },
       {
         name: "lib/api.ts",
-        prompt: `Create an API utility library with HTTP methods and error handling for: ${JSON.stringify(requirements)}`
-      },
-      {
-        name: "types/index.ts",
-        prompt: `Create TypeScript type definitions based on the project requirements: ${JSON.stringify(requirements)}`
+        prompt: `Create an API utility library with HTTP methods and error handling for: ${JSON.stringify(requirements)}. Return only the complete file content.`
       }
     ];
 
     for (const filePrompt of filePrompts) {
       try {
-        const response = await this.openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          messages: [
-            {
-              role: "system",
-              content: `You are an expert ${config.framework} developer. Write production-ready, well-documented code with proper TypeScript types, error handling, and best practices.`
-            },
-            {
-              role: "user",
-              content: filePrompt.prompt + "\n\nReturn only the complete file content, no explanations."
-            }
-          ],
-          temperature: 0.1
-        });
-
-        files[filePrompt.name] = response.choices[0].message.content || "";
+        const result = await this.gemini.generateContent(filePrompt.prompt);
+        const response = await result.response;
+        files[filePrompt.name] = response.text();
       } catch (error) {
         console.error(`Error generating ${filePrompt.name}:`, error);
         files[filePrompt.name] = `// Error generating ${filePrompt.name}\n// Please implement manually`;
@@ -292,44 +260,23 @@ Return only the folder structure in tree format.
     const filePrompts = [
       {
         name: "server.js",
-        prompt: `Create the main server file for a ${config.backend} application with middleware, routing, and error handling based on: ${JSON.stringify(requirements)}`
+        prompt: `Create the main server file for a ${config.backend} application with middleware, routing, and error handling based on: ${JSON.stringify(requirements)}. Return only the complete file content.`
       },
       {
         name: "routes/api.js",
-        prompt: `Create API routes with CRUD operations for the entities identified in: ${JSON.stringify(requirements)}`
+        prompt: `Create API routes with CRUD operations for the entities identified in: ${JSON.stringify(requirements)}. Return only the complete file content.`
       },
       {
         name: "middleware/auth.js",
-        prompt: `Create authentication middleware with JWT handling and role-based access control for: ${JSON.stringify(requirements)}`
-      },
-      {
-        name: "models/User.js",
-        prompt: `Create a User model with validation and methods based on: ${JSON.stringify(requirements)}`
-      },
-      {
-        name: "services/database.js",
-        prompt: `Create database connection and query utilities for ${config.database} based on: ${JSON.stringify(requirements)}`
+        prompt: `Create authentication middleware for ${config.backend} based on: ${JSON.stringify(requirements)}. Return only the complete file content.`
       }
     ];
 
     for (const filePrompt of filePrompts) {
       try {
-        const response = await this.openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          messages: [
-            {
-              role: "system",
-              content: `You are an expert ${config.backend} backend developer. Write secure, scalable, production-ready code with proper error handling, validation, and database integration.`
-            },
-            {
-              role: "user",
-              content: filePrompt.prompt + "\n\nReturn only the complete file content, no explanations."
-            }
-          ],
-          temperature: 0.1
-        });
-
-        files[filePrompt.name] = response.choices[0].message.content || "";
+        const result = await this.gemini.generateContent(filePrompt.prompt);
+        const response = await result.response;
+        files[filePrompt.name] = response.text();
       } catch (error) {
         console.error(`Error generating ${filePrompt.name}:`, error);
         files[filePrompt.name] = `// Error generating ${filePrompt.name}\n// Please implement manually`;
@@ -343,157 +290,85 @@ Return only the folder structure in tree format.
     const prompt = `
 Create a comprehensive ${config.database} database schema based on these requirements:
 
-${JSON.stringify(requirements, null, 2)}
+${JSON.stringify(requirements)}
 
 Include:
-- All necessary tables with proper relationships
+- Table definitions with proper data types
+- Primary and foreign key relationships
 - Indexes for performance
-- Constraints and validations
-- Initial seed data structure
-- Migration scripts structure
+- Constraints for data integrity
+- Sample data or seed queries
 
-Return only the SQL schema, no explanations.
+Return only the SQL schema code.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: `You are an expert database architect specializing in ${config.database}. Create efficient, normalized schemas with proper indexing.`
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.1
-    });
-
-    return response.choices[0].message.content || "";
+    const result = await this.gemini.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   }
 
   private async generatePackageJson(requirements: any, config: CodeGenerationConfig): Promise<string> {
     const prompt = `
-Create a comprehensive package.json for a ${config.framework} + ${config.backend} project.
+Create a package.json file for a ${config.framework} project with ${config.backend} backend.
 
 Requirements: ${JSON.stringify(requirements)}
-Configuration: ${JSON.stringify(config)}
+Project Name: ${config.projectName}
 
 Include:
-- All necessary dependencies for the tech stack
+- All necessary dependencies
 - Development dependencies
 - Scripts for development, build, test, and deployment
-- Proper project metadata
+- Proper metadata
 
-Return only valid JSON, no explanations.
+Return only the JSON content.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert in JavaScript project configuration. Create comprehensive, production-ready package.json files."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.1
-    });
-
-    return response.choices[0].message.content || "{}";
+    const result = await this.gemini.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   }
 
   private async generateReadme(requirements: any, config: CodeGenerationConfig): Promise<string> {
     const prompt = `
-Create a comprehensive README.md for a ${config.projectName} project.
+Create a comprehensive README.md file for the ${config.projectName} project.
 
-Tech Stack: ${JSON.stringify(config)}
+Tech Stack: ${config.framework}, ${config.backend}, ${config.database}
 Requirements: ${JSON.stringify(requirements)}
 
 Include:
-- Project description and purpose
-- Tech stack overview
+- Project description
 - Installation instructions
-- Development setup
-- API documentation overview
-- Deployment instructions
+- Usage examples
+- API documentation
+- Deployment guide
 - Contributing guidelines
-- License information
 
-Return only the markdown content, no explanations.
+Return only the markdown content.
     `;
 
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert technical writer. Create clear, comprehensive documentation that helps developers understand and contribute to projects."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      temperature: 0.2
-    });
-
-    return response.choices[0].message.content || "";
+    const result = await this.gemini.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
   }
 
   private getTechStack(config: CodeGenerationConfig): string[] {
-    const stack = [];
+    const stack = [config.framework, config.backend, config.database, config.styling];
     
-    // Frontend
-    if (config.framework === "react") stack.push("React", "TypeScript");
-    if (config.framework === "nextjs") stack.push("Next.js", "React", "TypeScript");
-    if (config.framework === "vue") stack.push("Vue.js", "TypeScript");
-    
-    // Styling
-    if (config.styling === "tailwind") stack.push("Tailwind CSS");
-    if (config.styling === "styled") stack.push("Styled Components");
-    if (config.styling === "css") stack.push("CSS Modules");
-    
-    // Backend
-    if (config.backend === "node") stack.push("Node.js", "Express");
-    if (config.backend === "python") stack.push("Python", "FastAPI");
-    if (config.backend === "go") stack.push("Go", "Gin");
-    
-    // Database
-    if (config.database === "postgresql") stack.push("PostgreSQL");
-    if (config.database === "mysql") stack.push("MySQL");
-    if (config.database === "mongodb") stack.push("MongoDB");
-    
-    // Deployment
-    if (config.deployment === "vercel") stack.push("Vercel");
-    if (config.deployment === "netlify") stack.push("Netlify");
-    if (config.deployment === "aws") stack.push("AWS");
-    
-    return stack;
-  }
-
-  private async retryableRequest(requestFn: () => Promise<any>): Promise<any> {
-    let lastError;
-    
-    for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-      try {
-        return await requestFn();
-      } catch (error) {
-        lastError = error;
-        console.warn(`Request attempt ${attempt} failed:`, error);
-        
-        if (attempt < this.maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
-        }
-      }
+    // Add common dependencies based on framework
+    if (config.framework.toLowerCase().includes('react')) {
+      stack.push('React Router', 'Axios');
+    }
+    if (config.framework.toLowerCase().includes('next')) {
+      stack.push('Next.js', 'Vercel');
+    }
+    if (config.backend.toLowerCase().includes('node')) {
+      stack.push('Express.js', 'JWT');
+    }
+    if (config.backend.toLowerCase().includes('python')) {
+      stack.push('Flask/FastAPI', 'SQLAlchemy');
     }
     
-    throw lastError;
+    return Array.from(new Set(stack));
   }
 }
 
