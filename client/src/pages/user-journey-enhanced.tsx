@@ -3223,16 +3223,16 @@ ${flowEdges.join("\n")}
                                   </div>
                                 )}
 
-                                {/* BPMN Diagram */}
+                                {/* BPMN Script Display */}
                                 {existingFlow?.bpmnXml && (
-                                  <div className="space-y-2">
+                                  <div className="space-y-3">
                                     <div className="flex items-center justify-between">
                                       <Badge
                                         variant="secondary"
-                                        className="text-xs bg-green-100 text-green-700"
+                                        className="text-xs bg-blue-100 text-blue-700"
                                       >
                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                        BPMN Generated
+                                        BPMN Script Generated
                                       </Badge>
                                       <div className="flex items-center gap-1">
                                         <Button
@@ -3246,7 +3246,7 @@ ${flowEdges.join("\n")}
                                           className="text-xs px-2 py-1 h-6 border-gray-300"
                                         >
                                           <Copy className="h-3 w-3 mr-1" />
-                                          Copy
+                                          Copy Script
                                         </Button>
                                         <Link href="/bpmn-editor">
                                           <Button
@@ -3262,11 +3262,23 @@ ${flowEdges.join("\n")}
                                         </Link>
                                       </div>
                                     </div>
-                                    <InlineBpmnViewer
-                                      bpmnXml={existingFlow.bpmnXml}
-                                      title={`${stakeholder} - ${flowType}`}
-                                      height="280px"
-                                    />
+                                    
+                                    {/* BPMN XML Script Content */}
+                                    <div className="bg-gray-50 rounded-lg border">
+                                      <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
+                                        <p className="text-xs font-medium text-gray-700">
+                                          BPMN 2.0 XML - {stakeholder} {flowType}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                          {existingFlow.bpmnXml.length} characters
+                                        </p>
+                                      </div>
+                                      <div className="p-3">
+                                        <pre className="text-xs text-gray-800 overflow-auto whitespace-pre-wrap bg-white rounded border p-3 max-h-64 font-mono leading-relaxed">
+                                          {existingFlow.bpmnXml}
+                                        </pre>
+                                      </div>
+                                    </div>
                                   </div>
                                 )}
                               </div>
