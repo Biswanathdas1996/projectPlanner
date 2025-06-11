@@ -46,40 +46,48 @@ export function WorkflowProgress({
 
     // Check for completed steps based on available data
     const hasResearchData = hasMarketResearchData();
-    
+
     // Route-based determination
     switch (location) {
+      case "/start-over":
+        if (step === "input") return "active";
+        break;
       case "/market-research":
         if (step === "input") return "completed";
         if (step === "research") return "active";
         break;
       case "/plan":
         if (step === "input") return "completed";
-        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
         if (step === "plan") return "active";
         break;
       case "/user-journey":
       case "/user-journey-enhanced":
         if (step === "input") return "completed";
-        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
         if (["plan"].includes(step)) return "completed";
         if (step === "diagram") return "active";
         break;
       case "/user-stories":
         if (step === "input") return "completed";
-        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
         if (["plan", "diagram"].includes(step)) return "completed";
         if (step === "stories") return "active";
         break;
       case "/code":
         if (step === "input") return "completed";
-        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
         if (["plan", "diagram", "stories"].includes(step)) return "completed";
         if (step === "code") return "active";
         break;
       default:
         if (step === "input") return "active";
-        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
         break;
     }
 
