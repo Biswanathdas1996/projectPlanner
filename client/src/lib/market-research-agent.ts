@@ -87,7 +87,7 @@ export class MarketResearchAgent {
     // Use Gemini to generate market insights based on the project description
     const { GoogleGenerativeAI } = await import('@google/generative-ai');
     const genAI = new GoogleGenerativeAI('AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E');
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); 
 
     const prompt = `
 Act as a senior market research analyst and provide comprehensive competitive intelligence for this project:

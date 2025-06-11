@@ -5,8 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
-import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { createMarketResearchAgent, type MarketResearchData } from '@/lib/market-research-agent';
+import { 
+  getMarketResearchData, 
+  saveMarketResearchData, 
+  clearMarketResearchData, 
+  getProjectDescription 
+} from '@/lib/storage-utils';
 import { Link } from 'wouter';
 import {
   Search,
@@ -40,11 +45,19 @@ export default function MarketResearch() {
   const [error, setError] = useState('');
   const [currentStep, setCurrentStep] = useState<'input' | 'research' | 'results'>('input');
 
-  // Load project input from localStorage
+  // Load project input and existing research from localStorage
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    const savedProjectDescription = getProjectDescription();
+    const savedResearchData = getMarketResearchData();
+    
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
+    }
+    
+    if (savedResearchData) {
+      setResearchData(savedResearchData);
+      setCurrentStep('results');
+    } else if (savedProjectDescription) {
       setCurrentStep('input');
     }
   }, []);
@@ -63,8 +76,8 @@ export default function MarketResearch() {
       setResearchData(researchData);
       setCurrentStep('results');
       
-      // Save to localStorage
-      localStorage.setItem('market_research_data', JSON.stringify(researchData));
+      // Save to localStorage using storage utilities
+      saveMarketResearchData(researchData);
 
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to perform market research';
@@ -79,6 +92,10 @@ export default function MarketResearch() {
     setCurrentStep('input');
     setResearchData(null);
     setError('');
+    
+    // Clear localStorage data
+    localStorage.removeItem(STORAGE_KEYS.MARKET_RESEARCH_DATA);
+    localStorage.removeItem(STORAGE_KEYS.MARKET_RESEARCH_TIMESTAMP);
   };
 
   const exportResearchData = () => {
@@ -135,6 +152,28 @@ ${researchData.differentiationOpportunities.map(opp => `- ${opp}`).join('\n')}
       <div className="max-w-6xl mx-auto px-4 py-6">
         
         <WorkflowProgress currentStep="plan" />
+
+        {/* Data Status Indicator */}
+        {researchData && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-green-800 font-medium">Market Research Available</p>
+              <p className="text-green-700 text-sm">
+                Research completed on {new Date(researchData.timestamp).toLocaleDateString()} at{' '}
+                {new Date(researchData.timestamp).toLocaleTimeString()}
+              </p>
+            </div>
+            <Button
+              onClick={resetResearch}
+              variant="outline"
+              size="sm"
+              className="border-green-300 text-green-700 hover:bg-green-100"
+            >
+              New Research
+            </Button>
+          </div>
+        )}
 
         {/* Error Display */}
         {error && (
