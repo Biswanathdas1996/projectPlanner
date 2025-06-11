@@ -12,7 +12,7 @@ export async function generateProjectPlan(req: Request, res: Response) {
       return res.status(400).json({ error: 'Project description is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
 You are a business process analyst. Create a detailed project plan for the following project description:
@@ -147,7 +147,7 @@ export async function generateBpmnXml(req: Request, res: Response) {
       return res.status(400).json({ error: 'Project plan is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on this specification:
 
