@@ -10,7 +10,7 @@ interface SimpleBpmnViewerProps {
 interface BpmnElement {
   id: string;
   name: string;
-  type: 'startEvent' | 'userTask' | 'endEvent' | 'sequenceFlow';
+  type: 'startEvent' | 'userTask' | 'endEvent' | 'sequenceFlow' | 'exclusiveGateway' | 'parallelGateway' | 'inclusiveGateway';
   sourceRef?: string;
   targetRef?: string;
   x?: number;
@@ -75,6 +75,51 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         });
       }
 
+      // Extract gateways (decision points)
+      const exclusiveGatewayMatches = xml.match(/<bpmn2:exclusiveGateway[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      console.log('Exclusive gateways found:', exclusiveGatewayMatches?.length || 0);
+      if (exclusiveGatewayMatches) {
+        exclusiveGatewayMatches.forEach((match, index) => {
+          const idMatch = match.match(/id="([^"]*)"/);
+          const nameMatch = match.match(/name="([^"]*)"/);
+          if (idMatch && nameMatch) {
+            const taskCount = taskMatches ? taskMatches.length : 0;
+            elements.push({
+              id: idMatch[1],
+              name: nameMatch[1],
+              type: 'exclusiveGateway',
+              x: 150 + (taskCount * 180) + 50,
+              y: 80,
+              width: 50,
+              height: 50
+            });
+          }
+        });
+      }
+
+      // Extract parallel gateways
+      const parallelGatewayMatches = xml.match(/<bpmn2:parallelGateway[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      console.log('Parallel gateways found:', parallelGatewayMatches?.length || 0);
+      if (parallelGatewayMatches) {
+        parallelGatewayMatches.forEach((match, index) => {
+          const idMatch = match.match(/id="([^"]*)"/);
+          const nameMatch = match.match(/name="([^"]*)"/);
+          if (idMatch && nameMatch) {
+            const taskCount = taskMatches ? taskMatches.length : 0;
+            const gatewayCount = exclusiveGatewayMatches ? exclusiveGatewayMatches.length : 0;
+            elements.push({
+              id: idMatch[1],
+              name: nameMatch[1],
+              type: 'parallelGateway',
+              x: 150 + ((taskCount + gatewayCount) * 180) + 50,
+              y: 80,
+              width: 50,
+              height: 50
+            });
+          }
+        });
+      }
+
       // Extract end events
       const endEventMatches = xml.match(/<bpmn2:endEvent[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
       console.log('End events found:', endEventMatches?.length || 0);
@@ -84,11 +129,13 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
           const nameMatch = match.match(/name="([^"]*)"/);
           if (idMatch && nameMatch) {
             const taskCount = taskMatches ? taskMatches.length : 0;
+            const gatewayCount = (exclusiveGatewayMatches ? exclusiveGatewayMatches.length : 0) + 
+                                 (parallelGatewayMatches ? parallelGatewayMatches.length : 0);
             elements.push({
               id: idMatch[1],
               name: nameMatch[1],
               type: 'endEvent',
-              x: 150 + (taskCount * 180) + 50,
+              x: 150 + ((taskCount + gatewayCount) * 180) + 50,
               y: 100,
               width: 36,
               height: 36
@@ -388,6 +435,78 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
                     className="font-medium"
                   >
                     {element.name.length > 12 ? element.name.substring(0, 12) + '...' : element.name}
+                  </text>
+                </g>
+              );
+            }
+            
+            if (element.type === 'exclusiveGateway') {
+              return (
+                <g key={element.id}>
+                  <path
+                    d={`M ${(element.x || 0) + (element.width || 0) / 2} ${element.y || 0} 
+                        L ${(element.x || 0) + (element.width || 0)} ${(element.y || 0) + (element.height || 0) / 2} 
+                        L ${(element.x || 0) + (element.width || 0) / 2} ${(element.y || 0) + (element.height || 0)} 
+                        L ${element.x || 0} ${(element.y || 0) + (element.height || 0) / 2} Z`}
+                    fill="#fff7ed"
+                    stroke="#f59e0b"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={(element.x || 0) + (element.width || 0) / 2}
+                    y={(element.y || 0) + (element.height || 0) / 2 + 3}
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#f59e0b"
+                    className="font-bold"
+                  >
+                    ×
+                  </text>
+                  <text
+                    x={(element.x || 0) + (element.width || 0) / 2}
+                    y={(element.y || 0) + (element.height || 0) + 20}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#666"
+                    className="font-medium"
+                  >
+                    {element.name.length > 10 ? element.name.substring(0, 10) + '...' : element.name}
+                  </text>
+                </g>
+              );
+            }
+            
+            if (element.type === 'parallelGateway') {
+              return (
+                <g key={element.id}>
+                  <path
+                    d={`M ${(element.x || 0) + (element.width || 0) / 2} ${element.y || 0} 
+                        L ${(element.x || 0) + (element.width || 0)} ${(element.y || 0) + (element.height || 0) / 2} 
+                        L ${(element.x || 0) + (element.width || 0) / 2} ${(element.y || 0) + (element.height || 0)} 
+                        L ${element.x || 0} ${(element.y || 0) + (element.height || 0) / 2} Z`}
+                    fill="#f0fdf4"
+                    stroke="#22c55e"
+                    strokeWidth="2"
+                  />
+                  <text
+                    x={(element.x || 0) + (element.width || 0) / 2}
+                    y={(element.y || 0) + (element.height || 0) / 2 + 5}
+                    textAnchor="middle"
+                    fontSize="16"
+                    fill="#22c55e"
+                    className="font-bold"
+                  >
+                    +
+                  </text>
+                  <text
+                    x={(element.x || 0) + (element.width || 0) / 2}
+                    y={(element.y || 0) + (element.height || 0) + 20}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill="#666"
+                    className="font-medium"
+                  >
+                    {element.name.length > 10 ? element.name.substring(0, 10) + '...' : element.name}
                   </text>
                 </g>
               );
