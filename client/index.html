@@ -7,6 +7,17 @@
     <meta name="description" content="Transform project ideas into visual BPMN workflows using AI. Describe your project and let artificial intelligence create structured process diagrams automatically." />
 
     <script src="https://cdn.jsdelivr.net/npm/bpmn-js@14.1.1/dist/bpmn-viewer.production.min.js"></script>
+    <script>
+      // Debug BPMN library loading
+      window.addEventListener('load', function() {
+        console.log('🔍 BPMN Library Debug:', {
+          BpmnJS: typeof window.BpmnJS,
+          BpmnViewer: typeof window.BpmnViewer,
+          BpmnModeler: typeof window.BpmnModeler,
+          availableGlobals: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
+        });
+      });
+    </script>
     <style>
       .bpmn-container { height: 100%; }
       .bjs-powered-by { display: none !important; }

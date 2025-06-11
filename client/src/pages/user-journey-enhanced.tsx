@@ -1,16 +1,20 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { generateUserJourneyFlows, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
-import { STORAGE_KEYS } from '@/lib/bpmn-utils';
-import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
-import { NavigationBar } from '@/components/navigation-bar';
-import { WorkflowProgress } from '@/components/workflow-progress';
-import { Link } from 'wouter';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  generateUserJourneyFlows,
+  extractStakeholdersFromProject,
+  generatePersonaBpmnFlowWithType,
+} from "@/lib/gemini";
+import { STORAGE_KEYS } from "@/lib/bpmn-utils";
+import { InlineBpmnViewer } from "@/components/inline-bpmn-viewer";
+import { NavigationBar } from "@/components/navigation-bar";
+import { WorkflowProgress } from "@/components/workflow-progress";
+import { Link } from "wouter";
 import {
   Users,
   ArrowRight,
@@ -34,8 +38,8 @@ import {
   Edit3,
   X,
   Save,
-  UserPlus
-} from 'lucide-react';
+  UserPlus,
+} from "lucide-react";
 
 interface StakeholderFlow {
   stakeholder: string;
@@ -56,46 +60,72 @@ interface FlowDetails {
 }
 
 export default function UserJourneyEnhanced() {
-  const [projectPlan, setProjectPlan] = useState('');
-  const [projectDescription, setProjectDescription] = useState('');
-  const [userJourneyFlows, setUserJourneyFlows] = useState<string>('');
-  const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>([]);
+  const [projectPlan, setProjectPlan] = useState("");
+  const [projectDescription, setProjectDescription] = useState("");
+  const [userJourneyFlows, setUserJourneyFlows] = useState<string>("");
+  const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>(
+    [],
+  );
   const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
-  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<Record<string, boolean>>({});
-  const [isExtractingStakeholders, setIsExtractingStakeholders] = useState(false);
-  const [error, setError] = useState('');
+  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<
+    Record<string, boolean>
+  >({});
+  const [isExtractingStakeholders, setIsExtractingStakeholders] =
+    useState(false);
+  const [error, setError] = useState("");
   const [showFlowDetails, setShowFlowDetails] = useState(false);
-  const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>('');
+  const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>("");
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
-  const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
-  
+  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>(
+    [],
+  );
+  const [personaFlowTypes, setPersonaFlowTypes] = useState<
+    Record<string, string[]>
+  >({});
+
   // Stakeholder management state
-  const [newStakeholderName, setNewStakeholderName] = useState('');
-  const [editingStakeholder, setEditingStakeholder] = useState<string | null>(null);
-  const [editedStakeholderName, setEditedStakeholderName] = useState('');
-  
+  const [newStakeholderName, setNewStakeholderName] = useState("");
+  const [editingStakeholder, setEditingStakeholder] = useState<string | null>(
+    null,
+  );
+  const [editedStakeholderName, setEditedStakeholderName] = useState("");
+
   // Flow type management state
   const [newFlowType, setNewFlowType] = useState<Record<string, string>>({});
   const [editingFlowType, setEditingFlowType] = useState<string | null>(null);
-  const [editedFlowTypeName, setEditedFlowTypeName] = useState('');
-  
+  const [editedFlowTypeName, setEditedFlowTypeName] = useState("");
+
   // Flow details generation state
   const [isGeneratingFlowDetails, setIsGeneratingFlowDetails] = useState(false);
-  const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>({});
-  
+  const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>(
+    {},
+  );
+
   // Flow details editing state
-  const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(null);
-  const [editedFlowDetails, setEditedFlowDetails] = useState<FlowDetails | null>(null);
+  const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(
+    null,
+  );
+  const [editedFlowDetails, setEditedFlowDetails] =
+    useState<FlowDetails | null>(null);
 
   // Load data from localStorage when component mounts
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    const savedProjectDescription = localStorage.getItem(
+      STORAGE_KEYS.PROJECT_DESCRIPTION,
+    );
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
-    const savedUserJourneyFlows = localStorage.getItem(STORAGE_KEYS.USER_JOURNEY_FLOWS);
-    const savedStakeholders = localStorage.getItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS);
-    const savedFlowTypes = localStorage.getItem(STORAGE_KEYS.PERSONA_FLOW_TYPES);
-    const savedStakeholderFlows = localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS);
+    const savedUserJourneyFlows = localStorage.getItem(
+      STORAGE_KEYS.USER_JOURNEY_FLOWS,
+    );
+    const savedStakeholders = localStorage.getItem(
+      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+    );
+    const savedFlowTypes = localStorage.getItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+    );
+    const savedStakeholderFlows = localStorage.getItem(
+      STORAGE_KEYS.STAKEHOLDER_FLOWS,
+    );
 
     if (savedProjectDescription) {
       setProjectDescription(savedProjectDescription);
@@ -110,31 +140,31 @@ export default function UserJourneyEnhanced() {
       try {
         setExtractedStakeholders(JSON.parse(savedStakeholders));
       } catch (error) {
-        console.error('Error parsing saved stakeholders:', error);
+        console.error("Error parsing saved stakeholders:", error);
       }
     }
     if (savedFlowTypes) {
       try {
         setPersonaFlowTypes(JSON.parse(savedFlowTypes));
       } catch (error) {
-        console.error('Error parsing saved flow types:', error);
+        console.error("Error parsing saved flow types:", error);
       }
     }
     if (savedStakeholderFlows) {
       try {
         setStakeholderFlows(JSON.parse(savedStakeholderFlows));
       } catch (error) {
-        console.error('Error parsing saved stakeholder flows:', error);
+        console.error("Error parsing saved stakeholder flows:", error);
       }
     }
 
     // Load saved flow details
-    const savedFlowDetails = localStorage.getItem('flowDetails');
+    const savedFlowDetails = localStorage.getItem("flowDetails");
     if (savedFlowDetails) {
       try {
         setFlowDetails(JSON.parse(savedFlowDetails));
       } catch (error) {
-        console.error('Error parsing saved flow details:', error);
+        console.error("Error parsing saved flow details:", error);
       }
     }
 
@@ -143,9 +173,9 @@ export default function UserJourneyEnhanced() {
     // Auto-extract stakeholders if we have a project plan
     const planContent = savedProjectPlan || savedProjectDescription;
     if (planContent && !savedStakeholders) {
-      setAutoGenerationStatus('Extracting stakeholders from project plan...');
+      setAutoGenerationStatus("Extracting stakeholders from project plan...");
       extractProjectStakeholders().finally(() => {
-        setAutoGenerationStatus('');
+        setAutoGenerationStatus("");
       });
     }
   }, []);
@@ -153,9 +183,12 @@ export default function UserJourneyEnhanced() {
   // Save stakeholder flows to localStorage
   const saveStakeholderFlowsToStorage = (flows: StakeholderFlow[]) => {
     try {
-      localStorage.setItem(STORAGE_KEYS.STAKEHOLDER_FLOWS, JSON.stringify(flows));
+      localStorage.setItem(
+        STORAGE_KEYS.STAKEHOLDER_FLOWS,
+        JSON.stringify(flows),
+      );
     } catch (error) {
-      console.error('Error saving stakeholder flows to localStorage:', error);
+      console.error("Error saving stakeholder flows to localStorage:", error);
     }
   };
 
@@ -169,37 +202,48 @@ export default function UserJourneyEnhanced() {
   const extractProjectStakeholders = async () => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
-      setError('No project plan available. Please generate a project plan first.');
+      setError(
+        "No project plan available. Please generate a project plan first.",
+      );
       return;
     }
 
     setIsExtractingStakeholders(true);
-    setError('');
+    setError("");
 
     try {
-      const { stakeholders, flowTypes } = await extractStakeholdersFromProject(planContent);
+      const { stakeholders, flowTypes } =
+        await extractStakeholdersFromProject(planContent);
       setExtractedStakeholders(stakeholders);
       setPersonaFlowTypes(flowTypes);
-      
+
       // Initialize stakeholder flows based on extracted data
       const initialFlows: StakeholderFlow[] = [];
-      stakeholders.forEach(stakeholder => {
-        flowTypes[stakeholder]?.forEach(flowType => {
+      stakeholders.forEach((stakeholder) => {
+        flowTypes[stakeholder]?.forEach((flowType) => {
           initialFlows.push({
             stakeholder,
             flowType,
-            bpmnXml: '',
-            customPrompt: ''
+            bpmnXml: "",
+            customPrompt: "",
           });
         });
       });
       updateStakeholderFlows(initialFlows);
-      
-      localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(stakeholders));
-      localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(flowTypes));
+
+      localStorage.setItem(
+        STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+        JSON.stringify(stakeholders),
+      );
+      localStorage.setItem(
+        STORAGE_KEYS.PERSONA_FLOW_TYPES,
+        JSON.stringify(flowTypes),
+      );
     } catch (error) {
-      console.error('Error extracting stakeholders:', error);
-      setError('Failed to extract stakeholders from project plan. Please try again.');
+      console.error("Error extracting stakeholders:", error);
+      setError(
+        "Failed to extract stakeholders from project plan. Please try again.",
+      );
     } finally {
       setIsExtractingStakeholders(false);
     }
@@ -209,65 +253,84 @@ export default function UserJourneyEnhanced() {
   const generateFlows = async () => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
-      setError('No project plan available. Please generate a project plan first.');
+      setError(
+        "No project plan available. Please generate a project plan first.",
+      );
       return;
     }
 
     setIsGeneratingFlows(true);
-    setError('');
+    setError("");
 
     try {
       const flows = await generateUserJourneyFlows(planContent);
       setUserJourneyFlows(flows);
       localStorage.setItem(STORAGE_KEYS.USER_JOURNEY_FLOWS, flows);
     } catch (error) {
-      console.error('Error generating user journey flows:', error);
-      setError('Failed to generate user journey flows. Please try again.');
+      console.error("Error generating user journey flows:", error);
+      setError("Failed to generate user journey flows. Please try again.");
     } finally {
       setIsGeneratingFlows(false);
     }
   };
 
   // Generate BPMN for a specific stakeholder flow
-  const generateStakeholderBpmn = async (stakeholder: string, flowType: string, customPrompt?: string) => {
+  const generateStakeholderBpmn = async (
+    stakeholder: string,
+    flowType: string,
+    customPrompt?: string,
+  ) => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
-      setError('No project plan available. Please generate a project plan first.');
+      setError(
+        "No project plan available. Please generate a project plan first.",
+      );
       return;
     }
 
     const flowKey = `${stakeholder}-${flowType}`;
-    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
-    setError('');
+    setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
 
     try {
-      const bpmn = await generatePersonaBpmnFlowWithType(planContent, stakeholder, flowType, customPrompt);
-      
-      const updatedFlows = stakeholderFlows.map(flow => 
+      const bpmn = await generatePersonaBpmnFlowWithType(
+        planContent,
+        stakeholder,
+        flowType,
+        customPrompt,
+      );
+
+      const updatedFlows = stakeholderFlows.map((flow) =>
         flow.stakeholder === stakeholder && flow.flowType === flowType
           ? { ...flow, bpmnXml: bpmn }
-          : flow
+          : flow,
       );
       updateStakeholderFlows(updatedFlows);
-      
+
       // Save the latest generated BPMN to localStorage for editor
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmn);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmn);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
       console.error(`Error generating ${stakeholder} ${flowType} BPMN:`, error);
-      setError(`Failed to generate ${stakeholder} ${flowType} BPMN diagram. Please try again.`);
+      setError(
+        `Failed to generate ${stakeholder} ${flowType} BPMN diagram. Please try again.`,
+      );
     } finally {
-      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+      setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
   };
 
   // Generate all BPMN diagrams
   const generateAllBpmn = async () => {
     for (const flow of stakeholderFlows) {
-      await generateStakeholderBpmn(flow.stakeholder, flow.flowType, flow.customPrompt);
+      await generateStakeholderBpmn(
+        flow.stakeholder,
+        flow.flowType,
+        flow.customPrompt,
+      );
       // Add delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   };
 
@@ -279,27 +342,32 @@ export default function UserJourneyEnhanced() {
       {
         stakeholder,
         flowType: newFlowType,
-        bpmnXml: '',
-        customPrompt: ''
-      }
+        bpmnXml: "",
+        customPrompt: "",
+      },
     ];
     updateStakeholderFlows(updatedFlows);
   };
 
   // Remove a flow
   const removeFlow = (stakeholder: string, flowType: string) => {
-    const updatedFlows = stakeholderFlows.filter(flow => 
-      !(flow.stakeholder === stakeholder && flow.flowType === flowType)
+    const updatedFlows = stakeholderFlows.filter(
+      (flow) =>
+        !(flow.stakeholder === stakeholder && flow.flowType === flowType),
     );
     updateStakeholderFlows(updatedFlows);
   };
 
   // Update custom prompt for a flow
-  const updateCustomPrompt = (stakeholder: string, flowType: string, prompt: string) => {
-    const updatedFlows = stakeholderFlows.map(flow => 
+  const updateCustomPrompt = (
+    stakeholder: string,
+    flowType: string,
+    prompt: string,
+  ) => {
+    const updatedFlows = stakeholderFlows.map((flow) =>
       flow.stakeholder === stakeholder && flow.flowType === flowType
         ? { ...flow, customPrompt: prompt }
-        : flow
+        : flow,
     );
     updateStakeholderFlows(updatedFlows);
   };
@@ -307,17 +375,19 @@ export default function UserJourneyEnhanced() {
   // Download user journeys
   const downloadUserJourneys = () => {
     if (!userJourneyFlows) {
-      setError('No user journey flows available to download');
+      setError("No user journey flows available to download");
       return;
     }
 
-    const blob = new Blob([userJourneyFlows], { type: 'text/html' });
+    const blob = new Blob([userJourneyFlows], { type: "text/html" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    const projectName = projectDescription.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const link = document.createElement("a");
+
+    const projectName = projectDescription
+      .substring(0, 50)
+      .replace(/[^a-zA-Z0-9]/g, "_");
     const timestamp = new Date().toISOString().slice(0, 10);
-    
+
     link.href = url;
     link.download = `user-journey-flows-${projectName}-${timestamp}.html`;
     document.body.appendChild(link);
@@ -336,14 +406,16 @@ export default function UserJourneyEnhanced() {
       projectDescription,
       projectPlan,
       timestamp: new Date().toISOString(),
-      version: '1.0'
+      version: "1.0",
     };
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    const timestamp = new Date().toISOString().split('T')[0];
+    const link = document.createElement("a");
+
+    const timestamp = new Date().toISOString().split("T")[0];
     link.href = url;
     link.download = `stakeholder-bpmn-data-${timestamp}.json`;
     document.body.appendChild(link);
@@ -354,11 +426,14 @@ export default function UserJourneyEnhanced() {
 
   // Copy XML to clipboard
   const copyXmlToClipboard = (xml: string) => {
-    navigator.clipboard.writeText(xml).then(() => {
-      // Show success feedback
-    }).catch(err => {
-      console.error('Failed to copy XML:', err);
-    });
+    navigator.clipboard
+      .writeText(xml)
+      .then(() => {
+        // Show success feedback
+      })
+      .catch((err) => {
+        console.error("Failed to copy XML:", err);
+      });
   };
 
   // Navigate to editor with specific diagram
@@ -374,29 +449,39 @@ export default function UserJourneyEnhanced() {
   const addStakeholder = () => {
     const trimmedName = newStakeholderName.trim();
     if (!trimmedName) {
-      setError('Stakeholder name cannot be empty');
+      setError("Stakeholder name cannot be empty");
       return;
     }
-    
+
     if (extractedStakeholders.includes(trimmedName)) {
-      setError('Stakeholder already exists');
+      setError("Stakeholder already exists");
       return;
     }
-    
+
     const updatedStakeholders = [...extractedStakeholders, trimmedName];
     setExtractedStakeholders(updatedStakeholders);
-    localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
-    
+    localStorage.setItem(
+      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+      JSON.stringify(updatedStakeholders),
+    );
+
     // Add default flow types for new stakeholder
     const updatedFlowTypes = {
       ...personaFlowTypes,
-      [trimmedName]: ['Registration Process', 'Main Workflow', 'Support Process']
+      [trimmedName]: [
+        "Registration Process",
+        "Main Workflow",
+        "Support Process",
+      ],
     };
     setPersonaFlowTypes(updatedFlowTypes);
-    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-    
-    setNewStakeholderName('');
-    setError('');
+    localStorage.setItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      JSON.stringify(updatedFlowTypes),
+    );
+
+    setNewStakeholderName("");
+    setError("");
   };
 
   const startEditingStakeholder = (stakeholder: string) => {
@@ -407,23 +492,29 @@ export default function UserJourneyEnhanced() {
   const saveStakeholderEdit = () => {
     const trimmedName = editedStakeholderName.trim();
     if (!trimmedName) {
-      setError('Stakeholder name cannot be empty');
+      setError("Stakeholder name cannot be empty");
       return;
     }
-    
-    if (trimmedName !== editingStakeholder && extractedStakeholders.includes(trimmedName)) {
-      setError('Stakeholder name already exists');
+
+    if (
+      trimmedName !== editingStakeholder &&
+      extractedStakeholders.includes(trimmedName)
+    ) {
+      setError("Stakeholder name already exists");
       return;
     }
-    
+
     if (editingStakeholder) {
       // Update stakeholders list
-      const updatedStakeholders = extractedStakeholders.map(s => 
-        s === editingStakeholder ? trimmedName : s
+      const updatedStakeholders = extractedStakeholders.map((s) =>
+        s === editingStakeholder ? trimmedName : s,
       );
       setExtractedStakeholders(updatedStakeholders);
-      localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
-      
+      localStorage.setItem(
+        STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+        JSON.stringify(updatedStakeholders),
+      );
+
       // Update flow types
       const updatedFlowTypes = { ...personaFlowTypes };
       if (updatedFlowTypes[editingStakeholder]) {
@@ -433,41 +524,54 @@ export default function UserJourneyEnhanced() {
         }
       }
       setPersonaFlowTypes(updatedFlowTypes);
-      localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-      
+      localStorage.setItem(
+        STORAGE_KEYS.PERSONA_FLOW_TYPES,
+        JSON.stringify(updatedFlowTypes),
+      );
+
       // Update stakeholder flows
-      const updatedFlows = stakeholderFlows.map(flow => 
-        flow.stakeholder === editingStakeholder 
+      const updatedFlows = stakeholderFlows.map((flow) =>
+        flow.stakeholder === editingStakeholder
           ? { ...flow, stakeholder: trimmedName }
-          : flow
+          : flow,
       );
       updateStakeholderFlows(updatedFlows);
     }
-    
+
     setEditingStakeholder(null);
-    setEditedStakeholderName('');
-    setError('');
+    setEditedStakeholderName("");
+    setError("");
   };
 
   const cancelStakeholderEdit = () => {
     setEditingStakeholder(null);
-    setEditedStakeholderName('');
+    setEditedStakeholderName("");
   };
 
   const deleteStakeholder = (stakeholder: string) => {
     // Remove from stakeholders list
-    const updatedStakeholders = extractedStakeholders.filter(s => s !== stakeholder);
+    const updatedStakeholders = extractedStakeholders.filter(
+      (s) => s !== stakeholder,
+    );
     setExtractedStakeholders(updatedStakeholders);
-    localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(updatedStakeholders));
-    
+    localStorage.setItem(
+      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+      JSON.stringify(updatedStakeholders),
+    );
+
     // Remove from flow types
     const updatedFlowTypes = { ...personaFlowTypes };
     delete updatedFlowTypes[stakeholder];
     setPersonaFlowTypes(updatedFlowTypes);
-    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-    
+    localStorage.setItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      JSON.stringify(updatedFlowTypes),
+    );
+
     // Remove from stakeholder flows
-    const updatedFlows = stakeholderFlows.filter(flow => flow.stakeholder !== stakeholder);
+    const updatedFlows = stakeholderFlows.filter(
+      (flow) => flow.stakeholder !== stakeholder,
+    );
     updateStakeholderFlows(updatedFlows);
   };
 
@@ -475,25 +579,28 @@ export default function UserJourneyEnhanced() {
   const addFlowType = (stakeholder: string) => {
     const trimmedFlowType = newFlowType[stakeholder]?.trim();
     if (!trimmedFlowType) {
-      setError('Flow type name cannot be empty');
+      setError("Flow type name cannot be empty");
       return;
     }
-    
+
     const currentFlowTypes = personaFlowTypes[stakeholder] || [];
     if (currentFlowTypes.includes(trimmedFlowType)) {
-      setError('Flow type already exists for this stakeholder');
+      setError("Flow type already exists for this stakeholder");
       return;
     }
-    
+
     const updatedFlowTypes = {
       ...personaFlowTypes,
-      [stakeholder]: [...currentFlowTypes, trimmedFlowType]
+      [stakeholder]: [...currentFlowTypes, trimmedFlowType],
     };
     setPersonaFlowTypes(updatedFlowTypes);
-    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-    
-    setNewFlowType(prev => ({ ...prev, [stakeholder]: '' }));
-    setError('');
+    localStorage.setItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      JSON.stringify(updatedFlowTypes),
+    );
+
+    setNewFlowType((prev) => ({ ...prev, [stakeholder]: "" }));
+    setError("");
   };
 
   const startEditingFlowType = (stakeholder: string, flowType: string) => {
@@ -505,74 +612,86 @@ export default function UserJourneyEnhanced() {
   const saveFlowTypeEdit = (stakeholder: string, originalFlowType: string) => {
     const trimmedName = editedFlowTypeName.trim();
     if (!trimmedName) {
-      setError('Flow type name cannot be empty');
+      setError("Flow type name cannot be empty");
       return;
     }
-    
+
     const currentFlowTypes = personaFlowTypes[stakeholder] || [];
-    if (trimmedName !== originalFlowType && currentFlowTypes.includes(trimmedName)) {
-      setError('Flow type already exists for this stakeholder');
+    if (
+      trimmedName !== originalFlowType &&
+      currentFlowTypes.includes(trimmedName)
+    ) {
+      setError("Flow type already exists for this stakeholder");
       return;
     }
-    
+
     const updatedFlowTypes = {
       ...personaFlowTypes,
-      [stakeholder]: currentFlowTypes.map(ft => ft === originalFlowType ? trimmedName : ft)
+      [stakeholder]: currentFlowTypes.map((ft) =>
+        ft === originalFlowType ? trimmedName : ft,
+      ),
     };
     setPersonaFlowTypes(updatedFlowTypes);
-    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-    
+    localStorage.setItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      JSON.stringify(updatedFlowTypes),
+    );
+
     // Update stakeholder flows with new flow type name
-    const updatedFlows = stakeholderFlows.map(flow => 
+    const updatedFlows = stakeholderFlows.map((flow) =>
       flow.stakeholder === stakeholder && flow.flowType === originalFlowType
         ? { ...flow, flowType: trimmedName }
-        : flow
+        : flow,
     );
     updateStakeholderFlows(updatedFlows);
-    
+
     setEditingFlowType(null);
-    setEditedFlowTypeName('');
-    setError('');
+    setEditedFlowTypeName("");
+    setError("");
   };
 
   const cancelFlowTypeEdit = () => {
     setEditingFlowType(null);
-    setEditedFlowTypeName('');
+    setEditedFlowTypeName("");
   };
 
   const deleteFlowType = (stakeholder: string, flowType: string) => {
     const updatedFlowTypes = {
       ...personaFlowTypes,
-      [stakeholder]: (personaFlowTypes[stakeholder] || []).filter(ft => ft !== flowType)
+      [stakeholder]: (personaFlowTypes[stakeholder] || []).filter(
+        (ft) => ft !== flowType,
+      ),
     };
     setPersonaFlowTypes(updatedFlowTypes);
-    localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(updatedFlowTypes));
-    
+    localStorage.setItem(
+      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      JSON.stringify(updatedFlowTypes),
+    );
+
     // Remove from stakeholder flows
     const updatedFlows = stakeholderFlows.filter(
-      flow => !(flow.stakeholder === stakeholder && flow.flowType === flowType)
+      (flow) =>
+        !(flow.stakeholder === stakeholder && flow.flowType === flowType),
     );
     updateStakeholderFlows(updatedFlows);
   };
 
-
-
   // Generate detailed flow analysis for all stakeholder flows
   const generateFlowDetails = async () => {
     if (!projectPlan && !projectDescription) {
-      setError('Please provide a project description or plan first');
+      setError("Please provide a project description or plan first");
       return;
     }
 
     setIsGeneratingFlowDetails(true);
-    setError('');
+    setError("");
 
     try {
       const allFlows: { stakeholder: string; flowType: string }[] = [];
-      
+
       // Collect all stakeholder-flow combinations
       Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
-        flowTypes.forEach(flowType => {
+        flowTypes.forEach((flowType) => {
           allFlows.push({ stakeholder, flowType });
         });
       });
@@ -582,9 +701,11 @@ export default function UserJourneyEnhanced() {
       // Generate details for each flow
       for (const flow of allFlows) {
         const key = `${flow.stakeholder}-${flow.flowType}`;
-        
+
         try {
-          console.log(`Generating flow details for ${flow.stakeholder} - ${flow.flowType}`);
+          console.log(
+            `Generating flow details for ${flow.stakeholder} - ${flow.flowType}`,
+          );
           const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${flow.stakeholder} - ${flow.flowType} with fine granular details for perfect BPMN diagram generation:
 
 PROJECT CONTEXT:
@@ -657,148 +778,233 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 
           // Call Gemini API directly from client-side only
           console.log(`Starting flow analysis for ${key}...`);
-          const { generateFlowAnalysis } = await import('../lib/gemini');
-          
-          console.log(`Calling Gemini API with prompt length: ${prompt.length}`);
+          const { generateFlowAnalysis } = await import("../lib/gemini");
+
+          console.log(
+            `Calling Gemini API with prompt length: ${prompt.length}`,
+          );
           const result = await generateFlowAnalysis(prompt);
           console.log(`Raw Gemini response for ${key}:`, result);
-          
+
           if (!result || result.trim().length === 0) {
             console.error(`Empty response from Gemini API for ${key}`);
             throw new Error(`Empty response from Gemini API for ${key}`);
           }
-          
+
           // Clean and parse the response
           let cleanedResult = result.trim();
-          
+
           // Remove markdown code blocks more aggressively
-          cleanedResult = cleanedResult.replace(/```json\n?/gi, '').replace(/```\n?/g, '');
-          cleanedResult = cleanedResult.replace(/^json\s*\n?/gi, '');
-          
+          cleanedResult = cleanedResult
+            .replace(/```json\n?/gi, "")
+            .replace(/```\n?/g, "");
+          cleanedResult = cleanedResult.replace(/^json\s*\n?/gi, "");
+
           // Extract JSON from the response - find the outermost braces
-          const startBrace = cleanedResult.indexOf('{');
-          const endBrace = cleanedResult.lastIndexOf('}');
-          
+          const startBrace = cleanedResult.indexOf("{");
+          const endBrace = cleanedResult.lastIndexOf("}");
+
           if (startBrace !== -1 && endBrace !== -1 && endBrace > startBrace) {
             cleanedResult = cleanedResult.substring(startBrace, endBrace + 1);
           }
-          
+
           // Final cleanup - remove any remaining non-JSON text
           cleanedResult = cleanedResult.trim();
-          
+
           try {
             console.log(`Attempting to parse JSON for ${key}:`, cleanedResult);
             const flowData = JSON.parse(cleanedResult);
             console.log(`Successfully parsed JSON for ${key}:`, flowData);
-            
+
             // Enhanced structure parsing with direct field extraction
             const flowDetails: FlowDetails = {
-              description: flowData.description || `Comprehensive ${flow.flowType} process analysis for ${flow.stakeholder}`,
-              processDescription: flowData.processDescription || `${flow.stakeholder} ${flow.flowType} Process`,
-              participants: Array.isArray(flowData.participants) ? flowData.participants : 
-                [flow.stakeholder, "System Administrator", "Database System", "External API", "Notification Service"],
-              trigger: flowData.trigger || `${flow.stakeholder} initiates ${flow.flowType} process`,
-              activities: Array.isArray(flowData.activities) ? flowData.activities : [
-                `${flow.stakeholder} submits ${flow.flowType} request`,
-                "System validates input data and permissions",
-                "Backend processes request with business logic",
-                "Database updates records and maintains data integrity",
-                "System generates response and confirmation",
-                "Notification service sends status update"
-              ],
-              decisionPoints: Array.isArray(flowData.decisionPoints) ? flowData.decisionPoints : [
-                "Exclusive Gateway: If validation passes, continue to processing; otherwise return error",
-                "Parallel Gateway: Execute data update and audit logging simultaneously",
-                "Inclusive Gateway: Based on request type, trigger additional notifications or workflows"
-              ],
-              endEvent: flowData.endEvent || `${flow.flowType} process completes successfully with all data updated`,
-              additionalElements: Array.isArray(flowData.additionalElements) ? flowData.additionalElements : [
-                "Messages: Email confirmation sent to stakeholder with process results",
-                "Timers: Business timer set for 24-hour response window",
-                "Data: ProcessRecord data object created with transaction details",
-                "Errors: Handle ValidationError and SystemTimeout exceptions"
-              ]
+              description:
+                flowData.description ||
+                `Comprehensive ${flow.flowType} process analysis for ${flow.stakeholder}`,
+              processDescription:
+                flowData.processDescription ||
+                `${flow.stakeholder} ${flow.flowType} Process`,
+              participants: Array.isArray(flowData.participants)
+                ? flowData.participants
+                : [
+                    flow.stakeholder,
+                    "System Administrator",
+                    "Database System",
+                    "External API",
+                    "Notification Service",
+                  ],
+              trigger:
+                flowData.trigger ||
+                `${flow.stakeholder} initiates ${flow.flowType} process`,
+              activities: Array.isArray(flowData.activities)
+                ? flowData.activities
+                : [
+                    `${flow.stakeholder} submits ${flow.flowType} request`,
+                    "System validates input data and permissions",
+                    "Backend processes request with business logic",
+                    "Database updates records and maintains data integrity",
+                    "System generates response and confirmation",
+                    "Notification service sends status update",
+                  ],
+              decisionPoints: Array.isArray(flowData.decisionPoints)
+                ? flowData.decisionPoints
+                : [
+                    "Exclusive Gateway: If validation passes, continue to processing; otherwise return error",
+                    "Parallel Gateway: Execute data update and audit logging simultaneously",
+                    "Inclusive Gateway: Based on request type, trigger additional notifications or workflows",
+                  ],
+              endEvent:
+                flowData.endEvent ||
+                `${flow.flowType} process completes successfully with all data updated`,
+              additionalElements: Array.isArray(flowData.additionalElements)
+                ? flowData.additionalElements
+                : [
+                    "Messages: Email confirmation sent to stakeholder with process results",
+                    "Timers: Business timer set for 24-hour response window",
+                    "Data: ProcessRecord data object created with transaction details",
+                    "Errors: Handle ValidationError and SystemTimeout exceptions",
+                  ],
             };
 
             // Parse description sections if available for backward compatibility
-            if (flowData.description && typeof flowData.description === 'string') {
+            if (
+              flowData.description &&
+              typeof flowData.description === "string"
+            ) {
               const desc = flowData.description;
-              
-              const processDescMatch = desc.match(/✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/);
-              const participantsMatch = desc.match(/✅ 2\. Participants[^✅]*\n([^✅]*)/);
+
+              const processDescMatch = desc.match(
+                /✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/,
+              );
+              const participantsMatch = desc.match(
+                /✅ 2\. Participants[^✅]*\n([^✅]*)/,
+              );
               const triggerMatch = desc.match(/✅ 3\. Trigger[^✅]*\n([^✅]*)/);
-              const activitiesMatch = desc.match(/✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/);
-              const decisionMatch = desc.match(/✅ 5\. Decision Points[^✅]*\n([^✅]*)/);
-              const endEventMatch = desc.match(/✅ 6\. End Event[^✅]*\n([^✅]*)/);
-              const additionalMatch = desc.match(/✅ 7\. Additional Elements[^$]*/);
-              
+              const activitiesMatch = desc.match(
+                /✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/,
+              );
+              const decisionMatch = desc.match(
+                /✅ 5\. Decision Points[^✅]*\n([^✅]*)/,
+              );
+              const endEventMatch = desc.match(
+                /✅ 6\. End Event[^✅]*\n([^✅]*)/,
+              );
+              const additionalMatch = desc.match(
+                /✅ 7\. Additional Elements[^$]*/,
+              );
+
               // Override with parsed content if found
-              if (processDescMatch) flowDetails.processDescription = processDescMatch[1].trim();
+              if (processDescMatch)
+                flowDetails.processDescription = processDescMatch[1].trim();
               if (triggerMatch) flowDetails.trigger = triggerMatch[1].trim();
               if (endEventMatch) flowDetails.endEvent = endEventMatch[1].trim();
-              
+
               if (participantsMatch) {
-                const parsedParticipants = participantsMatch[1].trim()
-                  .split('\n')
-                  .filter((p: string) => p.trim() && (p.includes('-') || p.includes('*') || p.includes(':')))
-                  .map((p: string) => p.replace(/^[-*:]\s*/, '').replace(/^Primary Actor:\s*/i, '').replace(/^Supporting Roles:\s*/i, '').replace(/^IT Systems:\s*/i, '').replace(/^External Entities:\s*/i, '').trim())
+                const parsedParticipants = participantsMatch[1]
+                  .trim()
+                  .split("\n")
+                  .filter(
+                    (p: string) =>
+                      p.trim() &&
+                      (p.includes("-") || p.includes("*") || p.includes(":")),
+                  )
+                  .map((p: string) =>
+                    p
+                      .replace(/^[-*:]\s*/, "")
+                      .replace(/^Primary Actor:\s*/i, "")
+                      .replace(/^Supporting Roles:\s*/i, "")
+                      .replace(/^IT Systems:\s*/i, "")
+                      .replace(/^External Entities:\s*/i, "")
+                      .trim(),
+                  )
                   .filter((p: string) => p.length > 0);
-                if (parsedParticipants.length > 0) flowDetails.participants = parsedParticipants;
+                if (parsedParticipants.length > 0)
+                  flowDetails.participants = parsedParticipants;
               }
-              
+
               if (activitiesMatch) {
-                const parsedActivities = activitiesMatch[1].trim()
-                  .split('\n')
+                const parsedActivities = activitiesMatch[1]
+                  .trim()
+                  .split("\n")
                   .filter((a: string) => a.trim())
-                  .map((a: string) => a.replace(/^[-*\d.]\s*/, '').replace(/^Activity \d+:\s*/i, '').trim())
+                  .map((a: string) =>
+                    a
+                      .replace(/^[-*\d.]\s*/, "")
+                      .replace(/^Activity \d+:\s*/i, "")
+                      .trim(),
+                  )
                   .filter((a: string) => a.length > 0);
-                if (parsedActivities.length > 0) flowDetails.activities = parsedActivities;
+                if (parsedActivities.length > 0)
+                  flowDetails.activities = parsedActivities;
               }
-              
+
               if (decisionMatch) {
-                const parsedDecisions = decisionMatch[1].trim()
-                  .split('\n')
-                  .filter((d: string) => d.trim() && (d.includes('Gateway') || d.includes('If') || d.includes('condition')))
-                  .map((d: string) => d.replace(/^[-*]\s*/, '').trim())
+                const parsedDecisions = decisionMatch[1]
+                  .trim()
+                  .split("\n")
+                  .filter(
+                    (d: string) =>
+                      d.trim() &&
+                      (d.includes("Gateway") ||
+                        d.includes("If") ||
+                        d.includes("condition")),
+                  )
+                  .map((d: string) => d.replace(/^[-*]\s*/, "").trim())
                   .filter((d: string) => d.length > 0);
-                if (parsedDecisions.length > 0) flowDetails.decisionPoints = parsedDecisions;
+                if (parsedDecisions.length > 0)
+                  flowDetails.decisionPoints = parsedDecisions;
               }
-              
+
               if (additionalMatch) {
-                const parsedAdditional = additionalMatch[0].replace(/✅ 7\. Additional Elements[^:]*:\s*/i, '').trim()
-                  .split('\n')
-                  .filter((e: string) => e.trim() && (e.includes('Messages:') || e.includes('Timers:') || e.includes('Data:') || e.includes('Errors:')))
-                  .map((e: string) => e.replace(/^[-*]\s*/, '').trim())
+                const parsedAdditional = additionalMatch[0]
+                  .replace(/✅ 7\. Additional Elements[^:]*:\s*/i, "")
+                  .trim()
+                  .split("\n")
+                  .filter(
+                    (e: string) =>
+                      e.trim() &&
+                      (e.includes("Messages:") ||
+                        e.includes("Timers:") ||
+                        e.includes("Data:") ||
+                        e.includes("Errors:")),
+                  )
+                  .map((e: string) => e.replace(/^[-*]\s*/, "").trim())
                   .filter((e: string) => e.length > 0);
-                if (parsedAdditional.length > 0) flowDetails.additionalElements = parsedAdditional;
+                if (parsedAdditional.length > 0)
+                  flowDetails.additionalElements = parsedAdditional;
               }
             }
 
             details[key] = flowDetails;
           } catch (parseError) {
-            console.error(`Failed to parse response for ${key}:`, parseError, 'Raw response:', result);
-            console.error('Cleaned result that failed:', cleanedResult);
-            
+            console.error(
+              `Failed to parse response for ${key}:`,
+              parseError,
+              "Raw response:",
+              result,
+            );
+            console.error("Cleaned result that failed:", cleanedResult);
+
             // Generate structured fallback with comprehensive BPMN format
-            const flowTypeWords = flow.flowType.toLowerCase().split(' ');
-            const mainAction = flowTypeWords[0] || 'process';
-            
+            const flowTypeWords = flow.flowType.toLowerCase().split(" ");
+            const mainAction = flowTypeWords[0] || "process";
+
             const keyComponents = [
               `${flow.stakeholder}`,
-              "System Backend", 
+              "System Backend",
               "Database Service",
               "Authentication Module",
               "Notification Service",
-              "External Services"
+              "External Services",
             ];
-            
+
             const processes = [
               `${flow.stakeholder} authenticates and accesses system`,
               `System validates ${mainAction} request and permissions`,
               `Backend processes ${mainAction} with business logic`,
               "Database updates records and maintains integrity",
               "System generates confirmation and audit trail",
-              `Notification service sends confirmation to ${flow.stakeholder}`
+              `Notification service sends confirmation to ${flow.stakeholder}`,
             ];
 
             details[key] = {
@@ -836,30 +1042,30 @@ Data Objects: Request form, User profile`,
               participants: [
                 flow.stakeholder,
                 "System Backend",
-                "Database Service", 
+                "Database Service",
                 "Authentication Module",
                 "Notification Service",
-                "External Services"
+                "External Services",
               ],
               trigger: `${flow.stakeholder} initiates ${flow.flowType} via UI.`,
               activities: [
                 "Authenticate User",
-                "Validate Request", 
+                "Validate Request",
                 `Process ${mainAction}`,
                 "Update Records",
                 "Generate Confirmation",
-                "Send Notification"
+                "Send Notification",
               ],
               decisionPoints: [
                 `If valid, approve; else reject`,
-                `If urgent, escalate; else normal flow`
+                `If urgent, escalate; else normal flow`,
               ],
               endEvent: `Process completed successfully`,
               additionalElements: [
                 `Messages: Notification sent`,
                 `Timers: Wait 24 hours`,
-                `Data Objects: Request form, User profile`
-              ]
+                `Data Objects: Request form, User profile`,
+              ],
             };
           }
         } catch (err) {
@@ -868,11 +1074,10 @@ Data Objects: Request form, User profile`,
       }
 
       setFlowDetails(details);
-      localStorage.setItem('flowDetails', JSON.stringify(details));
-      
+      localStorage.setItem("flowDetails", JSON.stringify(details));
     } catch (err) {
-      console.error('Error generating flow details:', err);
-      setError('Failed to generate flow details. Please try again.');
+      console.error("Error generating flow details:", err);
+      setError("Failed to generate flow details. Please try again.");
     } finally {
       setIsGeneratingFlowDetails(false);
     }
@@ -885,13 +1090,13 @@ Data Objects: Request form, User profile`,
       setEditingFlowDetails(flowKey);
       setEditedFlowDetails({
         description: details.description,
-        processDescription: details.processDescription || '',
+        processDescription: details.processDescription || "",
         participants: [...(details.participants || [])],
-        trigger: details.trigger || '',
+        trigger: details.trigger || "",
         activities: [...(details.activities || [])],
         decisionPoints: [...(details.decisionPoints || [])],
-        endEvent: details.endEvent || '',
-        additionalElements: [...(details.additionalElements || [])]
+        endEvent: details.endEvent || "",
+        additionalElements: [...(details.additionalElements || [])],
       });
     }
   };
@@ -900,10 +1105,10 @@ Data Objects: Request form, User profile`,
     if (editingFlowDetails && editedFlowDetails) {
       const updatedFlowDetails = {
         ...flowDetails,
-        [editingFlowDetails]: editedFlowDetails
+        [editingFlowDetails]: editedFlowDetails,
       };
       setFlowDetails(updatedFlowDetails);
-      localStorage.setItem('flowDetails', JSON.stringify(updatedFlowDetails));
+      localStorage.setItem("flowDetails", JSON.stringify(updatedFlowDetails));
       setEditingFlowDetails(null);
       setEditedFlowDetails(null);
     }
@@ -923,127 +1128,153 @@ Data Objects: Request form, User profile`,
   // Individual section editing functions
   const updateEditedField = (field: keyof FlowDetails, value: string) => {
     if (!editedFlowDetails) return;
-    setEditedFlowDetails(prev => ({
+    setEditedFlowDetails((prev) => ({
       ...prev!,
-      [field]: value
+      [field]: value,
     }));
   };
 
-  const addItemToField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', defaultValue: string) => {
+  const addItemToField = (
+    field:
+      | "participants"
+      | "activities"
+      | "decisionPoints"
+      | "additionalElements",
+    defaultValue: string,
+  ) => {
     if (!editedFlowDetails) return;
-    setEditedFlowDetails(prev => ({
+    setEditedFlowDetails((prev) => ({
       ...prev!,
-      [field]: [...(prev![field] || []), defaultValue]
+      [field]: [...(prev![field] || []), defaultValue],
     }));
   };
 
-  const updateItemInField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number, value: string) => {
+  const updateItemInField = (
+    field:
+      | "participants"
+      | "activities"
+      | "decisionPoints"
+      | "additionalElements",
+    index: number,
+    value: string,
+  ) => {
     if (!editedFlowDetails) return;
-    setEditedFlowDetails(prev => {
+    setEditedFlowDetails((prev) => {
       const newArray = [...(prev![field] || [])];
       newArray[index] = value;
       return {
         ...prev!,
-        [field]: newArray
+        [field]: newArray,
       };
     });
   };
 
-  const removeItemFromField = (field: 'participants' | 'activities' | 'decisionPoints' | 'additionalElements', index: number) => {
+  const removeItemFromField = (
+    field:
+      | "participants"
+      | "activities"
+      | "decisionPoints"
+      | "additionalElements",
+    index: number,
+  ) => {
     if (!editedFlowDetails) return;
-    setEditedFlowDetails(prev => ({
+    setEditedFlowDetails((prev) => ({
       ...prev!,
-      [field]: (prev![field] || []).filter((_, i) => i !== index)
+      [field]: (prev![field] || []).filter((_, i) => i !== index),
     }));
   };
 
-
-
   // Generate swimlane BPMN from flow details using client-side Gemini API
-  const generateSwimlaneFromDetails = async (stakeholder: string, flowType: string) => {
+  const generateSwimlaneFromDetails = async (
+    stakeholder: string,
+    flowType: string,
+  ) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
-    
+
     if (!details) {
-      setError('Flow details not found. Please generate flow details first.');
+      setError("Flow details not found. Please generate flow details first.");
       return;
     }
 
-    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
-    setError('');
+    setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
 
     try {
       // Call Gemini API directly from client
-      const { generateSwimlaneXml } = await import('../lib/gemini');
+      const { generateSwimlaneXml } = await import("../lib/gemini");
       const bpmnXml = await generateSwimlaneXml(stakeholder, flowType, details);
-      
+
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        flow => flow.stakeholder === stakeholder && flow.flowType === flowType
+        (flow) =>
+          flow.stakeholder === stakeholder && flow.flowType === flowType,
       );
 
       if (existingFlowIndex >= 0) {
         updatedFlows[existingFlowIndex] = {
           ...updatedFlows[existingFlowIndex],
-          bpmnXml
+          bpmnXml,
         };
       } else {
         updatedFlows.push({
           stakeholder,
           flowType,
           bpmnXml,
-          customPrompt: ''
+          customPrompt: "",
         });
       }
 
       updateStakeholderFlows(updatedFlows);
-
     } catch (err) {
-      console.error('Error generating swimlane BPMN:', err);
-      
+      console.error("Error generating swimlane BPMN:", err);
+
       // Generate fallback BPMN on error
-      console.log('Generating fallback BPMN for:', flowKey);
+      console.log("Generating fallback BPMN for:", flowKey);
       const fallbackBpmn = generateFallbackBpmn(stakeholder, flowType, details);
-      
+
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        flow => flow.stakeholder === stakeholder && flow.flowType === flowType
+        (flow) =>
+          flow.stakeholder === stakeholder && flow.flowType === flowType,
       );
 
       if (existingFlowIndex >= 0) {
         updatedFlows[existingFlowIndex] = {
           ...updatedFlows[existingFlowIndex],
-          bpmnXml: fallbackBpmn
+          bpmnXml: fallbackBpmn,
         };
       } else {
         updatedFlows.push({
           stakeholder,
           flowType,
           bpmnXml: fallbackBpmn,
-          customPrompt: ''
+          customPrompt: "",
         });
       }
 
       updateStakeholderFlows(updatedFlows);
-      
     } finally {
-      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+      setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
   };
 
   // Generate BPMN XML directly from flow content box
-  const generateBpmnFromContent = async (stakeholder: string, flowType: string) => {
+  const generateBpmnFromContent = async (
+    stakeholder: string,
+    flowType: string,
+  ) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
-    
+
     if (!details) {
-      setError('Flow details not found. Please generate flow details first.');
+      setError("Flow details not found. Please generate flow details first.");
       return;
     }
 
-    setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: true }));
-    setError('');
+    setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
 
     try {
       // Create structured content from flow details
@@ -1051,26 +1282,26 @@ Data Objects: Request form, User profile`,
         processName: `${stakeholder} - ${flowType}`,
         processDescription: details.processDescription || details.description,
         participants: details.participants || [],
-        trigger: details.trigger || 'Process starts',
+        trigger: details.trigger || "Process starts",
         activities: details.activities || [],
         decisionPoints: details.decisionPoints || [],
-        endEvent: details.endEvent || 'Process completes',
-        additionalElements: details.additionalElements || []
+        endEvent: details.endEvent || "Process completes",
+        additionalElements: details.additionalElements || [],
       };
 
-      console.log('✅ Structured content from 7 sections:', {
-        '1. Process & Description': structuredContent.processName,
-        '2. Participants': structuredContent.participants,
-        '3. Trigger': structuredContent.trigger,
-        '4. Activities': structuredContent.activities,
-        '5. Decision Points': structuredContent.decisionPoints,
-        '6. End Event': structuredContent.endEvent,
-        '7. Additional Elements': structuredContent.additionalElements
+      console.log("✅ Structured content from 7 sections:", {
+        "1. Process & Description": structuredContent.processName,
+        "2. Participants": structuredContent.participants,
+        "3. Trigger": structuredContent.trigger,
+        "4. Activities": structuredContent.activities,
+        "5. Decision Points": structuredContent.decisionPoints,
+        "6. End Event": structuredContent.endEvent,
+        "7. Additional Elements": structuredContent.additionalElements,
       });
 
       // Generate BPMN XML using Gemini API with structured content
-      const { generateBpmnXml } = await import('../lib/gemini');
-      
+      const { generateBpmnXml } = await import("../lib/gemini");
+
       // Create BPMN content from the 7 structured sections
       const bpmnContent = `
 ✅ 1. Process & Description
@@ -1078,31 +1309,33 @@ ${structuredContent.processName}
 ${structuredContent.processDescription}
 
 ✅ 2. Participants (Swimlanes)
-${structuredContent.participants.map(p => `- ${p}`).join('\n')}
+${structuredContent.participants.map((p) => `- ${p}`).join("\n")}
 
 ✅ 3. Trigger (Start Event)
 ${structuredContent.trigger}
 
 ✅ 4. Activities (Tasks)
-${structuredContent.activities.map((a, i) => `${i + 1}. ${a}`).join('\n')}
+${structuredContent.activities.map((a, i) => `${i + 1}. ${a}`).join("\n")}
 
 ✅ 5. Decision Points (Gateways)
-${structuredContent.decisionPoints.map(d => `- ${d}`).join('\n')}
+${structuredContent.decisionPoints.map((d) => `- ${d}`).join("\n")}
 
 ✅ 6. End Event
 ${structuredContent.endEvent}
 
 ✅ 7. Additional Elements
-${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
+${structuredContent.additionalElements.map((e) => `- ${e}`).join("\n")}
       `.trim();
 
       let bpmnXml;
       try {
-        console.log('✅ Generating BPMN from structured data (no AI)...');
-        
+        console.log("✅ Generating BPMN from structured data (no AI)...");
+
         // Use deterministic BPMN generator instead of AI
-        const { generateBpmnXmlFromStructuredData } = await import('../lib/bpmn-generator');
-        
+        const { generateBpmnXmlFromStructuredData } = await import(
+          "../lib/bpmn-generator"
+        );
+
         bpmnXml = generateBpmnXmlFromStructuredData({
           processName: structuredContent.processName,
           processDescription: structuredContent.processDescription,
@@ -1111,59 +1344,79 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
           activities: structuredContent.activities,
           decisionPoints: structuredContent.decisionPoints,
           endEvent: structuredContent.endEvent,
-          additionalElements: structuredContent.additionalElements
+          additionalElements: structuredContent.additionalElements,
         });
-        
-        console.log('✅ Valid BPMN 2.0 XML generated from structured data');
+
+        console.log(
+          "✅ Valid BPMN 2.0 XML generated from structured data",
+          bpmnXml,
+        );
       } catch (bpmnError) {
-        console.error('XML validation failed, using structured fallback:', bpmnError);
-        
+        console.error(
+          "XML validation failed, using structured fallback:",
+          bpmnError,
+        );
+
         // Create BPMN XML based on the 7 structured sections
-        const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
-        const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_');
-        
+        const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, "_");
+        const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, "_");
+
         const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
-        
+
         // Generate participants (swimlanes) from section 2
-        const participantElements = structuredContent.participants.map((participant, index) => {
-          const participantId = `Participant_${index + 1}`;
-          return `    <bpmn2:participant id="${participantId}" name="${participant.replace(/"/g, '&quot;')}" processRef="${processId}" />`;
-        }).join('\n');
-        
+        const participantElements = structuredContent.participants
+          .map((participant, index) => {
+            const participantId = `Participant_${index + 1}`;
+            return `    <bpmn2:participant id="${participantId}" name="${participant.replace(/"/g, "&quot;")}" processRef="${processId}" />`;
+          })
+          .join("\n");
+
         // Generate task elements from section 4 (activities)
-        const taskElements = structuredContent.activities.map((activity, index) => {
-          const taskId = `Task_${index + 1}`;
-          return `    <bpmn2:userTask id="${taskId}" name="${activity.replace(/"/g, '&quot;')}" />`;
-        }).join('\n');
-        
+        const taskElements = structuredContent.activities
+          .map((activity, index) => {
+            const taskId = `Task_${index + 1}`;
+            return `    <bpmn2:userTask id="${taskId}" name="${activity.replace(/"/g, "&quot;")}" />`;
+          })
+          .join("\n");
+
         // Generate gateways from section 5 (decision points)
-        const gatewayElements = structuredContent.decisionPoints.map((decision, index) => {
-          const gatewayId = `Gateway_${index + 1}`;
-          return `    <bpmn2:exclusiveGateway id="${gatewayId}" name="${decision.substring(0, 30).replace(/"/g, '&quot;')}..." />`;
-        }).join('\n');
-        
+        const gatewayElements = structuredContent.decisionPoints
+          .map((decision, index) => {
+            const gatewayId = `Gateway_${index + 1}`;
+            return `    <bpmn2:exclusiveGateway id="${gatewayId}" name="${decision.substring(0, 30).replace(/"/g, "&quot;")}..." />`;
+          })
+          .join("\n");
+
         // Generate sequence flows
         const flowElements: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`);
+            flowElements.push(
+              `    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`,
+            );
           }
           if (index < structuredContent.activities.length - 1) {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_${index + 2}" sourceRef="Task_${index + 1}" targetRef="Task_${index + 2}" />`);
+            flowElements.push(
+              `    <bpmn2:sequenceFlow id="Flow_${index + 1}_${index + 2}" sourceRef="Task_${index + 1}" targetRef="Task_${index + 2}" />`,
+            );
           } else {
-            flowElements.push(`    <bpmn2:sequenceFlow id="Flow_${index + 1}_end" sourceRef="Task_${index + 1}" targetRef="EndEvent_1" />`);
+            flowElements.push(
+              `    <bpmn2:sequenceFlow id="Flow_${index + 1}_end" sourceRef="Task_${index + 1}" targetRef="EndEvent_1" />`,
+            );
           }
         });
-        
+
         // Generate visual elements
-        const taskShapes = structuredContent.activities.map((activity, index) => {
-          const x = 200 + (index * 150);
-          return `      <bpmndi:BPMNShape id="Task_${index + 1}_di" bpmnElement="Task_${index + 1}">
+        const taskShapes = structuredContent.activities
+          .map((activity, index) => {
+            const x = 200 + index * 150;
+            return `      <bpmndi:BPMNShape id="Task_${index + 1}_di" bpmnElement="Task_${index + 1}">
         <dc:Bounds x="${x}" y="140" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
-        }).join('\n');
-        
+          })
+          .join("\n");
+
         const flowEdges: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
@@ -1173,14 +1426,14 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
       </bpmndi:BPMNEdge>`);
           }
           if (index < structuredContent.activities.length - 1) {
-            const x1 = 300 + (index * 150);
-            const x2 = 200 + ((index + 1) * 150);
+            const x1 = 300 + index * 150;
+            const x2 = 200 + (index + 1) * 150;
             flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_${index + 2}_di" bpmnElement="Flow_${index + 1}_${index + 2}">
         <di:waypoint x="${x1}" y="180" />
         <di:waypoint x="${x2}" y="180" />
       </bpmndi:BPMNEdge>`);
           } else {
-            const x1 = 300 + (index * 150);
+            const x1 = 300 + index * 150;
             const x2 = x1 + 100;
             flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${index + 1}_end_di" bpmnElement="Flow_${index + 1}_end">
         <di:waypoint x="${x1}" y="180" />
@@ -1188,20 +1441,20 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
       </bpmndi:BPMNEdge>`);
           }
         });
-        
+
         // Create valid BPMN 2.0 XML from structured sections
-        const diagramWidth = 300 + (structuredContent.activities.length * 150);
-        
+        const diagramWidth = 300 + structuredContent.activities.length * 150;
+
         bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn2:collaboration id="Collaboration_1">
-    <bpmn2:participant id="Participant_1" name="${structuredContent.participants[0]?.replace(/"/g, '&quot;') || stakeholder}" processRef="${processId}" />
+    <bpmn2:participant id="Participant_1" name="${structuredContent.participants[0]?.replace(/"/g, "&quot;") || stakeholder}" processRef="${processId}" />
   </bpmn2:collaboration>
   <bpmn2:process id="${processId}" isExecutable="true">
-    <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.replace(/"/g, '&quot;')}" />
+    <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.replace(/"/g, "&quot;")}" />
 ${taskElements}
-    <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.replace(/"/g, '&quot;')}" />
-${flowElements.join('\n')}
+    <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.replace(/"/g, "&quot;")}" />
+${flowElements.join("\n")}
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
@@ -1215,78 +1468,100 @@ ${flowElements.join('\n')}
       </bpmndi:BPMNShape>
 ${taskShapes}
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="${200 + (structuredContent.activities.length * 150)}" y="162" width="36" height="36" />
+        <dc:Bounds x="${200 + structuredContent.activities.length * 150}" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-${flowEdges.join('\n')}
+${flowEdges.join("\n")}
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>`;
       }
-      
+
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        flow => flow.stakeholder === stakeholder && flow.flowType === flowType
+        (flow) =>
+          flow.stakeholder === stakeholder && flow.flowType === flowType,
       );
 
       if (existingFlowIndex >= 0) {
         updatedFlows[existingFlowIndex] = {
           ...updatedFlows[existingFlowIndex],
-          bpmnXml
+          bpmnXml,
         };
       } else {
         updatedFlows.push({
           stakeholder,
           flowType,
           bpmnXml,
-          customPrompt: ''
+          customPrompt: "",
         });
       }
 
       updateStakeholderFlows(updatedFlows);
-      
+
       // Save the latest generated BPMN to localStorage for editor
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error(`Error generating BPMN from content for ${stakeholder} ${flowType}:`, error);
-      setError(`Failed to generate BPMN diagram from content. Please try again.`);
+      console.error(
+        `Error generating BPMN from content for ${stakeholder} ${flowType}:`,
+        error,
+      );
+      setError(
+        `Failed to generate BPMN diagram from content. Please try again.`,
+      );
     } finally {
-      setIsGeneratingBpmn(prev => ({ ...prev, [flowKey]: false }));
+      setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
   };
 
   // Generate fallback BPMN when API fails
-  const generateFallbackBpmn = (stakeholder: string, flowType: string, details: { description: string; participants: string[]; activities: string[] }) => {
+  const generateFallbackBpmn = (
+    stakeholder: string,
+    flowType: string,
+    details: {
+      description: string;
+      participants: string[];
+      activities: string[];
+    },
+  ) => {
     // Create valid XML IDs by removing special characters
-    const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
-    const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_');
-    
+    const cleanStakeholder = stakeholder
+      .replace(/[^a-zA-Z0-9]/g, "_")
+      .replace(/_+/g, "_");
+    const cleanFlowType = flowType
+      .replace(/[^a-zA-Z0-9]/g, "_")
+      .replace(/_+/g, "_");
+
     const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
     const poolId = `Pool_${cleanStakeholder}`;
-    
+
     // Generate process elements based on activities
-    const processElements = details.activities.map((activity, index) => {
-      const taskId = `Activity_${index + 1}`;
-      return `
+    const processElements = details.activities
+      .map((activity, index) => {
+        const taskId = `Activity_${index + 1}`;
+        return `
     <bpmn:serviceTask id="${taskId}" name="${activity}" />`;
-    }).join('');
+      })
+      .join("");
 
     // Generate sequence flows between activities
-    const sequenceFlows = details.activities.map((_, index) => {
-      if (index === 0) {
-        return `
+    const sequenceFlows = details.activities
+      .map((_, index) => {
+        if (index === 0) {
+          return `
     <bpmn:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Activity_${index + 1}" />`;
-      } else if (index === details.activities.length - 1) {
-        return `
+        } else if (index === details.activities.length - 1) {
+          return `
     <bpmn:sequenceFlow id="Flow_${index}_end" sourceRef="Activity_${index + 1}" targetRef="EndEvent_1" />`;
-      } else {
-        return `
+        } else {
+          return `
     <bpmn:sequenceFlow id="Flow_${index}_${index + 1}" sourceRef="Activity_${index + 1}" targetRef="Activity_${index + 2}" />`;
-      }
-    }).join('');
+        }
+      })
+      .join("");
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
@@ -1310,37 +1585,43 @@ ${flowEdges.join('\n')}
           <dc:Bounds x="208" y="205" width="44" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      ${details.activities.map((activity, index) => `
+      ${details.activities
+        .map(
+          (activity, index) => `
       <bpmndi:BPMNShape id="Activity_${index + 1}_di" bpmnElement="Activity_${index + 1}">
-        <dc:Bounds x="${300 + (index * 150)}" y="140" width="100" height="80" />
-      </bpmndi:BPMNShape>`).join('')}
+        <dc:Bounds x="${300 + index * 150}" y="140" width="100" height="80" />
+      </bpmndi:BPMNShape>`,
+        )
+        .join("")}
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="${320 + (details.activities.length * 150)}" y="162" width="36" height="36" />
+        <dc:Bounds x="${320 + details.activities.length * 150}" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="324" y="205" width="28" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      ${details.activities.map((_, index) => {
-        if (index === 0) {
-          return `
+      ${details.activities
+        .map((_, index) => {
+          if (index === 0) {
+            return `
       <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
         <di:waypoint x="248" y="180" />
-        <di:waypoint x="${300 + (index * 150)}" y="180" />
+        <di:waypoint x="${300 + index * 150}" y="180" />
       </bpmndi:BPMNEdge>`;
-        } else if (index === details.activities.length - 1) {
-          return `
+          } else if (index === details.activities.length - 1) {
+            return `
       <bpmndi:BPMNEdge id="Flow_${index}_end_di" bpmnElement="Flow_${index}_end">
-        <di:waypoint x="${400 + (index * 150)}" y="180" />
-        <di:waypoint x="${320 + (details.activities.length * 150)}" y="180" />
+        <di:waypoint x="${400 + index * 150}" y="180" />
+        <di:waypoint x="${320 + details.activities.length * 150}" y="180" />
       </bpmndi:BPMNEdge>`;
-        } else {
-          return `
+          } else {
+            return `
       <bpmndi:BPMNEdge id="Flow_${index}_${index + 1}_di" bpmnElement="Flow_${index}_${index + 1}">
-        <di:waypoint x="${400 + (index * 150)}" y="180" />
-        <di:waypoint x="${300 + ((index + 1) * 150)}" y="180" />
+        <di:waypoint x="${400 + index * 150}" y="180" />
+        <di:waypoint x="${300 + (index + 1) * 150}" y="180" />
       </bpmndi:BPMNEdge>`;
-        }
-      }).join('')}
+          }
+        })
+        .join("")}
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn:definitions>`;
@@ -1349,10 +1630,10 @@ ${flowEdges.join('\n')}
   // Generate all swimlane diagrams
   const generateAllSwimlanes = async () => {
     const allFlows: { stakeholder: string; flowType: string }[] = [];
-    
+
     // Collect all stakeholder-flow combinations that have details
     Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
-      flowTypes.forEach(flowType => {
+      flowTypes.forEach((flowType) => {
         const flowKey = `${stakeholder}-${flowType}`;
         if (flowDetails[flowKey]) {
           allFlows.push({ stakeholder, flowType });
@@ -1361,7 +1642,9 @@ ${flowEdges.join('\n')}
     });
 
     if (allFlows.length === 0) {
-      setError('No flow details available. Please generate flow details first.');
+      setError(
+        "No flow details available. Please generate flow details first.",
+      );
       return;
     }
 
@@ -1369,7 +1652,7 @@ ${flowEdges.join('\n')}
     for (const flow of allFlows) {
       await generateSwimlaneFromDetails(flow.stakeholder, flow.flowType);
       // Small delay to avoid overwhelming the API
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
   };
 
@@ -1394,12 +1677,16 @@ ${flowEdges.join('\n')}
         <div className="flex items-center justify-between mb-8 bg-white rounded-lg p-4 shadow-sm">
           <div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Enhanced User Journey & BPMN Flows</h1>
-              <p className="text-gray-600 mt-1">Stakeholder-based BPMN workflow generation with multiple flows per persona</p>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Enhanced User Journey & BPMN Flows
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Stakeholder-based BPMN workflow generation with multiple flows
+                per persona
+              </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-          </div>
+          <div className="flex items-center space-x-2"></div>
         </div>
 
         {/* Auto-generation Status */}
@@ -1408,7 +1695,9 @@ ${flowEdges.join('\n')}
             <CardContent className="pt-6">
               <div className="flex items-center space-x-3">
                 <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
-                <span className="text-blue-800 font-medium">{autoGenerationStatus}</span>
+                <span className="text-blue-800 font-medium">
+                  {autoGenerationStatus}
+                </span>
               </div>
             </CardContent>
           </Card>
@@ -1452,7 +1741,7 @@ ${flowEdges.join('\n')}
                 Stakeholder Analysis
               </div>
               <div className="flex items-center gap-2">
-                <Button 
+                <Button
                   onClick={exportAllData}
                   disabled={stakeholderFlows.length === 0}
                   variant="outline"
@@ -1461,9 +1750,12 @@ ${flowEdges.join('\n')}
                   <Download className="h-4 w-4 mr-2" />
                   Export Data
                 </Button>
-                <Button 
+                <Button
                   onClick={extractProjectStakeholders}
-                  disabled={isExtractingStakeholders || !projectPlan && !projectDescription}
+                  disabled={
+                    isExtractingStakeholders ||
+                    (!projectPlan && !projectDescription)
+                  }
                   size="sm"
                 >
                   {isExtractingStakeholders ? (
@@ -1481,7 +1773,9 @@ ${flowEdges.join('\n')}
               <div className="space-y-3">
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-gray-800 text-sm">Identified Stakeholders ({extractedStakeholders.length})</h4>
+                    <h4 className="font-semibold text-gray-800 text-sm">
+                      Identified Stakeholders ({extractedStakeholders.length})
+                    </h4>
                     <div className="flex items-center gap-2">
                       <Input
                         value={newStakeholderName}
@@ -1489,7 +1783,7 @@ ${flowEdges.join('\n')}
                         placeholder="Add stakeholder..."
                         className="text-xs h-8 w-32"
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             addStakeholder();
                           }
                         }}
@@ -1510,12 +1804,14 @@ ${flowEdges.join('\n')}
                           <div className="flex items-center gap-1 bg-white border border-blue-300 rounded-lg px-2 py-1">
                             <Input
                               value={editedStakeholderName}
-                              onChange={(e) => setEditedStakeholderName(e.target.value)}
+                              onChange={(e) =>
+                                setEditedStakeholderName(e.target.value)
+                              }
                               className="text-xs h-6 w-24 border-0 p-0 focus:ring-0"
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
+                                if (e.key === "Enter") {
                                   saveStakeholderEdit();
-                                } else if (e.key === 'Escape') {
+                                } else if (e.key === "Escape") {
                                   cancelStakeholderEdit();
                                 }
                               }}
@@ -1538,15 +1834,17 @@ ${flowEdges.join('\n')}
                             </Button>
                           </div>
                         ) : (
-                          <Badge 
-                            variant="secondary" 
+                          <Badge
+                            variant="secondary"
                             className="bg-blue-100 text-blue-800 hover:bg-blue-200 pr-1 cursor-pointer"
                           >
                             <Users className="h-3 w-3 mr-1" />
                             {stakeholder}
                             <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
-                                onClick={() => startEditingStakeholder(stakeholder)}
+                                onClick={() =>
+                                  startEditingStakeholder(stakeholder)
+                                }
                                 size="sm"
                                 variant="ghost"
                                 className="h-4 w-4 p-0 hover:bg-blue-200"
@@ -1569,126 +1867,202 @@ ${flowEdges.join('\n')}
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Flow Types Management</h4>
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">
+                    Flow Types Management
+                  </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes], stakeholderIndex) => {
-                      const colorVariants = [
-                        { bg: 'from-blue-50 to-indigo-50', border: 'border-blue-200', accent: 'bg-blue-500', text: 'text-blue-800' },
-                        { bg: 'from-emerald-50 to-teal-50', border: 'border-emerald-200', accent: 'bg-emerald-500', text: 'text-emerald-800' },
-                        { bg: 'from-purple-50 to-pink-50', border: 'border-purple-200', accent: 'bg-purple-500', text: 'text-purple-800' },
-                        { bg: 'from-orange-50 to-red-50', border: 'border-orange-200', accent: 'bg-orange-500', text: 'text-orange-800' },
-                        { bg: 'from-cyan-50 to-blue-50', border: 'border-cyan-200', accent: 'bg-cyan-500', text: 'text-cyan-800' },
-                        { bg: 'from-green-50 to-emerald-50', border: 'border-green-200', accent: 'bg-green-500', text: 'text-green-800' }
-                      ];
-                      const variant = colorVariants[stakeholderIndex % colorVariants.length];
-                      
-                      return (
-                        <div key={stakeholder} className={`border ${variant.border} rounded-lg p-3 bg-gradient-to-br ${variant.bg} shadow-sm`}>
-                          {/* Stakeholder Header */}
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <div className={`w-3 h-3 ${variant.accent} rounded-full`}></div>
-                              <span className={`font-medium text-sm ${variant.text}`}>{stakeholder}</span>
+                    {Object.entries(personaFlowTypes).map(
+                      ([stakeholder, flowTypes], stakeholderIndex) => {
+                        const colorVariants = [
+                          {
+                            bg: "from-blue-50 to-indigo-50",
+                            border: "border-blue-200",
+                            accent: "bg-blue-500",
+                            text: "text-blue-800",
+                          },
+                          {
+                            bg: "from-emerald-50 to-teal-50",
+                            border: "border-emerald-200",
+                            accent: "bg-emerald-500",
+                            text: "text-emerald-800",
+                          },
+                          {
+                            bg: "from-purple-50 to-pink-50",
+                            border: "border-purple-200",
+                            accent: "bg-purple-500",
+                            text: "text-purple-800",
+                          },
+                          {
+                            bg: "from-orange-50 to-red-50",
+                            border: "border-orange-200",
+                            accent: "bg-orange-500",
+                            text: "text-orange-800",
+                          },
+                          {
+                            bg: "from-cyan-50 to-blue-50",
+                            border: "border-cyan-200",
+                            accent: "bg-cyan-500",
+                            text: "text-cyan-800",
+                          },
+                          {
+                            bg: "from-green-50 to-emerald-50",
+                            border: "border-green-200",
+                            accent: "bg-green-500",
+                            text: "text-green-800",
+                          },
+                        ];
+                        const variant =
+                          colorVariants[
+                            stakeholderIndex % colorVariants.length
+                          ];
+
+                        return (
+                          <div
+                            key={stakeholder}
+                            className={`border ${variant.border} rounded-lg p-3 bg-gradient-to-br ${variant.bg} shadow-sm`}
+                          >
+                            {/* Stakeholder Header */}
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div
+                                  className={`w-3 h-3 ${variant.accent} rounded-full`}
+                                ></div>
+                                <span
+                                  className={`font-medium text-sm ${variant.text}`}
+                                >
+                                  {stakeholder}
+                                </span>
+                              </div>
+                              <Badge
+                                variant="outline"
+                                className="text-xs px-1.5 py-0.5 bg-white/80"
+                              >
+                                {flowTypes.length}
+                              </Badge>
                             </div>
-                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-white/80">
-                              {flowTypes.length}
-                            </Badge>
-                          </div>
-                        
-                          {/* Add Flow Type */}
-                          <div className="flex items-center gap-1 mb-2">
-                            <Input
-                              value={newFlowType[stakeholder] || ''}
-                              onChange={(e) => setNewFlowType(prev => ({ ...prev, [stakeholder]: e.target.value }))}
-                              placeholder="Add flow type..."
-                              className="text-xs h-6 flex-1 bg-white/80 border-white/50"
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  addFlowType(stakeholder);
+
+                            {/* Add Flow Type */}
+                            <div className="flex items-center gap-1 mb-2">
+                              <Input
+                                value={newFlowType[stakeholder] || ""}
+                                onChange={(e) =>
+                                  setNewFlowType((prev) => ({
+                                    ...prev,
+                                    [stakeholder]: e.target.value,
+                                  }))
                                 }
-                              }}
-                            />
-                            <Button
-                              onClick={() => addFlowType(stakeholder)}
-                              size="sm"
-                              className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        
-                          {/* Flow Types Grid */}
-                          <div className="flex flex-wrap gap-1">
-                            {flowTypes.map((flowType, index) => {
-                              const editKey = `${stakeholder}-${flowType}`;
-                              const isEditing = editingFlowType === editKey;
-                              
-                              return (
-                                <div key={index} className="relative group">
-                                  {isEditing ? (
-                                    <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-1.5 py-0.5">
-                                      <Input
-                                        value={editedFlowTypeName}
-                                        onChange={(e) => setEditedFlowTypeName(e.target.value)}
-                                        className="text-xs h-4 w-16 border-0 p-0 focus:ring-0"
-                                        onKeyDown={(e) => {
-                                          if (e.key === 'Enter') {
-                                            saveFlowTypeEdit(stakeholder, flowType);
-                                          } else if (e.key === 'Escape') {
-                                            cancelFlowTypeEdit();
+                                placeholder="Add flow type..."
+                                className="text-xs h-6 flex-1 bg-white/80 border-white/50"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    addFlowType(stakeholder);
+                                  }
+                                }}
+                              />
+                              <Button
+                                onClick={() => addFlowType(stakeholder)}
+                                size="sm"
+                                className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+
+                            {/* Flow Types Grid */}
+                            <div className="flex flex-wrap gap-1">
+                              {flowTypes.map((flowType, index) => {
+                                const editKey = `${stakeholder}-${flowType}`;
+                                const isEditing = editingFlowType === editKey;
+
+                                return (
+                                  <div key={index} className="relative group">
+                                    {isEditing ? (
+                                      <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-1.5 py-0.5">
+                                        <Input
+                                          value={editedFlowTypeName}
+                                          onChange={(e) =>
+                                            setEditedFlowTypeName(
+                                              e.target.value,
+                                            )
                                           }
-                                        }}
-                                        autoFocus
-                                      />
-                                      <Button
-                                        onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
-                                        size="sm"
-                                        className="h-3 w-3 p-0 bg-green-500 hover:bg-green-600"
-                                      >
-                                        <Save className="h-2 w-2" />
-                                      </Button>
-                                      <Button
-                                        onClick={cancelFlowTypeEdit}
-                                        size="sm"
-                                        variant="outline"
-                                        className="h-3 w-3 p-0 border-gray-300"
-                                      >
-                                        <X className="h-2 w-2" />
-                                      </Button>
-                                    </div>
-                                  ) : (
-                                    <Badge 
-                                      variant="outline" 
-                                      className="text-xs px-1.5 py-0.5 bg-white/90 border-white/60 cursor-pointer hover:bg-white pr-1 group"
-                                    >
-                                      <span>{flowType}</span>
-                                      <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          className="text-xs h-4 w-16 border-0 p-0 focus:ring-0"
+                                          onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                              saveFlowTypeEdit(
+                                                stakeholder,
+                                                flowType,
+                                              );
+                                            } else if (e.key === "Escape") {
+                                              cancelFlowTypeEdit();
+                                            }
+                                          }}
+                                          autoFocus
+                                        />
                                         <Button
-                                          onClick={() => startEditingFlowType(stakeholder, flowType)}
+                                          onClick={() =>
+                                            saveFlowTypeEdit(
+                                              stakeholder,
+                                              flowType,
+                                            )
+                                          }
                                           size="sm"
-                                          variant="ghost"
-                                          className="h-3 w-3 p-0 hover:bg-blue-200"
+                                          className="h-3 w-3 p-0 bg-green-500 hover:bg-green-600"
                                         >
-                                          <Edit3 className="h-2 w-2" />
+                                          <Save className="h-2 w-2" />
                                         </Button>
                                         <Button
-                                          onClick={() => deleteFlowType(stakeholder, flowType)}
+                                          onClick={cancelFlowTypeEdit}
                                           size="sm"
-                                          variant="ghost"
-                                          className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                          variant="outline"
+                                          className="h-3 w-3 p-0 border-gray-300"
                                         >
                                           <X className="h-2 w-2" />
                                         </Button>
                                       </div>
-                                    </Badge>
-                                  )}
-                                </div>
-                              );
-                            })}
+                                    ) : (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs px-1.5 py-0.5 bg-white/90 border-white/60 cursor-pointer hover:bg-white pr-1 group"
+                                      >
+                                        <span>{flowType}</span>
+                                        <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <Button
+                                            onClick={() =>
+                                              startEditingFlowType(
+                                                stakeholder,
+                                                flowType,
+                                              )
+                                            }
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-3 w-3 p-0 hover:bg-blue-200"
+                                          >
+                                            <Edit3 className="h-2 w-2" />
+                                          </Button>
+                                          <Button
+                                            onClick={() =>
+                                              deleteFlowType(
+                                                stakeholder,
+                                                flowType,
+                                              )
+                                            }
+                                            size="sm"
+                                            variant="ghost"
+                                            className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                          >
+                                            <X className="h-2 w-2" />
+                                          </Button>
+                                        </div>
+                                      </Badge>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      },
+                    )}
                   </div>
                 </div>
               </div>
@@ -1696,7 +2070,8 @@ ${flowEdges.join('\n')}
               <div className="text-center py-6">
                 <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500 text-sm mb-4">
-                  Extract stakeholders from your project plan or add them manually
+                  Extract stakeholders from your project plan or add them
+                  manually
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   <Input
@@ -1705,7 +2080,7 @@ ${flowEdges.join('\n')}
                     placeholder="Enter stakeholder name..."
                     className="text-sm h-9 w-48"
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         addStakeholder();
                       }
                     }}
@@ -1733,9 +2108,11 @@ ${flowEdges.join('\n')}
                 User Journey Flows Overview
               </div>
               <div className="flex items-center space-x-2">
-                <Button 
+                <Button
                   onClick={generateFlows}
-                  disabled={isGeneratingFlows || !projectPlan && !projectDescription}
+                  disabled={
+                    isGeneratingFlows || (!projectPlan && !projectDescription)
+                  }
                   size="sm"
                 >
                   {isGeneratingFlows ? (
@@ -1746,7 +2123,11 @@ ${flowEdges.join('\n')}
                   Generate Overview
                 </Button>
                 {userJourneyFlows && (
-                  <Button onClick={downloadUserJourneys} variant="outline" size="sm">
+                  <Button
+                    onClick={downloadUserJourneys}
+                    variant="outline"
+                    size="sm"
+                  >
                     <Download className="h-4 w-4 mr-2" />
                     Download
                   </Button>
@@ -1789,40 +2170,45 @@ ${flowEdges.join('\n')}
               </div>
             ) : (
               <p className="text-gray-500 text-center py-8">
-                Generate user journey flows overview to see comprehensive workflow analysis
+                Generate user journey flows overview to see comprehensive
+                workflow analysis
               </p>
             )}
           </CardContent>
         </Card>
 
         {/* Generate Flow Details Button */}
-        {Object.keys(personaFlowTypes).length > 0 && Object.values(flowDetails).length === 0 && (
-          <Card className="mb-6">
-            <CardContent className="pt-6 text-center">
-              <div className="space-y-4">
-                <div>
-                  <Activity className="h-12 w-12 text-blue-500 mx-auto mb-3" />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Generate Flow Analysis</h3>
-                  <p className="text-gray-600 text-sm">
-                    Generate detailed analysis for all stakeholder flows including descriptions, key components, and processes
-                  </p>
+        {Object.keys(personaFlowTypes).length > 0 &&
+          Object.values(flowDetails).length === 0 && (
+            <Card className="mb-6">
+              <CardContent className="pt-6 text-center">
+                <div className="space-y-4">
+                  <div>
+                    <Activity className="h-12 w-12 text-blue-500 mx-auto mb-3" />
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                      Generate Flow Analysis
+                    </h3>
+                    <p className="text-gray-600 text-sm">
+                      Generate detailed analysis for all stakeholder flows
+                      including descriptions, key components, and processes
+                    </p>
+                  </div>
+                  <Button
+                    onClick={generateFlowDetails}
+                    disabled={isGeneratingFlowDetails}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2"
+                  >
+                    {isGeneratingFlowDetails ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Activity className="h-4 w-4 mr-2" />
+                    )}
+                    Generate Flow Details
+                  </Button>
                 </div>
-                <Button 
-                  onClick={generateFlowDetails}
-                  disabled={isGeneratingFlowDetails}
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2"
-                >
-                  {isGeneratingFlowDetails ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Activity className="h-4 w-4 mr-2" />
-                  )}
-                  Generate Flow Details
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+              </CardContent>
+            </Card>
+          )}
 
         {/* Stakeholder Flow Analysis */}
         {Object.values(flowDetails).length > 0 && (
@@ -1835,7 +2221,7 @@ ${flowEdges.join('\n')}
                   </div>
                   Stakeholder Flow Analysis
                 </div>
-                <Button 
+                <Button
                   onClick={generateAllSwimlanes}
                   disabled={Object.values(isGeneratingBpmn).some(Boolean)}
                   size="sm"
@@ -1852,656 +2238,1045 @@ ${flowEdges.join('\n')}
             </CardHeader>
             <CardContent className="px-6 pb-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {Object.entries(personaFlowTypes).map(([stakeholder, flowTypes], stakeholderIndex) => {
-                  const colorVariants = [
-                    'from-blue-500 to-cyan-600',
-                    'from-emerald-500 to-teal-600', 
-                    'from-orange-500 to-red-600',
-                    'from-purple-500 to-pink-600',
-                    'from-indigo-500 to-blue-600',
-                    'from-green-500 to-emerald-600'
-                  ];
-                  const bgVariants = [
-                    'from-blue-50 to-cyan-50',
-                    'from-emerald-50 to-teal-50',
-                    'from-orange-50 to-red-50', 
-                    'from-purple-50 to-pink-50',
-                    'from-indigo-50 to-blue-50',
-                    'from-green-50 to-emerald-50'
-                  ];
-                  const borderVariants = [
-                    'border-blue-200',
-                    'border-emerald-200',
-                    'border-orange-200',
-                    'border-purple-200', 
-                    'border-indigo-200',
-                    'border-green-200'
-                  ];
-                  
-                  const colorClass = colorVariants[stakeholderIndex % colorVariants.length];
-                  const bgClass = bgVariants[stakeholderIndex % bgVariants.length];
-                  const borderClass = borderVariants[stakeholderIndex % borderVariants.length];
-                  
-                  return (
-                    <div key={stakeholder} className={`border-2 ${borderClass} rounded-xl p-5 bg-gradient-to-br ${bgClass}`}>
-                      {/* Stakeholder Header */}
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-center`}>
-                            <User className="h-4 w-4 text-white" />
+                {Object.entries(personaFlowTypes).map(
+                  ([stakeholder, flowTypes], stakeholderIndex) => {
+                    const colorVariants = [
+                      "from-blue-500 to-cyan-600",
+                      "from-emerald-500 to-teal-600",
+                      "from-orange-500 to-red-600",
+                      "from-purple-500 to-pink-600",
+                      "from-indigo-500 to-blue-600",
+                      "from-green-500 to-emerald-600",
+                    ];
+                    const bgVariants = [
+                      "from-blue-50 to-cyan-50",
+                      "from-emerald-50 to-teal-50",
+                      "from-orange-50 to-red-50",
+                      "from-purple-50 to-pink-50",
+                      "from-indigo-50 to-blue-50",
+                      "from-green-50 to-emerald-50",
+                    ];
+                    const borderVariants = [
+                      "border-blue-200",
+                      "border-emerald-200",
+                      "border-orange-200",
+                      "border-purple-200",
+                      "border-indigo-200",
+                      "border-green-200",
+                    ];
+
+                    const colorClass =
+                      colorVariants[stakeholderIndex % colorVariants.length];
+                    const bgClass =
+                      bgVariants[stakeholderIndex % bgVariants.length];
+                    const borderClass =
+                      borderVariants[stakeholderIndex % borderVariants.length];
+
+                    return (
+                      <div
+                        key={stakeholder}
+                        className={`border-2 ${borderClass} rounded-xl p-5 bg-gradient-to-br ${bgClass}`}
+                      >
+                        {/* Stakeholder Header */}
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-8 h-8 bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-center`}
+                            >
+                              <User className="h-4 w-4 text-white" />
+                            </div>
+                            <div>
+                              <h3 className="text-lg font-semibold text-gray-800">
+                                {stakeholder}
+                              </h3>
+                              <p className="text-xs text-gray-600">
+                                {flowTypes.length} flow types
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-gray-800">{stakeholder}</h3>
-                            <p className="text-xs text-gray-600">{flowTypes.length} flow types</p>
-                          </div>
+                          <Button
+                            onClick={() => addNewFlow(stakeholder)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-3 py-1 h-8 border-gray-300 hover:bg-white"
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add Flow
+                          </Button>
                         </div>
-                        <Button
-                          onClick={() => addNewFlow(stakeholder)}
-                          variant="outline"
-                          size="sm"
-                          className="text-xs px-3 py-1 h-8 border-gray-300 hover:bg-white"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Flow
-                        </Button>
-                      </div>
-                      
-                      {/* Flow Types */}
-                      <div className="space-y-4">
-                        {flowTypes.map((flowType, flowIndex) => {
-                          const flowKey = `${stakeholder}-${flowType}`;
-                          const details = flowDetails[flowKey];
-                          const existingFlow = stakeholderFlows.find(f => f.stakeholder === stakeholder && f.flowType === flowType);
-                          
-                          return (
-                            <div key={flowIndex} className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-lg p-4 shadow-sm">
-                              {/* Flow Header */}
-                              <div className="flex items-center justify-between mb-3">
-                                <h4 className="text-sm font-semibold text-gray-800">{flowType}</h4>
-                                <div className="flex items-center gap-2">
-                                  {details && editingFlowDetails !== flowKey && (
+
+                        {/* Flow Types */}
+                        <div className="space-y-4">
+                          {flowTypes.map((flowType, flowIndex) => {
+                            const flowKey = `${stakeholder}-${flowType}`;
+                            const details = flowDetails[flowKey];
+                            const existingFlow = stakeholderFlows.find(
+                              (f) =>
+                                f.stakeholder === stakeholder &&
+                                f.flowType === flowType,
+                            );
+
+                            return (
+                              <div
+                                key={flowIndex}
+                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-lg p-4 shadow-sm"
+                              >
+                                {/* Flow Header */}
+                                <div className="flex items-center justify-between mb-3">
+                                  <h4 className="text-sm font-semibold text-gray-800">
+                                    {flowType}
+                                  </h4>
+                                  <div className="flex items-center gap-2">
+                                    {details &&
+                                      editingFlowDetails !== flowKey && (
+                                        <Button
+                                          onClick={() =>
+                                            startEditingFlowDetails(flowKey)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-blue-50"
+                                        >
+                                          <Edit3 className="h-3 w-3" />
+                                        </Button>
+                                      )}
                                     <Button
-                                      onClick={() => startEditingFlowDetails(flowKey)}
+                                      onClick={() =>
+                                        generateBpmnFromContent(
+                                          stakeholder,
+                                          flowType,
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingBpmn[flowKey] || !details
+                                      }
+                                      size="sm"
+                                      className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                    >
+                                      {isGeneratingBpmn[flowKey] ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        "Generate BPMN"
+                                      )}
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        removeFlow(stakeholder, flowType)
+                                      }
                                       variant="outline"
                                       size="sm"
-                                      className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-blue-50"
+                                      className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
                                     >
-                                      <Edit3 className="h-3 w-3" />
+                                      <Trash2 className="h-3 w-3" />
                                     </Button>
-                                  )}
-                                  <Button
-                                    onClick={() => generateBpmnFromContent(stakeholder, flowType)}
-                                    disabled={isGeneratingBpmn[flowKey] || !details}
-                                    size="sm"
-                                    className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
-                                  >
-                                    {isGeneratingBpmn[flowKey] ? (
-                                      <Loader2 className="h-3 w-3 animate-spin" />
-                                    ) : (
-                                      'Generate BPMN'
-                                    )}
-                                  </Button>
-                                  <Button
-                                    onClick={() => removeFlow(stakeholder, flowType)}
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
-                                  >
-                                    <Trash2 className="h-3 w-3" />
-                                  </Button>
+                                  </div>
                                 </div>
-                              </div>
 
-                              {/* Flow Details */}
-                              {details && (
-                                <div className="space-y-3 mb-3">
-                                  {editingFlowDetails === flowKey && editedFlowDetails ? (
-                                    /* Edit Mode */
-                                    <div className="space-y-4 p-3 bg-blue-50/50 rounded-lg border border-blue-200">
-                                      <div className="flex items-center justify-between mb-2">
-                                        <h5 className="text-xs font-semibold text-blue-800">Editing Flow Details</h5>
-                                        <div className="flex items-center gap-1">
-                                          <Button
-                                            onClick={saveFlowDetailsEdit}
-                                            size="sm"
-                                            className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
-                                          >
-                                            <Save className="h-3 w-3 mr-1" />
-                                            Save
-                                          </Button>
-                                          <Button
-                                            onClick={cancelFlowDetailsEdit}
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-6 px-2 border-gray-300"
-                                          >
-                                            <X className="h-3 w-3" />
-                                          </Button>
-                                        </div>
-                                      </div>
-
-                                      {/* Edit Process Description */}
-                                      <div>
-                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Process Description</label>
-                                        <Textarea
-                                          ref={(textarea) => {
-                                            if (textarea) {
-                                              // Auto-size on initial render
-                                              textarea.style.height = 'auto';
-                                              textarea.style.height = Math.max(60, textarea.scrollHeight) + 'px';
-                                            }
-                                          }}
-                                          value={editedFlowDetails.processDescription}
-                                          onChange={(e) => {
-                                            updateEditedField('processDescription', e.target.value);
-                                            // Auto-expand textarea
-                                            const target = e.target;
-                                            target.style.height = 'auto';
-                                            target.style.height = Math.max(60, target.scrollHeight) + 'px';
-                                          }}
-                                          className="text-xs min-h-[60px] resize-none overflow-hidden"
-                                        />
-                                      </div>
-
-                                      {/* Edit Participants */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Participants (Swimlanes)</label>
-                                          <Button
-                                            onClick={() => addItemToField('participants', 'New Participant')}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.participants.map((participant, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={participant}
-                                                onChange={(e) => updateItemInField('participants', idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeItemFromField('participants', idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                      {/* Edit Trigger */}
-                                      <div>
-                                        <label className="text-xs font-medium text-gray-600 mb-1 block">Trigger (Start Event)</label>
-                                        <Textarea
-                                          ref={(textarea) => {
-                                            if (textarea) {
-                                              // Auto-size on initial render
-                                              textarea.style.height = 'auto';
-                                              textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
-                                            }
-                                          }}
-                                          value={editedFlowDetails.trigger}
-                                          onChange={(e) => {
-                                            updateEditedField('trigger', e.target.value);
-                                            // Auto-expand textarea
-                                            const target = e.target;
-                                            target.style.height = 'auto';
-                                            target.style.height = Math.max(40, target.scrollHeight) + 'px';
-                                          }}
-                                          className="text-xs min-h-[40px] resize-none overflow-hidden"
-                                        />
-                                      </div>
-
-                                      {/* Edit Activities */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Activities (Tasks)</label>
-                                          <Button
-                                            onClick={() => addItemToField('activities', 'New Activity')}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.activities.map((activity, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={activity}
-                                                onChange={(e) => updateItemInField('activities', idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeItemFromField('activities', idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                      {/* Edit Decision Points */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Decision Points (Gateways)</label>
-                                          <Button
-                                            onClick={() => addItemToField('decisionPoints', 'If condition, then action; otherwise alternative')}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.decisionPoints.map((decision, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={decision}
-                                                onChange={(e) => updateItemInField('decisionPoints', idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeItemFromField('decisionPoints', idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                      {/* Edit End Event */}
-                                      <div>
-                                        <label className="text-xs font-medium text-gray-600 mb-1 block">End Event</label>
-                                        <Textarea
-                                          ref={(textarea) => {
-                                            if (textarea) {
-                                              // Auto-size on initial render
-                                              textarea.style.height = 'auto';
-                                              textarea.style.height = Math.max(40, textarea.scrollHeight) + 'px';
-                                            }
-                                          }}
-                                          value={editedFlowDetails.endEvent}
-                                          onChange={(e) => {
-                                            updateEditedField('endEvent', e.target.value);
-                                            // Auto-expand textarea
-                                            const target = e.target;
-                                            target.style.height = 'auto';
-                                            target.style.height = Math.max(40, target.scrollHeight) + 'px';
-                                          }}
-                                          className="text-xs min-h-[40px] resize-none overflow-hidden"
-                                        />
-                                      </div>
-
-                                      {/* Edit Additional Elements */}
-                                      <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                          <label className="text-xs font-medium text-gray-600">Additional Elements</label>
-                                          <Button
-                                            onClick={() => addItemToField('additionalElements', 'Messages: New notification')}
-                                            size="sm"
-                                            variant="outline"
-                                            className="h-5 px-1.5 text-xs"
-                                          >
-                                            <Plus className="h-2.5 w-2.5" />
-                                          </Button>
-                                        </div>
-                                        <div className="space-y-1">
-                                          {editedFlowDetails.additionalElements.map((element, idx) => (
-                                            <div key={idx} className="flex items-center gap-1">
-                                              <Input
-                                                value={element}
-                                                onChange={(e) => updateItemInField('additionalElements', idx, e.target.value)}
-                                                className="text-xs h-6 flex-1"
-                                              />
-                                              <Button
-                                                onClick={() => removeItemFromField('additionalElements', idx)}
-                                                size="sm"
-                                                variant="outline"
-                                                className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                              >
-                                                <X className="h-2.5 w-2.5" />
-                                              </Button>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
-
-                                    </div>
-                                  ) : (
-                                    /* Display Mode */
-                                    <>
-                                      {/* BPMN Flow Analysis - 7 Section Structure */}
-                                      <div className="space-y-3">
-                                        {/* Section 1: Process Description */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
-                                              ✅ 1. Process & Description
-                                            </Badge>
+                                {/* Flow Details */}
+                                {details && (
+                                  <div className="space-y-3 mb-3">
+                                    {editingFlowDetails === flowKey &&
+                                    editedFlowDetails ? (
+                                      /* Edit Mode */
+                                      <div className="space-y-4 p-3 bg-blue-50/50 rounded-lg border border-blue-200">
+                                        <div className="flex items-center justify-between mb-2">
+                                          <h5 className="text-xs font-semibold text-blue-800">
+                                            Editing Flow Details
+                                          </h5>
+                                          <div className="flex items-center gap-1">
                                             <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
+                                              onClick={saveFlowDetailsEdit}
                                               size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
                                             >
-                                              <Edit3 className="h-3 w-3" />
+                                              <Save className="h-3 w-3 mr-1" />
+                                              Save
+                                            </Button>
+                                            <Button
+                                              onClick={cancelFlowDetailsEdit}
+                                              variant="outline"
+                                              size="sm"
+                                              className="h-6 px-2 border-gray-300"
+                                            >
+                                              <X className="h-3 w-3" />
                                             </Button>
                                           </div>
-                                          <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
-                                            {details.processDescription || details.description.split('\n\n✅ 2.')[0].replace('✅ 1. Process Name and Description\n', '')}
-                                          </p>
                                         </div>
 
-                                        {/* Section 2: Participants (Swimlanes) - Editable */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
-                                              ✅ 2. Participants (Swimlanes)
-                                            </Badge>
-                                            <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                              <Edit3 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                          <div className="flex flex-wrap gap-1">
-                                            {details.participants?.map((participant, idx) => (
-                                              <Badge key={idx} variant="outline" className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200">
-                                                {participant}
-                                              </Badge>
-                                            ))}
-                                          </div>
+                                        {/* Edit Process Description */}
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                                            Process Description
+                                          </label>
+                                          <Textarea
+                                            ref={(textarea) => {
+                                              if (textarea) {
+                                                // Auto-size on initial render
+                                                textarea.style.height = "auto";
+                                                textarea.style.height =
+                                                  Math.max(
+                                                    60,
+                                                    textarea.scrollHeight,
+                                                  ) + "px";
+                                              }
+                                            }}
+                                            value={
+                                              editedFlowDetails.processDescription
+                                            }
+                                            onChange={(e) => {
+                                              updateEditedField(
+                                                "processDescription",
+                                                e.target.value,
+                                              );
+                                              // Auto-expand textarea
+                                              const target = e.target;
+                                              target.style.height = "auto";
+                                              target.style.height =
+                                                Math.max(
+                                                  60,
+                                                  target.scrollHeight,
+                                                ) + "px";
+                                            }}
+                                            className="text-xs min-h-[60px] resize-none overflow-hidden"
+                                          />
                                         </div>
 
-                                        {/* Section 3: Trigger (Start Event) */}
-                                        <div className="group">
+                                        {/* Edit Participants */}
+                                        <div>
                                           <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
-                                              ✅ 3. Trigger (Start Event)
-                                            </Badge>
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Participants (Swimlanes)
+                                            </label>
                                             <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "participants",
+                                                  "New Participant",
+                                                )
+                                              }
                                               size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              variant="outline"
+                                              className="h-5 px-1.5 text-xs"
                                             >
-                                              <Edit3 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                          <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
-                                            {details.trigger || (() => {
-                                              const triggerSection = details.description.match(/✅ 3\. Trigger \(Start Event\)\n([^✅]*)/);
-                                              return triggerSection ? triggerSection[1].trim() : 'Process initiates when conditions are met';
-                                            })()}
-                                          </p>
-                                        </div>
-
-                                        {/* Section 4: Activities - Editable */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
-                                              ✅ 4. Activities (Tasks)
-                                            </Badge>
-                                            <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                              <Edit3 className="h-3 w-3" />
+                                              <Plus className="h-2.5 w-2.5" />
                                             </Button>
                                           </div>
                                           <div className="space-y-1">
-                                            {details.activities?.map((activity, idx) => (
-                                              <div key={idx} className="flex items-center gap-2">
-                                                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
-                                                <span className="text-xs text-gray-600">{activity}</span>
-                                              </div>
-                                            ))}
-                                          </div>
-                                        </div>
-
-                                        {/* Section 5: Decision Points - Editable */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
-                                              ✅ 5. Decision Points (Gateways)
-                                            </Badge>
-                                            <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                              <Edit3 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                          <div className="text-xs text-gray-600 pl-2 border-l-2 border-yellow-200 space-y-1">
-                                            {(details.decisionPoints && details.decisionPoints.length > 0) ? 
-                                              details.decisionPoints.map((decision, idx) => (
-                                                <div key={idx} className="flex items-start gap-2">
-                                                  <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                                                  <span>{decision.trim()}</span>
+                                            {editedFlowDetails.participants.map(
+                                              (participant, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1"
+                                                >
+                                                  <Input
+                                                    value={participant}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "participants",
+                                                        idx,
+                                                        e.target.value,
+                                                      )
+                                                    }
+                                                    className="text-xs h-6 flex-1"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "participants",
+                                                        idx,
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                                  >
+                                                    <X className="h-2.5 w-2.5" />
+                                                  </Button>
                                                 </div>
-                                              )) : 
-                                              (() => {
-                                                const decisionSection = details.description.match(/✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/);
-                                                if (decisionSection) {
-                                                  return decisionSection[1].trim().split('\n').map((decision, idx) => (
-                                                    <div key={idx} className="flex items-start gap-2">
-                                                      <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
-                                                      <span>{decision.trim()}</span>
-                                                    </div>
-                                                  ));
-                                                }
-                                                return <span>Standard validation and approval gates</span>;
-                                              })()
-                                            }
+                                              ),
+                                            )}
                                           </div>
                                         </div>
 
-                                        {/* Section 6: End Event */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0">
-                                              ✅ 6. End Event
-                                            </Badge>
-                                            <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                              <Edit3 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                          <p className="text-xs text-gray-600 pl-2 border-l-2 border-red-200">
-                                            {details.endEvent || (() => {
-                                              const endSection = details.description.match(/✅ 6\. End Event\n([^✅]*)/);
-                                              return endSection ? endSection[1].trim() : 'Process completes when all objectives are met';
-                                            })()}
-                                          </p>
-                                        </div>
-
-                                        {/* Section 7: Additional Elements - Editable */}
-                                        <div className="group">
-                                          <div className="flex items-center justify-between mb-1">
-                                            <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
-                                              ✅ 7. Additional Elements
-                                            </Badge>
-                                            <Button
-                                              onClick={() => startEditingFlowDetails(flowKey)}
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                              <Edit3 className="h-3 w-3" />
-                                            </Button>
-                                          </div>
-                                          <div className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
-                                            <div className="grid grid-cols-1 gap-1">
-                                              {(details.additionalElements && details.additionalElements.length > 0) ?
-                                                details.additionalElements.map((element, idx) => {
-                                                  if (element.includes('Messages:')) {
-                                                    return (
-                                                      <div key={idx} className="flex items-center gap-2">
-                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
-                                                          📧 Messages
-                                                        </Badge>
-                                                        <span>{element.replace('Messages:', '').trim()}</span>
-                                                      </div>
-                                                    );
-                                                  } else if (element.includes('Timers:')) {
-                                                    return (
-                                                      <div key={idx} className="flex items-center gap-2">
-                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
-                                                          ⏱️ Timers
-                                                        </Badge>
-                                                        <span>{element.replace('Timers:', '').trim()}</span>
-                                                      </div>
-                                                    );
-                                                  } else if (element.includes('Data')) {
-                                                    return (
-                                                      <div key={idx} className="flex items-center gap-2">
-                                                        <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
-                                                          📄 Data
-                                                        </Badge>
-                                                        <span>{element.replace('Data Objects:', '').trim()}</span>
-                                                      </div>
-                                                    );
-                                                  }
-                                                  return (
-                                                    <div key={idx} className="flex items-center gap-2">
-                                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
-                                                        📋 Element
-                                                      </Badge>
-                                                      <span>{element}</span>
-                                                    </div>
-                                                  );
-                                                }) : 
-                                                (() => {
-                                                  const additionalSection = details.description.match(/✅ 7\. Additional Elements\n([^$]*)/);
-                                                  if (additionalSection) {
-                                                    const elements = additionalSection[1].trim().split('\n');
-                                                    return elements.map((element, idx) => {
-                                                      if (element.includes('Messages:')) {
-                                                        return (
-                                                          <div key={idx} className="flex items-center gap-2">
-                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200">
-                                                              📧 Messages
-                                                            </Badge>
-                                                            <span>{element.replace('Messages:', '').trim()}</span>
-                                                          </div>
-                                                        );
-                                                      } else if (element.includes('Timers:')) {
-                                                        return (
-                                                          <div key={idx} className="flex items-center gap-2">
-                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200">
-                                                              ⏱️ Timers
-                                                            </Badge>
-                                                            <span>{element.replace('Timers:', '').trim()}</span>
-                                                          </div>
-                                                        );
-                                                      } else if (element.includes('Data')) {
-                                                        return (
-                                                          <div key={idx} className="flex items-center gap-2">
-                                                            <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200">
-                                                              📄 Data
-                                                            </Badge>
-                                                            <span>{element.replace('Data Objects:', '').trim()}</span>
-                                                          </div>
-                                                        );
-                                                      }
-                                                      return null;
-                                                    });
-                                                  }
-                                                  return (
-                                                    <div className="flex items-center gap-2">
-                                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200">
-                                                        📋 Standard
-                                                      </Badge>
-                                                      <span>Forms, notifications, and system logs</span>
-                                                    </div>
-                                                  );
-                                                })()
+                                        {/* Edit Trigger */}
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                                            Trigger (Start Event)
+                                          </label>
+                                          <Textarea
+                                            ref={(textarea) => {
+                                              if (textarea) {
+                                                // Auto-size on initial render
+                                                textarea.style.height = "auto";
+                                                textarea.style.height =
+                                                  Math.max(
+                                                    40,
+                                                    textarea.scrollHeight,
+                                                  ) + "px";
                                               }
-                                            </div>
+                                            }}
+                                            value={editedFlowDetails.trigger}
+                                            onChange={(e) => {
+                                              updateEditedField(
+                                                "trigger",
+                                                e.target.value,
+                                              );
+                                              // Auto-expand textarea
+                                              const target = e.target;
+                                              target.style.height = "auto";
+                                              target.style.height =
+                                                Math.max(
+                                                  40,
+                                                  target.scrollHeight,
+                                                ) + "px";
+                                            }}
+                                            className="text-xs min-h-[40px] resize-none overflow-hidden"
+                                          />
+                                        </div>
+
+                                        {/* Edit Activities */}
+                                        <div>
+                                          <div className="flex items-center justify-between mb-1">
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Activities (Tasks)
+                                            </label>
+                                            <Button
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "activities",
+                                                  "New Activity",
+                                                )
+                                              }
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-1.5 text-xs"
+                                            >
+                                              <Plus className="h-2.5 w-2.5" />
+                                            </Button>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {editedFlowDetails.activities.map(
+                                              (activity, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1"
+                                                >
+                                                  <Input
+                                                    value={activity}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "activities",
+                                                        idx,
+                                                        e.target.value,
+                                                      )
+                                                    }
+                                                    className="text-xs h-6 flex-1"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "activities",
+                                                        idx,
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                                  >
+                                                    <X className="h-2.5 w-2.5" />
+                                                  </Button>
+                                                </div>
+                                              ),
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Edit Decision Points */}
+                                        <div>
+                                          <div className="flex items-center justify-between mb-1">
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Decision Points (Gateways)
+                                            </label>
+                                            <Button
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "decisionPoints",
+                                                  "If condition, then action; otherwise alternative",
+                                                )
+                                              }
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-1.5 text-xs"
+                                            >
+                                              <Plus className="h-2.5 w-2.5" />
+                                            </Button>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {editedFlowDetails.decisionPoints.map(
+                                              (decision, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1"
+                                                >
+                                                  <Input
+                                                    value={decision}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "decisionPoints",
+                                                        idx,
+                                                        e.target.value,
+                                                      )
+                                                    }
+                                                    className="text-xs h-6 flex-1"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "decisionPoints",
+                                                        idx,
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                                  >
+                                                    <X className="h-2.5 w-2.5" />
+                                                  </Button>
+                                                </div>
+                                              ),
+                                            )}
+                                          </div>
+                                        </div>
+
+                                        {/* Edit End Event */}
+                                        <div>
+                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                                            End Event
+                                          </label>
+                                          <Textarea
+                                            ref={(textarea) => {
+                                              if (textarea) {
+                                                // Auto-size on initial render
+                                                textarea.style.height = "auto";
+                                                textarea.style.height =
+                                                  Math.max(
+                                                    40,
+                                                    textarea.scrollHeight,
+                                                  ) + "px";
+                                              }
+                                            }}
+                                            value={editedFlowDetails.endEvent}
+                                            onChange={(e) => {
+                                              updateEditedField(
+                                                "endEvent",
+                                                e.target.value,
+                                              );
+                                              // Auto-expand textarea
+                                              const target = e.target;
+                                              target.style.height = "auto";
+                                              target.style.height =
+                                                Math.max(
+                                                  40,
+                                                  target.scrollHeight,
+                                                ) + "px";
+                                            }}
+                                            className="text-xs min-h-[40px] resize-none overflow-hidden"
+                                          />
+                                        </div>
+
+                                        {/* Edit Additional Elements */}
+                                        <div>
+                                          <div className="flex items-center justify-between mb-1">
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Additional Elements
+                                            </label>
+                                            <Button
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "additionalElements",
+                                                  "Messages: New notification",
+                                                )
+                                              }
+                                              size="sm"
+                                              variant="outline"
+                                              className="h-5 px-1.5 text-xs"
+                                            >
+                                              <Plus className="h-2.5 w-2.5" />
+                                            </Button>
+                                          </div>
+                                          <div className="space-y-1">
+                                            {editedFlowDetails.additionalElements.map(
+                                              (element, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1"
+                                                >
+                                                  <Input
+                                                    value={element}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "additionalElements",
+                                                        idx,
+                                                        e.target.value,
+                                                      )
+                                                    }
+                                                    className="text-xs h-6 flex-1"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "additionalElements",
+                                                        idx,
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                                  >
+                                                    <X className="h-2.5 w-2.5" />
+                                                  </Button>
+                                                </div>
+                                              ),
+                                            )}
                                           </div>
                                         </div>
                                       </div>
-                                    </>
-                                  )}
-                                </div>
-                              )}
+                                    ) : (
+                                      /* Display Mode */
+                                      <>
+                                        {/* BPMN Flow Analysis - 7 Section Structure */}
+                                        <div className="space-y-3">
+                                          {/* Section 1: Process Description */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
+                                                ✅ 1. Process & Description
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
+                                              {details.processDescription ||
+                                                details.description
+                                                  .split("\n\n✅ 2.")[0]
+                                                  .replace(
+                                                    "✅ 1. Process Name and Description\n",
+                                                    "",
+                                                  )}
+                                            </p>
+                                          </div>
 
-                              
+                                          {/* Section 2: Participants (Swimlanes) - Editable */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
+                                                ✅ 2. Participants (Swimlanes)
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1">
+                                              {details.participants?.map(
+                                                (participant, idx) => (
+                                                  <Badge
+                                                    key={idx}
+                                                    variant="outline"
+                                                    className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200"
+                                                  >
+                                                    {participant}
+                                                  </Badge>
+                                                ),
+                                              )}
+                                            </div>
+                                          </div>
 
-                              {/* BPMN Diagram */}
-                              {existingFlow?.bpmnXml && (
-                                <div className="space-y-2">
-                                  <div className="flex items-center justify-between">
-                                    <Badge variant="secondary" className="text-xs bg-green-100 text-green-700">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      BPMN Generated
-                                    </Badge>
-                                    <div className="flex items-center gap-1">
-                                      <Button
-                                        onClick={() => copyXmlToClipboard(existingFlow.bpmnXml)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs px-2 py-1 h-6 border-gray-300"
-                                      >
-                                        <Copy className="h-3 w-3 mr-1" />
-                                        Copy
-                                      </Button>
-                                      <Link href="/bpmn-editor">
-                                        <Button
-                                          onClick={() => openInEditor(existingFlow.bpmnXml)}
-                                          size="sm"
-                                          className="text-xs px-2 py-1 h-6 bg-gray-600 hover:bg-gray-700 text-white"
-                                        >
-                                          <Navigation className="h-3 w-3 mr-1" />
-                                          Editor
-                                        </Button>
-                                      </Link>
-                                    </div>
+                                          {/* Section 3: Trigger (Start Event) */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
+                                                ✅ 3. Trigger (Start Event)
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
+                                              {details.trigger ||
+                                                (() => {
+                                                  const triggerSection =
+                                                    details.description.match(
+                                                      /✅ 3\. Trigger \(Start Event\)\n([^✅]*)/,
+                                                    );
+                                                  return triggerSection
+                                                    ? triggerSection[1].trim()
+                                                    : "Process initiates when conditions are met";
+                                                })()}
+                                            </p>
+                                          </div>
+
+                                          {/* Section 4: Activities - Editable */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
+                                                ✅ 4. Activities (Tasks)
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <div className="space-y-1">
+                                              {details.activities?.map(
+                                                (activity, idx) => (
+                                                  <div
+                                                    key={idx}
+                                                    className="flex items-center gap-2"
+                                                  >
+                                                    <div className="w-1.5 h-1.5 bg-orange-400 rounded-full"></div>
+                                                    <span className="text-xs text-gray-600">
+                                                      {activity}
+                                                    </span>
+                                                  </div>
+                                                ),
+                                              )}
+                                            </div>
+                                          </div>
+
+                                          {/* Section 5: Decision Points - Editable */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
+                                                ✅ 5. Decision Points (Gateways)
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <div className="text-xs text-gray-600 pl-2 border-l-2 border-yellow-200 space-y-1">
+                                              {details.decisionPoints &&
+                                              details.decisionPoints.length > 0
+                                                ? details.decisionPoints.map(
+                                                    (decision, idx) => (
+                                                      <div
+                                                        key={idx}
+                                                        className="flex items-start gap-2"
+                                                      >
+                                                        <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                                                        <span>
+                                                          {decision.trim()}
+                                                        </span>
+                                                      </div>
+                                                    ),
+                                                  )
+                                                : (() => {
+                                                    const decisionSection =
+                                                      details.description.match(
+                                                        /✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/,
+                                                      );
+                                                    if (decisionSection) {
+                                                      return decisionSection[1]
+                                                        .trim()
+                                                        .split("\n")
+                                                        .map(
+                                                          (decision, idx) => (
+                                                            <div
+                                                              key={idx}
+                                                              className="flex items-start gap-2"
+                                                            >
+                                                              <div className="w-1 h-1 bg-yellow-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                                                              <span>
+                                                                {decision.trim()}
+                                                              </span>
+                                                            </div>
+                                                          ),
+                                                        );
+                                                    }
+                                                    return (
+                                                      <span>
+                                                        Standard validation and
+                                                        approval gates
+                                                      </span>
+                                                    );
+                                                  })()}
+                                            </div>
+                                          </div>
+
+                                          {/* Section 6: End Event */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0">
+                                                ✅ 6. End Event
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <p className="text-xs text-gray-600 pl-2 border-l-2 border-red-200">
+                                              {details.endEvent ||
+                                                (() => {
+                                                  const endSection =
+                                                    details.description.match(
+                                                      /✅ 6\. End Event\n([^✅]*)/,
+                                                    );
+                                                  return endSection
+                                                    ? endSection[1].trim()
+                                                    : "Process completes when all objectives are met";
+                                                })()}
+                                            </p>
+                                          </div>
+
+                                          {/* Section 7: Additional Elements - Editable */}
+                                          <div className="group">
+                                            <div className="flex items-center justify-between mb-1">
+                                              <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
+                                                ✅ 7. Additional Elements
+                                              </Badge>
+                                              <Button
+                                                onClick={() =>
+                                                  startEditingFlowDetails(
+                                                    flowKey,
+                                                  )
+                                                }
+                                                variant="ghost"
+                                                size="sm"
+                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                              >
+                                                <Edit3 className="h-3 w-3" />
+                                              </Button>
+                                            </div>
+                                            <div className="text-xs text-gray-600 pl-2 border-l-2 border-gray-200">
+                                              <div className="grid grid-cols-1 gap-1">
+                                                {details.additionalElements &&
+                                                details.additionalElements
+                                                  .length > 0
+                                                  ? details.additionalElements.map(
+                                                      (element, idx) => {
+                                                        if (
+                                                          element.includes(
+                                                            "Messages:",
+                                                          )
+                                                        ) {
+                                                          return (
+                                                            <div
+                                                              key={idx}
+                                                              className="flex items-center gap-2"
+                                                            >
+                                                              <Badge
+                                                                variant="outline"
+                                                                className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200"
+                                                              >
+                                                                📧 Messages
+                                                              </Badge>
+                                                              <span>
+                                                                {element
+                                                                  .replace(
+                                                                    "Messages:",
+                                                                    "",
+                                                                  )
+                                                                  .trim()}
+                                                              </span>
+                                                            </div>
+                                                          );
+                                                        } else if (
+                                                          element.includes(
+                                                            "Timers:",
+                                                          )
+                                                        ) {
+                                                          return (
+                                                            <div
+                                                              key={idx}
+                                                              className="flex items-center gap-2"
+                                                            >
+                                                              <Badge
+                                                                variant="outline"
+                                                                className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200"
+                                                              >
+                                                                ⏱️ Timers
+                                                              </Badge>
+                                                              <span>
+                                                                {element
+                                                                  .replace(
+                                                                    "Timers:",
+                                                                    "",
+                                                                  )
+                                                                  .trim()}
+                                                              </span>
+                                                            </div>
+                                                          );
+                                                        } else if (
+                                                          element.includes(
+                                                            "Data",
+                                                          )
+                                                        ) {
+                                                          return (
+                                                            <div
+                                                              key={idx}
+                                                              className="flex items-center gap-2"
+                                                            >
+                                                              <Badge
+                                                                variant="outline"
+                                                                className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200"
+                                                              >
+                                                                📄 Data
+                                                              </Badge>
+                                                              <span>
+                                                                {element
+                                                                  .replace(
+                                                                    "Data Objects:",
+                                                                    "",
+                                                                  )
+                                                                  .trim()}
+                                                              </span>
+                                                            </div>
+                                                          );
+                                                        }
+                                                        return (
+                                                          <div
+                                                            key={idx}
+                                                            className="flex items-center gap-2"
+                                                          >
+                                                            <Badge
+                                                              variant="outline"
+                                                              className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200"
+                                                            >
+                                                              📋 Element
+                                                            </Badge>
+                                                            <span>
+                                                              {element}
+                                                            </span>
+                                                          </div>
+                                                        );
+                                                      },
+                                                    )
+                                                  : (() => {
+                                                      const additionalSection =
+                                                        details.description.match(
+                                                          /✅ 7\. Additional Elements\n([^$]*)/,
+                                                        );
+                                                      if (additionalSection) {
+                                                        const elements =
+                                                          additionalSection[1]
+                                                            .trim()
+                                                            .split("\n");
+                                                        return elements.map(
+                                                          (element, idx) => {
+                                                            if (
+                                                              element.includes(
+                                                                "Messages:",
+                                                              )
+                                                            ) {
+                                                              return (
+                                                                <div
+                                                                  key={idx}
+                                                                  className="flex items-center gap-2"
+                                                                >
+                                                                  <Badge
+                                                                    variant="outline"
+                                                                    className="text-xs px-1.5 py-0.5 bg-blue-50 text-blue-600 border-blue-200"
+                                                                  >
+                                                                    📧 Messages
+                                                                  </Badge>
+                                                                  <span>
+                                                                    {element
+                                                                      .replace(
+                                                                        "Messages:",
+                                                                        "",
+                                                                      )
+                                                                      .trim()}
+                                                                  </span>
+                                                                </div>
+                                                              );
+                                                            } else if (
+                                                              element.includes(
+                                                                "Timers:",
+                                                              )
+                                                            ) {
+                                                              return (
+                                                                <div
+                                                                  key={idx}
+                                                                  className="flex items-center gap-2"
+                                                                >
+                                                                  <Badge
+                                                                    variant="outline"
+                                                                    className="text-xs px-1.5 py-0.5 bg-orange-50 text-orange-600 border-orange-200"
+                                                                  >
+                                                                    ⏱️ Timers
+                                                                  </Badge>
+                                                                  <span>
+                                                                    {element
+                                                                      .replace(
+                                                                        "Timers:",
+                                                                        "",
+                                                                      )
+                                                                      .trim()}
+                                                                  </span>
+                                                                </div>
+                                                              );
+                                                            } else if (
+                                                              element.includes(
+                                                                "Data",
+                                                              )
+                                                            ) {
+                                                              return (
+                                                                <div
+                                                                  key={idx}
+                                                                  className="flex items-center gap-2"
+                                                                >
+                                                                  <Badge
+                                                                    variant="outline"
+                                                                    className="text-xs px-1.5 py-0.5 bg-green-50 text-green-600 border-green-200"
+                                                                  >
+                                                                    📄 Data
+                                                                  </Badge>
+                                                                  <span>
+                                                                    {element
+                                                                      .replace(
+                                                                        "Data Objects:",
+                                                                        "",
+                                                                      )
+                                                                      .trim()}
+                                                                  </span>
+                                                                </div>
+                                                              );
+                                                            }
+                                                            return null;
+                                                          },
+                                                        );
+                                                      }
+                                                      return (
+                                                        <div className="flex items-center gap-2">
+                                                          <Badge
+                                                            variant="outline"
+                                                            className="text-xs px-1.5 py-0.5 bg-gray-50 text-gray-600 border-gray-200"
+                                                          >
+                                                            📋 Standard
+                                                          </Badge>
+                                                          <span>
+                                                            Forms,
+                                                            notifications, and
+                                                            system logs
+                                                          </span>
+                                                        </div>
+                                                      );
+                                                    })()}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </>
+                                    )}
                                   </div>
-                                  <InlineBpmnViewer
-                                    bpmnXml={existingFlow.bpmnXml}
-                                    title={`${stakeholder} - ${flowType}`}
-                                    height="280px"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
+                                )}
+
+                                {/* BPMN Diagram */}
+                                {existingFlow?.bpmnXml && (
+                                  <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs bg-green-100 text-green-700"
+                                      >
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        BPMN Generated
+                                      </Badge>
+                                      <div className="flex items-center gap-1">
+                                        <Button
+                                          onClick={() =>
+                                            copyXmlToClipboard(
+                                              existingFlow.bpmnXml,
+                                            )
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-2 py-1 h-6 border-gray-300"
+                                        >
+                                          <Copy className="h-3 w-3 mr-1" />
+                                          Copy
+                                        </Button>
+                                        <Link href="/bpmn-editor">
+                                          <Button
+                                            onClick={() =>
+                                              openInEditor(existingFlow.bpmnXml)
+                                            }
+                                            size="sm"
+                                            className="text-xs px-2 py-1 h-6 bg-gray-600 hover:bg-gray-700 text-white"
+                                          >
+                                            <Navigation className="h-3 w-3 mr-1" />
+                                            Editor
+                                          </Button>
+                                        </Link>
+                                      </div>
+                                    </div>
+                                    <InlineBpmnViewer
+                                      bpmnXml={existingFlow.bpmnXml}
+                                      title={`${stakeholder} - ${flowType}`}
+                                      height="280px"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  },
+                )}
               </div>
             </CardContent>
           </Card>
