@@ -673,10 +673,15 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 {"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Activity 1: Detailed action description", "Activity 2: Detailed action description", "Activity 3: Detailed action description", "Activity 4: Detailed action description", "Activity 5: Detailed action description", "Activity 6: Detailed action description"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
 
           // Call Gemini API directly from client-side only
+          console.log(`Starting flow analysis for ${key}...`);
           const { generateFlowAnalysis } = await import('../lib/gemini');
           
           const result = await generateFlowAnalysis(prompt);
           console.log(`Gemini response for ${key}:`, result);
+          
+          if (!result || result.trim().length === 0) {
+            throw new Error(`Empty response from Gemini API for ${key}`);
+          }
           
           // Clean and parse the response
           let cleanedResult = result.trim();
