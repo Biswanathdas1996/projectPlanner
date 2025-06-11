@@ -13,6 +13,86 @@ console.error = (...args) => {
   }
 };
 
+export async function generateCustomizedBpmnFromStructuredData(
+  structuredData: {
+    processName: string;
+    processDescription: string;
+    participants: string[];
+    trigger: string;
+    activities: string[];
+    decisionPoints: string[];
+    endEvent: string;
+    additionalElements: string[];
+  }
+): Promise<string> {
+  try {
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.2,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 4096,
+      },
+    });
+
+    const prompt = `You are a BPMN 2.0 expert. Generate a complete, valid BPMN 2.0 XML diagram based on this structured workflow data:
+
+✅ 1. Process & Description: ${structuredData.processName}
+${structuredData.processDescription}
+
+✅ 2. Participants (Swimlanes): ${structuredData.participants.join(', ')}
+
+✅ 3. Trigger (Start Event): ${structuredData.trigger}
+
+✅ 4. Activities (Tasks): 
+${structuredData.activities.map((activity, i) => `${i + 1}. ${activity}`).join('\n')}
+
+✅ 5. Decision Points (Gateways):
+${structuredData.decisionPoints.map((decision, i) => `${i + 1}. ${decision}`).join('\n')}
+
+✅ 6. End Event: ${structuredData.endEvent}
+
+✅ 7. Additional Elements: ${structuredData.additionalElements.join(', ')}
+
+REQUIREMENTS:
+- Generate complete BPMN 2.0 XML with proper namespaces (bpmn2, bpmndi, dc, di, xsi)
+- Create collaboration with participant pools/swimlanes for each participant
+- Include all activities as userTask elements in sequence
+- Convert decision points into exclusiveGateway elements with conditional sequence flows
+- Add proper Yes/No labels on gateway outgoing flows
+- Include comprehensive visual positioning (BPMNDiagram, BPMNPlane, BPMNShape, BPMNEdge)
+- Use proper BPMN 2.0 element types and attributes
+- Ensure all elements have unique IDs and proper references
+- Include start event, end event, and all workflow elements
+- Generate swimlane layout with proper positioning
+- Return ONLY the XML content, no explanations or markdown
+
+Generate the BPMN 2.0 XML:`;
+
+    console.log("Generating AI-customized BPMN from 7-element structured data...");
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    let bpmnXml = response.text();
+
+    // Clean up the response
+    bpmnXml = bpmnXml.replace(/```xml\n?/g, '').replace(/```\n?/g, '');
+    bpmnXml = bpmnXml.trim();
+
+    // Ensure XML declaration
+    if (!bpmnXml.startsWith('<?xml')) {
+      bpmnXml = '<?xml version="1.0" encoding="UTF-8"?>\n' + bpmnXml;
+    }
+
+    console.log('AI Generated BPMN 2.0 XML:', bpmnXml.substring(0, 200) + '...');
+    
+    return bpmnXml;
+  } catch (error) {
+    console.error("Error generating customized BPMN from structured data:", error);
+    throw error;
+  }
+}
+
 export async function generateFlowAnalysis(prompt: string): Promise<string> {
   if (!prompt.trim()) {
     throw new Error("Prompt is required");
