@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { generateUserJourneyFlows, generatePersonaBpmnFlow, extractStakeholdersFromProject, generatePersonaBpmnFlowWithType } from '@/lib/gemini';
+import { createStakeholderExtractionAgent, ExtractedStakeholder, StakeholderAnalysis } from '@/lib/stakeholder-extraction-agent';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
 import { Link } from 'wouter';
@@ -41,6 +42,10 @@ export default function UserJourney() {
   const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
   const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
   const [personaPrompts, setPersonaPrompts] = useState<Record<string, Record<string, string>>>({});
+  const [stakeholderAnalysis, setStakeholderAnalysis] = useState<StakeholderAnalysis | null>(null);
+  const [isExtractingStakeholders, setIsExtractingStakeholders] = useState(false);
+  const [extractionProgress, setExtractionProgress] = useState(0);
+  const [extractionStep, setExtractionStep] = useState('');
 
   // Load data from localStorage when component mounts and auto-generate BPMN
   useEffect(() => {
@@ -49,6 +54,7 @@ export default function UserJourney() {
     const savedUserJourneyFlows = localStorage.getItem(STORAGE_KEYS.USER_JOURNEY_FLOWS);
     const savedPersonaBpmnFlows = localStorage.getItem(STORAGE_KEYS.PERSONA_BPMN_FLOWS);
     const savedPersonaPrompts = localStorage.getItem(STORAGE_KEYS.PERSONA_PROMPTS);
+    const savedStakeholderAnalysis = localStorage.getItem('stakeholder_analysis');
 
     if (savedProjectDescription) {
       setProjectDescription(savedProjectDescription);
@@ -71,6 +77,13 @@ export default function UserJourney() {
         setPersonaPrompts(JSON.parse(savedPersonaPrompts));
       } catch (error) {
         console.error('Error parsing saved persona prompts:', error);
+      }
+    }
+    if (savedStakeholderAnalysis) {
+      try {
+        setStakeholderAnalysis(JSON.parse(savedStakeholderAnalysis));
+      } catch (error) {
+        console.error('Error parsing saved stakeholder analysis:', error);
       }
     }
       
@@ -256,6 +269,51 @@ export default function UserJourney() {
     }
   };
 
+  const extractStakeholdersFromProjectPlan = async () => {
+    const planContent = projectPlan || projectDescription;
+    if (!planContent.trim()) {
+      setError('No project plan available. Please generate a project plan first.');
+      return;
+    }
+
+    setIsExtractingStakeholders(true);
+    setError('');
+    setExtractionProgress(0);
+    setExtractionStep('');
+
+    try {
+      const agent = createStakeholderExtractionAgent();
+      
+      const analysis = await agent.extractStakeholdersFromProjectPlan(
+        planContent,
+        (step: string, progress: number) => {
+          setExtractionStep(step);
+          setExtractionProgress(progress);
+        }
+      );
+
+      setStakeholderAnalysis(analysis);
+      
+      // Save to localStorage
+      localStorage.setItem('stakeholder_analysis', JSON.stringify(analysis));
+      
+      // Update flow types for personas based on extracted stakeholders
+      setPersonaFlowTypes(analysis.flowTypes);
+      
+      setExtractionStep('Stakeholder extraction completed successfully');
+      setTimeout(() => {
+        setExtractionStep('');
+        setExtractionProgress(0);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Error extracting stakeholders:', error);
+      setError('Failed to extract stakeholders from project plan. Please try again.');
+    } finally {
+      setIsExtractingStakeholders(false);
+    }
+  };
+
   const renderUserJourneyContent = () => {
     if (!userJourneyFlows) return null;
     
@@ -407,7 +465,7 @@ export default function UserJourney() {
                 Each journey will show step-by-step navigation, decision points, and user interactions.
               </p>
               
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-3">
                 <Button
                   onClick={generateUserJourneys}
                   disabled={isGeneratingFlows || (!projectPlan && !projectDescription)}
@@ -422,6 +480,25 @@ export default function UserJourney() {
                     <>
                       <Workflow className="h-4 w-4 mr-2" />
                       Generate User Journey Flows
+                    </>
+                  )}
+                </Button>
+
+                <Button
+                  onClick={extractStakeholdersFromProjectPlan}
+                  disabled={isExtractingStakeholders || (!projectPlan && !projectDescription)}
+                  variant="outline"
+                  className="border-green-300 text-green-600 hover:bg-green-50"
+                >
+                  {isExtractingStakeholders ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Extracting Stakeholders...
+                    </>
+                  ) : (
+                    <>
+                      <Users className="h-4 w-4 mr-2" />
+                      Extract Stakeholders
                     </>
                   )}
                 </Button>
@@ -656,9 +733,177 @@ export default function UserJourney() {
                   </Card>
                 ))}
               </div>
+
+              {/* Stakeholder Extraction Progress */}
+              {isExtractingStakeholders && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-green-800">Extracting Stakeholders from Project Plan</h4>
+                    <span className="text-sm text-green-600 font-medium">{Math.round(extractionProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-green-100 rounded-full h-2 mb-3">
+                    <div 
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${extractionProgress}%` }}
+                    ></div>
+                  </div>
+                  {extractionStep && (
+                    <div className="flex items-center text-sm text-green-700">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {extractionStep}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
+
+        {/* Stakeholder Analysis Display */}
+        {stakeholderAnalysis && (
+          <Card className="mb-6 border-0 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-green-50 to-emerald-50 border-b">
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <Users className="h-5 w-5 text-white" />
+                  </div>
+                  Extracted Stakeholders Analysis
+                </div>
+                <Badge variant="outline" className="bg-white/50">
+                  {stakeholderAnalysis.totalCount} stakeholders
+                </Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                {/* Summary Statistics */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <h4 className="font-semibold text-blue-800">Primary</h4>
+                    <p className="text-2xl font-bold text-blue-600">{stakeholderAnalysis.stakeholderMatrix.primary.length}</p>
+                  </div>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <h4 className="font-semibold text-yellow-800">Secondary</h4>
+                    <p className="text-2xl font-bold text-yellow-600">{stakeholderAnalysis.stakeholderMatrix.secondary.length}</p>
+                  </div>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
+                    <h4 className="font-semibold text-red-800">Key</h4>
+                    <p className="text-2xl font-bold text-red-600">{stakeholderAnalysis.stakeholderMatrix.key.length}</p>
+                  </div>
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-center">
+                    <h4 className="font-semibold text-purple-800">Total</h4>
+                    <p className="text-2xl font-bold text-purple-600">{stakeholderAnalysis.totalCount}</p>
+                  </div>
+                </div>
+
+                {/* Stakeholder Categories */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-4">Stakeholder Categories</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-medium text-green-800 mb-2">Internal ({stakeholderAnalysis.categories.internal})</h4>
+                      <div className="space-y-1">
+                        {stakeholderAnalysis.stakeholders
+                          .filter(s => s.type === 'internal')
+                          .slice(0, 5)
+                          .map((stakeholder, index) => (
+                            <div key={index} className="text-sm text-green-700">
+                              <strong>{stakeholder.name}</strong> - {stakeholder.role}
+                            </div>
+                          ))}
+                        {stakeholderAnalysis.categories.internal > 5 && (
+                          <div className="text-sm text-green-600 italic">
+                            +{stakeholderAnalysis.categories.internal - 5} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="font-medium text-blue-800 mb-2">External ({stakeholderAnalysis.categories.external})</h4>
+                      <div className="space-y-1">
+                        {stakeholderAnalysis.stakeholders
+                          .filter(s => s.type === 'external')
+                          .slice(0, 5)
+                          .map((stakeholder, index) => (
+                            <div key={index} className="text-sm text-blue-700">
+                              <strong>{stakeholder.name}</strong> - {stakeholder.role}
+                            </div>
+                          ))}
+                        {stakeholderAnalysis.categories.external > 5 && (
+                          <div className="text-sm text-blue-600 italic">
+                            +{stakeholderAnalysis.categories.external - 5} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                      <h4 className="font-medium text-purple-800 mb-2">System ({stakeholderAnalysis.categories.system})</h4>
+                      <div className="space-y-1">
+                        {stakeholderAnalysis.stakeholders
+                          .filter(s => s.type === 'system')
+                          .slice(0, 5)
+                          .map((stakeholder, index) => (
+                            <div key={index} className="text-sm text-purple-700">
+                              <strong>{stakeholder.name}</strong> - {stakeholder.role}
+                            </div>
+                          ))}
+                        {stakeholderAnalysis.categories.system > 5 && (
+                          <div className="text-sm text-purple-600 italic">
+                            +{stakeholderAnalysis.categories.system - 5} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recommendations */}
+                {stakeholderAnalysis.recommendations.length > 0 && (
+                  <div>
+                    <h3 className="font-semibold text-lg mb-3">AI Recommendations</h3>
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <ul className="space-y-2">
+                        {stakeholderAnalysis.recommendations.map((recommendation, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm text-amber-800">
+                            <CheckCircle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                            {recommendation}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* Flow Types Available */}
+                <div>
+                  <h3 className="font-semibold text-lg mb-3">Available Flow Types</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {Object.entries(stakeholderAnalysis.flowTypes).slice(0, 9).map(([stakeholder, flows]) => (
+                      <div key={stakeholder} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                        <h4 className="font-medium text-gray-800 mb-2 text-sm">{stakeholder}</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {flows.slice(0, 3).map((flow, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {flow}
+                            </Badge>
+                          ))}
+                          {flows.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{flows.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* User Journey Flows Display */}
         {userJourneyFlows && showFlowDetails && (
