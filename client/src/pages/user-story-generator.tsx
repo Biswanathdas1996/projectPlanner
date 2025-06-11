@@ -55,14 +55,28 @@ interface StakeholderFlow {
   customPrompt: string;
 }
 
+interface FlowDetails {
+  description: string;
+  processDescription: string;
+  participants: string[];
+  trigger: string;
+  activities: string[];
+  decisionPoints: string[];
+  endEvent: string;
+  additionalElements: string[];
+}
+
 export default function UserStoryGenerator() {
   const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>([]);
+  const [flowDetails, setFlowDetails] = useState<{[key: string]: FlowDetails}>({});
   const [userStories, setUserStories] = useState<UserStory[]>([]);
   const [selectedFlow, setSelectedFlow] = useState<string>('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const [error, setError] = useState('');
   const [generationStatus, setGenerationStatus] = useState('');
   const [projectName, setProjectName] = useState('');
+  const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
   const [jiraConfig, setJiraConfig] = useState({
     projectKey: '',
     issueType: 'Story',
@@ -71,6 +85,7 @@ export default function UserStoryGenerator() {
 
   // Load data from localStorage on component mount
   useEffect(() => {
+    // Load stakeholder flows
     const savedFlows = localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS);
     if (savedFlows) {
       try {
@@ -80,6 +95,17 @@ export default function UserStoryGenerator() {
       }
     }
 
+    // Load flow details
+    const savedFlowDetails = localStorage.getItem('flow_details');
+    if (savedFlowDetails) {
+      try {
+        setFlowDetails(JSON.parse(savedFlowDetails));
+      } catch (e) {
+        console.error('Error loading flow details:', e);
+      }
+    }
+
+    // Load existing user stories
     const savedStories = localStorage.getItem('user_stories');
     if (savedStories) {
       try {
@@ -89,6 +115,7 @@ export default function UserStoryGenerator() {
       }
     }
 
+    // Load project context
     const savedProjectName = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     if (savedProjectName) {
       setProjectName(savedProjectName.substring(0, 100));
@@ -101,6 +128,202 @@ export default function UserStoryGenerator() {
       localStorage.setItem('user_stories', JSON.stringify(userStories));
     }
   }, [userStories]);
+
+  // Generate comprehensive user stories from all stakeholder flows
+  const generateAllUserStories = async () => {
+    if (stakeholderFlows.length === 0) {
+      setError('No stakeholder flows found. Please complete the Stakeholder Flow Analysis first.');
+      return;
+    }
+
+    setIsGeneratingAll(true);
+    setError('');
+    setGenerationProgress({ current: 0, total: stakeholderFlows.length });
+    
+    const newUserStories: UserStory[] = [];
+
+    for (let i = 0; i < stakeholderFlows.length; i++) {
+      const flow = stakeholderFlows[i];
+      const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+      const details = flowDetails[flowKey];
+      
+      setGenerationStatus(`Generating user stories for ${flow.stakeholder} - ${flow.flowType}...`);
+      setGenerationProgress({ current: i + 1, total: stakeholderFlows.length });
+
+      try {
+        const flowDescription = details?.description || 'Flow analysis not available';
+        const processDescription = details?.processDescription || '';
+        const activities = details?.activities || [];
+        const trigger = details?.trigger || '';
+        
+        const prompt = `Based on the following stakeholder flow analysis, generate 2-3 comprehensive JIRA-compliant user stories.
+
+STAKEHOLDER: ${flow.stakeholder}
+FLOW TYPE: ${flow.flowType}
+PROJECT CONTEXT: ${projectName}
+
+FLOW ANALYSIS:
+${flowDescription}
+
+PROCESS DESCRIPTION:
+${processDescription}
+
+TRIGGER/START EVENT:
+${trigger}
+
+KEY ACTIVITIES:
+${activities.join(', ')}
+
+CUSTOM REQUIREMENTS:
+${flow.customPrompt}
+
+BPMN XML (for technical reference):
+${flow.bpmnXml.substring(0, 500)}...
+
+Generate user stories that are:
+1. JIRA-compliant with proper format
+2. Include comprehensive acceptance criteria
+3. Have realistic story points (1-13 Fibonacci scale)
+4. Include Gherkin scenarios for testing
+5. Proper priority assignment
+6. Relevant labels and epic assignment
+
+IMPORTANT: Respond ONLY with a valid JSON array. No explanations, no markdown formatting.
+
+Example format:
+[
+  {
+    "title": "View Project Progress Reports",
+    "asA": "project manager",
+    "iWant": "to view comprehensive project progress reports",
+    "soThat": "I can make informed decisions and track project health",
+    "acceptanceCriteria": [
+      "Reports display current project status with visual indicators",
+      "Data is updated in real-time or near real-time",
+      "Reports can be filtered by date range, team, or milestone",
+      "Export functionality available for sharing with stakeholders"
+    ],
+    "priority": "High",
+    "storyPoints": 8,
+    "epic": "Project Management Dashboard",
+    "labels": ["reporting", "dashboard", "project-management"],
+    "gherkinScenarios": [
+      {
+        "title": "Successfully access project progress reports",
+        "given": ["I am logged in as a project manager", "I have access to the dashboard"],
+        "when": ["I navigate to the reports section", "I select the progress reports option"],
+        "then": ["I should see a comprehensive list of project reports", "Each report should show key metrics and status indicators"]
+      }
+    ]
+  }
+]`;
+
+        const response = await generateCustomSuggestions(prompt);
+        
+        // Process AI response
+        const responseText = Array.isArray(response) ? response.join(' ') : String(response);
+        let jsonMatch = responseText.match(/\[[\s\S]*?\]/);
+        
+        if (!jsonMatch) {
+          const objectMatches = responseText.match(/\{[\s\S]*?\}/g);
+          if (objectMatches) {
+            jsonMatch = [`[${objectMatches.join(',')}]`];
+          }
+        }
+        
+        if (jsonMatch) {
+          const generatedStories = JSON.parse(jsonMatch[0]);
+          const processedStories: UserStory[] = generatedStories.map((story: any, index: number) => ({
+            id: `story-${Date.now()}-${i}-${index}`,
+            title: story.title || `${flow.stakeholder} ${flow.flowType}`,
+            asA: story.asA || flow.stakeholder.toLowerCase(),
+            iWant: story.iWant || `to complete ${flow.flowType.toLowerCase()}`,
+            soThat: story.soThat || "I can achieve my objectives efficiently",
+            acceptanceCriteria: story.acceptanceCriteria || [
+              "The workflow can be initiated successfully",
+              "All required steps are completed",
+              "The outcome meets business requirements"
+            ],
+            priority: story.priority || "Medium",
+            storyPoints: story.storyPoints || 5,
+            epic: story.epic || `${flow.stakeholder} Experience`,
+            labels: story.labels || [flow.stakeholder.toLowerCase(), flow.flowType.toLowerCase()],
+            gherkinScenarios: story.gherkinScenarios?.map((scenario: any, scenarioIndex: number) => ({
+              id: `scenario-${Date.now()}-${i}-${index}-${scenarioIndex}`,
+              title: scenario.title || `Complete ${flow.flowType} workflow`,
+              given: scenario.given || [`I am a ${flow.stakeholder.toLowerCase()}`, "I have system access"],
+              when: scenario.when || [`I initiate the ${flow.flowType.toLowerCase()} process`],
+              then: scenario.then || ["The process should complete successfully", "I should achieve the desired outcome"]
+            })) || []
+          }));
+          
+          newUserStories.push(...processedStories);
+        } else {
+          // Create comprehensive fallback story with flow details
+          const fallbackStory: UserStory = {
+            id: `story-${Date.now()}-${i}-fallback`,
+            title: `${flow.stakeholder} - ${flow.flowType}`,
+            asA: flow.stakeholder.toLowerCase(),
+            iWant: `to execute the ${flow.flowType.toLowerCase()} workflow`,
+            soThat: "I can complete my tasks effectively and achieve the intended business outcomes",
+            acceptanceCriteria: [
+              "The workflow can be initiated from the correct entry point",
+              "All process steps are completed in the correct sequence",
+              "System validates inputs and provides appropriate feedback",
+              "The workflow concludes with the expected end state",
+              "Audit trail is maintained for compliance purposes"
+            ],
+            priority: "Medium" as const,
+            storyPoints: 8,
+            epic: `${flow.stakeholder} Experience`,
+            labels: [
+              flow.stakeholder.toLowerCase().replace(/\s+/g, '-'),
+              flow.flowType.toLowerCase().replace(/\s+/g, '-'),
+              "workflow",
+              "business-process"
+            ],
+            gherkinScenarios: [
+              {
+                id: `scenario-${Date.now()}-${i}-fallback`,
+                title: `Successfully complete ${flow.flowType} workflow`,
+                given: [
+                  `I am authenticated as a ${flow.stakeholder.toLowerCase()}`,
+                  "I have the necessary permissions and access rights",
+                  "The system is available and responsive"
+                ],
+                when: [
+                  `I navigate to the ${flow.flowType.toLowerCase()} section`,
+                  "I initiate the workflow process",
+                  "I complete all required steps and inputs"
+                ],
+                then: [
+                  "The workflow should process successfully",
+                  "I should receive confirmation of completion",
+                  "The system should update relevant data and records",
+                  "I should be able to view the results or proceed to next steps"
+                ]
+              }
+            ]
+          };
+          
+          newUserStories.push(fallbackStory);
+        }
+        
+        // Small delay to prevent rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+      } catch (error) {
+        console.error(`Error generating stories for ${flowKey}:`, error);
+        // Continue with next flow
+      }
+    }
+
+    setUserStories(prev => [...prev, ...newUserStories]);
+    setGenerationStatus(`Successfully generated ${newUserStories.length} user stories from ${stakeholderFlows.length} stakeholder flows!`);
+    setTimeout(() => setGenerationStatus(''), 5000);
+    setIsGeneratingAll(false);
+    setGenerationProgress({ current: 0, total: 0 });
+  };
 
   // Generate user stories from selected stakeholder flow
   const generateUserStoriesFromFlow = async () => {
@@ -120,7 +343,11 @@ export default function UserStoryGenerator() {
     setGenerationStatus('Analyzing workflow and generating user stories...');
 
     try {
-      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate 2-3 user stories in Gherkin format.
+      const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+      const details = flowDetails[flowKey];
+      const flowDescription = details?.description || 'Flow analysis not available';
+      
+      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate 2-3 comprehensive user stories.
 
 BPMN XML: ${flow.bpmnXml}
 Custom Requirements: ${flow.customPrompt}
@@ -326,7 +553,7 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationBar title="User Story Generator" />
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="max-w-[1400px] mx-auto p-6">
         <WorkflowProgress />
         
         <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
@@ -361,49 +588,153 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
         </TabsList>
 
         <TabsContent value="generate" className="space-y-6">
+          {/* Stakeholder Flow Overview */}
+          {stakeholderFlows.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Stakeholder Flow Analysis Data
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {stakeholderFlows.length} flows found
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {stakeholderFlows.map((flow, index) => {
+                    const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+                    const details = flowDetails[flowKey];
+                    return (
+                      <div key={flowKey} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium text-sm">{flow.stakeholder}</h4>
+                            <Badge variant="secondary" className="text-xs">{flow.flowType}</Badge>
+                          </div>
+                          {details && (
+                            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                              {details.processDescription && (
+                                <p className="line-clamp-2">{details.processDescription.substring(0, 80)}...</p>
+                              )}
+                              {details.activities.length > 0 && (
+                                <p><span className="font-medium">Activities:</span> {details.activities.length}</p>
+                              )}
+                              {details.participants.length > 0 && (
+                                <p><span className="font-medium">Participants:</span> {details.participants.length}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Generation Options */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <FileText className="h-5 w-5 mr-2" />
-                Generate from Stakeholder Flows
+                Generate JIRA-Compliant User Stories
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {stakeholderFlows.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No stakeholder flows found. Please generate workflows first in the User Journey page.</p>
+                  <p>No stakeholder flows found. Please complete the Stakeholder Flow Analysis first in the Enhanced User Journey page.</p>
                 </div>
               ) : (
                 <>
-                  <div className="space-y-2">
-                    <Label htmlFor="flow-select">Select Stakeholder Flow</Label>
-                    <Select value={selectedFlow} onValueChange={setSelectedFlow}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a stakeholder flow to generate user stories from" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stakeholderFlows.map(flow => (
-                          <SelectItem key={`${flow.stakeholder}-${flow.flowType}`} value={`${flow.stakeholder}-${flow.flowType}`}>
-                            {flow.stakeholder} - {flow.flowType}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                  {/* Generate All Stories Button */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-4 rounded-lg border">
+                    <div className="space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-lg mb-1">Generate All User Stories</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          Generate comprehensive JIRA-compliant user stories for all {stakeholderFlows.length} stakeholder flows with detailed acceptance criteria, Gherkin scenarios, and proper story points.
+                        </p>
+                      </div>
+                      
+                      {isGeneratingAll && generationProgress.total > 0 && (
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span>Progress</span>
+                            <span>{generationProgress.current} / {generationProgress.total}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                              style={{ width: `${(generationProgress.current / generationProgress.total) * 100}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+
+                      <Button 
+                        onClick={generateAllUserStories}
+                        disabled={isGeneratingAll || isGenerating}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+                      >
+                        {isGeneratingAll ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Plus className="h-4 w-4 mr-2" />
+                        )}
+                        Generate All User Stories ({stakeholderFlows.length} flows)
+                      </Button>
+                    </div>
                   </div>
 
-                  <Button 
-                    onClick={generateUserStoriesFromFlow}
-                    disabled={isGenerating || !selectedFlow}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Plus className="h-4 w-4 mr-2" />
-                    )}
-                    Generate User Stories
-                  </Button>
+                  <Separator className="my-4" />
+
+                  {/* Individual Flow Selection */}
+                  <div className="space-y-3">
+                    <Label htmlFor="flow-select">Or Generate from Individual Flow</Label>
+                    <Select value={selectedFlow} onValueChange={setSelectedFlow}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Choose a specific stakeholder flow" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {stakeholderFlows.map(flow => {
+                          const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+                          const details = flowDetails[flowKey];
+                          return (
+                            <SelectItem key={flowKey} value={flowKey}>
+                              <div className="flex flex-col">
+                                <span>{flow.stakeholder} - {flow.flowType}</span>
+                                {details?.processDescription && (
+                                  <span className="text-xs text-gray-500">
+                                    {details.processDescription.substring(0, 50)}...
+                                  </span>
+                                )}
+                              </div>
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+
+                    <Button 
+                      onClick={generateUserStoriesFromFlow}
+                      disabled={isGenerating || isGeneratingAll || !selectedFlow}
+                      variant="outline"
+                      className="w-full"
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      Generate from Selected Flow
+                    </Button>
+                  </div>
                 </>
               )}
             </CardContent>
