@@ -69,21 +69,35 @@ export function useBpmnEditor() {
         keyboard: {
           bindTo: document
         },
-        // Explicitly enable core editing features
         additionalModules: [],
         moddleExtensions: {},
         height: '100%',
-        width: '100%',
-        // Enable palette and context pad for editing
-        contextPad: {
-          scale: true
-        },
-        palette: {
-          open: true
-        }
+        width: '100%'
       });
 
       modelerRef.current = modeler;
+
+      // Configure proper drag behavior for elements vs canvas
+      const canvas = modeler.get('canvas');
+      const eventBus = modeler.get('eventBus');
+      const dragging = modeler.get('dragging');
+      
+      // Prevent canvas panning when starting element drag
+      eventBus.on('element.mousedown', (event: any) => {
+        if (event.element && event.element.type !== 'bpmn:Process') {
+          event.originalEvent.stopPropagation();
+        }
+      });
+      
+      // Ensure element move operations are handled correctly
+      eventBus.on('shape.move.start', (event: any) => {
+        console.log('Element drag started:', event.element.id);
+      });
+      
+      eventBus.on('shape.move.end', (event: any) => {
+        console.log('Element drag ended:', event.element.id);
+        setIsModified(true);
+      });
 
       // Ensure palette is visible and ready for editing
       const palette = modeler.get('palette');
