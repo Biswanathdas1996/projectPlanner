@@ -229,7 +229,7 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
               <Button
                 onClick={() => {
                   if (projectInput) {
-                    handleStartResearch();
+                    performMarketResearch();
                   }
                 }}
                 disabled={isResearching || !projectInput}
