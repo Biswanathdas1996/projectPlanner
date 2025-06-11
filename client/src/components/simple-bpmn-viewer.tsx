@@ -29,17 +29,24 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
           viewerRef.current.destroy();
         }
 
-        // Create new viewer instance
+        // Create new viewer instance with proper configuration
         const viewer = new BpmnJS({
           container: containerRef.current!,
           width: '100%',
           height: height,
+          additionalModules: [],
+          moddleExtensions: {}
         });
 
         viewerRef.current = viewer;
 
-        // Import BPMN XML
-        await viewer.importXML(bpmnXml);
+        // Import BPMN XML and handle warnings
+        const result = await viewer.importXML(bpmnXml);
+        
+        if (result.warnings && result.warnings.length > 0) {
+          console.warn('BPMN import warnings:', result.warnings);
+          // Continue rendering despite warnings
+        }
 
         // Fit viewport to show entire diagram
         const canvas = viewer.get('canvas') as any;
@@ -48,7 +55,20 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         setIsLoading(false);
       } catch (err) {
         console.error('BPMN rendering error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to render BPMN diagram');
+        
+        // Provide more detailed error information
+        if (err instanceof Error) {
+          const errorMsg = err.message;
+          if (errorMsg.includes('failed to import')) {
+            setError('BPMN XML contains invalid elements. Please regenerate the diagram.');
+          } else if (errorMsg.includes('namespace')) {
+            setError('BPMN namespace issue detected. Regenerating may resolve this.');
+          } else {
+            setError(`Rendering failed: ${errorMsg}`);
+          }
+        } else {
+          setError('Failed to render BPMN diagram');
+        }
         setIsLoading(false);
       }
     };
