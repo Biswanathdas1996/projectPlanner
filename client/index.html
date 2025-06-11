@@ -351,9 +351,32 @@
         opacity: 0.8 !important;
       }
       
-      /* Ensure elements are interactive */
+      /* Ensure elements are interactive and prioritize over canvas */
       .djs-element {
         pointer-events: all !important;
+        z-index: 100 !important;
+      }
+      
+      /* Prevent canvas panning when dragging elements */
+      .djs-container {
+        touch-action: none;
+      }
+      
+      /* Canvas should only pan on empty areas */
+      .djs-element .djs-visual {
+        pointer-events: all !important;
+        cursor: move !important;
+      }
+      
+      /* Background canvas interactions */
+      .viewport {
+        pointer-events: all;
+      }
+      
+      /* Prioritize element dragging over canvas panning */
+      .djs-shape, .djs-connection {
+        pointer-events: all !important;
+        z-index: 50 !important;
       }
       
       /* Connection points visibility */
