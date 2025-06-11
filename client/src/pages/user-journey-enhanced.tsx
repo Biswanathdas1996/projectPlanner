@@ -1098,68 +1098,23 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
 
       let bpmnXml;
       try {
-        console.log('Generating BPMN from 7 sections...');
-        bpmnXml = await generateBpmnXml(bpmnContent);
-        console.log('Raw BPMN received, validating structure...');
+        console.log('✅ Generating BPMN from structured data (no AI)...');
         
-        // Clean and validate the XML response
-        let cleanedXml = bpmnXml.trim();
-        if (cleanedXml.startsWith("```xml")) {
-          cleanedXml = cleanedXml.replace(/^```xml\s*/, "").replace(/```\s*$/, "");
-        }
-        if (cleanedXml.startsWith("```")) {
-          cleanedXml = cleanedXml.replace(/^```\s*/, "").replace(/```\s*$/, "");
-        }
+        // Use deterministic BPMN generator instead of AI
+        const { generateBpmnXmlFromStructuredData } = await import('../lib/bpmn-generator');
         
-        // Comprehensive XML namespace and structure fixes
-        cleanedXml = cleanedXml.replace(/xmlns:bpmn=/g, 'xmlns:bpmn2=');
-        cleanedXml = cleanedXml.replace(/<bpmn:/g, '<bpmn2:');
-        cleanedXml = cleanedXml.replace(/<\/bpmn:/g, '</bpmn2:');
-        
-        // Remove problematic timer event definitions that cause validation errors
-        cleanedXml = cleanedXml.replace(/<bpmn2:timerEventDefinition[^>]*>/g, '');
-        cleanedXml = cleanedXml.replace(/<\/bpmn2:timerEventDefinition>/g, '');
-        cleanedXml = cleanedXml.replace(/<bpmn:timerEventDefinition[^>]*>/g, '');
-        cleanedXml = cleanedXml.replace(/<\/bpmn:timerEventDefinition>/g, '');
-        
-        // Fix malformed XML lines and empty tags
-        const xmlLines = cleanedXml.split('\n');
-        const validatedLines = xmlLines.filter(line => {
-          const trimmedLine = line.trim();
-          if (!trimmedLine) return false;
-          if (trimmedLine === '<' || trimmedLine === '>') return false;
-          if (trimmedLine.startsWith('<') && !trimmedLine.includes('>')) return false;
-          return true;
+        bpmnXml = generateBpmnXmlFromStructuredData({
+          processName: structuredContent.processName,
+          processDescription: structuredContent.processDescription,
+          participants: structuredContent.participants,
+          trigger: structuredContent.trigger,
+          activities: structuredContent.activities,
+          decisionPoints: structuredContent.decisionPoints,
+          endEvent: structuredContent.endEvent,
+          additionalElements: structuredContent.additionalElements
         });
-        cleanedXml = validatedLines.join('\n');
         
-        // Final validation and error checking
-        if (!cleanedXml.includes('<?xml') || !cleanedXml.includes('bpmn2:definitions')) {
-          console.warn('Generated XML failed validation, using fallback');
-          throw new Error('Invalid BPMN XML structure');
-        }
-        
-        // Validate XML structure and fix common issues
-        try {
-          // Basic XML structure validation
-          if (!cleanedXml.includes('</bpmn2:definitions>')) {
-            throw new Error('Missing closing definitions tag');
-          }
-          
-          // Check for timer event definition issues and fix them
-          if (cleanedXml.includes('timerEventDefinition')) {
-            cleanedXml = cleanedXml.replace(/<bpmn2:timerEventDefinition[^>]*>/g, '');
-            cleanedXml = cleanedXml.replace(/<\/bpmn2:timerEventDefinition>/g, '');
-          }
-          
-          console.log('XML structure validated successfully');
-        } catch (validationError: any) {
-          console.warn('XML validation issues detected:', validationError.message);
-          throw new Error('XML validation failed: ' + validationError.message);
-        }
-        
-        bpmnXml = cleanedXml;
-        console.log('✅ BPMN XML validated and ready for display');
+        console.log('✅ Valid BPMN 2.0 XML generated from structured data');
       } catch (bpmnError) {
         console.error('XML validation failed, using structured fallback:', bpmnError);
         
