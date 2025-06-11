@@ -2333,7 +2333,7 @@ Data Objects: Request form, User profile`,
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {Object.entries(personaFlowTypes).map(
                   ([stakeholder, flowTypes], stakeholderIndex) => {
                     const colorVariants = [
@@ -2371,22 +2371,22 @@ Data Objects: Request form, User profile`,
                     return (
                       <div
                         key={stakeholder}
-                        className={`border ${borderClass} rounded-lg p-3 bg-gradient-to-br ${bgClass}`}
+                        className={`border ${borderClass} rounded-xl p-4 bg-gradient-to-br ${bgClass} h-fit`}
                       >
-                        {/* Stakeholder Header */}
-                        <div className="flex items-center justify-between mb-2">
+                        {/* Stakeholder Header - Compact */}
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <div
-                              className={`w-6 h-6 bg-gradient-to-r ${colorClass} rounded-md flex items-center justify-center`}
+                              className={`w-8 h-8 bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-center shadow-sm`}
                             >
-                              <User className="h-3 w-3 text-white" />
+                              <User className="h-4 w-4 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-sm font-semibold text-gray-800">
+                              <h3 className="text-sm font-bold text-gray-900">
                                 {stakeholder}
                               </h3>
                               <p className="text-xs text-gray-500">
-                                {flowTypes.length} flows
+                                {flowTypes.length} workflows
                               </p>
                             </div>
                           </div>
@@ -2394,15 +2394,14 @@ Data Objects: Request form, User profile`,
                             onClick={() => addNewFlow(stakeholder)}
                             variant="outline"
                             size="sm"
-                            className="text-xs px-2 py-1 h-6 border-gray-300 hover:bg-white"
+                            className="text-xs px-2 py-1 h-6 border-gray-300 hover:bg-white/80"
                           >
-                            <Plus className="h-2.5 w-2.5 mr-1" />
-                            Add
+                            <Plus className="h-3 w-3" />
                           </Button>
                         </div>
 
-                        {/* Flow Types */}
-                        <div className="space-y-2">
+                        {/* Flow Types - Compact Cards */}
+                        <div className="space-y-3">
                           {flowTypes.map((flowType, flowIndex) => {
                             const flowKey = `${stakeholder}-${flowType}`;
                             const details = flowDetails[flowKey];
@@ -2415,71 +2414,97 @@ Data Objects: Request form, User profile`,
                             return (
                               <div
                                 key={flowIndex}
-                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-md p-2 shadow-sm"
+                                className="bg-white/95 backdrop-blur-sm border border-white/80 rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow"
                               >
-                                {/* Flow Header - Compact */}
+                                {/* Flow Header */}
                                 <div className="flex items-center justify-between mb-2">
-                                  <h4 className="text-xs font-medium text-gray-800 flex-1 mr-2">
-                                    {flowType}
-                                  </h4>
-                                  <div className="flex items-center gap-1">
-                                    {details && editingFlowDetails !== flowKey && (
-                                      <Button
-                                        onClick={() => startEditingFlowDetails(flowKey)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs px-1 py-0.5 h-5 border-gray-300 hover:bg-blue-50"
-                                      >
-                                        <Edit3 className="h-2.5 w-2.5" />
-                                      </Button>
-                                    )}
-                                    <Button
-                                      onClick={() => generateBpmnWithAI(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
-                                      size="sm"
-                                      className={`text-xs px-1 py-0.5 h-5 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
-                                    >
-                                      {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                                      ) : (
-                                        <Sparkles className="h-2.5 w-2.5" />
-                                      )}
-                                    </Button>
-                                    <Button
-                                      onClick={() => generateStructuredBpmn(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
-                                      size="sm"
-                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
-                                    >
-                                      {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                                      ) : (
-                                        <Zap className="h-2.5 w-2.5" />
-                                      )}
-                                    </Button>
-                                    <Button
-                                      onClick={() => generateBestPracticeBpmn(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
-                                      size="sm"
-                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
-                                    >
-                                      {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                                      ) : (
-                                        <CheckCircle className="h-2.5 w-2.5" />
-                                      )}
-                                    </Button>
-                                    {existingFlow?.bpmnXml && (
-                                      <Button
-                                        onClick={() => openInEditor(stakeholder, flowType)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs px-1 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
-                                      >
-                                        <Edit3 className="h-2.5 w-2.5" />
-                                      </Button>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></div>
+                                    <h4 className="text-sm font-semibold text-gray-800">
+                                      {flowType}
+                                    </h4>
+                                    {details && (
+                                      <Badge variant="outline" className="text-xs px-1.5 py-0.5 bg-green-50 text-green-700 border-green-200">
+                                        <CheckCircle className="h-2.5 w-2.5 mr-1" />
+                                        Ready
+                                      </Badge>
                                     )}
                                   </div>
+                                  {details && (
+                                    <Button
+                                      onClick={() => startEditingFlowDetails(flowKey)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-6 w-6 p-0 hover:bg-blue-50"
+                                    >
+                                      <Edit3 className="h-3 w-3 text-gray-500" />
+                                    </Button>
+                                  )}
+                                </div>
+
+                                {/* Compact Summary */}
+                                {details && (
+                                  <div className="space-y-2 mb-3">
+                                    <div className="grid grid-cols-2 gap-2 text-xs">
+                                      <div>
+                                        <span className="font-medium text-gray-600">Participants:</span>
+                                        <span className="text-gray-800 ml-1">{details.participants?.length || 0}</span>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium text-gray-600">Activities:</span>
+                                        <span className="text-gray-800 ml-1">{details.activities?.length || 0}</span>
+                                      </div>
+                                    </div>
+                                    <div className="text-xs text-gray-600 line-clamp-2">
+                                      {details.processDescription || details.trigger}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Action Buttons - Compact Row */}
+                                <div className="flex items-center gap-1 flex-wrap">
+                                  <Button
+                                    onClick={() => generateBpmnWithAI(stakeholder, flowType)}
+                                    disabled={isGeneratingBpmn[flowKey] || !details}
+                                    size="sm"
+                                    className={`text-xs px-2 py-1 h-6 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                  >
+                                    {isGeneratingBpmn[flowKey] ? (
+                                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                    ) : (
+                                      <Sparkles className="h-3 w-3 mr-1" />
+                                    )}
+                                    AI
+                                  </Button>
+                                  <Button
+                                    onClick={() => generateStructuredBpmn(stakeholder, flowType)}
+                                    disabled={isGeneratingBpmn[flowKey] || !details}
+                                    size="sm"
+                                    className="text-xs px-2 py-1 h-6 bg-gray-600 hover:bg-gray-700 text-white"
+                                  >
+                                    <Zap className="h-3 w-3 mr-1" />
+                                    Structured
+                                  </Button>
+                                  <Button
+                                    onClick={() => generateBestPracticeBpmn(stakeholder, flowType)}
+                                    disabled={isGeneratingBpmn[flowKey] || !details}
+                                    size="sm"
+                                    className="text-xs px-2 py-1 h-6 bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  >
+                                    <CheckCircle className="h-3 w-3 mr-1" />
+                                    Best Practice
+                                  </Button>
+                                  {existingFlow?.bpmnXml && (
+                                    <Button
+                                      onClick={() => openInEditor(stakeholder, flowType)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-xs px-2 py-1 h-6 border-purple-300 hover:bg-purple-50 text-purple-600"
+                                    >
+                                      <Edit3 className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                  )}
                                 </div>
 
                                 {/* Flow Details */}
@@ -2662,78 +2687,124 @@ Data Objects: Request form, User profile`,
                                           </div>
                                         </div>
                                       </div>
-                                    ) : (
-                                      /* Display Mode */
-                                      <>
-                                        {/* BPMN Flow Analysis - 7 Section Structure */}
-                                        <div className="space-y-3">
-                                          {/* Section 1: Process Description */}
-                                          <div className="group">
-                                            <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
-                                                ✅ 1. Process & Description
-                                              </Badge>
-                                              <Button
-                                                onClick={() =>
-                                                  startEditingFlowDetails(
-                                                    flowKey,
-                                                  )
-                                                }
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                              >
-                                                <Edit3 className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                            <p className="text-xs text-gray-700 leading-relaxed pl-2 border-l-2 border-purple-200">
-                                              {details.processDescription ||
-                                                details.description
-                                                  .split("\n\n✅ 2.")[0]
-                                                  .replace(
-                                                    "✅ 1. Process Name and Description\n",
-                                                    "",
-                                                  )}
-                                            </p>
-                                          </div>
+                                    )}
+                                  </div>
+                                )}
 
-                                          {/* Section 2: Participants (Swimlanes) - Editable */}
-                                          <div className="group">
-                                            <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
-                                                ✅ 2. Participants (Swimlanes)
-                                              </Badge>
-                                              <Button
-                                                onClick={() =>
-                                                  startEditingFlowDetails(
-                                                    flowKey,
-                                                  )
-                                                }
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                              >
-                                                <Edit3 className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                            <div className="flex flex-wrap gap-1">
-                                              {details.participants?.map(
-                                                (participant, idx) => (
-                                                  <Badge
-                                                    key={idx}
-                                                    variant="outline"
-                                                    className="text-xs px-2 py-0.5 bg-blue-50 text-blue-700 border-blue-200"
-                                                  >
-                                                    {participant}
-                                                  </Badge>
-                                                ),
-                                              )}
-                                            </div>
-                                          </div>
+                                {/* Expanded Details Toggle */}
+                                {details && editingFlowDetails !== flowKey && (
+                                  <div className="mt-2 pt-2 border-t border-gray-200">
+                                    <Button
+                                      onClick={() => startEditingFlowDetails(flowKey)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-xs text-gray-600 hover:text-blue-600 hover:bg-blue-50 w-full justify-start p-1"
+                                    >
+                                      <Edit3 className="h-3 w-3 mr-1" />
+                                      View & Edit Details
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  },
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-                                          {/* Section 3: Trigger (Start Event) */}
-                                          <div className="group">
-                                            <div className="flex items-center justify-between mb-1">
+        {/* Enhanced BPMN Viewer */}
+        {stakeholderFlows.length > 0 && (
+          <Card className="border-0 shadow-sm bg-white">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-800">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+                    <Workflow className="h-4 w-4 text-white" />
+                  </div>
+                  Generated BPMN Diagrams ({stakeholderFlows.length})
+                </div>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-4 pb-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {stakeholderFlows.map((flow, index) => (
+                  <div key={index} className="border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="text-sm font-semibold text-gray-800">
+                            {flow.stakeholder} - {flow.flowType}
+                          </h4>
+                          <p className="text-xs text-gray-600">BPMN 2.0 Process Diagram</p>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Button
+                            onClick={() => openInEditor(flow.stakeholder, flow.flowType)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-6"
+                          >
+                            <Edit3 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const blob = new Blob([flow.bpmnXml], { type: 'application/xml' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${flow.stakeholder}-${flow.flowType}.bpmn`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-2 py-1 h-6"
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-2">
+                      <SimpleBpmnViewer
+                        bpmnXml={flow.bpmnXml}
+                        height="300px"
+                        title={`${flow.stakeholder} ${flow.flowType}`}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function getRandomSuggestion(): string {
+  const suggestions = [
+    "E-commerce Platform with Order Management",
+    "Customer Support Ticketing System", 
+    "Employee Onboarding Workflow",
+    "Project Management Dashboard",
+    "Invoice Processing System",
+    "Social Media Content Management",
+    "Real Estate Property Management",
+    "Healthcare Patient Management",
+    "Restaurant Order & Delivery System",
+    "Learning Management System"
+  ];
+  return suggestions[Math.floor(Math.random() * suggestions.length)];
+}
                                               <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
                                                 ✅ 3. Trigger (Start Event)
                                               </Badge>
