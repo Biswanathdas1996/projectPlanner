@@ -267,7 +267,7 @@ export function WorkflowProgress({
               ) : getStepStatus("stories") === "active" ? (
                 <BookOpen className="h-4 w-4" />
               ) : (
-                "4"
+                "5"
               )}
             </div>
             <span
@@ -285,7 +285,7 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 5: Code */}
+          {/* Step 6: Code */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("code") === "active"
@@ -310,7 +310,7 @@ export function WorkflowProgress({
               ) : getStepStatus("code") === "active" ? (
                 <Code className="h-4 w-4" />
               ) : (
-                "5"
+                "6"
               )}
             </div>
             <span
