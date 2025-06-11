@@ -11,6 +11,7 @@ import {
   extractStakeholdersFromProject,
   generatePersonaBpmnFlowWithType,
   generateCustomSuggestions,
+  generateFlowAnalysis,
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { generateStructuredBpmn } from "@/lib/structured-bpmn-generator";
@@ -1948,7 +1949,9 @@ Generate user stories that cover the main activities and decision points in this
 Return only a JSON array of user stories, no additional text.`;
 
         try {
-          const response = await generateCustomSuggestions(prompt);
+          // Use the flow analysis function to generate user stories
+          const { generateFlowAnalysis } = await import('@/lib/gemini');
+          const response = await generateFlowAnalysis(prompt);
           
           // Parse the response
           let stories: any[] = [];
