@@ -12,6 +12,7 @@ import {
   generatePersonaBpmnFlowWithType,
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
+import { generateStructuredBpmn } from "@/lib/structured-bpmn-generator";
 import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
@@ -40,6 +41,8 @@ import {
   X,
   Save,
   UserPlus,
+  Sparkles,
+  Zap,
 } from "lucide-react";
 
 interface StakeholderFlow {
@@ -2187,12 +2190,37 @@ Data Objects: Request form, User profile`,
                                         isGeneratingBpmn[flowKey] || !details
                                       }
                                       size="sm"
-                                      className={`text-xs px-3 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                      className={`text-xs px-2 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
                                         <Loader2 className="h-3 w-3 animate-spin" />
                                       ) : (
-                                        "Generate BPMN"
+                                        <>
+                                          <Sparkles className="h-3 w-3 mr-1" />
+                                          AI BPMN
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        generateStructuredBpmn(
+                                          stakeholder,
+                                          flowType,
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingBpmn[flowKey] || !details
+                                      }
+                                      size="sm"
+                                      className="text-xs px-2 py-1 h-7 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
+                                    >
+                                      {isGeneratingBpmn[flowKey] ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <Zap className="h-3 w-3 mr-1" />
+                                          Direct BPMN
+                                        </>
                                       )}
                                     </Button>
                                     <Button
