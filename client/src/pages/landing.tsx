@@ -346,17 +346,7 @@ export default function Landing() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="AI Project Planner" showBackButton={false} />
       <div className="max-w-5xl mx-auto px-4 py-6">
-        {/* Compact Header */}
-        <div className="flex items-center justify-between mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="text-white h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-gray-500 text-sm">Transform ideas into comprehensive workflows</p>
-            </div>
-          </div>
-        </div>
+        
 
         <WorkflowProgress />
 
