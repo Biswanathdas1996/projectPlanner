@@ -10,6 +10,7 @@ import {
   generateUserJourneyFlows,
   extractStakeholdersFromProject,
   generatePersonaBpmnFlowWithType,
+  generateCustomSuggestions,
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { generateStructuredBpmn } from "@/lib/structured-bpmn-generator";
@@ -67,6 +68,30 @@ interface FlowDetails {
   decisionPoints: string[];
   endEvent: string;
   additionalElements: string[];
+}
+
+interface UserStory {
+  id: string;
+  title: string;
+  asA: string;
+  iWant: string;
+  soThat: string;
+  acceptanceCriteria: string[];
+  priority: 'Low' | 'Medium' | 'High' | 'Critical';
+  storyPoints: number;
+  epic: string;
+  labels: string[];
+  stakeholder: string;
+  flowType: string;
+  gherkinScenarios: GherkinScenario[];
+}
+
+interface GherkinScenario {
+  id: string;
+  title: string;
+  given: string[];
+  when: string[];
+  then: string[];
 }
 
 export default function UserJourneyEnhanced() {
@@ -130,6 +155,22 @@ export default function UserJourneyEnhanced() {
   );
   const [editedFlowDetails, setEditedFlowDetails] =
     useState<FlowDetails | null>(null);
+
+  // User story generation state
+  const [userStories, setUserStories] = useState<UserStory[]>([]);
+  const [isGeneratingUserStories, setIsGeneratingUserStories] = useState(false);
+  const [userStoryGenerationProgress, setUserStoryGenerationProgress] = useState<{
+    current: number;
+    total: number;
+    currentFlow: string;
+    status: string;
+  }>({
+    current: 0,
+    total: 0,
+    currentFlow: '',
+    status: ''
+  });
+  const [showUserStories, setShowUserStories] = useState(false);
 
   // Load data from localStorage when component mounts
   useEffect(() => {
@@ -1828,6 +1869,183 @@ Data Objects: Request form, User profile`,
     }
   };
 
+  // Generate user stories from stakeholder flow analysis
+  const generateUserStoriesFromFlows = async () => {
+    setIsGeneratingUserStories(true);
+    setError("");
+    setUserStoryGenerationProgress({
+      current: 0,
+      total: 0,
+      currentFlow: '',
+      status: 'Initializing user story generation...'
+    });
+
+    try {
+      // Collect all flows with details
+      const flowsWithDetails: { stakeholder: string; flowType: string; details: FlowDetails }[] = [];
+      
+      Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
+        flowTypes.forEach((flowType) => {
+          const flowKey = `${stakeholder}-${flowType}`;
+          const details = flowDetails[flowKey];
+          if (details) {
+            flowsWithDetails.push({ stakeholder, flowType, details });
+          }
+        });
+      });
+
+      if (flowsWithDetails.length === 0) {
+        setError("No flow details available. Please generate flow details first.");
+        return;
+      }
+
+      setUserStoryGenerationProgress(prev => ({
+        ...prev,
+        total: flowsWithDetails.length,
+        status: 'Generating user stories...'
+      }));
+
+      const generatedStories: UserStory[] = [];
+
+      for (let i = 0; i < flowsWithDetails.length; i++) {
+        const { stakeholder, flowType, details } = flowsWithDetails[i];
+        const flowKey = `${stakeholder}-${flowType}`;
+        
+        setUserStoryGenerationProgress(prev => ({
+          ...prev,
+          current: i + 1,
+          currentFlow: `${stakeholder} - ${flowType}`,
+          status: `Generating stories for ${stakeholder} ${flowType}...`
+        }));
+
+        // Create user story generation prompt
+        const prompt = `
+Based on the following stakeholder flow analysis, generate 2-4 comprehensive user stories in JSON format:
+
+**Project Context:** ${projectDescription || projectPlan || 'Software Development Project'}
+
+**Stakeholder:** ${stakeholder}
+**Flow Type:** ${flowType}
+**Process Description:** ${details.processDescription}
+**Trigger:** ${details.trigger}
+**Activities:** ${details.activities.join(', ')}
+**Decision Points:** ${details.decisionPoints.join(', ')}
+**End Event:** ${details.endEvent}
+**Participants:** ${details.participants.join(', ')}
+
+Generate user stories that cover the main activities and decision points in this flow. Each story should include:
+- title: Clear, descriptive title
+- asA: The stakeholder role
+- iWant: What they want to accomplish
+- soThat: The business value/reason
+- acceptanceCriteria: 3-5 specific criteria as array
+- priority: One of "Low", "Medium", "High", "Critical"
+- storyPoints: Estimated effort (1, 2, 3, 5, 8, 13)
+- epic: Brief epic name related to the flow
+- labels: 2-3 relevant tags as array
+- gherkinScenarios: 1-2 scenarios with given/when/then steps
+
+Return only a JSON array of user stories, no additional text.`;
+
+        try {
+          const response = await generateCustomSuggestions(prompt);
+          
+          // Parse the response
+          let stories: any[] = [];
+          try {
+            // Try to parse as JSON directly
+            stories = JSON.parse(response);
+          } catch (parseError) {
+            // If direct parsing fails, try to extract JSON from response
+            const jsonMatch = response.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              stories = JSON.parse(jsonMatch[0]);
+            } else {
+              throw new Error('Could not extract JSON from response');
+            }
+          }
+
+          // Process and add stories
+          stories.forEach((story, index) => {
+            const userStory: UserStory = {
+              id: `${flowKey}-story-${index + 1}-${Date.now()}`,
+              title: story.title || `${stakeholder} ${flowType} Story ${index + 1}`,
+              asA: story.asA || stakeholder,
+              iWant: story.iWant || `To complete ${flowType}`,
+              soThat: story.soThat || 'I can achieve my goals efficiently',
+              acceptanceCriteria: Array.isArray(story.acceptanceCriteria) 
+                ? story.acceptanceCriteria 
+                : ['Story completed successfully'],
+              priority: ['Low', 'Medium', 'High', 'Critical'].includes(story.priority) 
+                ? story.priority 
+                : 'Medium',
+              storyPoints: [1, 2, 3, 5, 8, 13].includes(story.storyPoints) 
+                ? story.storyPoints 
+                : 3,
+              epic: story.epic || flowType,
+              labels: Array.isArray(story.labels) 
+                ? story.labels 
+                : [stakeholder.toLowerCase(), flowType.toLowerCase()],
+              stakeholder,
+              flowType,
+              gherkinScenarios: Array.isArray(story.gherkinScenarios) 
+                ? story.gherkinScenarios.map((scenario: any, scenarioIndex: number) => ({
+                    id: `${flowKey}-scenario-${index}-${scenarioIndex}-${Date.now()}`,
+                    title: scenario.title || `Scenario ${scenarioIndex + 1}`,
+                    given: Array.isArray(scenario.given) ? scenario.given : [],
+                    when: Array.isArray(scenario.when) ? scenario.when : [],
+                    then: Array.isArray(scenario.then) ? scenario.then : []
+                  }))
+                : []
+            };
+            generatedStories.push(userStory);
+          });
+
+        } catch (storyError) {
+          console.error(`Error generating stories for ${flowKey}:`, storyError);
+          
+          // Create fallback story if generation fails
+          const fallbackStory: UserStory = {
+            id: `${flowKey}-fallback-${Date.now()}`,
+            title: `${stakeholder} ${flowType} Process`,
+            asA: stakeholder,
+            iWant: `To complete the ${flowType} process`,
+            soThat: 'I can achieve the desired outcome efficiently',
+            acceptanceCriteria: details.activities.map(activity => `${activity} is completed successfully`),
+            priority: 'Medium',
+            storyPoints: 5,
+            epic: flowType,
+            labels: [stakeholder.toLowerCase(), flowType.toLowerCase(), 'auto-generated'],
+            stakeholder,
+            flowType,
+            gherkinScenarios: []
+          };
+          generatedStories.push(fallbackStory);
+        }
+
+        // Small delay to avoid overwhelming the API
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      setUserStories(generatedStories);
+      localStorage.setItem('generated_user_stories', JSON.stringify(generatedStories));
+      
+      setUserStoryGenerationProgress(prev => ({
+        ...prev,
+        status: `Generated ${generatedStories.length} user stories successfully!`
+      }));
+
+      // Show user stories section
+      setShowUserStories(true);
+
+    } catch (error) {
+      console.error('Error generating user stories:', error);
+      setError('Failed to generate user stories. Please try again.');
+    } finally {
+      setIsGeneratingUserStories(false);
+    }
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -2305,6 +2523,80 @@ Data Objects: Request form, User profile`,
               </CardContent>
             </Card>
           )}
+
+        {/* User Story Generation Button */}
+        {Object.values(flowDetails).length > 0 && userStories.length === 0 && !isGeneratingUserStories && (
+          <Card className="mb-6">
+            <CardContent className="pt-6 text-center">
+              <div className="space-y-4">
+                <div>
+                  <FileText className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Generate User Stories
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Create comprehensive user stories based on your stakeholder flow analysis.
+                    Stories will include acceptance criteria, priorities, and Gherkin scenarios.
+                  </p>
+                </div>
+                <Button
+                  onClick={generateUserStoriesFromFlows}
+                  disabled={isGeneratingUserStories}
+                  className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white px-6 py-2"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Generate User Stories
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Story Generation Progress */}
+        {isGeneratingUserStories && (
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-green-50 to-teal-50 mb-6">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center">
+                      <Loader2 className="h-3 w-3 text-white animate-spin" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">Generating User Stories</h3>
+                  </div>
+                  {userStoryGenerationProgress.total > 0 && (
+                    <div className="text-sm font-medium text-gray-600">
+                      {userStoryGenerationProgress.current} / {userStoryGenerationProgress.total}
+                    </div>
+                  )}
+                </div>
+                
+                {userStoryGenerationProgress.total > 0 && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-green-500 to-teal-600 h-2 rounded-full transition-all duration-300 ease-out"
+                      style={{ 
+                        width: `${(userStoryGenerationProgress.current / userStoryGenerationProgress.total) * 100}%` 
+                      }}
+                    ></div>
+                  </div>
+                )}
+                
+                <div className="space-y-1">
+                  {userStoryGenerationProgress.currentFlow && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Play className="h-3 w-3 text-green-600" />
+                      <span className="text-gray-700">Processing: {userStoryGenerationProgress.currentFlow}</span>
+                    </div>
+                  )}
+                  <div className="text-xs text-gray-600">
+                    {userStoryGenerationProgress.status}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Flow Generation Progress Indicator */}
         {isGeneratingFlowDetails && flowGenerationProgress.total > 0 && (
