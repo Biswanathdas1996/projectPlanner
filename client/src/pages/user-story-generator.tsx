@@ -29,12 +29,7 @@ import {
   Edit3,
   Save,
   X,
-  PlusCircle,
-  ChevronDown,
-  ChevronRight,
-  FileCheck,
-  Target,
-  Tags
+  PlusCircle
 } from 'lucide-react';
 import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
@@ -94,7 +89,6 @@ export default function UserStoryGenerator() {
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
   const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
   const [editingStory, setEditingStory] = useState<UserStory | null>(null);
-  const [expandedSections, setExpandedSections] = useState<{[key: string]: boolean}>({});
   const [jiraConfig, setJiraConfig] = useState({
     projectKey: '',
     issueType: 'Story',
@@ -808,21 +802,6 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
     } : null);
   };
 
-  // Toggle section expansion
-  const toggleSection = (storyId: string, section: string) => {
-    const key = `${storyId}-${section}`;
-    setExpandedSections(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
-
-  // Check if section is expanded
-  const isSectionExpanded = (storyId: string, section: string) => {
-    const key = `${storyId}-${section}`;
-    return expandedSections[key] || false;
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationBar title="User Story Generator" />
@@ -1033,25 +1012,25 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {userStories.map(story => (
-                <Card key={story.id} className="relative">
-                  <CardHeader className="pb-2">
+                <Card key={story.id} className="relative flex flex-col">
+                  <CardHeader>
                     <div className="flex items-start justify-between">
                       {editingStoryId === story.id ? (
-                        <div className="space-y-2 flex-1 mr-4">
+                        <div className="space-y-3 flex-1 mr-4">
                           <Input
                             value={editingStory?.title || ''}
                             onChange={(e) => updateEditingStory('title', e.target.value)}
-                            className="font-semibold"
+                            className="font-semibold text-lg"
                             placeholder="Story title"
                           />
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-3 gap-2">
                             <Select 
                               value={editingStory?.priority || 'Medium'} 
                               onValueChange={(value) => updateEditingStory('priority', value)}
                             >
-                              <SelectTrigger className="h-8">
+                              <SelectTrigger>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
@@ -1066,7 +1045,6 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                               value={editingStory?.storyPoints || 0}
                               onChange={(e) => updateEditingStory('storyPoints', parseInt(e.target.value) || 0)}
                               placeholder="Points"
-                              className="h-8"
                               min="1"
                               max="13"
                             />
@@ -1074,130 +1052,116 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                               value={editingStory?.epic || ''}
                               onChange={(e) => updateEditingStory('epic', e.target.value)}
                               placeholder="Epic"
-                              className="h-8"
                             />
-                            <div className="flex gap-1">
-                              <Button
-                                onClick={saveEditedStory}
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-green-600 hover:text-green-800"
-                              >
-                                <Save className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                onClick={cancelEditingStory}
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700"
-                              >
-                                <X className="h-3 w-3" />
-                              </Button>
-                            </div>
                           </div>
                         </div>
                       ) : (
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-base font-medium">{story.title}</CardTitle>
-                            <div className="flex items-center gap-1">
-                              <Button
-                                onClick={() => startEditingStory(story)}
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-blue-500 hover:text-blue-700"
-                              >
-                                <Edit3 className="h-3 w-3" />
-                              </Button>
-                              <Button
-                                onClick={() => removeUserStory(story.id)}
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 text-red-500 hover:text-red-700"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant={story.priority === 'Critical' ? 'destructive' : story.priority === 'High' ? 'default' : 'secondary'} className="text-xs">
+                        <div className="space-y-2">
+                          <CardTitle className="text-lg">{story.title}</CardTitle>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant={story.priority === 'Critical' ? 'destructive' : story.priority === 'High' ? 'default' : 'secondary'}>
                               {story.priority}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">{story.storyPoints} pts</Badge>
-                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 text-xs">
+                            <Badge variant="outline">{story.storyPoints} pts</Badge>
+                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
                               {story.epic}
                             </Badge>
                           </div>
                         </div>
                       )}
+                      <div className="flex gap-1">
+                        {editingStoryId === story.id ? (
+                          <>
+                            <Button
+                              onClick={saveEditedStory}
+                              variant="ghost"
+                              size="sm"
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={cancelEditingStory}
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => startEditingStory(story)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => removeUserStory(story.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-2">
+                  <CardContent className="space-y-4 flex-1">
                     {editingStoryId === story.id ? (
                       <div className="space-y-3">
-                        {/* Story Definition Section - Always expanded when editing */}
-                        <div className="border rounded-lg">
-                          <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-t-lg">
-                            <h4 className="font-medium text-sm flex items-center">
-                              <FileCheck className="h-4 w-4 mr-2" />
-                              Story Definition
-                            </h4>
-                          </div>
-                          <div className="p-3 space-y-2">
-                            <div className="grid grid-cols-1 gap-2">
-                              <div>
-                                <Label className="text-xs font-medium">As a</Label>
-                                <Input
-                                  value={editingStory?.asA || ''}
-                                  onChange={(e) => updateEditingStory('asA', e.target.value)}
-                                  className="text-sm h-8"
-                                  placeholder="user role"
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-xs font-medium">I want</Label>
-                                <Textarea
-                                  value={editingStory?.iWant || ''}
-                                  onChange={(e) => updateEditingStory('iWant', e.target.value)}
-                                  className="text-sm min-h-[50px]"
-                                  placeholder="user need"
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-xs font-medium">So that</Label>
-                                <Textarea
-                                  value={editingStory?.soThat || ''}
-                                  onChange={(e) => updateEditingStory('soThat', e.target.value)}
-                                  className="text-sm min-h-[50px]"
-                                  placeholder="business value"
-                                />
-                              </div>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg space-y-2">
+                          <div className="grid grid-cols-1 gap-2">
+                            <div>
+                              <Label className="text-xs font-medium">As a</Label>
+                              <Input
+                                value={editingStory?.asA || ''}
+                                onChange={(e) => updateEditingStory('asA', e.target.value)}
+                                className="text-sm"
+                                placeholder="user role"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium">I want</Label>
+                              <Textarea
+                                value={editingStory?.iWant || ''}
+                                onChange={(e) => updateEditingStory('iWant', e.target.value)}
+                                className="text-sm min-h-[60px]"
+                                placeholder="user need"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium">So that</Label>
+                              <Textarea
+                                value={editingStory?.soThat || ''}
+                                onChange={(e) => updateEditingStory('soThat', e.target.value)}
+                                className="text-sm min-h-[60px]"
+                                placeholder="business value"
+                              />
                             </div>
                           </div>
                         </div>
 
-                        {/* Acceptance Criteria Section */}
-                        <div className="border rounded-lg">
-                          <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-t-lg">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-sm flex items-center">
-                                <Target className="h-4 w-4 mr-2" />
-                                Acceptance Criteria
-                              </h4>
-                              <Button
-                                onClick={addAcceptanceCriteria}
-                                variant="outline"
-                                size="sm"
-                                className="h-6 px-2"
-                              >
-                                <PlusCircle className="h-3 w-3" />
-                              </Button>
-                            </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-sm">Acceptance Criteria:</h4>
+                            <Button
+                              onClick={addAcceptanceCriteria}
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2"
+                            >
+                              <PlusCircle className="h-3 w-3" />
+                            </Button>
                           </div>
-                          <div className="p-3 space-y-2">
+                          <div className="space-y-2">
                             {editingStory?.acceptanceCriteria.map((criteria, index) => (
                               <div key={index} className="flex items-start gap-2">
-                                <span className="text-xs text-gray-500 mt-2 min-w-[20px]">{index + 1}.</span>
                                 <Textarea
                                   value={criteria}
                                   onChange={(e) => updateAcceptanceCriteria(index, e.target.value)}
@@ -1216,229 +1180,174 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                             ))}
                           </div>
                         </div>
-
-                        {/* Labels Section */}
-                        <div className="border rounded-lg">
-                          <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-t-lg">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-sm flex items-center">
-                                <Tags className="h-4 w-4 mr-2" />
-                                Labels
-                              </h4>
-                              <Button
-                                onClick={addLabel}
-                                variant="outline"
-                                size="sm"
-                                className="h-6 px-2"
-                              >
-                                <PlusCircle className="h-3 w-3" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="p-3 space-y-2">
-                            {editingStory?.labels.map((label, index) => (
-                              <div key={index} className="flex items-center gap-2">
-                                <Input
-                                  value={label}
-                                  onChange={(e) => updateLabel(index, e.target.value)}
-                                  className="text-xs h-6 flex-1"
-                                  placeholder="Label"
-                                />
-                                <Button
-                                  onClick={() => removeLabel(index)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
                       </div>
                     ) : (
-                      <div className="space-y-3">
-                        {/* Story Definition - Collapsible */}
-                        <div className="border rounded-lg">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-between p-3 h-auto rounded-t-lg bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                            onClick={() => toggleSection(story.id, 'story')}
-                          >
-                            <div className="flex items-center">
-                              <FileCheck className="h-4 w-4 mr-2" />
-                              <span className="font-medium text-sm">Story Definition</span>
-                            </div>
-                            {isSectionExpanded(story.id, 'story') ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                          {isSectionExpanded(story.id, 'story') && (
-                            <div className="p-3 pt-0">
-                              <p className="text-sm text-blue-800 dark:text-blue-200">
-                                As a <span className="font-semibold">{story.asA}</span>, I want <span className="font-semibold">{story.iWant}</span> so that <span className="font-semibold">{story.soThat}</span>.
-                              </p>
-                            </div>
-                          )}
+                      <>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                          <p className="font-medium text-blue-800 dark:text-blue-200 text-sm">
+                            As a <span className="font-bold">{story.asA}</span>, I want <span className="font-bold">{story.iWant}</span> so that <span className="font-bold">{story.soThat}</span>.
+                          </p>
                         </div>
 
-                        {/* Acceptance Criteria - Collapsible */}
-                        <div className="border rounded-lg">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-between p-3 h-auto rounded-t-lg bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30"
-                            onClick={() => toggleSection(story.id, 'criteria')}
-                          >
-                            <div className="flex items-center">
-                              <Target className="h-4 w-4 mr-2" />
-                              <span className="font-medium text-sm">Acceptance Criteria ({story.acceptanceCriteria.length})</span>
-                            </div>
-                            {isSectionExpanded(story.id, 'criteria') ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                          {isSectionExpanded(story.id, 'criteria') && (
-                            <div className="p-3 pt-0">
-                              <div className="space-y-2">
-                                {story.acceptanceCriteria.map((criteria, index) => (
-                                  <div key={index} className="flex items-start gap-2 text-xs">
-                                    <span className="text-gray-500 min-w-[20px] mt-0.5">{index + 1}.</span>
-                                    <span className="flex-1">{criteria}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                        <div>
+                          <h4 className="font-semibold mb-2 text-sm">Acceptance Criteria:</h4>
+                          <ul className="list-disc list-inside space-y-1 text-xs">
+                            {story.acceptanceCriteria.map((criteria, index) => (
+                              <li key={index}>{criteria}</li>
+                            ))}
+                          </ul>
                         </div>
+                      </>
+                    )}
 
-                        {/* Process Flow - Collapsible */}
-                        <div className="border rounded-lg">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-between p-3 h-auto rounded-t-lg bg-yellow-50 dark:bg-yellow-900/20 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
-                            onClick={() => toggleSection(story.id, 'flow')}
-                          >
-                            <div className="flex items-center">
-                              <Eye className="h-4 w-4 mr-2" />
-                              <span className="font-medium text-sm">Process Flow</span>
-                            </div>
-                            {isSectionExpanded(story.id, 'flow') ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                          {isSectionExpanded(story.id, 'flow') && (
-                            <div className="p-3 pt-0">
-                              <div className="space-y-2">
-                                <div className="flex items-center justify-between text-xs">
-                                  <div className="flex items-center space-x-1">
-                                    <PlayCircle className="h-3 w-3 text-green-600" />
-                                    <span>Start</span>
-                                  </div>
-                                  <ArrowRight className="h-3 w-3 text-gray-400" />
-                                  <div className="flex items-center space-x-1">
-                                    <Users className="h-3 w-3 text-blue-600" />
-                                    <span>Process</span>
-                                  </div>
-                                  <ArrowRight className="h-3 w-3 text-gray-400" />
-                                  <div className="flex items-center space-x-1">
-                                    <GitBranch className="h-3 w-3 text-orange-600" />
-                                    <span>Decision</span>
-                                  </div>
-                                  <ArrowRight className="h-3 w-3 text-gray-400" />
-                                  <div className="flex items-center space-x-1">
-                                    <StopCircle className="h-3 w-3 text-red-600" />
-                                    <span>End</span>
-                                  </div>
-                                </div>
-                                <div className="text-xs text-gray-600 dark:text-gray-400">
-                                  <div><span className="font-medium">Journey:</span> {story.asA} → {story.iWant} → {story.soThat}</div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
+                    <Separator />
 
-                        {/* Gherkin Scenarios - Collapsible */}
-                        <div className="border rounded-lg">
-                          <Button
-                            variant="ghost"
-                            className="w-full justify-between p-3 h-auto rounded-t-lg bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            onClick={() => toggleSection(story.id, 'gherkin')}
-                          >
-                            <div className="flex items-center">
-                              <FileText className="h-4 w-4 mr-2" />
-                              <span className="font-medium text-sm">Gherkin Scenarios ({story.gherkinScenarios.length})</span>
+                    {/* Visual Flow Diagram Section */}
+                    <div>
+                      <h4 className="font-semibold mb-3 text-sm flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        Process Flow Visualization
+                      </h4>
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-3 rounded-lg border">
+                        <div className="space-y-2">
+                          {/* Flow Steps Visualization */}
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-1">
+                              <PlayCircle className="h-3 w-3 text-green-600" />
+                              <span className="font-medium">Start</span>
                             </div>
-                            {isSectionExpanded(story.id, 'gherkin') ? 
-                              <ChevronDown className="h-4 w-4" /> : 
-                              <ChevronRight className="h-4 w-4" />
-                            }
-                          </Button>
-                          {isSectionExpanded(story.id, 'gherkin') && (
-                            <div className="p-3 pt-0 space-y-3">
-                              {story.gherkinScenarios.map(scenario => (
-                                <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg font-mono text-xs">
-                                  <div className="font-bold text-green-600 dark:text-green-400 mb-1">
-                                    Scenario: {scenario.title}
-                                  </div>
-                                  <div className="space-y-0.5">
-                                    {scenario.given.map((step, index) => (
-                                      <div key={index} className="text-blue-600 dark:text-blue-400">
-                                        {index === 0 ? 'Given' : '  And'} {step}
-                                      </div>
-                                    ))}
-                                    {scenario.when.map((step, index) => (
-                                      <div key={index} className="text-orange-600 dark:text-orange-400">
-                                        {index === 0 ? 'When' : ' And'} {step}
-                                      </div>
-                                    ))}
-                                    {scenario.then.map((step, index) => (
-                                      <div key={index} className="text-purple-600 dark:text-purple-400">
-                                        {index === 0 ? 'Then' : ' And'} {step}
-                                      </div>
-                                    ))}
-                                  </div>
-                                </div>
-                              ))}
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-3 w-3 text-blue-600" />
+                              <span className="font-medium">Process</span>
                             </div>
-                          )}
-                        </div>
-
-                        {/* Labels - Collapsible */}
-                        {story.labels.length > 0 && (
-                          <div className="border rounded-lg">
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-between p-3 h-auto rounded-t-lg bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30"
-                              onClick={() => toggleSection(story.id, 'labels')}
-                            >
-                              <div className="flex items-center">
-                                <Tags className="h-4 w-4 mr-2" />
-                                <span className="font-medium text-sm">Labels ({story.labels.length})</span>
-                              </div>
-                              {isSectionExpanded(story.id, 'labels') ? 
-                                <ChevronDown className="h-4 w-4" /> : 
-                                <ChevronRight className="h-4 w-4" />
-                              }
-                            </Button>
-                            {isSectionExpanded(story.id, 'labels') && (
-                              <div className="p-3 pt-0">
-                                <div className="flex flex-wrap gap-2">
-                                  {story.labels.map(label => (
-                                    <Badge key={label} variant="outline" className="text-xs">
-                                      {label}
-                                    </Badge>
-                                  ))}
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <GitBranch className="h-3 w-3 text-orange-600" />
+                              <span className="font-medium">Decision</span>
+                            </div>
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <StopCircle className="h-3 w-3 text-red-600" />
+                              <span className="font-medium">End</span>
+                            </div>
+                          </div>
+                          
+                          {/* Journey Steps */}
+                          <div className="mt-2 space-y-1">
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">User Journey:</span> {story.asA} → {story.iWant} → {story.soThat}
+                            </div>
+                            
+                            {/* Extract key process steps from acceptance criteria */}
+                            {story.acceptanceCriteria.length > 0 && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Key Steps:</span>
+                                <div className="ml-2 mt-1 flex flex-wrap gap-1">
+                                  {story.acceptanceCriteria.slice(0, 4).map((criteria, index) => {
+                                    // Extract the main action from criteria
+                                    const action = criteria.split(' ').slice(0, 4).join(' ').replace(/[^\w\s]/gi, '');
+                                    return (
+                                      <span key={index} className="bg-white/60 dark:bg-gray-700/60 px-2 py-1 rounded text-xs border">
+                                        {index + 1}. {action}...
+                                      </span>
+                                    );
+                                  })}
+                                  {story.acceptanceCriteria.length > 4 && (
+                                    <span className="text-gray-500 italic">+{story.acceptanceCriteria.length - 4} more</span>
+                                  )}
                                 </div>
                               </div>
                             )}
+
+                            {/* Stakeholder touchpoints */}
+                            {story.labels.some(label => label.includes('stakeholder') || label.includes('multi')) && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Stakeholder Interactions:</span> Multi-party workflow with coordination points
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </div>
                       </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-2 text-sm">Gherkin Scenarios:</h4>
+                      <div className="space-y-3">
+                        {story.gherkinScenarios.map(scenario => (
+                          <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg font-mono text-xs">
+                            <div className="font-bold text-green-600 dark:text-green-400 mb-1">
+                              Scenario: {scenario.title}
+                            </div>
+                            <div className="space-y-0.5">
+                              {scenario.given.map((step, index) => (
+                                <div key={index} className="text-blue-600 dark:text-blue-400">
+                                  {index === 0 ? 'Given' : '  And'} {step}
+                                </div>
+                              ))}
+                              {scenario.when.map((step, index) => (
+                                <div key={index} className="text-orange-600 dark:text-orange-400">
+                                  {index === 0 ? 'When' : ' And'} {step}
+                                </div>
+                              ))}
+                              {scenario.then.map((step, index) => (
+                                <div key={index} className="text-purple-600 dark:text-purple-400">
+                                  {index === 0 ? 'Then' : ' And'} {step}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {editingStoryId === story.id ? (
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium">Labels:</span>
+                          <Button
+                            onClick={addLabel}
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2"
+                          >
+                            <PlusCircle className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {editingStory?.labels.map((label, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <Input
+                                value={label}
+                                onChange={(e) => updateLabel(index, e.target.value)}
+                                className="text-xs h-6 flex-1"
+                                placeholder="Label"
+                              />
+                              <Button
+                                onClick={() => removeLabel(index)}
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      story.labels.length > 0 && (
+                        <div className="flex items-center gap-2 flex-wrap mt-auto">
+                          <span className="text-xs font-medium">Labels:</span>
+                          {story.labels.map(label => (
+                            <Badge key={label} variant="outline" className="text-xs">
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      )
                     )}
                   </CardContent>
                 </Card>
