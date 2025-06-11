@@ -105,6 +105,19 @@ export default function UserJourneyEnhanced() {
   const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>(
     {},
   );
+  const [flowGenerationProgress, setFlowGenerationProgress] = useState<{
+    current: number;
+    total: number;
+    currentFlow: string;
+    completedFlows: string[];
+    status: string;
+  }>({
+    current: 0,
+    total: 0,
+    currentFlow: '',
+    completedFlows: [],
+    status: ''
+  });
 
   // Flow details editing state
   const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(
@@ -719,15 +732,33 @@ export default function UserJourneyEnhanced() {
         });
       });
 
+      // Initialize progress tracking
+      setFlowGenerationProgress({
+        current: 0,
+        total: allFlows.length,
+        currentFlow: '',
+        completedFlows: [],
+        status: 'Preparing flow analysis...'
+      });
+
       const details: Record<string, FlowDetails> = {};
 
       // Generate details for each flow
-      for (const flow of allFlows) {
+      for (let i = 0; i < allFlows.length; i++) {
+        const flow = allFlows[i];
         const key = `${flow.stakeholder}-${flow.flowType}`;
+
+        // Update progress
+        setFlowGenerationProgress(prev => ({
+          ...prev,
+          current: i + 1,
+          currentFlow: `${flow.stakeholder} - ${flow.flowType}`,
+          status: `Analyzing ${flow.stakeholder} ${flow.flowType} process...`
+        }));
 
         try {
           console.log(
-            `Generating flow details for ${flow.stakeholder} - ${flow.flowType}`,
+            `Generating flow details for ${flow.stakeholder} - ${flow.flowType} (${i + 1}/${allFlows.length})`,
           );
           const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${flow.stakeholder} - ${flow.flowType} with fine granular details for perfect BPMN diagram generation:
 
@@ -999,6 +1030,14 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
             }
 
             details[key] = flowDetails;
+            
+            // Update progress with completion
+            setFlowGenerationProgress(prev => ({
+              ...prev,
+              completedFlows: [...prev.completedFlows, key],
+              status: `Completed ${flow.stakeholder} ${flow.flowType} - ${prev.completedFlows.length + 1}/${allFlows.length} flows done`
+            }));
+            
           } catch (parseError) {
             console.error(
               `Failed to parse response for ${key}:`,
