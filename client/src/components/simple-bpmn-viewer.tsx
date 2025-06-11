@@ -13,6 +13,7 @@ interface BpmnElement {
   type: 'startEvent' | 'userTask' | 'endEvent' | 'sequenceFlow' | 'exclusiveGateway' | 'parallelGateway' | 'inclusiveGateway';
   sourceRef?: string;
   targetRef?: string;
+  condition?: string;
   x?: number;
   y?: number;
   width?: number;
@@ -144,21 +145,25 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         });
       }
 
-      // Extract sequence flows
-      const flowMatches = xml.match(/<bpmn2:sequenceFlow[^>]*id="([^"]*)"[^>]*sourceRef="([^"]*)"[^>]*targetRef="([^"]*)"[^>]*\/>/g);
+      // Extract sequence flows (including conditional flows)
+      const flowMatches = xml.match(/<bpmn2:sequenceFlow[^>]*>[\s\S]*?<\/bpmn2:sequenceFlow>|<bpmn2:sequenceFlow[^>]*\/>/g);
       console.log('Sequence flows found:', flowMatches?.length || 0);
       if (flowMatches) {
         flowMatches.forEach(match => {
           const idMatch = match.match(/id="([^"]*)"/);
           const sourceMatch = match.match(/sourceRef="([^"]*)"/);
           const targetMatch = match.match(/targetRef="([^"]*)"/);
+          const nameMatch = match.match(/name="([^"]*)"/);
+          const conditionMatch = match.match(/<bpmn2:conditionExpression[^>]*>([^<]*)<\/bpmn2:conditionExpression>/);
+          
           if (idMatch && sourceMatch && targetMatch) {
             elements.push({
               id: idMatch[1],
-              name: '',
+              name: nameMatch ? nameMatch[1] : '',
               type: 'sequenceFlow',
               sourceRef: sourceMatch[1],
-              targetRef: targetMatch[1]
+              targetRef: targetMatch[1],
+              condition: conditionMatch ? conditionMatch[1] : undefined
             });
           }
         });
@@ -360,16 +365,44 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
           }}
         >
           {/* Draw sequence flows (arrows) */}
-          {flows.map(flow => {
+          {flows.map((flow, index) => {
             const sourceElement = elements.find(e => e.id === flow.sourceRef);
             const targetElement = elements.find(e => e.id === flow.targetRef);
             
             if (!sourceElement || !targetElement) return null;
             
-            const sourceX = (sourceElement.x || 0) + (sourceElement.width || 0);
-            const sourceY = (sourceElement.y || 0) + (sourceElement.height || 0) / 2;
-            const targetX = targetElement.x || 0;
-            const targetY = (targetElement.y || 0) + (targetElement.height || 0) / 2;
+            // Calculate connection points
+            let sourceX, sourceY, targetX, targetY;
+            
+            // For gateways, adjust connection points for multiple outgoing flows
+            if (sourceElement.type === 'exclusiveGateway' || sourceElement.type === 'parallelGateway') {
+              const gatewayFlows = flows.filter(f => f.sourceRef === sourceElement.id);
+              const flowIndex = gatewayFlows.findIndex(f => f.id === flow.id);
+              const isMultipleFlows = gatewayFlows.length > 1;
+              
+              sourceX = (sourceElement.x || 0) + (sourceElement.width || 0);
+              sourceY = (sourceElement.y || 0) + (sourceElement.height || 0) / 2;
+              
+              // Offset Y position for multiple flows
+              if (isMultipleFlows) {
+                const offset = (flowIndex - (gatewayFlows.length - 1) / 2) * 30;
+                sourceY += offset;
+              }
+            } else {
+              sourceX = (sourceElement.x || 0) + (sourceElement.width || 0);
+              sourceY = (sourceElement.y || 0) + (sourceElement.height || 0) / 2;
+            }
+            
+            targetX = targetElement.x || 0;
+            targetY = (targetElement.y || 0) + (targetElement.height || 0) / 2;
+            
+            // Different colors for conditional flows
+            const isConditional = flow.name && (flow.name.includes('Yes') || flow.name.includes('No'));
+            const strokeColor = isConditional 
+              ? (flow.name.includes('Yes') ? '#22c55e' : '#ef4444')
+              : '#666';
+            const strokeWidth = isConditional ? '3' : '2';
+            const strokeDasharray = flow.condition ? '5,5' : 'none';
             
             return (
               <g key={flow.id}>
@@ -378,10 +411,25 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
                   y1={sourceY}
                   x2={targetX}
                   y2={targetY}
-                  stroke="#666"
-                  strokeWidth="2"
+                  stroke={strokeColor}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray={strokeDasharray}
                   markerEnd="url(#arrowhead)"
                 />
+                {/* Flow label */}
+                {flow.name && (
+                  <text
+                    x={(sourceX + targetX) / 2}
+                    y={(sourceY + targetY) / 2 - 5}
+                    textAnchor="middle"
+                    fontSize="9"
+                    fill={strokeColor}
+                    className="font-medium"
+                    style={{ backgroundColor: 'white', padding: '2px' }}
+                  >
+                    {flow.name}
+                  </text>
+                )}
               </g>
             );
           })}
