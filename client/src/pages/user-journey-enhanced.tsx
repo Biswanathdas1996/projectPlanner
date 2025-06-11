@@ -653,7 +653,7 @@ Include SHORT, specific BPMN elements (1-2 words each):
 - "Authentication flow", "Payment process", "Approval workflow"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
+{"description": "✅ 1. Process Name and Description\\n[short process name and brief description]\\n\\n✅ 2. Participants (Swimlanes)\\n[participant list]\\n\\n✅ 3. Trigger (Start Event)\\n[brief trigger description]\\n\\n✅ 4. Sequence of Activities\\n[short activity names]\\n\\n✅ 5. Decision Points (Gateways)\\n[brief decision points]\\n\\n✅ 6. End Event\\n[short end event description]\\n\\n✅ 7. Additional Elements\\n[short element descriptions]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Brief trigger with event source", "decisionPoints": ["If valid, approve; else reject", "If urgent, escalate; else normal flow"], "endEvent": "Process completed successfully", "additionalElements": ["Messages: Notification sent", "Timers: Wait 24 hours", "Data: Request form", "Errors: Validation error"]}`;
 
           // Call Gemini API directly from client-side only
           console.log(`Starting flow analysis for ${key}...`);
@@ -803,15 +803,15 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 
             details[key] = {
               description: `✅ 1. Process Name and Description
-${flow.flowType} Process for ${flow.stakeholder}
+${flow.flowType} Process
 
-This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully with proper validation and confirmation.
+${flow.stakeholder} ${mainAction} workflow with validation and confirmation.
 
 ✅ 2. Participants (Swimlanes / Pools and Lanes)
-${flow.stakeholder}, System Backend, Database Service, Authentication Module, Notification Service, External Services
+${flow.stakeholder}, System Backend, Database Service, Notification Service
 
 ✅ 3. Trigger (Start Event)
-${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.
+${flow.stakeholder} initiates ${flow.flowType} via UI.
 
 ✅ 4. Sequence of Activities (Tasks / Actions)
 1. Authenticate User
@@ -822,17 +822,16 @@ ${flow.stakeholder} initiates ${flow.flowType} request through the application i
 6. Send Notification
 
 ✅ 5. Decision Points (Gateways)
-If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.
-If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.
-If validation errors occur, return to ${flow.stakeholder} for correction; otherwise complete process.
+If valid, approve; else reject.
+If urgent, escalate; else normal flow.
 
 ✅ 6. End Event
-Process concludes when ${flow.stakeholder} receives confirmation notification and all system records are successfully updated with audit trail completed.
+Process completed successfully.
 
 ✅ 7. Additional Elements
-Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures
-Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout
-Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`,
+Messages: Notification sent
+Timers: Wait 24 hours
+Data Objects: Request form, User profile`,
               processDescription: `${flow.flowType} Process for ${flow.stakeholder}. This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
               participants: [
                 flow.stakeholder,
@@ -842,7 +841,7 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                 "Notification Service",
                 "External Services"
               ],
-              trigger: `${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.`,
+              trigger: `${flow.stakeholder} initiates ${flow.flowType} via UI.`,
               activities: [
                 "Authenticate User",
                 "Validate Request", 
@@ -852,15 +851,14 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
                 "Send Notification"
               ],
               decisionPoints: [
-                `If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.`,
-                `If ${mainAction} requires approval, route to supervisor workflow; otherwise auto-approve and continue.`,
-                `If validation errors occur, return to ${flow.stakeholder} for correction; otherwise complete process.`
+                `If valid, approve; else reject`,
+                `If urgent, escalate; else normal flow`
               ],
-              endEvent: `Process concludes when ${flow.stakeholder} receives confirmation notification and all system records are successfully updated with audit trail completed.`,
+              endEvent: `Process completed successfully`,
               additionalElements: [
-                `Messages: Confirmation email sent to ${flow.stakeholder}, Error notifications for validation failures`,
-                `Timers: Session timeout after 30 minutes of inactivity, ${mainAction} processing timeout`,
-                `Data Objects: ${flow.flowType} form data, User session data, Audit log entries, Confirmation receipt`
+                `Messages: Notification sent`,
+                `Timers: Wait 24 hours`,
+                `Data Objects: Request form, User profile`
               ]
             };
           }
