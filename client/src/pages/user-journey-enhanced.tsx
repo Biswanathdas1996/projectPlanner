@@ -2128,83 +2128,7 @@ Data Objects: Request form, User profile`,
           </CardContent>
         </Card>
 
-        {/* User Journey Flows Overview */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <div className="flex items-center">
-                <Workflow className="h-5 w-5 mr-2" />
-                User Journey Flows Overview
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  onClick={generateFlows}
-                  disabled={
-                    isGeneratingFlows || (!projectPlan && !projectDescription)
-                  }
-                  size="sm"
-                >
-                  {isGeneratingFlows ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Workflow className="h-4 w-4 mr-2" />
-                  )}
-                  Generate Overview
-                </Button>
-                {userJourneyFlows && (
-                  <Button
-                    onClick={downloadUserJourneys}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download
-                  </Button>
-                )}
-              </div>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {userJourneyFlows ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowFlowDetails(!showFlowDetails)}
-                  >
-                    {showFlowDetails ? (
-                      <>
-                        <EyeOff className="h-4 w-4 mr-2" />
-                        Hide Details
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="h-4 w-4 mr-2" />
-                        Show Details
-                      </>
-                    )}
-                  </Button>
-                </div>
-                {showFlowDetails && (
-                  <div className="bg-white border rounded-lg overflow-hidden">
-                    <iframe
-                      srcDoc={userJourneyFlows}
-                      className="w-full h-96 border-0"
-                      title="User Journey Flows"
-                      sandbox="allow-same-origin"
-                    />
-                  </div>
-                )}
-              </div>
-            ) : (
-              <p className="text-gray-500 text-center py-8">
-                Generate user journey flows overview to see comprehensive
-                workflow analysis
-              </p>
-            )}
-          </CardContent>
-        </Card>
+        
 
         {/* Generate Flow Details Button */}
         {Object.keys(personaFlowTypes).length > 0 &&
@@ -2265,8 +2189,8 @@ Data Objects: Request form, User profile`,
                 </Button>
               </CardTitle>
             </CardHeader>
-            <CardContent className="px-6 pb-6">
-              <div className="grid grid-cols-1 gap-6">
+            <CardContent className="px-4 pb-4">
+              <div className="grid grid-cols-1 gap-3">
                 {Object.entries(personaFlowTypes).map(
                   ([stakeholder, flowTypes], stakeholderIndex) => {
                     const colorVariants = [
@@ -2304,22 +2228,22 @@ Data Objects: Request form, User profile`,
                     return (
                       <div
                         key={stakeholder}
-                        className={`border-2 ${borderClass} rounded-xl p-5 bg-gradient-to-br ${bgClass}`}
+                        className={`border ${borderClass} rounded-lg p-3 bg-gradient-to-br ${bgClass}`}
                       >
                         {/* Stakeholder Header */}
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center gap-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
                             <div
-                              className={`w-8 h-8 bg-gradient-to-r ${colorClass} rounded-lg flex items-center justify-center`}
+                              className={`w-6 h-6 bg-gradient-to-r ${colorClass} rounded-md flex items-center justify-center`}
                             >
-                              <User className="h-4 w-4 text-white" />
+                              <User className="h-3 w-3 text-white" />
                             </div>
                             <div>
-                              <h3 className="text-lg font-semibold text-gray-800">
+                              <h3 className="text-sm font-semibold text-gray-800">
                                 {stakeholder}
                               </h3>
-                              <p className="text-xs text-gray-600">
-                                {flowTypes.length} flow types
+                              <p className="text-xs text-gray-500">
+                                {flowTypes.length} flows
                               </p>
                             </div>
                           </div>
@@ -2327,15 +2251,15 @@ Data Objects: Request form, User profile`,
                             onClick={() => addNewFlow(stakeholder)}
                             variant="outline"
                             size="sm"
-                            className="text-xs px-3 py-1 h-8 border-gray-300 hover:bg-white"
+                            className="text-xs px-2 py-1 h-6 border-gray-300 hover:bg-white"
                           >
-                            <Plus className="h-3 w-3 mr-1" />
-                            Add Flow
+                            <Plus className="h-2.5 w-2.5 mr-1" />
+                            Add
                           </Button>
                         </div>
 
                         {/* Flow Types */}
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                           {flowTypes.map((flowType, flowIndex) => {
                             const flowKey = `${stakeholder}-${flowType}`;
                             const details = flowDetails[flowKey];
@@ -2348,91 +2272,58 @@ Data Objects: Request form, User profile`,
                             return (
                               <div
                                 key={flowIndex}
-                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-lg p-4 shadow-sm"
+                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-md p-2 shadow-sm"
                               >
-                                {/* Flow Header */}
-                                <div className="flex items-center justify-between mb-3">
-                                  <h4 className="text-sm font-semibold text-gray-800">
+                                {/* Flow Header - Compact */}
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="text-xs font-medium text-gray-800 flex-1 mr-2">
                                     {flowType}
                                   </h4>
-                                  <div className="flex items-center gap-2">
-                                    {details &&
-                                      editingFlowDetails !== flowKey && (
-                                        <Button
-                                          onClick={() =>
-                                            startEditingFlowDetails(flowKey)
-                                          }
-                                          variant="outline"
-                                          size="sm"
-                                          className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-blue-50"
-                                        >
-                                          <Edit3 className="h-3 w-3" />
-                                        </Button>
-                                      )}
+                                  <div className="flex items-center gap-1">
+                                    {details && editingFlowDetails !== flowKey && (
+                                      <Button
+                                        onClick={() => startEditingFlowDetails(flowKey)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs px-1 py-0.5 h-5 border-gray-300 hover:bg-blue-50"
+                                      >
+                                        <Edit3 className="h-2.5 w-2.5" />
+                                      </Button>
+                                    )}
                                     <Button
-                                      onClick={() =>
-                                        generateBpmnWithAI(
-                                          stakeholder,
-                                          flowType,
-                                        )
-                                      }
-                                      disabled={
-                                        isGeneratingBpmn[flowKey] || !details
-                                      }
+                                      onClick={() => generateBpmnWithAI(stakeholder, flowType)}
+                                      disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className={`text-xs px-2 py-1 h-7 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                      className={`text-xs px-1 py-0.5 h-5 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
                                       ) : (
-                                        <>
-                                          <Sparkles className="h-3 w-3 mr-1" />
-                                          AI BPMN
-                                        </>
+                                        <Sparkles className="h-2.5 w-2.5" />
                                       )}
                                     </Button>
                                     <Button
-                                      onClick={() =>
-                                        generateStructuredBpmn(
-                                          stakeholder,
-                                          flowType,
-                                        )
-                                      }
-                                      disabled={
-                                        isGeneratingBpmn[flowKey] || !details
-                                      }
+                                      onClick={() => generateStructuredBpmn(stakeholder, flowType)}
+                                      disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className="text-xs px-2 py-1 h-7 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
+                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
                                       ) : (
-                                        <>
-                                          <Zap className="h-3 w-3 mr-1" />
-                                          Direct
-                                        </>
+                                        <Zap className="h-2.5 w-2.5" />
                                       )}
                                     </Button>
                                     <Button
-                                      onClick={() =>
-                                        generateBestPracticeBpmn(
-                                          stakeholder,
-                                          flowType,
-                                        )
-                                      }
-                                      disabled={
-                                        isGeneratingBpmn[flowKey] || !details
-                                      }
+                                      onClick={() => generateBestPracticeBpmn(stakeholder, flowType)}
+                                      disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className="text-xs px-1.5 py-1 h-7 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
+                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
                                       ) : (
-                                        <>
-                                          <CheckCircle className="h-3 w-3 mr-1" />
-                                          Best
-                                        </>
+                                        <CheckCircle className="h-2.5 w-2.5" />
                                       )}
                                     </Button>
                                     {existingFlow?.bpmnXml && (
@@ -2440,335 +2331,135 @@ Data Objects: Request form, User profile`,
                                         onClick={() => openInEditor(stakeholder, flowType)}
                                         variant="outline"
                                         size="sm"
-                                        className="text-xs px-2 py-1 h-7 border-purple-300 hover:bg-purple-50 text-purple-600"
+                                        className="text-xs px-1 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
                                       >
-                                        <Edit3 className="h-3 w-3 mr-1" />
-                                        Edit BPMN
+                                        <Edit3 className="h-2.5 w-2.5" />
                                       </Button>
                                     )}
-                                    <Button
-                                      onClick={() =>
-                                        removeFlow(stakeholder, flowType)
-                                      }
-                                      variant="outline"
-                                      size="sm"
-                                      className="text-xs px-2 py-1 h-7 border-gray-300 hover:bg-red-50 hover:border-red-300 text-red-600"
-                                    >
-                                      <Trash2 className="h-3 w-3" />
-                                    </Button>
                                   </div>
                                 </div>
 
                                 {/* Flow Details */}
                                 {details && (
-                                  <div className="space-y-3 mb-3">
+                                  <div className="space-y-2 mb-2">
                                     {editingFlowDetails === flowKey &&
                                     editedFlowDetails ? (
-                                      /* Edit Mode */
-                                      <div className="space-y-4 p-3 bg-blue-50/50 rounded-lg border border-blue-200">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <h5 className="text-xs font-semibold text-blue-800">
-                                            Editing Flow Details
+                                      /* Edit Mode - Compact */
+                                      <div className="space-y-2 p-2 bg-blue-50/50 rounded border border-blue-200">
+                                        <div className="flex items-center justify-between">
+                                          <h5 className="text-xs font-medium text-blue-800">
+                                            Edit Details
                                           </h5>
                                           <div className="flex items-center gap-1">
                                             <Button
                                               onClick={saveFlowDetailsEdit}
                                               size="sm"
-                                              className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                              className="h-5 px-1.5 bg-green-500 hover:bg-green-600 text-white text-xs"
                                             >
-                                              <Save className="h-3 w-3 mr-1" />
+                                              <Save className="h-2.5 w-2.5 mr-0.5" />
                                               Save
                                             </Button>
                                             <Button
                                               onClick={cancelFlowDetailsEdit}
                                               variant="outline"
                                               size="sm"
-                                              className="h-6 px-2 border-gray-300"
+                                              className="h-5 px-1.5 border-gray-300 text-xs"
                                             >
-                                              <X className="h-3 w-3" />
+                                              <X className="h-2.5 w-2.5" />
                                             </Button>
                                           </div>
                                         </div>
 
-                                        {/* Edit Process Description */}
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
-                                            Process Description
-                                          </label>
-                                          <Textarea
-                                            ref={(textarea) => {
-                                              if (textarea) {
-                                                // Auto-size on initial render
-                                                textarea.style.height = "auto";
-                                                textarea.style.height =
-                                                  Math.max(
-                                                    60,
-                                                    textarea.scrollHeight,
-                                                  ) + "px";
-                                              }
-                                            }}
-                                            value={
-                                              editedFlowDetails.processDescription
-                                            }
-                                            onChange={(e) => {
-                                              updateEditedField(
-                                                "processDescription",
-                                                e.target.value,
-                                              );
-                                              // Auto-expand textarea
-                                              const target = e.target;
-                                              target.style.height = "auto";
-                                              target.style.height =
-                                                Math.max(
-                                                  60,
-                                                  target.scrollHeight,
-                                                ) + "px";
-                                            }}
-                                            className="text-xs min-h-[60px] resize-none overflow-hidden"
-                                          />
+                                        {/* Compact Edit Fields */}
+                                        <div className="grid grid-cols-2 gap-2">
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-600 mb-0.5 block">
+                                              Description
+                                            </label>
+                                            <Textarea
+                                              value={editedFlowDetails.processDescription}
+                                              onChange={(e) => updateEditedField("processDescription", e.target.value)}
+                                              className="text-xs h-16 resize-none"
+                                            />
+                                          </div>
+                                          <div>
+                                            <label className="text-xs font-medium text-gray-600 mb-0.5 block">
+                                              Trigger
+                                            </label>
+                                            <Textarea
+                                              value={editedFlowDetails.trigger}
+                                              onChange={(e) => updateEditedField("trigger", e.target.value)}
+                                              className="text-xs h-16 resize-none"
+                                            />
+                                          </div>
                                         </div>
 
-                                        {/* Edit Participants */}
+                                        {/* Participants - Compact */}
                                         <div>
-                                          <div className="flex items-center justify-between mb-1">
-                                            <label className="text-xs font-medium text-gray-600">
-                                              Participants (Swimlanes)
-                                            </label>
+                                          <div className="flex items-center justify-between mb-0.5">
+                                            <label className="text-xs font-medium text-gray-600">Participants</label>
                                             <Button
-                                              onClick={() =>
-                                                addItemToField(
-                                                  "participants",
-                                                  "New Participant",
-                                                )
-                                              }
+                                              onClick={() => addItemToField("participants", "New Participant")}
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-1.5 text-xs"
+                                              className="h-4 px-1 text-xs"
                                             >
-                                              <Plus className="h-2.5 w-2.5" />
+                                              <Plus className="h-2 w-2" />
                                             </Button>
                                           </div>
-                                          <div className="space-y-1">
-                                            {editedFlowDetails.participants.map(
-                                              (participant, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  className="flex items-center gap-1"
+                                          <div className="flex flex-wrap gap-1">
+                                            {editedFlowDetails.participants.map((participant, idx) => (
+                                              <div key={idx} className="flex items-center gap-0.5 bg-gray-100 rounded px-1 py-0.5">
+                                                <Input
+                                                  value={participant}
+                                                  onChange={(e) => updateItemInField("participants", idx, e.target.value)}
+                                                  className="text-xs h-4 w-20 border-0 bg-transparent p-0"
+                                                />
+                                                <Button
+                                                  onClick={() => removeItemFromField("participants", idx)}
+                                                  size="sm"
+                                                  variant="ghost"
+                                                  className="h-3 w-3 p-0 text-red-500 hover:bg-red-100"
                                                 >
-                                                  <Input
-                                                    value={participant}
-                                                    onChange={(e) =>
-                                                      updateItemInField(
-                                                        "participants",
-                                                        idx,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-xs h-6 flex-1"
-                                                  />
-                                                  <Button
-                                                    onClick={() =>
-                                                      removeItemFromField(
-                                                        "participants",
-                                                        idx,
-                                                      )
-                                                    }
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                                  >
-                                                    <X className="h-2.5 w-2.5" />
-                                                  </Button>
-                                                </div>
-                                              ),
-                                            )}
+                                                  <X className="h-2 w-2" />
+                                                </Button>
+                                              </div>
+                                            ))}
                                           </div>
                                         </div>
 
-                                        {/* Edit Trigger */}
+                                        {/* Activities - Compact */}
                                         <div>
-                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
-                                            Trigger (Start Event)
-                                          </label>
-                                          <Textarea
-                                            ref={(textarea) => {
-                                              if (textarea) {
-                                                // Auto-size on initial render
-                                                textarea.style.height = "auto";
-                                                textarea.style.height =
-                                                  Math.max(
-                                                    40,
-                                                    textarea.scrollHeight,
-                                                  ) + "px";
-                                              }
-                                            }}
-                                            value={editedFlowDetails.trigger}
-                                            onChange={(e) => {
-                                              updateEditedField(
-                                                "trigger",
-                                                e.target.value,
-                                              );
-                                              // Auto-expand textarea
-                                              const target = e.target;
-                                              target.style.height = "auto";
-                                              target.style.height =
-                                                Math.max(
-                                                  40,
-                                                  target.scrollHeight,
-                                                ) + "px";
-                                            }}
-                                            className="text-xs min-h-[40px] resize-none overflow-hidden"
-                                          />
-                                        </div>
-
-                                        {/* Edit Activities */}
-                                        <div>
-                                          <div className="flex items-center justify-between mb-1">
-                                            <label className="text-xs font-medium text-gray-600">
-                                              Activities (Tasks)
-                                            </label>
+                                          <div className="flex items-center justify-between mb-0.5">
+                                            <label className="text-xs font-medium text-gray-600">Activities</label>
                                             <Button
-                                              onClick={() =>
-                                                addItemToField(
-                                                  "activities",
-                                                  "New Activity",
-                                                )
-                                              }
+                                              onClick={() => addItemToField("activities", "New Activity")}
                                               size="sm"
                                               variant="outline"
-                                              className="h-5 px-1.5 text-xs"
+                                              className="h-4 px-1 text-xs"
                                             >
-                                              <Plus className="h-2.5 w-2.5" />
+                                              <Plus className="h-2 w-2" />
                                             </Button>
                                           </div>
-                                          <div className="space-y-1">
-                                            {editedFlowDetails.activities.map(
-                                              (activity, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  className="flex items-center gap-1"
+                                          <div className="space-y-0.5">
+                                            {editedFlowDetails.activities.map((activity, idx) => (
+                                              <div key={idx} className="flex items-center gap-1">
+                                                <Input
+                                                  value={activity}
+                                                  onChange={(e) => updateItemInField("activities", idx, e.target.value)}
+                                                  className="text-xs h-5 flex-1"
+                                                />
+                                                <Button
+                                                  onClick={() => removeItemFromField("activities", idx)}
+                                                  size="sm"
+                                                  variant="outline"
+                                                  className="h-5 w-5 p-0 border-red-300 hover:bg-red-50 text-red-600"
                                                 >
-                                                  <Input
-                                                    value={activity}
-                                                    onChange={(e) =>
-                                                      updateItemInField(
-                                                        "activities",
-                                                        idx,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-xs h-6 flex-1"
-                                                  />
-                                                  <Button
-                                                    onClick={() =>
-                                                      removeItemFromField(
-                                                        "activities",
-                                                        idx,
-                                                      )
-                                                    }
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                                  >
-                                                    <X className="h-2.5 w-2.5" />
-                                                  </Button>
-                                                </div>
-                                              ),
-                                            )}
+                                                  <X className="h-2 w-2" />
+                                                </Button>
+                                              </div>
+                                            ))}
                                           </div>
-                                        </div>
-
-                                        {/* Edit Decision Points */}
-                                        <div>
-                                          <div className="flex items-center justify-between mb-1">
-                                            <label className="text-xs font-medium text-gray-600">
-                                              Decision Points (Gateways)
-                                            </label>
-                                            <Button
-                                              onClick={() =>
-                                                addItemToField(
-                                                  "decisionPoints",
-                                                  "If condition, then action; otherwise alternative",
-                                                )
-                                              }
-                                              size="sm"
-                                              variant="outline"
-                                              className="h-5 px-1.5 text-xs"
-                                            >
-                                              <Plus className="h-2.5 w-2.5" />
-                                            </Button>
-                                          </div>
-                                          <div className="space-y-1">
-                                            {editedFlowDetails.decisionPoints.map(
-                                              (decision, idx) => (
-                                                <div
-                                                  key={idx}
-                                                  className="flex items-center gap-1"
-                                                >
-                                                  <Input
-                                                    value={decision}
-                                                    onChange={(e) =>
-                                                      updateItemInField(
-                                                        "decisionPoints",
-                                                        idx,
-                                                        e.target.value,
-                                                      )
-                                                    }
-                                                    className="text-xs h-6 flex-1"
-                                                  />
-                                                  <Button
-                                                    onClick={() =>
-                                                      removeItemFromField(
-                                                        "decisionPoints",
-                                                        idx,
-                                                      )
-                                                    }
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="h-6 w-6 p-0 border-red-300 hover:bg-red-50 text-red-600"
-                                                  >
-                                                    <X className="h-2.5 w-2.5" />
-                                                  </Button>
-                                                </div>
-                                              ),
-                                            )}
-                                          </div>
-                                        </div>
-
-                                        {/* Edit End Event */}
-                                        <div>
-                                          <label className="text-xs font-medium text-gray-600 mb-1 block">
-                                            End Event
-                                          </label>
-                                          <Textarea
-                                            ref={(textarea) => {
-                                              if (textarea) {
-                                                // Auto-size on initial render
-                                                textarea.style.height = "auto";
-                                                textarea.style.height =
-                                                  Math.max(
-                                                    40,
-                                                    textarea.scrollHeight,
-                                                  ) + "px";
-                                              }
-                                            }}
-                                            value={editedFlowDetails.endEvent}
-                                            onChange={(e) => {
-                                              updateEditedField(
-                                                "endEvent",
-                                                e.target.value,
-                                              );
-                                              // Auto-expand textarea
-                                              const target = e.target;
-                                              target.style.height = "auto";
-                                              target.style.height =
-                                                Math.max(
-                                                  40,
-                                                  target.scrollHeight,
-                                                ) + "px";
-                                            }}
-                                            className="text-xs min-h-[40px] resize-none overflow-hidden"
-                                          />
                                         </div>
 
                                         {/* Edit Additional Elements */}
