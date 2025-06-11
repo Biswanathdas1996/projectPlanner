@@ -11,6 +11,7 @@ import {
   extractStakeholdersFromProject,
   generatePersonaBpmnFlowWithType,
 } from "@/lib/gemini";
+import { generateBpmnXmlDeterministic } from "@/lib/bpmn-generator-deterministic";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
@@ -1330,13 +1331,22 @@ ${structuredContent.additionalElements.map((e) => `- ${e}`).join("\n")}
 
       let bpmnXml;
       try {
-        console.log("✅ Generating BPMN using AI with structured data...");
+        console.log("✅ Generating BPMN using deterministic generator...");
 
-        // Use client-side AI-powered BPMN generator for accurate diagrams
-        bpmnXml = await generateBpmnXml(bpmnContent);
+        // Use deterministic BPMN generator for consistent, reliable diagrams
+        bpmnXml = generateBpmnXmlDeterministic({
+          description: structuredContent.processDescription,
+          processDescription: structuredContent.processDescription,
+          participants: structuredContent.participants,
+          trigger: structuredContent.trigger,
+          activities: structuredContent.activities,
+          decisionPoints: structuredContent.decisionPoints,
+          endEvent: structuredContent.endEvent,
+          additionalElements: structuredContent.additionalElements,
+        });
 
         console.log(
-          "✅ AI-generated BPMN 2.0 XML with proper decision flows",
+          "✅ Generated BPMN 2.0 XML with proper swimlanes",
           bpmnXml.substring(0, 200) + "..."
         );
       } catch (bpmnError) {
@@ -2344,7 +2354,7 @@ ${flowEdges.join("\n")}
                                       {isGeneratingBpmn[flowKey] ? (
                                         <Loader2 className="h-3 w-3 animate-spin" />
                                       ) : (
-                                        "Generate BPMN"
+                                        "Create Diagram"
                                       )}
                                     </Button>
                                     <Button
