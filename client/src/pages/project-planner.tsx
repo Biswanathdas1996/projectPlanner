@@ -67,6 +67,9 @@ export default function ProjectPlanner() {
   const [showBpmnScript, setShowBpmnScript] = useState(false);
   const [isEditingBpmn, setIsEditingBpmn] = useState(false);
   const [editedBpmnScript, setEditedBpmnScript] = useState('');
+  const [progressSteps, setProgressSteps] = useState<{step: string; completed: boolean; current: boolean}[]>([]);
+  const [overallProgress, setOverallProgress] = useState(0);
+  const [currentProgressStep, setCurrentProgressStep] = useState('');
 
   const [location, setLocation] = useLocation();
 
@@ -85,6 +88,11 @@ export default function ProjectPlanner() {
     if (savedDiagram) {
       setGeneratedBpmnXml(savedDiagram);
     }
+
+    // Clear any previous progress states when component loads
+    setProgressSteps([]);
+    setOverallProgress(0);
+    setCurrentProgressStep('');
 
     // Update current step based on route and available data
     const path = window.location.pathname;
@@ -107,21 +115,67 @@ export default function ProjectPlanner() {
     }
   }, [location, setLocation]);
 
+  const initializeProgressSteps = (includeAllSteps = false) => {
+    const steps = [
+      { step: 'Analyzing project requirements', completed: false, current: false },
+      { step: 'Generating enhancement suggestions', completed: false, current: false },
+    ];
+    
+    if (includeAllSteps) {
+      steps.push(
+        { step: 'Creating comprehensive project plan', completed: false, current: false },
+        { step: 'Saving project data', completed: false, current: false },
+        { step: 'Finalizing setup', completed: false, current: false }
+      );
+    }
+    
+    setProgressSteps(steps);
+    setOverallProgress(0);
+    setCurrentProgressStep('');
+  };
+
+  const updateProgress = (stepIndex: number, isCompleted = false, isCurrent = false) => {
+    setProgressSteps(prev => {
+      const updated = prev.map((step, index) => ({
+        ...step,
+        completed: index < stepIndex || (index === stepIndex && isCompleted),
+        current: index === stepIndex && isCurrent && !isCompleted
+      }));
+      
+      const completedCount = updated.filter(s => s.completed).length;
+      const progressPercentage = (completedCount / updated.length) * 100;
+      setOverallProgress(progressPercentage);
+      
+      const currentStep = updated.find(s => s.current);
+      setCurrentProgressStep(currentStep ? currentStep.step : '');
+      
+      return updated;
+    });
+  };
+
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
       setError('Please enter a project description');
       return;
     }
 
+    initializeProgressSteps();
     setIsGeneratingSuggestions(true);
     setError('');
 
     try {
-      // Generate custom suggestions based on user input
+      updateProgress(0, false, true);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Brief pause for UX
+      
+      updateProgress(1, false, true);
       const customSuggestions = await generateCustomSuggestions(projectInput);
+      updateProgress(1, true);
+      
       setSuggestions(customSuggestions);
       setShowSuggestions(true);
       setSelectedSuggestions([]);
+      setOverallProgress(100);
+      setCurrentProgressStep('');
     } catch (err) {
       console.error('Error generating suggestions:', err);
       setError('Failed to generate suggestions. Please try again.');
@@ -131,11 +185,20 @@ export default function ProjectPlanner() {
   };
 
   const handleGenerateWithSuggestions = async () => {
+    initializeProgressSteps(true);
     setIsGeneratingPlan(true);
     setError('');
     setShowSuggestions(false);
 
     try {
+      updateProgress(0, false, true);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      updateProgress(1, false, true);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      updateProgress(1, true);
+      
+      updateProgress(2, false, true);
       let enhancedInput = projectInput;
       
       if (selectedSuggestions.length > 0) {
@@ -149,10 +212,24 @@ Please ensure the project plan addresses all the selected requirements above and
 
       const plan = await generateProjectPlan(enhancedInput);
       setProjectPlan(plan);
+      updateProgress(2, true);
       
+      updateProgress(3, false, true);
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, plan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      await new Promise(resolve => setTimeout(resolve, 400));
+      updateProgress(3, true);
+      
+      updateProgress(4, false, true);
+      await new Promise(resolve => setTimeout(resolve, 300));
+      updateProgress(4, true);
+      
+      setOverallProgress(100);
+      setCurrentProgressStep('');
+      
+      // Small delay before redirect for better UX
+      await new Promise(resolve => setTimeout(resolve, 500));
       
       setCurrentStep('plan');
       setLocation('/plan');
@@ -896,11 +973,50 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   )}
                 </div>
                 
+                {/* Progress Bar for Plan Generation */}
+                {isGeneratingPlan && progressSteps.length > 0 && (
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-blue-800">Creating Project Plan</h4>
+                      <span className="text-sm text-blue-600 font-medium">{Math.round(overallProgress)}%</span>
+                    </div>
+                    <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
+                        style={{ width: `${overallProgress}%` }}
+                      ></div>
+                    </div>
+                    {currentProgressStep && (
+                      <div className="flex items-center text-sm text-blue-700 mb-3 font-medium">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {currentProgressStep}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {progressSteps.map((step, index) => (
+                        <div key={index} className="flex items-center text-sm bg-white/40 rounded-md p-2">
+                          {step.completed ? (
+                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                          ) : step.current ? (
+                            <Loader2 className="h-4 w-4 text-blue-500 mr-2 animate-spin flex-shrink-0" />
+                          ) : (
+                            <div className="h-4 w-4 rounded-full border-2 border-gray-300 mr-2 flex-shrink-0"></div>
+                          )}
+                          <span className={`${step.completed ? 'text-green-700 font-medium' : step.current ? 'text-blue-700 font-medium' : 'text-gray-500'} truncate`}>
+                            {step.step}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex flex-col sm:flex-row gap-3 justify-end">
                   <Button
                     variant="outline"
                     onClick={() => setShowSuggestions(false)}
                     className="border-gray-300 hover:bg-gray-50"
+                    disabled={isGeneratingPlan}
                   >
                     Cancel
                   </Button>
@@ -996,6 +1112,44 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </div>
                 <p className="text-xs text-blue-600 mt-3">Click any example to use it as a starting point, then customize as needed.</p>
               </div>
+              
+              {/* Progress Bar for Initial Generation */}
+              {isGeneratingSuggestions && progressSteps.length > 0 && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-blue-800 text-sm">Analyzing Project Requirements</h4>
+                    <span className="text-xs text-blue-600">{Math.round(overallProgress)}%</span>
+                  </div>
+                  <div className="w-full bg-blue-100 rounded-full h-2 mb-3">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{ width: `${overallProgress}%` }}
+                    ></div>
+                  </div>
+                  {currentProgressStep && (
+                    <div className="flex items-center text-xs text-blue-700">
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      {currentProgressStep}
+                    </div>
+                  )}
+                  <div className="mt-2 space-y-1">
+                    {progressSteps.map((step, index) => (
+                      <div key={index} className="flex items-center text-xs">
+                        {step.completed ? (
+                          <CheckCircle className="h-3 w-3 text-green-500 mr-2" />
+                        ) : step.current ? (
+                          <Loader2 className="h-3 w-3 text-blue-500 mr-2 animate-spin" />
+                        ) : (
+                          <div className="h-3 w-3 rounded-full border border-gray-300 mr-2"></div>
+                        )}
+                        <span className={step.completed ? 'text-green-700' : step.current ? 'text-blue-700' : 'text-gray-500'}>
+                          {step.step}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
               <div className="flex justify-between items-center pt-2">
                 <div className="text-xs text-gray-400">
