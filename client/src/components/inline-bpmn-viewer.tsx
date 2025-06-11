@@ -1,5 +1,8 @@
 import { useRef, useEffect, useState } from 'react';
 import { FileX, AlertCircle } from 'lucide-react';
+import BpmnJS from 'bpmn-js/lib/NavigatedViewer';
+import 'bpmn-js/dist/assets/diagram-js.css';
+import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
 
 interface InlineBpmnViewerProps {
   bpmnXml: string;
@@ -7,15 +10,9 @@ interface InlineBpmnViewerProps {
   title: string;
 }
 
-declare global {
-  interface Window {
-    BpmnJS: any;
-  }
-}
-
 export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpmnViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef = useRef<any>(null);
+  const viewerRef = useRef<BpmnJS | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -40,18 +37,14 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           return;
         }
 
-        // Wait for BPMN library
-        if (!window.BpmnJS) {
-          setTimeout(initViewer, 100);
-          return;
-        }
-
         // Clear container
         containerRef.current.innerHTML = '';
 
-        // Create viewer with minimal configuration
-        const viewer = new window.BpmnJS({
-          container: containerRef.current
+        // Create viewer using npm package
+        const viewer = new BpmnJS({
+          container: containerRef.current,
+          width: '100%',
+          height: height,
         });
 
         viewerRef.current = viewer;
