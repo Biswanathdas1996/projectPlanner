@@ -981,47 +981,43 @@ export async function generateBpmnXml(flowContent: string): Promise<string> {
     }
   });
 
-  const prompt = `Generate a BPMN 2.0 XML diagram based on this structured flow content:
+  const prompt = `Generate a complete BPMN 2.0 XML diagram based STRICTLY on these 7 structured sections:
 
 ${flowContent}
 
-CRITICAL MAPPING REQUIREMENTS:
-1. **Parse Content Sections** - Extract and map each section to BPMN elements:
-   • **Participants/Swimlanes** → bpmn2:participant elements with pools
-   • **Trigger/Start Event** → bpmn2:startEvent with name from trigger
-   • **Activities/Tasks** → bpmn2:userTask or bpmn2:serviceTask elements
-   • **Decision Points** → bpmn2:exclusiveGateway elements
-   • **End Event** → bpmn2:endEvent with name from content
-   • **Additional Elements** → relevant BPMN elements as appropriate
+MANDATORY MAPPING REQUIREMENTS:
+✅ 1. Process & Description → bpmn2:process name and documentation
+✅ 2. Participants (Swimlanes) → bpmn2:participant elements with pools/lanes
+✅ 3. Trigger (Start Event) → bpmn2:startEvent with exact trigger name
+✅ 4. Activities (Tasks) → bpmn2:userTask or bpmn2:serviceTask elements
+✅ 5. Decision Points (Gateways) → bpmn2:exclusiveGateway elements
+✅ 6. End Event → bpmn2:endEvent with exact end event name
+✅ 7. Additional Elements → bpmn2:message, bpmn2:timer, bpmn2:dataObject as specified
 
-2. **BPMN 2.0 XML Structure**:
-   - Use bpmn2: namespace prefix consistently
-   - Include proper XML declaration
-   - Valid BPMN definitions element
-   - Include collaboration for swimlanes if participants exist
-   - Process element containing all flow elements
-   - BPMNDiagram for visual layout
+STRICT XML STRUCTURE:
+- Use bpmn2: namespace prefix consistently
+- Include proper XML declaration: <?xml version="1.0" encoding="UTF-8"?>
+- Valid BPMN definitions with namespaces
+- Create collaboration with participants as pools/lanes
+- Process element with all flow elements
+- BPMNDiagram with visual coordinates
+- Connect ALL elements with bpmn2:sequenceFlow
 
-3. **Element Creation Rules**:
-   - Create one swimlane for each participant listed
-   - Map trigger content to start event name
-   - Convert each activity item to a task element with SHORT names (2-4 words)
-   - Use BPMN naming conventions: "Submit Request", "Validate Data", "Process Payment"
-   - Transform decision points into gateway elements
-   - Use end event content for end event name
-   - Connect elements with sequenceFlow in logical order
+ELEMENT CREATION RULES:
+- Create exactly one swimlane per participant listed in section 2
+- Use exact trigger text from section 3 for start event name
+- Convert each activity from section 4 to individual task elements
+- Transform each decision point from section 5 to gateway elements
+- Use exact end event text from section 6
+- Add elements from section 7 as specified (messages, timers, data objects)
+- Generate unique IDs for all elements
 
-4. **ID Generation**:
-   - Clean names for valid XML IDs (no spaces/special chars)
-   - Use descriptive IDs: StartEvent_1, Task_ActivityName, Gateway_DecisionName
-   - Ensure all IDs are unique within the document
+VISUAL LAYOUT:
+- Include bpmndi:BPMNDiagram with proper coordinates
+- Arrange elements left-to-right in process flow
+- Position swimlanes vertically
 
-5. **Visual Layout Requirements**:
-   - Include bpmndi:BPMNDiagram with proper coordinates
-   - Arrange elements left-to-right in process flow
-   - Use realistic positioning (start at x=200, increment by ~150)
-   - Set swimlane heights appropriately
-   - Include all shape and edge definitions
+Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.
 
 TEMPLATE STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>

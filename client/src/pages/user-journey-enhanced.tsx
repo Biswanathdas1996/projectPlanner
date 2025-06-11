@@ -1061,43 +1061,64 @@ Data Objects: Request form, User profile`,
       // Generate BPMN XML using Gemini API with structured content
       const { generateBpmnXml } = await import('../lib/gemini');
       
-      // Create a comprehensive prompt from the structured content
-      const contentPrompt = `
-Process: ${structuredContent.processName}
-Description: ${structuredContent.processDescription}
+      // Create BPMN content from the 7 structured sections
+      const bpmnContent = `
+✅ 1. Process & Description
+${structuredContent.processName}
+${structuredContent.processDescription}
 
-Participants/Swimlanes: ${structuredContent.participants.join(', ')}
-Trigger: ${structuredContent.trigger}
-Activities: ${structuredContent.activities.join('; ')}
-Decision Points: ${structuredContent.decisionPoints.join('; ')}
-End Event: ${structuredContent.endEvent}
-Additional Elements: ${structuredContent.additionalElements.join('; ')}
+✅ 2. Participants (Swimlanes)
+${structuredContent.participants.map(p => `- ${p}`).join('\n')}
 
-Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events, tasks, and gateways.
+✅ 3. Trigger (Start Event)
+${structuredContent.trigger}
+
+✅ 4. Activities (Tasks)
+${structuredContent.activities.map((a, i) => `${i + 1}. ${a}`).join('\n')}
+
+✅ 5. Decision Points (Gateways)
+${structuredContent.decisionPoints.map(d => `- ${d}`).join('\n')}
+
+✅ 6. End Event
+${structuredContent.endEvent}
+
+✅ 7. Additional Elements
+${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
       `.trim();
 
       let bpmnXml;
       try {
-        bpmnXml = await generateBpmnXml(contentPrompt);
+        bpmnXml = await generateBpmnXml(bpmnContent);
         console.log('Successfully generated BPMN XML:', bpmnXml.substring(0, 200) + '...');
       } catch (bpmnError) {
         console.error('Gemini BPMN generation failed, creating fallback:', bpmnError);
         
-        // Create fallback BPMN XML directly from structured content
+        // Create BPMN XML based on the 7 structured sections
         const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
         const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_');
         
         const processId = `Process_${cleanStakeholder}_${cleanFlowType}`;
-        const poolId = `Pool_${cleanStakeholder}`;
         
-        // Generate task elements from activities
+        // Generate participants (swimlanes) from section 2
+        const participantElements = structuredContent.participants.map((participant, index) => {
+          const participantId = `Participant_${index + 1}`;
+          return `    <bpmn2:participant id="${participantId}" name="${participant.replace(/"/g, '&quot;')}" processRef="${processId}" />`;
+        }).join('\n');
+        
+        // Generate task elements from section 4 (activities)
         const taskElements = structuredContent.activities.map((activity, index) => {
           const taskId = `Task_${index + 1}`;
           return `    <bpmn2:userTask id="${taskId}" name="${activity.replace(/"/g, '&quot;')}" />`;
         }).join('\n');
         
+        // Generate gateways from section 5 (decision points)
+        const gatewayElements = structuredContent.decisionPoints.map((decision, index) => {
+          const gatewayId = `Gateway_${index + 1}`;
+          return `    <bpmn2:exclusiveGateway id="${gatewayId}" name="${decision.substring(0, 30).replace(/"/g, '&quot;')}..." />`;
+        }).join('\n');
+        
         // Generate sequence flows
-        const flowElements = [];
+        const flowElements: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
             flowElements.push(`    <bpmn2:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Task_${index + 1}" />`);
@@ -1146,17 +1167,18 @@ Generate a complete BPMN 2.0 XML diagram with proper swimlanes, start/end events
         bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn2:collaboration id="Collaboration_1">
-    <bpmn2:participant id="${poolId}" name="${stakeholder}" processRef="${processId}" />
+${participantElements}
   </bpmn2:collaboration>
   <bpmn2:process id="${processId}" isExecutable="true">
-    <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.substring(0, 50)}..." />
+    <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.replace(/"/g, '&quot;')}" />
 ${taskElements}
-    <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.substring(0, 50)}..." />
+${gatewayElements}
+    <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.replace(/"/g, '&quot;')}" />
 ${flowElements.join('\n')}
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
-      <bpmndi:BPMNShape id="${poolId}_di" bpmnElement="${poolId}" isHorizontal="true">
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
         <dc:Bounds x="80" y="80" width="${200 + (structuredContent.activities.length * 150)}" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
