@@ -10,6 +10,7 @@ interface InlineBpmnViewerProps {
 declare global {
   interface Window {
     BpmnJS: any;
+    BpmnModeler: any;
   }
 }
 
@@ -56,14 +57,31 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           containerRef.current.innerHTML = '';
         }
 
-        // Create new viewer with proper configuration
-        const viewer = new window.BpmnJS({
+        // Debug: Check what BPMN constructors are available
+        console.log('Available BPMN constructors:', {
+          BpmnJS: !!window.BpmnJS,
+          BpmnModeler: !!window.BpmnModeler,
+          windowKeys: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
+        });
+
+        // Try different BPMN constructor patterns
+        let BpmnConstructor = window.BpmnJS || window.BpmnModeler || (window as any).BpmnViewer;
+        
+        // Check if the script loaded a different global
+        if (!BpmnConstructor && typeof (window as any).BpmnJS !== 'undefined') {
+          BpmnConstructor = (window as any).BpmnJS;
+        }
+
+        if (!BpmnConstructor) {
+          throw new Error('BPMN library constructor not found. Available globals: ' + 
+            Object.keys(window).filter(key => key.toLowerCase().includes('bpmn')).join(', '));
+        }
+
+        // Create viewer instance
+        const viewer = new BpmnConstructor({
           container: containerRef.current,
           width: '100%',
-          height: height,
-          keyboard: {
-            bindTo: document
-          }
+          height: height
         });
 
         viewerRef.current = viewer;
@@ -111,7 +129,9 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
         return;
       }
 
-      if (!window.BpmnJS) {
+      // Check for BPMN library availability
+      const BpmnLibrary = window.BpmnJS || window.BpmnModeler;
+      if (!BpmnLibrary) {
         setError('BPMN.js library not loaded. Please refresh the page.');
         setIsLoading(false);
         return;
