@@ -3263,43 +3263,36 @@ ${flowEdges.join("\n")}
                                       </div>
                                     </div>
                                     
-                                    {/* Combined BPMN Display */}
+                                    {/* BPMN Visual Diagram */}
                                     <div className="bg-white rounded-lg border">
                                       <div className="px-3 py-2 border-b bg-gray-50 rounded-t-lg">
                                         <p className="text-xs font-medium text-gray-700">
-                                          BPMN 2.0 - {stakeholder} {flowType}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                          Visual diagram and XML script ({existingFlow.bpmnXml.length} characters)
+                                          BPMN Diagram - {stakeholder} {flowType}
                                         </p>
                                       </div>
-                                      
-                                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 p-4">
-                                        {/* Visual Diagram */}
-                                        <div className="bg-gray-50 rounded border">
-                                          <div className="px-2 py-1 bg-blue-50 border-b text-xs font-medium text-blue-700">
-                                            Visual Diagram
-                                          </div>
-                                          <div className="p-2">
-                                            <SimpleBpmnViewer
-                                              bpmnXml={existingFlow.bpmnXml}
-                                              title={`${stakeholder} - ${flowType}`}
-                                              height="280px"
-                                            />
-                                          </div>
-                                        </div>
-                                        
-                                        {/* XML Script */}
-                                        <div className="bg-gray-50 rounded border">
-                                          <div className="px-2 py-1 bg-green-50 border-b text-xs font-medium text-green-700">
-                                            XML Script
-                                          </div>
-                                          <div className="p-2">
-                                            <pre className="text-xs text-gray-800 overflow-auto whitespace-pre-wrap bg-white rounded border p-2 h-72 font-mono leading-tight">
-                                              {existingFlow.bpmnXml}
-                                            </pre>
-                                          </div>
-                                        </div>
+                                      <div className="p-2">
+                                        <SimpleBpmnViewer
+                                          bpmnXml={existingFlow.bpmnXml}
+                                          title={`${stakeholder} - ${flowType}`}
+                                          height="300px"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* BPMN XML Script Content */}
+                                    <div className="bg-gray-50 rounded-lg border">
+                                      <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
+                                        <p className="text-xs font-medium text-gray-700">
+                                          BPMN 2.0 XML Script - {stakeholder} {flowType}
+                                        </p>
+                                        <p className="text-xs text-gray-500">
+                                          {existingFlow.bpmnXml.length} characters
+                                        </p>
+                                      </div>
+                                      <div className="p-3">
+                                        <pre className="text-xs text-gray-800 overflow-auto whitespace-pre-wrap bg-white rounded border p-3 max-h-64 font-mono leading-relaxed">
+                                          {existingFlow.bpmnXml}
+                                        </pre>
                                       </div>
                                     </div>
                                   </div>
