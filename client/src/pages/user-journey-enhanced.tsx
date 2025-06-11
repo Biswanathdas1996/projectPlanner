@@ -1264,7 +1264,7 @@ Data Objects: Request form, User profile`,
     }
   };
 
-  // Generate BPMN XML using AI (Gemini)
+  // Generate BPMN XML using AI (Gemini) with structured 7-element data
   const generateBpmnWithAI = async (
     stakeholder: string,
     flowType: string,
@@ -1281,9 +1281,31 @@ Data Objects: Request form, User profile`,
     setError("");
 
     try {
-      // Call Gemini API directly from client
-      const { generateSwimlaneXml } = await import("../lib/gemini");
-      const bpmnXml = await generateSwimlaneXml(stakeholder, flowType, details);
+      // Create structured content from flow details
+      const structuredContent = {
+        processName: `${stakeholder} - ${flowType}`,
+        processDescription: details.processDescription || details.description,
+        participants: details.participants || [],
+        trigger: details.trigger || "Process starts",
+        activities: details.activities || [],
+        decisionPoints: details.decisionPoints || [],
+        endEvent: details.endEvent || "Process completes",
+        additionalElements: details.additionalElements || [],
+      };
+
+      console.log("Sending 7-element structured data to AI for customized BPMN generation:", {
+        "1. Process & Description": structuredContent.processName,
+        "2. Participants": structuredContent.participants,
+        "3. Trigger": structuredContent.trigger,
+        "4. Activities": structuredContent.activities,
+        "5. Decision Points": structuredContent.decisionPoints,
+        "6. End Event": structuredContent.endEvent,
+        "7. Additional Elements": structuredContent.additionalElements,
+      });
+
+      // Call the new customized AI BPMN generation function
+      const { generateCustomizedBpmnFromStructuredData } = await import("../lib/gemini");
+      const bpmnXml = await generateCustomizedBpmnFromStructuredData(structuredContent);
 
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
