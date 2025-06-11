@@ -340,6 +340,22 @@
         stroke-width: 2px !important;
       }
       
+      /* Enable dragging cursor */
+      .djs-element:hover {
+        cursor: move !important;
+      }
+      
+      /* Dragging state */
+      .djs-element.djs-dragging {
+        cursor: grabbing !important;
+        opacity: 0.8 !important;
+      }
+      
+      /* Ensure elements are interactive */
+      .djs-element {
+        pointer-events: all !important;
+      }
+      
       /* Connection points visibility */
       .connect-ok .djs-visual > circle {
         stroke: #28a745 !important;

@@ -226,6 +226,18 @@ export default function BpmnEditor() {
               </div>
             )}
             
+            {!isLoading && !selectedElement && (
+              <div className="absolute top-4 left-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 z-10 max-w-sm">
+                <p className="font-medium">Getting Started:</p>
+                <ul className="mt-1 space-y-1 text-xs">
+                  <li>• Use the palette on the left to add elements</li>
+                  <li>• Click and drag elements to move them</li>
+                  <li>• Click elements to select and edit properties</li>
+                  <li>• Use context menu for quick actions</li>
+                </ul>
+              </div>
+            )}
+            
             <div 
               ref={containerRef}
               className="w-full h-full bg-white"

@@ -69,16 +69,27 @@ export function useBpmnEditor() {
         keyboard: {
           bindTo: document
         },
-        // Enable editing modules
-        additionalModules: [
-          // Core editing modules are included by default in modeler build
-        ],
+        // Explicitly enable core editing features
+        additionalModules: [],
         moddleExtensions: {},
         height: '100%',
-        width: '100%'
+        width: '100%',
+        // Enable palette and context pad for editing
+        contextPad: {
+          scale: true
+        },
+        palette: {
+          open: true
+        }
       });
 
       modelerRef.current = modeler;
+
+      // Ensure palette is visible and ready for editing
+      const palette = modeler.get('palette');
+      if (palette) {
+        palette.open();
+      }
 
       // Enhanced element selection handler
       modeler.on('element.click', (event: any) => {
