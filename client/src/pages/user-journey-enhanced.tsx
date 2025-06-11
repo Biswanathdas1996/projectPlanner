@@ -1330,27 +1330,14 @@ ${structuredContent.additionalElements.map((e) => `- ${e}`).join("\n")}
 
       let bpmnXml;
       try {
-        console.log("✅ Generating BPMN from structured data (no AI)...");
+        console.log("✅ Generating BPMN using AI with structured data...");
 
-        // Use deterministic BPMN generator instead of AI
-        const { generateBpmnXmlFromStructuredData } = await import(
-          "../lib/bpmn-generator"
-        );
-
-        bpmnXml = generateBpmnXmlFromStructuredData({
-          processName: structuredContent.processName,
-          processDescription: structuredContent.processDescription,
-          participants: structuredContent.participants,
-          trigger: structuredContent.trigger,
-          activities: structuredContent.activities,
-          decisionPoints: structuredContent.decisionPoints,
-          endEvent: structuredContent.endEvent,
-          additionalElements: structuredContent.additionalElements,
-        });
+        // Use AI-powered BPMN generator for accurate diagrams
+        bpmnXml = await generateBpmnXml(bpmnContent);
 
         console.log(
-          "✅ Valid BPMN 2.0 XML generated from structured data",
-          bpmnXml,
+          "✅ AI-generated BPMN 2.0 XML with proper decision flows",
+          bpmnXml.substring(0, 200) + "..."
         );
       } catch (bpmnError) {
         console.error(
