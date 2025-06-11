@@ -1190,37 +1190,69 @@ Data Objects: Request form, User profile`,
   const startEditingFlowDetails = (flowKey: string) => {
     const details = flowDetails[flowKey];
     if (details) {
+      console.log("🔧 Starting edit for flow:", flowKey);
+      console.log("📋 Flow details:", details);
+      
       setEditingFlowDetails(flowKey);
       
       // Extract processDescription and trigger from description if not directly available
       let processDescription = details.processDescription || "";
       let trigger = details.trigger || "";
       
-      if (!processDescription && details.description) {
-        const processMatch = details.description.match(/✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/);
-        if (processMatch) {
-          processDescription = processMatch[1].trim();
-        } else {
-          // Fallback: use the first part of description
-          const firstSection = details.description.split('\n\n✅ 2.')[0];
-          processDescription = firstSection.replace(/✅ 1\. Process Name and Description\s*\n?/, '').trim();
-        }
-      }
+      console.log("🔍 Initial processDescription:", processDescription);
+      console.log("🔍 Initial trigger:", trigger);
       
-      if (!trigger && details.description) {
-        const triggerMatch = details.description.match(/✅ 3\. Trigger \(Start Event\)\s*\n([^✅]*)/);
-        if (triggerMatch) {
-          trigger = triggerMatch[1].trim();
-        } else {
-          // Try alternative trigger patterns
-          const altTriggerMatch = details.description.match(/✅ 3\. Trigger[^✅]*\n([^✅]*)/);
-          if (altTriggerMatch) {
-            trigger = altTriggerMatch[1].trim();
+      if (!processDescription && details.description) {
+        console.log("🔍 Trying to extract processDescription from description...");
+        
+        // Try multiple patterns for process description
+        const patterns = [
+          /✅ 1\. Process Name and Description[^✅]*?\n([^✅]+?)(?=\n\n✅|$)/s,
+          /✅ 1\. Process Name and Description\s*\n([^✅]+?)(?=\n✅|$)/s,
+          /Process Name and Description[^:]*:?\s*\n([^✅]+?)(?=\n✅|$)/s
+        ];
+        
+        for (const pattern of patterns) {
+          const match = details.description.match(pattern);
+          if (match) {
+            processDescription = match[1].trim();
+            console.log("✅ Found processDescription:", processDescription);
+            break;
+          }
+        }
+        
+        // Final fallback: extract everything before section 2
+        if (!processDescription) {
+          const sections = details.description.split(/\n\n?✅ 2\./);
+          if (sections.length > 1) {
+            processDescription = sections[0]
+              .replace(/✅ 1\. Process Name and Description\s*\n?/i, '')
+              .trim();
+            console.log("🔄 Fallback processDescription:", processDescription);
           }
         }
       }
       
-      setEditedFlowDetails({
+      if (!trigger && details.description) {
+        console.log("🔍 Trying to extract trigger from description...");
+        
+        const triggerPatterns = [
+          /✅ 3\. Trigger \(Start Event\)\s*\n([^✅]+?)(?=\n\n?✅|$)/s,
+          /✅ 3\. Trigger[^✅]*?\n([^✅]+?)(?=\n\n?✅|$)/s,
+          /Trigger[^:]*:?\s*\n([^✅]+?)(?=\n✅|$)/s
+        ];
+        
+        for (const pattern of triggerPatterns) {
+          const match = details.description.match(pattern);
+          if (match) {
+            trigger = match[1].trim();
+            console.log("✅ Found trigger:", trigger);
+            break;
+          }
+        }
+      }
+      
+      const editData = {
         description: details.description,
         processDescription: processDescription,
         participants: [...(details.participants || [])],
@@ -1229,7 +1261,10 @@ Data Objects: Request form, User profile`,
         decisionPoints: [...(details.decisionPoints || [])],
         endEvent: details.endEvent || "",
         additionalElements: [...(details.additionalElements || [])],
-      });
+      };
+      
+      console.log("📝 Final edit data:", editData);
+      setEditedFlowDetails(editData);
     }
   };
 
