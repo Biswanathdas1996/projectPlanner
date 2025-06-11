@@ -38,8 +38,14 @@ export class AICodeGenerator {
       throw new Error("Gemini API key is required. Please set VITE_GEMINI_API_KEY in your environment variables.");
     }
     
-    const genAI = new GoogleGenerativeAI(apiKey);
-    this.gemini = genAI.getGenerativeModel({ model: "gemini-pro" });
+    try {
+      const genAI = new GoogleGenerativeAI(apiKey);
+      this.gemini = genAI.getGenerativeModel({ model: "gemini-pro" });
+      console.log("AI Code Generator initialized with Gemini successfully");
+    } catch (error) {
+      console.error("Failed to initialize Gemini:", error);
+      throw new Error("Failed to initialize Gemini AI model. Please check your API key.");
+    }
   }
 
   async generateCompleteProject(
