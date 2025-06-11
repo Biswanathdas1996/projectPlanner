@@ -962,7 +962,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
               style={{
                 border: 'none',
                 backgroundColor: '#ffffff',
-                overflow: 'auto',
+                overflow: 'hidden',
                 height: '1200px' // Start with larger default height
               }}
               title="Project Plan Content"
