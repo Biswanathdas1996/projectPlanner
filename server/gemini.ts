@@ -54,7 +54,7 @@ export async function generateBpmnJson(req: Request, res: Response) {
       return res.status(400).json({ error: 'Project plan is required' });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
 Convert the following project plan into a BPMN JSON structure. Create a workflow that represents the project phases and tasks as BPMN elements.
