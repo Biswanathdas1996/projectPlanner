@@ -1,52 +1,50 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini for client-side usage
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GOOGLE_AI_API_KEY || "");
+const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
 
 // Add error handling and logging for debugging
 const originalConsoleError = console.error;
 console.error = (...args) => {
-  if (args[0]?.includes?.('Gemini') || args[0]?.includes?.('API')) {
-    originalConsoleError('🔥 GEMINI API DEBUG:', ...args);
+  if (args[0]?.includes?.("Gemini") || args[0]?.includes?.("API")) {
+    originalConsoleError("🔥 GEMINI API DEBUG:", ...args);
   } else {
     originalConsoleError(...args);
   }
 };
 
-export async function generateFlowAnalysis(
-  prompt: string,
-): Promise<string> {
+export async function generateFlowAnalysis(prompt: string): Promise<string> {
   if (!prompt.trim()) {
     throw new Error("Prompt is required");
   }
 
-  console.log('🚀 Starting Gemini API call for flow analysis...');
-  
+  console.log("🚀 Starting Gemini API call for flow analysis...");
+
   try {
-    const model = genAI.getGenerativeModel({ 
+    const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
       generationConfig: {
         temperature: 0.3,
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 2048,
-      }
+      },
     });
 
-    console.log('📡 Sending request to Gemini API...');
+    console.log("📡 Sending request to Gemini API...");
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    
-    console.log('✅ Received response from Gemini API, length:', text.length);
-    
+
+    console.log("✅ Received response from Gemini API, length:", text.length);
+
     if (!text || text.trim().length === 0) {
       throw new Error("Empty response from Gemini API");
     }
 
     return text;
   } catch (error) {
-    console.error('❌ Gemini API Error:', error);
+    console.error("❌ Gemini API Error:", error);
     throw new Error(`Gemini API failed: ${error.message}`);
   }
 }
@@ -58,14 +56,14 @@ export async function generateCustomSuggestions(
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
       temperature: 0.8,
       topK: 40,
       topP: 0.95,
       maxOutputTokens: 2048,
-    }
+    },
   });
 
   const prompt = `Analyze this project description and generate 10-15 highly relevant, actionable enhancement suggestions: "${projectDescription}"
@@ -127,37 +125,40 @@ Example format: ["Implement multi-factor authentication (MFA) and biometric logi
     // Clean the response to extract JSON
     let cleanedText = text.trim();
     if (cleanedText.startsWith("```json")) {
-      cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/```\s*$/, "");
+      cleanedText = cleanedText
+        .replace(/^```json\s*/, "")
+        .replace(/```\s*$/, "");
     }
     if (cleanedText.startsWith("```")) {
       cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
     }
-    
+
     const suggestions = JSON.parse(cleanedText);
-    
+
     // Validate suggestions array
     if (!Array.isArray(suggestions) || suggestions.length < 8) {
       throw new Error("Invalid suggestions format");
     }
-    
+
     return suggestions.slice(0, 15); // Limit to 15 suggestions max
   } catch (error) {
     console.error("Failed to parse suggestions JSON:", error);
     // Enhanced fallback: extract suggestions from text format
     const lines = text
       .split("\n")
-      .map(line => line.trim())
-      .filter(line => 
-        line && 
-        !line.includes("```") && 
-        !line.includes("JSON") &&
-        !line.startsWith("Here") &&
-        !line.startsWith("Based") &&
-        line.length > 20
+      .map((line) => line.trim())
+      .filter(
+        (line) =>
+          line &&
+          !line.includes("```") &&
+          !line.includes("JSON") &&
+          !line.startsWith("Here") &&
+          !line.startsWith("Based") &&
+          line.length > 20,
       )
-      .map(line => line.replace(/^[\d\.\-\*\+]\s*/, "")) // Remove list markers
-      .filter(line => line.length > 30); // Filter out short lines
-    
+      .map((line) => line.replace(/^[\d\.\-\*\+]\s*/, "")) // Remove list markers
+      .filter((line) => line.length > 30); // Filter out short lines
+
     return lines.slice(0, 12);
   }
 }
@@ -169,14 +170,14 @@ export async function generateProjectPlan(
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
       topP: 0.95,
       maxOutputTokens: 8192,
-    }
+    },
   });
 
   const prompt = `Create a comprehensive, detailed project plan for: "${projectDescription}"
@@ -547,29 +548,31 @@ Return ONLY the complete HTML document with embedded CSS. The document must be p
   const result = await model.generateContent(prompt);
   const response = await result.response;
   const text = response.text();
-  
+
   // Validate the response contains all required sections with exact titles
   const requiredSections = [
-    'Table of Contents',
-    '1. Executive Summary',
-    '2. Technical Architecture & Infrastructure',
-    '3. Detailed Feature Specifications',
-    '4. Development Methodology & Timeline',
-    '5. User Experience & Interface Design',
-    '6. Quality Assurance & Testing Strategy',
-    '7. Deployment & DevOps Strategy',
-    '8. Risk Management & Mitigation',
-    '9. Stakeholder Management',
-    '10. Post-Launch Strategy'
+    "Table of Contents",
+    "1. Executive Summary",
+    "2. Technical Architecture & Infrastructure",
+    "3. Detailed Feature Specifications",
+    "4. Development Methodology & Timeline",
+    "5. User Experience & Interface Design",
+    "6. Quality Assurance & Testing Strategy",
+    "7. Deployment & DevOps Strategy",
+    "8. Risk Management & Mitigation",
+    "9. Stakeholder Management",
+    "10. Post-Launch Strategy",
   ];
-  
-  const missingSections = requiredSections.filter(section => 
-    !text.includes(section)
+
+  const missingSections = requiredSections.filter(
+    (section) => !text.includes(section),
   );
-  
+
   if (missingSections.length > 0) {
-    console.warn(`Retrying generation - missing sections: ${missingSections.join(', ')}`);
-    
+    console.warn(
+      `Retrying generation - missing sections: ${missingSections.join(", ")}`,
+    );
+
     // First retry with enhanced specificity
     const retryPrompt = `Create a comprehensive project plan for: "${projectDescription}"
 
@@ -595,17 +598,21 @@ Each section must include:
 - Progress indicators
 
 The document must be complete HTML with embedded CSS styling. Do not skip or merge any sections.`;
-    
+
     const retryResult = await model.generateContent(retryPrompt);
     const retryResponse = await retryResult.response;
     const retryText = retryResponse.text();
-    
+
     // Validate retry attempt
-    const stillMissing = requiredSections.filter(section => !retryText.includes(section));
-    
+    const stillMissing = requiredSections.filter(
+      (section) => !retryText.includes(section),
+    );
+
     if (stillMissing.length > 0) {
-      console.warn(`Second validation failed - still missing: ${stillMissing.join(', ')}`);
-      
+      console.warn(
+        `Second validation failed - still missing: ${stillMissing.join(", ")}`,
+      );
+
       // Final attempt with ultra-specific prompt
       const finalPrompt = `Generate HTML project plan with these EXACT headings:
 
@@ -624,15 +631,15 @@ The document must be complete HTML with embedded CSS styling. Do not skip or mer
 For project: "${projectDescription}"
 
 Include visual elements: tables, flow diagrams, tree structures, timelines in each section.`;
-      
+
       const finalResult = await model.generateContent(finalPrompt);
       const finalResponse = await finalResult.response;
       return finalResponse.text();
     }
-    
+
     return retryText;
   }
-  
+
   return text;
 }
 
@@ -833,7 +840,7 @@ Return ONLY the complete XML sitemap - no explanations or markdown.`;
 
 export async function extractStakeholdersFromProject(
   projectPlan: string,
-): Promise<{ stakeholders: string[], flowTypes: Record<string, string[]> }> {
+): Promise<{ stakeholders: string[]; flowTypes: Record<string, string[]> }> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
   }
@@ -870,25 +877,53 @@ Return ONLY a JSON object in this exact format:
     // Clean the response to extract JSON
     let cleanedText = text.trim();
     if (cleanedText.startsWith("```json")) {
-      cleanedText = cleanedText.replace(/^```json\s*/, "").replace(/```\s*$/, "");
+      cleanedText = cleanedText
+        .replace(/^```json\s*/, "")
+        .replace(/```\s*$/, "");
     }
     if (cleanedText.startsWith("```")) {
       cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
     }
-    
+
     return JSON.parse(cleanedText);
   } catch (error) {
-    console.error('Failed to parse stakeholders JSON:', error);
+    console.error("Failed to parse stakeholders JSON:", error);
     // Fallback to default stakeholders
     return {
-      stakeholders: ["Guest User", "Registered User", "Admin User", "Power User", "Mobile User"],
+      stakeholders: [
+        "Guest User",
+        "Registered User",
+        "Admin User",
+        "Power User",
+        "Mobile User",
+      ],
       flowTypes: {
-        "Guest User": ["Registration Flow", "Browse Content Flow", "Search Flow"],
-        "Registered User": ["Login Flow", "Main Features Flow", "Profile Management Flow"],
-        "Admin User": ["User Management Flow", "System Configuration Flow", "Analytics Flow"],
-        "Power User": ["Advanced Features Flow", "Bulk Operations Flow", "API Integration Flow"],
-        "Mobile User": ["Mobile App Flow", "Offline Sync Flow", "Push Notification Flow"]
-      }
+        "Guest User": [
+          "Registration Flow",
+          "Browse Content Flow",
+          "Search Flow",
+        ],
+        "Registered User": [
+          "Login Flow",
+          "Main Features Flow",
+          "Profile Management Flow",
+        ],
+        "Admin User": [
+          "User Management Flow",
+          "System Configuration Flow",
+          "Analytics Flow",
+        ],
+        "Power User": [
+          "Advanced Features Flow",
+          "Bulk Operations Flow",
+          "API Integration Flow",
+        ],
+        "Mobile User": [
+          "Mobile App Flow",
+          "Offline Sync Flow",
+          "Push Notification Flow",
+        ],
+      },
     };
   }
 }
@@ -897,7 +932,7 @@ export async function generatePersonaBpmnFlowWithType(
   projectPlan: string,
   stakeholder: string,
   flowType: string,
-  customPrompt?: string
+  customPrompt?: string,
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -905,7 +940,7 @@ export async function generatePersonaBpmnFlowWithType(
 
   const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-  const enhancedProjectPlan = customPrompt 
+  const enhancedProjectPlan = customPrompt
     ? `${projectPlan}\n\nAdditional Requirements: ${customPrompt}`
     : projectPlan;
 
@@ -942,7 +977,7 @@ export async function generatePersonaBpmnFlowWithType(
 
 **XML Structure Requirements:**
 - Valid XML declaration and BPMN namespace
-- Process ID: "Process_${stakeholder.replace(/\s+/g, '_')}_${flowType.replace(/\s+/g, '_')}"
+- Process ID: "Process_${stakeholder.replace(/\s+/g, "_")}_${flowType.replace(/\s+/g, "_")}"
 - Collaboration with appropriate participants
 - Complete BPMNDiagram with realistic coordinates
 
@@ -971,19 +1006,21 @@ export async function generateBpmnXml(flowContent: string): Promise<string> {
   return generateBpmnXmlClient(flowContent);
 }
 
-export async function generateBpmnXmlClient(flowContent: string): Promise<string> {
+export async function generateBpmnXmlClient(
+  flowContent: string,
+): Promise<string> {
   if (!flowContent.trim()) {
     throw new Error("Flow content is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+  const model = genAI.getGenerativeModel({
+    model: "gemini-2.0-flash",
     generationConfig: {
       temperature: 0.2,
       topK: 30,
       topP: 0.8,
       maxOutputTokens: 4096,
-    }
+    },
   });
 
   const prompt = `Generate a complete BPMN 2.0 XML diagram based STRICTLY on these 7 structured sections:
@@ -1083,16 +1120,25 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
   }
 
   // Basic validation - ensure it starts with XML declaration
-  if (!cleanedText.startsWith('<?xml') && !cleanedText.startsWith('<bpmn2:definitions')) {
-    throw new Error('Generated BPMN XML is not properly formatted');
+  if (
+    !cleanedText.startsWith("<?xml") &&
+    !cleanedText.startsWith("<bpmn2:definitions")
+  ) {
+    throw new Error("Generated BPMN XML is not properly formatted");
   }
 
   // Validate essential BPMN elements are present
-  const requiredElements = ['bpmn2:process', 'bpmn2:startEvent', 'bpmn2:endEvent'];
-  const missingElements = requiredElements.filter(element => !cleanedText.includes(element));
-  
+  const requiredElements = [
+    "bpmn2:process",
+    "bpmn2:startEvent",
+    "bpmn2:endEvent",
+  ];
+  const missingElements = requiredElements.filter(
+    (element) => !cleanedText.includes(element),
+  );
+
   if (missingElements.length > 0) {
-    console.warn('BPMN XML missing elements:', missingElements);
+    console.warn("BPMN XML missing elements:", missingElements);
   }
 
   return cleanedText;
@@ -1101,21 +1147,31 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
 export async function generateSwimlaneXml(
   stakeholder: string,
   flowType: string,
-  details: { description: string; participants: string[]; activities: string[] }
+  details: {
+    description: string;
+    participants: string[];
+    activities: string[];
+  },
 ): Promise<string> {
-  const model = genAI.getGenerativeModel({ 
+  const model = genAI.getGenerativeModel({
     model: "gemini-2.0-flash",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
       topP: 0.95,
       maxOutputTokens: 4096,
-    }
+    },
   });
 
   // Create valid XML IDs by sanitizing stakeholder and flow type names
-  const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
-  const cleanFlowType = flowType.replace(/[^a-zA-Z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  const cleanStakeholder = stakeholder
+    .replace(/[^a-zA-Z0-9]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
+  const cleanFlowType = flowType
+    .replace(/[^a-zA-Z0-9]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_|_$/g, "");
 
   const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on these specifications:
 
@@ -1124,10 +1180,10 @@ FLOW TYPE: ${flowType}
 DESCRIPTION: ${details.description}
 
 PARTICIPANTS:
-${details.participants.map((participant, idx) => `${idx + 1}. ${participant}`).join('\n')}
+${details.participants.map((participant, idx) => `${idx + 1}. ${participant}`).join("\n")}
 
 ACTIVITIES:
-${details.activities.map((activity, idx) => `${idx + 1}. ${activity}`).join('\n')}
+${details.activities.map((activity, idx) => `${idx + 1}. ${activity}`).join("\n")}
 
 Create a BPMN 2.0 XML with proper swimlane structure including:
 - Participant pools for different actors/systems involved in this flow
@@ -1205,12 +1261,15 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
   let text = response.text();
 
   // Clean up response to extract XML
-  text = text.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
-  
+  text = text
+    .replace(/```xml\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+
   // Validate it starts with XML declaration or BPMN element
-  if (!text.startsWith('<?xml') && !text.startsWith('<bpmn')) {
-    console.error('Invalid BPMN XML response:', text);
-    throw new Error('Generated content is not valid BPMN XML');
+  if (!text.startsWith("<?xml") && !text.startsWith("<bpmn")) {
+    console.error("Invalid BPMN XML response:", text);
+    throw new Error("Generated content is not valid BPMN XML");
   }
 
   return text;
