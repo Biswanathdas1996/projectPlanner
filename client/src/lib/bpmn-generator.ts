@@ -106,20 +106,20 @@ function generateSequenceFlows(taskCount: number, gatewayCount: number, timestam
   return flows.join('\n');
 }
 
-function generateVisualLayout(participantCount: number, taskCount: number, gatewayCount: number): { shapes: string; edges: string } {
+function generateVisualLayout(participantCount: number, taskCount: number, gatewayCount: number, timestamp: number): { shapes: string; edges: string } {
   const diagramWidth = 300 + (taskCount * 150);
   
   const shapes: string[] = [];
   const edges: string[] = [];
   
   // Participant pool
-  shapes.push(`      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">`);
+  shapes.push(`      <bpmndi:BPMNShape id="Participant_1_${timestamp}_di" bpmnElement="Participant_1_${timestamp}" isHorizontal="true">`);
   shapes.push(`        <dc:Bounds x="80" y="80" width="${diagramWidth}" height="300" />`);
   shapes.push(`        <bpmndi:BPMNLabel />`);
   shapes.push(`      </bpmndi:BPMNShape>`);
   
   // Start event
-  shapes.push(`      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">`);
+  shapes.push(`      <bpmndi:BPMNShape id="StartEvent_1_${timestamp}_di" bpmnElement="StartEvent_1_${timestamp}">`);
   shapes.push(`        <dc:Bounds x="130" y="200" width="36" height="36" />`);
   shapes.push(`        <bpmndi:BPMNLabel />`);
   shapes.push(`      </bpmndi:BPMNShape>`);
@@ -127,7 +127,7 @@ function generateVisualLayout(participantCount: number, taskCount: number, gatew
   // Tasks
   for (let i = 1; i <= taskCount; i++) {
     const x = 200 + ((i - 1) * 150);
-    shapes.push(`      <bpmndi:BPMNShape id="Task_${i}_di" bpmnElement="Task_${i}">`);
+    shapes.push(`      <bpmndi:BPMNShape id="Task_${i}_${timestamp}_di" bpmnElement="Task_${i}_${timestamp}">`);
     shapes.push(`        <dc:Bounds x="${x}" y="180" width="100" height="80" />`);
     shapes.push(`        <bpmndi:BPMNLabel />`);
     shapes.push(`      </bpmndi:BPMNShape>`);
@@ -135,13 +135,13 @@ function generateVisualLayout(participantCount: number, taskCount: number, gatew
   
   // End event
   const endX = 200 + (taskCount * 150) + 50;
-  shapes.push(`      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">`);
+  shapes.push(`      <bpmndi:BPMNShape id="EndEvent_1_${timestamp}_di" bpmnElement="EndEvent_1_${timestamp}">`);
   shapes.push(`        <dc:Bounds x="${endX}" y="200" width="36" height="36" />`);
   shapes.push(`        <bpmndi:BPMNLabel />`);
   shapes.push(`      </bpmndi:BPMNShape>`);
   
   // Edge from start to first task
-  edges.push(`      <bpmndi:BPMNEdge id="Flow_start_1_di" bpmnElement="Flow_start_1">`);
+  edges.push(`      <bpmndi:BPMNEdge id="Flow_start_1_${timestamp}_di" bpmnElement="Flow_start_1_${timestamp}">`);
   edges.push(`        <di:waypoint x="166" y="218" />`);
   edges.push(`        <di:waypoint x="200" y="220" />`);
   edges.push(`      </bpmndi:BPMNEdge>`);
@@ -150,7 +150,7 @@ function generateVisualLayout(participantCount: number, taskCount: number, gatew
   for (let i = 1; i < taskCount; i++) {
     const x1 = 300 + ((i - 1) * 150);
     const x2 = 200 + (i * 150);
-    edges.push(`      <bpmndi:BPMNEdge id="Flow_${i}_${i + 1}_di" bpmnElement="Flow_${i}_${i + 1}">`);
+    edges.push(`      <bpmndi:BPMNEdge id="Flow_${i}_${i + 1}_${timestamp}_di" bpmnElement="Flow_${i}_${i + 1}_${timestamp}">`);
     edges.push(`        <di:waypoint x="${x1}" y="220" />`);
     edges.push(`        <di:waypoint x="${x2}" y="220" />`);
     edges.push(`      </bpmndi:BPMNEdge>`);
@@ -158,7 +158,7 @@ function generateVisualLayout(participantCount: number, taskCount: number, gatew
   
   // Edge from last task to end
   const lastTaskX = 300 + ((taskCount - 1) * 150);
-  edges.push(`      <bpmndi:BPMNEdge id="Flow_${taskCount}_end_di" bpmnElement="Flow_${taskCount}_end">`);
+  edges.push(`      <bpmndi:BPMNEdge id="Flow_${taskCount}_end_${timestamp}_di" bpmnElement="Flow_${taskCount}_end_${timestamp}">`);
   edges.push(`        <di:waypoint x="${lastTaskX}" y="220" />`);
   edges.push(`        <di:waypoint x="${endX}" y="218" />`);
   edges.push(`      </bpmndi:BPMNEdge>`);
