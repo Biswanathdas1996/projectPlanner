@@ -77,71 +77,10 @@ export class MarketResearchAgent {
   }
 
   private async performWebSearch(projectDescription: string): Promise<string> {
-    // Create search queries for different aspects of market research
-    const searchQueries = [
-      `companies similar to "${projectDescription}" competitors market`,
-      `"${projectDescription}" market size industry analysis`,
-      `competitors "${projectDescription}" pricing business model`,
-      `startups "${projectDescription}" funding investment trends`
-    ];
-
-    let allResults = '';
-
-    for (const query of searchQueries) {
-      try {
-        // Use DuckDuckGo Instant Answer API (free, no API key required)
-        const encodedQuery = encodeURIComponent(query);
-        const response = await fetch(`https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`);
-
-        if (!response.ok) {
-          throw new Error(`Search API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        // Extract relevant information from DuckDuckGo response
-        let searchContent = '';
-        
-        if (data.Abstract) {
-          searchContent += `Abstract: ${data.Abstract}\n`;
-        }
-        
-        if (data.RelatedTopics && data.RelatedTopics.length > 0) {
-          searchContent += `Related Topics:\n`;
-          data.RelatedTopics.slice(0, 5).forEach((topic: any, index: number) => {
-            if (topic.Text) {
-              searchContent += `${index + 1}. ${topic.Text}\n`;
-            }
-          });
-        }
-
-        if (data.Results && data.Results.length > 0) {
-          searchContent += `Search Results:\n`;
-          data.Results.slice(0, 3).forEach((result: any, index: number) => {
-            if (result.Text) {
-              searchContent += `${index + 1}. ${result.Text}\n`;
-            }
-          });
-        }
-
-        if (searchContent.trim()) {
-          allResults += `\n\n=== ${query} ===\n${searchContent}`;
-        }
-
-        // Add delay between requests
-        await new Promise(resolve => setTimeout(resolve, 500));
-      } catch (error) {
-        console.warn(`Search query failed: ${query}`, error);
-        // Continue with other queries even if one fails
-      }
-    }
-
-    // If DuckDuckGo doesn't provide enough results, use AI to generate market insights
-    if (!allResults.trim()) {
-      allResults = await this.generateMarketInsightsFromDescription(projectDescription);
-    }
-
-    return allResults;
+    // Since web search APIs often have CORS restrictions in browsers,
+    // we'll use AI to generate comprehensive market research based on 
+    // knowledge of similar companies and market patterns
+    return await this.generateMarketInsightsFromDescription(projectDescription);
   }
 
   private async generateMarketInsightsFromDescription(projectDescription: string): Promise<string> {
@@ -151,21 +90,56 @@ export class MarketResearchAgent {
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
     const prompt = `
-Generate comprehensive market research insights for the following project idea:
+Act as a senior market research analyst and provide comprehensive competitive intelligence for this project:
 
-PROJECT: ${projectDescription}
+PROJECT DESCRIPTION: ${projectDescription}
 
-Provide detailed market analysis including:
-1. Similar existing companies and solutions in this space
-2. Market size estimates and growth trends
-3. Competitive landscape analysis
-4. Pricing models commonly used
-5. Target market segments
-6. Key market trends and opportunities
-7. Common challenges and barriers to entry
+Generate detailed market research with the following structure:
 
-Focus on realistic, industry-standard information based on similar successful companies and market patterns.
-Be specific about company names, pricing ranges, and market data where possible.
+=== MARKET OVERVIEW ===
+Provide a comprehensive overview of the market space, including total addressable market, current market conditions, and growth trajectory.
+
+=== DIRECT COMPETITORS ===
+List 3-5 real companies that offer similar solutions. For each competitor, provide:
+- Company name and website
+- Founded year and current stage (startup/established/enterprise)
+- Key features and value proposition
+- Pricing model and typical price ranges
+- Target market and customer base
+- Market position (leader/challenger/niche)
+- Strengths and competitive advantages
+- Weaknesses and market gaps
+- Recent funding or revenue information if available
+
+=== MARKET SIZE AND TRENDS ===
+- Total addressable market (TAM) size and projections
+- Annual growth rate and market drivers
+- Key industry trends affecting this space
+- Emerging technologies or shifts
+- Regional market variations
+
+=== COMPETITIVE LANDSCAPE ===
+- Market concentration (fragmented vs consolidated)
+- Competitive intensity level
+- Entry barriers and requirements
+- Typical customer acquisition strategies
+- Common business models in this space
+
+=== OPPORTUNITIES AND GAPS ===
+- Underserved market segments
+- Feature gaps in existing solutions
+- Pricing model innovations
+- Technology or approach opportunities
+- Geographic expansion opportunities
+
+=== CHALLENGES AND RISKS ===
+- Main barriers to market entry
+- Regulatory or compliance requirements
+- Technology or resource challenges
+- Customer acquisition difficulties
+- Competitive response risks
+
+Focus on providing specific, actionable intelligence based on real market knowledge. Include actual company names, realistic pricing data, and credible market size estimates.
 `;
 
     try {
