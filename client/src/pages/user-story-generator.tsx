@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { 
   FileText, 
   Download, 
@@ -19,7 +20,11 @@ import {
   BookOpen,
   Loader2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  EyeOff,
+  GitBranch,
+  Zap
 } from 'lucide-react';
 import { generateCustomSuggestions, generateFlowAnalysis } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
@@ -38,6 +43,8 @@ interface UserStory {
   epic: string;
   labels: string[];
   gherkinScenarios: GherkinScenario[];
+  stakeholder?: string;
+  flowType?: string;
 }
 
 interface GherkinScenario {
@@ -684,18 +691,58 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                     </Select>
                   </div>
 
-                  <Button 
-                    onClick={generateUserStoriesFromFlow}
-                    disabled={isGenerating || !selectedFlow}
-                    className="w-full"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Plus className="h-4 w-4 mr-2" />
-                    )}
-                    Generate User Stories
-                  </Button>
+                  <div className="flex gap-4">
+                    <Button 
+                      onClick={generateUserStoriesFromFlow}
+                      disabled={isGenerating || !selectedFlow}
+                      className="flex-1"
+                    >
+                      {isGenerating ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Plus className="h-4 w-4 mr-2" />
+                      )}
+                      Generate User Stories
+                    </Button>
+                    
+                    <Button 
+                      onClick={generateUserStoriesFromFlows}
+                      disabled={isGeneratingUserStories}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      {isGeneratingUserStories ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Zap className="h-4 w-4 mr-2" />
+                      )}
+                      Generate All Stories
+                    </Button>
+                  </div>
+
+                  {/* Progress tracking for comprehensive generation */}
+                  {isGeneratingUserStories && userStoryGenerationProgress.total > 0 && (
+                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Generating User Stories
+                        </span>
+                        <span className="text-sm text-blue-600 dark:text-blue-300">
+                          {userStoryGenerationProgress.current}/{userStoryGenerationProgress.total}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={(userStoryGenerationProgress.current / userStoryGenerationProgress.total) * 100}
+                        className="mb-2"
+                      />
+                      <div className="text-sm text-blue-700 dark:text-blue-300">
+                        {userStoryGenerationProgress.currentFlow && (
+                          <div>Processing: {userStoryGenerationProgress.currentFlow}</div>
+                        )}
+                        <div>{userStoryGenerationProgress.status}</div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </CardContent>
