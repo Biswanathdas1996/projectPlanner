@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { hasMarketResearchData } from '@/lib/storage-utils';
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
 import { Link, useLocation } from 'wouter';
@@ -1873,10 +1874,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <Link href="/market-research">
                     <Button
                       variant="outline"
-                      className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg"
+                      className={`${hasMarketResearchData() 
+                        ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
+                        : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
+                      } text-white border-0 shadow-lg relative`}
                     >
                       <TrendingUp className="h-4 w-4 mr-2" />
                       Market Research
+                      {hasMarketResearchData() && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+                      )}
                     </Button>
                   </Link>
                   
