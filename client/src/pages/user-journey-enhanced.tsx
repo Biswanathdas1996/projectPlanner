@@ -1206,9 +1206,9 @@ Data Objects: Request form, User profile`,
         
         // Try multiple patterns for process description
         const patterns = [
-          /✅ 1\. Process Name and Description[^✅]*?\n([^✅]+?)(?=\n\n✅|$)/s,
-          /✅ 1\. Process Name and Description\s*\n([^✅]+?)(?=\n✅|$)/s,
-          /Process Name and Description[^:]*:?\s*\n([^✅]+?)(?=\n✅|$)/s
+          /✅ 1\. Process Name and Description[\s\S]*?\n([\s\S]+?)(?=\n\n✅|$)/,
+          /✅ 1\. Process Name and Description\s*\n([\s\S]+?)(?=\n✅|$)/,
+          /Process Name and Description[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/
         ];
         
         for (const pattern of patterns) {
@@ -1236,9 +1236,9 @@ Data Objects: Request form, User profile`,
         console.log("🔍 Trying to extract trigger from description...");
         
         const triggerPatterns = [
-          /✅ 3\. Trigger \(Start Event\)\s*\n([^✅]+?)(?=\n\n?✅|$)/s,
-          /✅ 3\. Trigger[^✅]*?\n([^✅]+?)(?=\n\n?✅|$)/s,
-          /Trigger[^:]*:?\s*\n([^✅]+?)(?=\n✅|$)/s
+          /✅ 3\. Trigger \(Start Event\)\s*\n([\s\S]+?)(?=\n\n?✅|$)/,
+          /✅ 3\. Trigger[\s\S]*?\n([\s\S]+?)(?=\n\n?✅|$)/,
+          /Trigger[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/
         ];
         
         for (const pattern of triggerPatterns) {
@@ -1842,7 +1842,7 @@ Data Objects: Request form, User profile`,
   return (
     <div className="min-h-screen bg-gray-50">
       <NavigationBar title="Stakeholder Journey Builder" />
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="max-w-[1400px] mx-auto p-6">
         <WorkflowProgress />
 
         {/* Header */}
