@@ -443,15 +443,39 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                     >
                       <div className="flex items-start justify-between mb-3">
-                        <div>
-                          <h4 className="font-semibold text-gray-900">
-                            {competitor.name}
-                          </h4>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900">
+                              {competitor.name}
+                            </h4>
+                            {competitor.website && (
+                              <a
+                                href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                title={`Visit ${competitor.name} website`}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
                           <Badge variant="outline" className="mt-1">
                             {competitor.marketPosition}
                           </Badge>
+                          {competitor.website && (
+                            <div className="mt-2">
+                              <a
+                                href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 hover:underline break-all"
+                              >
+                                {competitor.website.replace(/^https?:\/\//, '')}
+                              </a>
+                            </div>
+                          )}
                         </div>
-                        <ExternalLink className="h-4 w-4 text-gray-400" />
                       </div>
 
                       <p className="text-sm text-gray-600 mb-3">
