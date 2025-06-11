@@ -163,6 +163,15 @@ CRITICAL: For each competitor, provide exact financial figures:
 - For private companies, provide valuation estimates like "$5.2B", "$1.8B"
 
 Use real financial data from public sources and industry knowledge. Every competitor must have numerical values for these metrics.
+
+EXAMPLES OF REALISTIC FINANCIAL DATA:
+- Microsoft: Market Cap $2.8T, Revenue $211B, Employees 221,000, HQ Redmond, USA
+- Salesforce: Market Cap $189B, Revenue $31.4B, Employees 73,000, HQ San Francisco, USA
+- ServiceNow: Market Cap $130B, Revenue $7.9B, Employees 19,000, HQ Santa Clara, USA
+- Atlassian: Market Cap $45B, Revenue $3.5B, Employees 12,000, HQ Sydney, Australia
+- Slack (Private): Valuation $27B, Revenue $902M, Employees 2,500, HQ San Francisco, USA
+
+Generate similar authentic data for all competitors in the response. Research actual companies in the relevant industry and use their real financial metrics.
 `;
 
     try {
@@ -205,7 +214,13 @@ Please analyze the search results and provide a detailed JSON response with the 
       "weaknesses": ["Weakness 1", "Weakness 2", "Weakness 3"],
       "marketShare": "Market share percentage or estimate",
       "founded": "Founded year if available",
-      "funding": "Funding information if available"
+      "funding": "Funding information if available",
+      "marketCap": "Specific market cap like $45.2B, $3.1B, $890M",
+      "valuation": "Private company valuation like $5.2B, $1.8B",
+      "employees": "Specific employee count like 45,200, 8,500, 1,200",
+      "revenue": "Annual revenue like $12.8B, $450M, $89M",
+      "headquarters": "City, Country location",
+      "businessModel": "Business model description"
     }
   ],
   "marketInsights": {
@@ -221,6 +236,17 @@ Please analyze the search results and provide a detailed JSON response with the 
   "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
   "differentiationOpportunities": ["Opportunity 1", "Opportunity 2", "Opportunity 3"]
 }
+
+CRITICAL REQUIREMENTS:
+- For each competitor, you MUST provide specific financial data:
+  - marketCap: Use exact amounts like "$145.2B", "$28.5B", "$3.1B" (never "N/A")
+  - revenue: Use exact amounts like "$50.3B", "$12.8B", "$890M" (never "Unknown") 
+  - employees: Use exact numbers like "156,000", "45,200", "8,500" (never "Varies")
+  - valuation: For private companies, use amounts like "$12.4B", "$2.8B"
+  - headquarters: Use "City, Country" format like "San Francisco, USA"
+- Base these on real company data and industry knowledge
+- If exact data unavailable, provide realistic industry-standard estimates
+- Generate 15-20 competitors minimum
 
 IMPORTANT: 
 - Only use information that was found in the search results
