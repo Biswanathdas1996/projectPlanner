@@ -32,6 +32,15 @@ export function generateStructuredBpmn(data: StructuredBpmnData): string {
     return `    <bpmn2:userTask id="${taskId}" name="${activity.replace(/"/g, '&quot;')}" />`;
   }).join('\n');
 
+  // Create conditional task elements for gateway branches
+  const conditionalElements = data.decisionPoints.map((decision, index) => {
+    const conditionalTaskId = `Task_Conditional_${index + 1}_${timestamp}`;
+    const conditionName = decision.includes('?') ? 
+      decision.split('?')[1].trim().substring(0, 30) : 
+      `Alternative ${index + 1}`;
+    return `    <bpmn2:userTask id="${conditionalTaskId}" name="${conditionName.replace(/"/g, '&quot;')}" />`;
+  }).join('\n');
+
   // Create gateway elements
   const gatewayElements = data.decisionPoints.map((decision, index) => {
     const gatewayId = `Gateway_${index + 1}_${timestamp}`;
@@ -39,29 +48,57 @@ export function generateStructuredBpmn(data: StructuredBpmnData): string {
     return `    <bpmn2:exclusiveGateway id="${gatewayId}" name="${shortName}" />`;
   }).join('\n');
 
-  // Create sequence flows
+  // Create sequence flows with proper decision gateway logic
   const flows: string[] = [];
   const startEventId = `StartEvent_1_${timestamp}`;
   const endEventId = `EndEvent_1_${timestamp}`;
 
-  // Connect start to first activity or gateway
-  if (data.activities.length > 0) {
+  if (data.activities.length === 0) {
+    flows.push(`    <bpmn2:sequenceFlow id="Flow_start_end_${timestamp}" sourceRef="${startEventId}" targetRef="${endEventId}" />`);
+  } else {
+    // Connect start to first activity
     flows.push(`    <bpmn2:sequenceFlow id="Flow_start_${timestamp}" sourceRef="${startEventId}" targetRef="Task_1_${timestamp}" />`);
     
-    // Connect activities sequentially
-    for (let i = 0; i < data.activities.length - 1; i++) {
-      flows.push(`    <bpmn2:sequenceFlow id="Flow_${i + 1}_${i + 2}_${timestamp}" sourceRef="Task_${i + 1}_${timestamp}" targetRef="Task_${i + 2}_${timestamp}" />`);
+    // Connect activities sequentially, inserting gateways where specified
+    let currentSourceId = `Task_1_${timestamp}`;
+    let activityIndex = 1;
+    let gatewayIndex = 0;
+
+    for (let i = 1; i < data.activities.length; i++) {
+      const taskId = `Task_${i + 1}_${timestamp}`;
+      
+      // Check if we should insert a gateway before this activity
+      if (gatewayIndex < data.decisionPoints.length && i === Math.floor(data.activities.length / 2)) {
+        const gatewayId = `Gateway_${gatewayIndex + 1}_${timestamp}`;
+        const conditionalTaskId = `Task_Conditional_${gatewayIndex + 1}_${timestamp}`;
+        
+        // Flow to gateway
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_${activityIndex}_gateway_${gatewayIndex + 1}_${timestamp}" sourceRef="${currentSourceId}" targetRef="${gatewayId}" />`);
+        
+        // Conditional flows from gateway
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway_${gatewayIndex + 1}_yes_${timestamp}" name="Yes" sourceRef="${gatewayId}" targetRef="${taskId}">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>`);
+        
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway_${gatewayIndex + 1}_no_${timestamp}" name="No" sourceRef="${gatewayId}" targetRef="${conditionalTaskId}">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>`);
+        
+        // Merge flows back
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_conditional_${gatewayIndex + 1}_merge_${timestamp}" sourceRef="${conditionalTaskId}" targetRef="${taskId}" />`);
+        
+        gatewayIndex++;
+        currentSourceId = taskId;
+      } else {
+        // Regular sequential flow
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_${activityIndex}_${i + 1}_${timestamp}" sourceRef="${currentSourceId}" targetRef="${taskId}" />`);
+        currentSourceId = taskId;
+      }
+      activityIndex = i + 1;
     }
     
-    // Connect last activity to end or gateway
-    if (data.decisionPoints.length > 0) {
-      flows.push(`    <bpmn2:sequenceFlow id="Flow_task_gateway_${timestamp}" sourceRef="Task_${data.activities.length}_${timestamp}" targetRef="Gateway_1_${timestamp}" />`);
-      flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway_end_${timestamp}" sourceRef="Gateway_1_${timestamp}" targetRef="${endEventId}" />`);
-    } else {
-      flows.push(`    <bpmn2:sequenceFlow id="Flow_task_end_${timestamp}" sourceRef="Task_${data.activities.length}_${timestamp}" targetRef="${endEventId}" />`);
-    }
-  } else {
-    flows.push(`    <bpmn2:sequenceFlow id="Flow_start_end_${timestamp}" sourceRef="${startEventId}" targetRef="${endEventId}" />`);
+    // Connect last activity to end
+    flows.push(`    <bpmn2:sequenceFlow id="Flow_${activityIndex}_end_${timestamp}" sourceRef="${currentSourceId}" targetRef="${endEventId}" />`);
   }
 
   // Create visual elements
@@ -83,57 +120,99 @@ export function generateStructuredBpmn(data: StructuredBpmnData): string {
   }).join('\n');
 
   const gatewayShapes = data.decisionPoints.map((decision, index) => {
-    const x = 250 + data.activities.length * 180 + index * 100;
+    const x = 250 + Math.floor(data.activities.length / 2) * 180 + index * 200;
     return `      <bpmndi:BPMNShape id="Gateway_${index + 1}_${timestamp}_di" bpmnElement="Gateway_${index + 1}_${timestamp}">
         <dc:Bounds x="${x}" y="205" width="50" height="50" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>`;
   }).join('\n');
 
-  // Create edge elements
+  const conditionalShapes = data.decisionPoints.map((decision, index) => {
+    const x = 250 + Math.floor(data.activities.length / 2) * 180 + index * 200;
+    const y = 320; // Below main flow
+    return `      <bpmndi:BPMNShape id="Task_Conditional_${index + 1}_${timestamp}_di" bpmnElement="Task_Conditional_${index + 1}_${timestamp}">
+        <dc:Bounds x="${x}" y="${y}" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>`;
+  }).join('\n');
+
+  // Create edge elements with proper gateway routing
   const flowEdges: string[] = [];
   
-  if (data.activities.length > 0) {
-    // Start to first task
-    flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${timestamp}_di" bpmnElement="Flow_start_${timestamp}">
-        <di:waypoint x="218" y="230" />
-        <di:waypoint x="250" y="230" />
-      </bpmndi:BPMNEdge>`);
-    
-    // Between activities
-    for (let i = 0; i < data.activities.length - 1; i++) {
-      const x1 = 350 + i * 180;
-      const x2 = 250 + (i + 1) * 180;
-      flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${i + 1}_${i + 2}_${timestamp}_di" bpmnElement="Flow_${i + 1}_${i + 2}_${timestamp}">
-        <di:waypoint x="${x1}" y="230" />
-        <di:waypoint x="${x2}" y="230" />
-      </bpmndi:BPMNEdge>`);
-    }
-    
-    // Last activity to end/gateway
-    const lastActivityX = 350 + (data.activities.length - 1) * 180;
-    const endX = 250 + data.activities.length * 180 + data.decisionPoints.length * 100 + 50;
-    
-    if (data.decisionPoints.length > 0) {
-      const gatewayX = 250 + data.activities.length * 180;
-      flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_task_gateway_${timestamp}_di" bpmnElement="Flow_task_gateway_${timestamp}">
-        <di:waypoint x="${lastActivityX}" y="230" />
-        <di:waypoint x="${gatewayX}" y="230" />
-      </bpmndi:BPMNEdge>`);
-      flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_gateway_end_${timestamp}_di" bpmnElement="Flow_gateway_end_${timestamp}">
-        <di:waypoint x="${gatewayX + 50}" y="230" />
-        <di:waypoint x="${endX}" y="230" />
-      </bpmndi:BPMNEdge>`);
-    } else {
-      flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_task_end_${timestamp}_di" bpmnElement="Flow_task_end_${timestamp}">
-        <di:waypoint x="${lastActivityX}" y="230" />
-        <di:waypoint x="${endX}" y="230" />
-      </bpmndi:BPMNEdge>`);
-    }
-  } else {
+  if (data.activities.length === 0) {
     flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_end_${timestamp}_di" bpmnElement="Flow_start_end_${timestamp}">
         <di:waypoint x="218" y="230" />
         <di:waypoint x="300" y="230" />
+      </bpmndi:BPMNEdge>`);
+  } else {
+    // Start to first activity
+    flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${timestamp}_di" bpmnElement="Flow_start_${timestamp}">
+        <di:waypoint x="236" y="230" />
+        <di:waypoint x="250" y="230" />
+      </bpmndi:BPMNEdge>`);
+    
+    // Regular flow between activities and gateways
+    let currentIndex = 1;
+    let gatewayIndex = 0;
+    
+    for (let i = 1; i < data.activities.length; i++) {
+      const currentX = 300 + (currentIndex - 1) * 180;
+      const nextX = 250 + i * 180;
+      
+      // Check if we insert a gateway at the midpoint
+      if (gatewayIndex < data.decisionPoints.length && i === Math.floor(data.activities.length / 2)) {
+        const gatewayX = 250 + Math.floor(data.activities.length / 2) * 180 + gatewayIndex * 200;
+        const conditionalX = gatewayX;
+        const conditionalY = 360; // Below main flow
+        
+        // Flow to gateway
+        flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${currentIndex}_gateway_${gatewayIndex + 1}_${timestamp}_di" bpmnElement="Flow_${currentIndex}_gateway_${gatewayIndex + 1}_${timestamp}">
+        <di:waypoint x="${currentX}" y="230" />
+        <di:waypoint x="${gatewayX + 25}" y="230" />
+      </bpmndi:BPMNEdge>`);
+        
+        // Yes path (straight through)
+        flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_gateway_${gatewayIndex + 1}_yes_${timestamp}_di" bpmnElement="Flow_gateway_${gatewayIndex + 1}_yes_${timestamp}">
+        <di:waypoint x="${gatewayX + 50}" y="230" />
+        <di:waypoint x="${nextX}" y="230" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="${gatewayX + 55}" y="210" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>`);
+        
+        // No path (down to conditional task)
+        flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_gateway_${gatewayIndex + 1}_no_${timestamp}_di" bpmnElement="Flow_gateway_${gatewayIndex + 1}_no_${timestamp}">
+        <di:waypoint x="${gatewayX + 25}" y="255" />
+        <di:waypoint x="${gatewayX + 25}" y="320" />
+        <di:waypoint x="${conditionalX}" y="360" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="${gatewayX + 30}" y="285" width="15" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>`);
+        
+        // Merge back from conditional task
+        flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_conditional_${gatewayIndex + 1}_merge_${timestamp}_di" bpmnElement="Flow_conditional_${gatewayIndex + 1}_merge_${timestamp}">
+        <di:waypoint x="${conditionalX + 100}" y="360" />
+        <di:waypoint x="${nextX + 50}" y="280" />
+        <di:waypoint x="${nextX + 50}" y="270" />
+      </bpmndi:BPMNEdge>`);
+        
+        gatewayIndex++;
+      } else {
+        // Regular sequential flow
+        flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${currentIndex}_${i + 1}_${timestamp}_di" bpmnElement="Flow_${currentIndex}_${i + 1}_${timestamp}">
+        <di:waypoint x="${currentX}" y="230" />
+        <di:waypoint x="${nextX}" y="230" />
+      </bpmndi:BPMNEdge>`);
+      }
+      currentIndex = i + 1;
+    }
+    
+    // Final activity to end
+    const lastActivityX = 300 + (data.activities.length - 1) * 180;
+    flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_${data.activities.length}_end_${timestamp}_di" bpmnElement="Flow_${data.activities.length}_end_${timestamp}">
+        <di:waypoint x="${lastActivityX}" y="230" />
+        <di:waypoint x="${endEventX}" y="230" />
       </bpmndi:BPMNEdge>`);
   }
 
@@ -154,6 +233,7 @@ ${participantElements}
     <bpmn2:documentation>${data.processDescription.replace(/"/g, '&quot;')}</bpmn2:documentation>
     <bpmn2:startEvent id="${startEventId}" name="${data.trigger.replace(/"/g, '&quot;')}" />
 ${activityElements}
+${conditionalElements}
 ${gatewayElements}
     <bpmn2:endEvent id="${endEventId}" name="${data.endEvent.replace(/"/g, '&quot;')}" />
 ${flows.join('\n')}
@@ -167,6 +247,7 @@ ${participantShape}
       </bpmndi:BPMNShape>
 ${activityShapes}
 ${gatewayShapes}
+${conditionalShapes}
       <bpmndi:BPMNShape id="${endEventId}_di" bpmnElement="${endEventId}">
         <dc:Bounds x="${endEventX}" y="212" width="36" height="36" />
         <bpmndi:BPMNLabel />
