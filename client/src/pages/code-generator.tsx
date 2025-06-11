@@ -242,17 +242,21 @@ export default function CodeGenerator() {
         </div>
 
         {/* Configuration */}
-        <Card className="mb-6">
-          <CardHeader>
+        <Card className="mb-6 bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+          <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
               Project Configuration
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="projectName">Project Name</Label>
+          <CardContent className="space-y-4 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Project Name */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="projectName" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                  Project Name
+                </Label>
                 <Input
                   id="projectName"
                   value={config.projectName}
@@ -260,100 +264,121 @@ export default function CodeGenerator() {
                     setConfig({ ...config, projectName: e.target.value })
                   }
                   placeholder="my-awesome-app"
+                  className="border-gray-300 focus:border-blue-500"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="framework">Frontend Framework</Label>
+              {/* Frontend Framework */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="framework" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <Monitor className="h-4 w-4 text-green-600" />
+                  Frontend Framework
+                </Label>
                 <Select
                   value={config.framework}
                   onValueChange={(value) =>
                     setConfig({ ...config, framework: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-green-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="react">React</SelectItem>
-                    <SelectItem value="nextjs">Next.js</SelectItem>
-                    <SelectItem value="vue">Vue.js</SelectItem>
+                    <SelectItem value="react">⚛️ React</SelectItem>
+                    <SelectItem value="nextjs">▲ Next.js</SelectItem>
+                    <SelectItem value="vue">🟢 Vue.js</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="backend">Backend</Label>
+              {/* Backend */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="backend" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <Server className="h-4 w-4 text-orange-600" />
+                  Backend
+                </Label>
                 <Select
                   value={config.backend}
                   onValueChange={(value) =>
                     setConfig({ ...config, backend: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-orange-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="node">Node.js/Express</SelectItem>
-                    <SelectItem value="python">Python/FastAPI</SelectItem>
-                    <SelectItem value="go">Go/Gin</SelectItem>
+                    <SelectItem value="node">🟢 Node.js/Express</SelectItem>
+                    <SelectItem value="python">🐍 Python/FastAPI</SelectItem>
+                    <SelectItem value="go">🔵 Go/Gin</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="database">Database</Label>
+              {/* Database */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="database" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <Database className="h-4 w-4 text-purple-600" />
+                  Database
+                </Label>
                 <Select
                   value={config.database}
                   onValueChange={(value) =>
                     setConfig({ ...config, database: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-purple-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="postgresql">PostgreSQL</SelectItem>
-                    <SelectItem value="mysql">MySQL</SelectItem>
-                    <SelectItem value="mongodb">MongoDB</SelectItem>
+                    <SelectItem value="postgresql">🐘 PostgreSQL</SelectItem>
+                    <SelectItem value="mysql">🐬 MySQL</SelectItem>
+                    <SelectItem value="mongodb">🍃 MongoDB</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="styling">Styling</Label>
+              {/* Styling */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="styling" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <Palette className="h-4 w-4 text-pink-600" />
+                  Styling
+                </Label>
                 <Select
                   value={config.styling}
                   onValueChange={(value) =>
                     setConfig({ ...config, styling: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-pink-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="tailwind">Tailwind CSS</SelectItem>
-                    <SelectItem value="styled">Styled Components</SelectItem>
-                    <SelectItem value="css">CSS Modules</SelectItem>
+                    <SelectItem value="tailwind">🌊 Tailwind CSS</SelectItem>
+                    <SelectItem value="styled">💅 Styled Components</SelectItem>
+                    <SelectItem value="css">📦 CSS Modules</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="deployment">Deployment</Label>
+              {/* Deployment */}
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
+                <Label htmlFor="deployment" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                  <Cloud className="h-4 w-4 text-indigo-600" />
+                  Deployment
+                </Label>
                 <Select
                   value={config.deployment}
                   onValueChange={(value) =>
                     setConfig({ ...config, deployment: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="border-gray-300 focus:border-indigo-500">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="vercel">Vercel</SelectItem>
-                    <SelectItem value="netlify">Netlify</SelectItem>
-                    <SelectItem value="aws">AWS</SelectItem>
+                    <SelectItem value="vercel">▲ Vercel</SelectItem>
+                    <SelectItem value="netlify">🌐 Netlify</SelectItem>
+                    <SelectItem value="aws">☁️ AWS</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
