@@ -1154,6 +1154,13 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
     cleanedText = cleanedText.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
+  // Fix namespace prefix issues - ensure consistent bpmn2: usage
+  cleanedText = cleanedText.replace(/xmlns:bpmn="/g, 'xmlns:bpmn2="');
+  cleanedText = cleanedText.replace(/<bpmn:/g, '<bpmn2:');
+  cleanedText = cleanedText.replace(/<\/bpmn:/g, '</bpmn2:');
+  cleanedText = cleanedText.replace(/bpmnElement="bpmn:/g, 'bpmnElement="bpmn2:');
+  cleanedText = cleanedText.replace(/processRef="bpmn:/g, 'processRef="bpmn2:');
+
   // Basic validation - ensure it starts with XML declaration
   if (
     !cleanedText.startsWith("<?xml") &&
@@ -1162,18 +1169,18 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
     throw new Error("Generated BPMN XML is not properly formatted");
   }
 
-  // Validate essential BPMN elements are present
+  // Validate essential swimlane BPMN elements are present
   const requiredElements = [
+    "bpmn2:collaboration",
+    "bpmn2:participant", 
     "bpmn2:process",
-    "bpmn2:startEvent",
-    "bpmn2:endEvent",
   ];
   const missingElements = requiredElements.filter(
     (element) => !cleanedText.includes(element),
   );
 
   if (missingElements.length > 0) {
-    console.warn("BPMN XML missing elements:", missingElements);
+    console.warn("BPMN XML missing swimlane elements:", missingElements);
   }
 
   return cleanedText;
