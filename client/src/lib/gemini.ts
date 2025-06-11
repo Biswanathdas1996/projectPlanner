@@ -1002,7 +1002,66 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 }
 
 export async function generateBpmnXml(flowContent: string): Promise<string> {
-  // Client-side BPMN generation - moved from server
+  // Check if we have structured 7-element format for enhanced AI generation
+  const isStructuredFormat = flowContent.includes('✅ 1. Process & Description') && 
+                             flowContent.includes('✅ 2. Participants') &&
+                             flowContent.includes('✅ 3. Trigger') &&
+                             flowContent.includes('✅ 4. Activities') &&
+                             flowContent.includes('✅ 5. Decision Points') &&
+                             flowContent.includes('✅ 6. End Event') &&
+                             flowContent.includes('✅ 7. Additional Elements');
+
+  if (isStructuredFormat) {
+    console.log("🎯 Using structured 7-element format for enhanced AI generation");
+    
+    // Parse structured content for better AI understanding
+    const sections = {
+      process: flowContent.match(/✅ 1\. Process & Description\n([^✅]*)/)?.[1]?.trim() || '',
+      participants: flowContent.match(/✅ 2\. Participants.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
+      trigger: flowContent.match(/✅ 3\. Trigger.*?\n([^✅]*)/)?.[1]?.trim() || '',
+      activities: flowContent.match(/✅ 4\. Activities.*?\n((?:\d+\. .*\n?)*)/)?.[1]?.trim() || '',
+      decisions: flowContent.match(/✅ 5\. Decision Points.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
+      endEvent: flowContent.match(/✅ 6\. End Event\n([^✅]*)/)?.[1]?.trim() || '',
+      additional: flowContent.match(/✅ 7\. Additional Elements.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || ''
+    };
+
+    // Enhanced prompt for structured data with specific BPMN requirements
+    const enhancedPrompt = `Generate a complete BPMN 2.0 XML diagram from this structured business process data:
+
+PROCESS: ${sections.process}
+
+PARTICIPANTS/SWIMLANES: 
+${sections.participants}
+
+START EVENT: ${sections.trigger}
+
+SEQUENTIAL ACTIVITIES/TASKS:
+${sections.activities}
+
+DECISION POINTS/GATEWAYS:
+${sections.decisions}
+
+END EVENT: ${sections.endEvent}
+
+ADDITIONAL ELEMENTS:
+${sections.additional}
+
+CRITICAL REQUIREMENTS for BPMN 2.0 XML:
+- Use EXACT namespace: xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+- Include all participants as swimlanes with collaboration
+- Create sequential flow between all activities in order
+- Add exclusive gateways for each decision point with conditional flows
+- Include proper visual layout with bpmndi:BPMNDiagram
+- Use userTask for activities, exclusiveGateway for decisions
+- Ensure all sourceRef/targetRef match element IDs exactly
+- Generate unique IDs for all elements
+- Include proper coordinates for visual positioning
+- Return ONLY valid XML, no explanations or markdown`;
+
+    flowContent = enhancedPrompt;
+  }
+
+  // Client-side BPMN generation with enhanced structured input
   return generateBpmnXmlClient(flowContent);
 }
 

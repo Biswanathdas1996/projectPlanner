@@ -1,8 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
-import { AlertCircle, FileX } from 'lucide-react';
-import BpmnJS from 'bpmn-js/lib/NavigatedViewer';
-import 'bpmn-js/dist/assets/diagram-js.css';
-import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css';
+import { useState, useRef, useEffect } from "react";
+import { AlertCircle, FileX } from "lucide-react";
+import BpmnJS from "bpmn-js/lib/NavigatedViewer";
+import "bpmn-js/dist/assets/diagram-js.css";
+import "bpmn-js/dist/assets/bpmn-font/css/bpmn.css";
 
 interface SimpleBpmnViewerProps {
   bpmnXml: string;
@@ -10,12 +10,16 @@ interface SimpleBpmnViewerProps {
   title: string;
 }
 
-export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpmnViewerProps) {
+export function SimpleBpmnViewer({
+  bpmnXml,
+  height = "300px",
+  title,
+}: SimpleBpmnViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<BpmnJS | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
+  console.log(bpmnXml);
   useEffect(() => {
     if (!containerRef.current || !bpmnXml) return;
 
@@ -32,7 +36,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         // Create new viewer instance
         const viewer = new BpmnJS({
           container: containerRef.current!,
-          width: '100%',
+          width: "100%",
           height: height,
         });
 
@@ -42,13 +46,15 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         await viewer.importXML(bpmnXml);
 
         // Fit viewport to show entire diagram
-        const canvas = viewer.get('canvas') as any;
-        canvas.zoom('fit-viewport');
+        const canvas = viewer.get("canvas") as any;
+        canvas.zoom("fit-viewport");
 
         setIsLoading(false);
       } catch (err) {
-        console.error('BPMN rendering error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to render BPMN diagram');
+        console.error("BPMN rendering error:", err);
+        setError(
+          err instanceof Error ? err.message : "Failed to render BPMN diagram",
+        );
         setIsLoading(false);
       }
     };
@@ -102,10 +108,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       </div>
 
       {/* BPMN Diagram Container */}
-      <div 
-        className="relative"
-        style={{ height }}
-      >
+      <div className="relative" style={{ height }}>
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-10">
             <div className="flex items-center gap-2 text-gray-600">
@@ -114,11 +117,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
             </div>
           </div>
         )}
-        <div 
-          ref={containerRef} 
-          style={{ height: '100%' }}
-          className="w-full"
-        />
+        <div ref={containerRef} style={{ height: "100%" }} className="w-full" />
       </div>
     </div>
   );
