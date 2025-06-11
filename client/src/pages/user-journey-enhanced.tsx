@@ -2349,7 +2349,7 @@ Data Objects: Request form, User profile`,
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                 {Object.entries(personaFlowTypes).map(
                   ([stakeholder, flowTypes], stakeholderIndex) => {
                     const colorVariants = [
