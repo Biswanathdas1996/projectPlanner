@@ -2805,39 +2805,6 @@ function getRandomSuggestion(): string {
   ];
   return suggestions[Math.floor(Math.random() * suggestions.length)];
 }
-                                              <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
-                                                ✅ 3. Trigger (Start Event)
-                                              </Badge>
-                                              <Button
-                                                onClick={() =>
-                                                  startEditingFlowDetails(
-                                                    flowKey,
-                                                  )
-                                                }
-                                                variant="ghost"
-                                                size="sm"
-                                                className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                              >
-                                                <Edit3 className="h-3 w-3" />
-                                              </Button>
-                                            </div>
-                                            <p className="text-xs text-gray-600 pl-2 border-l-2 border-green-200">
-                                              {details.trigger ||
-                                                (() => {
-                                                  const triggerSection =
-                                                    details.description.match(
-                                                      /✅ 3\. Trigger \(Start Event\)\n([^✅]*)/,
-                                                    );
-                                                  return triggerSection
-                                                    ? triggerSection[1].trim()
-                                                    : "Process initiates when conditions are met";
-                                                })()}
-                                            </p>
-                                          </div>
-
-                                          {/* Section 4: Activities - Editable */}
-                                          <div className="group">
-                                            <div className="flex items-center justify-between mb-1">
                                               <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
                                                 ✅ 4. Activities (Tasks)
                                               </Badge>
