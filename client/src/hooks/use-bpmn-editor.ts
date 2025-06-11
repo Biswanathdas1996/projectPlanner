@@ -77,25 +77,11 @@ export function useBpmnEditor() {
 
       modelerRef.current = modeler;
 
-      // Configure proper drag behavior for elements vs canvas
-      const canvas = modeler.get('canvas');
+      // Enable basic event tracking for modifications
       const eventBus = modeler.get('eventBus');
-      const dragging = modeler.get('dragging');
       
-      // Prevent canvas panning when starting element drag
-      eventBus.on('element.mousedown', (event: any) => {
-        if (event.element && event.element.type !== 'bpmn:Process') {
-          event.originalEvent.stopPropagation();
-        }
-      });
-      
-      // Ensure element move operations are handled correctly
-      eventBus.on('shape.move.start', (event: any) => {
-        console.log('Element drag started:', event.element.id);
-      });
-      
-      eventBus.on('shape.move.end', (event: any) => {
-        console.log('Element drag ended:', event.element.id);
+      // Track diagram changes for auto-save
+      eventBus.on('commandStack.changed', () => {
         setIsModified(true);
       });
 
