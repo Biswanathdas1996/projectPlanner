@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NavigationBar } from "@/components/navigation-bar";
+import { WorkflowProgress } from "@/components/workflow-progress";
 import {
   createAICodeGenerator,
   type CodeGenerationConfig,
@@ -185,6 +186,9 @@ export default function CodeGenerator() {
       <NavigationBar title="Code Generator" showBackButton={true} />
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
+        {/* Workflow Progress */}
+        <WorkflowProgress currentStep="code" completedSteps={['input', 'plan', 'diagram', 'stories']} />
+        
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">

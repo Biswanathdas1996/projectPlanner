@@ -202,7 +202,9 @@ Respond with valid JSON only.
     const text = response.text();
     
     try {
-      return JSON.parse(text);
+      // Clean markdown formatting from response
+      const cleanedText = this.extractJsonFromResponse(text);
+      return JSON.parse(cleanedText);
     } catch (error) {
       console.error("Failed to parse JSON response:", text);
       return {
@@ -395,6 +397,32 @@ Return only the markdown content.
         await new Promise(resolve => setTimeout(resolve, this.retryDelay));
       }
     }
+  }
+
+  private extractJsonFromResponse(response: string): string {
+    // Remove markdown code block formatting
+    let cleaned = response.trim();
+    
+    // Remove ```json and ``` wrappers
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.replace(/^```json\s*/, '');
+    }
+    if (cleaned.startsWith('```')) {
+      cleaned = cleaned.replace(/^```\s*/, '');
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.replace(/\s*```$/, '');
+    }
+    
+    // Find JSON object boundaries
+    const firstBrace = cleaned.indexOf('{');
+    const lastBrace = cleaned.lastIndexOf('}');
+    
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+    }
+    
+    return cleaned.trim();
   }
 
   private getTechStack(config: CodeGenerationConfig): string[] {
