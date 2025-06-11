@@ -33,7 +33,7 @@ export function useBpmnEditor() {
   const [isModified, setIsModified] = useState(false);
 
   // Enhanced notification system
-  const showNotification = useCallback((message: string, type: 'success' | 'error' | 'warning' | 'info' = 'info', duration = 4000) => {
+  const showNotification = useCallback((message: string, type: 'success' | 'error' | 'warning' = 'warning', duration = 4000) => {
     const notification: NotificationData = {
       id: generateId(),
       message,
