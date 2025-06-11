@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { STORAGE_KEYS, generateId } from '@/lib/bpmn-utils';
+
 interface ElementProperties {
   id: string;
   name: string;
@@ -25,7 +26,6 @@ declare global {
 export function useBpmnEditor() {
   const containerRef = useRef<HTMLDivElement>(null);
   const modelerRef = useRef<any>(null);
-  
   const [selectedElement, setSelectedElement] = useState<ElementProperties | null>(null);
   const [diagramXml, setDiagramXml] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
@@ -55,59 +55,48 @@ export function useBpmnEditor() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
-  // Initialize BPMN modeler with enhanced configuration
+  // Initialize BPMN modeler with proper drag configuration
   const initializeModeler = useCallback(async () => {
-    if (!containerRef.current || !window.BpmnJS) return;
+    if (!containerRef.current || !window.BpmnJS) {
+      return;
+    }
 
     try {
       setIsLoading(true);
       setStatus('Loading BPMN editor...');
 
-      // Create modeler with enhanced configuration for editing capabilities
+      // Create modeler with minimal configuration for maximum compatibility
       const modeler = new window.BpmnJS({
         container: containerRef.current,
-        keyboard: {
-          bindTo: document
-        },
-        additionalModules: [],
-        moddleExtensions: {},
-        height: '100%',
-        width: '100%'
+        width: '100%',
+        height: '100%'
       });
 
       modelerRef.current = modeler;
 
-      // Verify and configure editing capabilities
+      // Wait for modeler to be ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Configure modeler for editing after initialization
       try {
         const palette = modeler.get('palette');
-        const move = modeler.get('move');
-        const dragging = modeler.get('dragging');
-        const modeling = modeler.get('modeling');
+        const contextPad = modeler.get('contextPad');
+        const directEditing = modeler.get('directEditing');
         
-        console.log('🎯 BPMN Editor Services Check:', {
+        console.log('BPMN Services:', {
           palette: !!palette,
-          move: !!move,
-          dragging: !!dragging,
-          modeling: !!modeling,
-          paletteOpen: palette ? 'opening...' : 'unavailable'
+          contextPad: !!contextPad,
+          directEditing: !!directEditing
         });
-        
+
         if (palette) {
           palette.open();
         }
-        
-        // Basic drag service verification
-        if (dragging && move) {
-          console.log('✅ Drag services available - basic functionality enabled');
-        } else {
-          console.log('❌ Missing drag services');
-        }
-        
-      } catch (error) {
-        console.error('Error configuring editor services:', error);
+      } catch (serviceError) {
+        console.log('Service configuration:', serviceError);
       }
 
-      // Enhanced element selection handler
+      // Element selection handler
       modeler.on('element.click', (event: any) => {
         try {
           const element = event.element;
@@ -130,7 +119,7 @@ export function useBpmnEditor() {
         }
       });
 
-      // Enhanced change tracking with auto-save (single handler)
+      // Change tracking for auto-save
       modeler.on('commandStack.changed', async () => {
         setIsModified(true);
         setStatus('Modified');
@@ -207,84 +196,90 @@ export function useBpmnEditor() {
     await createNewDiagram(modeler);
   }, [showNotification]);
 
-  // Create new diagram with modern template
+  // Create a new BPMN diagram
   const createNewDiagram = useCallback(async (modeler?: any) => {
     const targetModeler = modeler || modelerRef.current;
     if (!targetModeler) return;
 
-    const newDiagramXml = `<?xml version="1.0" encoding="UTF-8"?>
-<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                   xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
-                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
-                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" 
-                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI" 
-                   id="Definitions_${generateId()}" 
+    const newDiagram = `<?xml version="1.0" encoding="UTF-8"?>
+<bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                   xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                   xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                   id="Definitions_1"
                    targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn2:process id="Process_${generateId()}" isExecutable="true">
-    <bpmn2:startEvent id="StartEvent_${generateId()}" name="Start">
-      <bpmn2:outgoing>Flow_${generateId()}</bpmn2:outgoing>
+  <bpmn2:process id="Process_1" isExecutable="false">
+    <bpmn2:startEvent id="StartEvent_1" name="Start">
+      <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:sequenceFlow id="Flow_${generateId()}" sourceRef="StartEvent_${generateId()}" targetRef="Activity_${generateId()}" />
-    <bpmn2:userTask id="Activity_${generateId()}" name="Sample Task">
-      <bpmn2:incoming>Flow_${generateId()}</bpmn2:incoming>
-      <bpmn2:outgoing>Flow_${generateId()}</bpmn2:outgoing>
-    </bpmn2:userTask>
-    <bpmn2:sequenceFlow id="Flow_${generateId()}" sourceRef="Activity_${generateId()}" targetRef="EndEvent_${generateId()}" />
-    <bpmn2:endEvent id="EndEvent_${generateId()}" name="End">
-      <bpmn2:incoming>Flow_${generateId()}</bpmn2:incoming>
+    <bpmn2:task id="Task_1" name="Task">
+      <bpmn2:incoming>SequenceFlow_1</bpmn2:incoming>
+      <bpmn2:outgoing>SequenceFlow_2</bpmn2:outgoing>
+    </bpmn2:task>
+    <bpmn2:endEvent id="EndEvent_1" name="End">
+      <bpmn2:incoming>SequenceFlow_2</bpmn2:incoming>
     </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="SequenceFlow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+    <bpmn2:sequenceFlow id="SequenceFlow_2" sourceRef="Task_1" targetRef="EndEvent_1" />
   </bpmn2:process>
-  <bpmndi:BPMNDiagram id="BPMNDiagram_${generateId()}">
-    <bpmndi:BPMNPlane id="BPMNPlane_${generateId()}" bpmnElement="Process_${generateId()}">
-      <bpmndi:BPMNShape id="StartEvent_${generateId()}_di" bpmnElement="StartEvent_${generateId()}">
-        <dc:Bounds x="179" y="99" width="36" height="36" />
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="158" y="145" width="24" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Activity_${generateId()}_di" bpmnElement="Activity_${generateId()}">
-        <dc:Bounds x="270" y="77" width="100" height="80" />
+      <bpmndi:BPMNShape id="Task_1_di" bpmnElement="Task_1">
+        <dc:Bounds x="240" y="80" width="100" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="EndEvent_${generateId()}_di" bpmnElement="EndEvent_${generateId()}">
-        <dc:Bounds x="432" y="99" width="36" height="36" />
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="392" y="102" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="400" y="145" width="20" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNEdge id="Flow_${generateId()}_di" bpmnElement="Flow_${generateId()}">
-        <di:waypoint x="215" y="117" />
-        <di:waypoint x="270" y="117" />
+      <bpmndi:BPMNEdge id="SequenceFlow_1_di" bpmnElement="SequenceFlow_1">
+        <di:waypoint x="188" y="120" />
+        <di:waypoint x="240" y="120" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_${generateId()}_di" bpmnElement="Flow_${generateId()}">
-        <di:waypoint x="370" y="117" />
-        <di:waypoint x="432" y="117" />
+      <bpmndi:BPMNEdge id="SequenceFlow_2_di" bpmnElement="SequenceFlow_2">
+        <di:waypoint x="340" y="120" />
+        <di:waypoint x="392" y="120" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
 </bpmn2:definitions>`;
 
     try {
-      await targetModeler.importXML(newDiagramXml);
-      setDiagramXml(newDiagramXml);
-      showNotification('New diagram created', 'success');
-      setStatus('Ready');
+      await targetModeler.importXML(newDiagram);
+      setDiagramXml(newDiagram);
+      setSelectedElement(null);
+      setIsModified(false);
+      setStatus('New diagram created');
+      showNotification('New diagram created', 'success', 2000);
     } catch (error) {
       console.error('Failed to create new diagram:', error);
       showNotification('Failed to create new diagram', 'error');
     }
   }, [showNotification]);
 
-  // Enhanced save functionality
+  // Save diagram
   const saveDiagram = useCallback(async () => {
     if (!modelerRef.current) return;
 
     try {
       const result = await modelerRef.current.saveXML({ format: true });
-      
-      setDiagramXml(result.xml);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, result.xml);
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, result.xml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
-      
+      setDiagramXml(result.xml);
       setIsModified(false);
       setStatus('Saved');
-      showNotification('Diagram saved successfully', 'success');
+      showNotification('Diagram saved successfully', 'success', 2000);
     } catch (error) {
-      console.error('Save failed:', error);
+      console.error('Failed to save diagram:', error);
       showNotification('Failed to save diagram', 'error');
     }
   }, [showNotification]);
@@ -296,17 +291,12 @@ export function useBpmnEditor() {
     try {
       await modelerRef.current.importXML(xml);
       setDiagramXml(xml);
-      showNotification('Diagram imported successfully', 'success');
+      setSelectedElement(null);
+      setIsModified(true);
       setStatus('Imported');
-      
-      // Auto-fit after import
-      setTimeout(() => {
-        if (modelerRef.current) {
-          modelerRef.current.get('canvas').zoom('fit-viewport');
-        }
-      }, 300);
+      showNotification('Diagram imported successfully', 'success', 2000);
     } catch (error) {
-      console.error('Import failed:', error);
+      console.error('Failed to import diagram:', error);
       showNotification('Failed to import diagram', 'error');
     }
   }, [showNotification]);
@@ -321,30 +311,28 @@ export function useBpmnEditor() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `bpmn-diagram-${new Date().toISOString().slice(0, 10)}.bpmn`;
+      link.download = `bpmn-diagram-${Date.now()}.bpmn`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      showNotification('Diagram exported successfully', 'success');
+      showNotification('Diagram exported successfully', 'success', 2000);
     } catch (error) {
-      console.error('Export failed:', error);
+      console.error('Failed to export diagram:', error);
       showNotification('Failed to export diagram', 'error');
     }
   }, [showNotification]);
 
-  // Zoom controls
+  // Zoom functions
   const zoomIn = useCallback(() => {
     if (modelerRef.current) {
-      const zoomScroll = modelerRef.current.get('zoomScroll');
-      zoomScroll.zoom(1, { x: 400, y: 300 });
+      modelerRef.current.get('zoomScroll').stepZoom(1);
     }
   }, []);
 
   const zoomOut = useCallback(() => {
     if (modelerRef.current) {
-      const zoomScroll = modelerRef.current.get('zoomScroll');
-      zoomScroll.zoom(-1, { x: 400, y: 300 });
+      modelerRef.current.get('zoomScroll').stepZoom(-1);
     }
   }, []);
 
@@ -354,43 +342,40 @@ export function useBpmnEditor() {
     }
   }, []);
 
-  // Element management
-  const updateElementProperties = useCallback(async (properties: Partial<ElementProperties>) => {
+  // Update element properties
+  const updateElementProperties = useCallback((properties: Partial<ElementProperties>) => {
     if (!modelerRef.current || !selectedElement) return;
 
     try {
-      const elementRegistry = modelerRef.current.get('elementRegistry');
       const modeling = modelerRef.current.get('modeling');
+      const elementRegistry = modelerRef.current.get('elementRegistry');
       const element = elementRegistry.get(selectedElement.id);
-      
-      if (element) {
-        const updates: any = {};
+
+      if (element && modeling) {
         if (properties.name !== undefined) {
-          updates.name = properties.name;
+          modeling.updateProperties(element, { name: properties.name });
         }
-        
-        modeling.updateProperties(element, updates);
+        if (properties.documentation !== undefined) {
+          modeling.updateProperties(element, { 
+            documentation: [{ text: properties.documentation }] 
+          });
+        }
+
+        // Update local state
         setSelectedElement(prev => prev ? { ...prev, ...properties } : null);
-        showNotification('Element updated successfully', 'success', 2000);
+        setIsModified(true);
       }
     } catch (error) {
-      console.error('Failed to update element:', error);
-      showNotification('Failed to update element', 'error');
+      console.error('Failed to update element properties:', error);
+      showNotification('Failed to update element properties', 'error');
     }
   }, [selectedElement, showNotification]);
 
-  // Initialize on mount
+  // Initialize modeler when container is ready
   useEffect(() => {
-    const timer = setTimeout(() => {
+    if (containerRef.current && window.BpmnJS) {
       initializeModeler();
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if ((window as any).autoSaveTimeout) {
-        clearTimeout((window as any).autoSaveTimeout);
-      }
-    };
+    }
   }, [initializeModeler]);
 
   return {
@@ -403,13 +388,13 @@ export function useBpmnEditor() {
     status,
     showNotification,
     removeNotification,
-    createNewDiagram: () => createNewDiagram(),
+    createNewDiagram,
     saveDiagram,
     importDiagram,
     exportDiagram,
     zoomIn,
     zoomOut,
     zoomToFit,
-    updateElementProperties
+    updateElementProperties,
   };
 }
