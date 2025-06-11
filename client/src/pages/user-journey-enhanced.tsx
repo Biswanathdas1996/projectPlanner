@@ -36,7 +36,6 @@ import {
   Shield,
   Activity,
   Plus,
-  Trash2,
   BookOpen,
   Edit3,
   X,
@@ -2488,7 +2487,6 @@ Data Objects: Request form, User profile`,
                             Add
                           </Button>
                         </div>
-
                         {/* Flow Types */}
                         <div className="space-y-2">
                           {flowTypes.map((flowType, flowIndex) => {
@@ -2507,7 +2505,7 @@ Data Objects: Request form, User profile`,
                               >
                                 {/* Flow Header - Compact */}
                                 <div className="flex items-center justify-between mb-2">
-                                  <h4 className="text-xs font-medium text-gray-800 flex-1 mr-2">
+                                  <h4 className="text-gray-800 flex-1 mr-2 text-[16px] font-bold">
                                     {flowType}
                                   </h4>
                                   <div className="flex items-center gap-1">
@@ -2559,27 +2557,17 @@ Data Objects: Request form, User profile`,
                                           <Edit3 className="h-2.5 w-2.5 mr-1" />
                                           Editor
                                         </Button>
-                                        <Button
-                                          onClick={() => removeFlow(stakeholder, flowType)}
-                                          variant="outline"
-                                          size="sm"
-                                          className="text-xs px-2 py-0.5 h-5 border-red-300 hover:bg-red-50 text-red-600"
-                                        >
-                                          <Trash2 className="h-2.5 w-2.5 mr-1" />
-                                          Delete
-                                        </Button>
                                       </>
                                     )}
                                   </div>
                                 </div>
-
                                 {/* Flow Details */}
                                 {details && (
                                   <div className="space-y-2 mb-2">
                                     {editingFlowDetails === flowKey &&
                                     editedFlowDetails ? (
                                       /* Edit Mode - Compact */
-                                      <div className="space-y-2 p-2 bg-blue-50/50 rounded border border-blue-200">
+                                      (<div className="space-y-2 p-2 bg-blue-50/50 rounded border border-blue-200">
                                         <div className="flex items-center justify-between">
                                           <h5 className="text-xs font-medium text-blue-800">
                                             Edit Details
@@ -2603,7 +2591,6 @@ Data Objects: Request form, User profile`,
                                             </Button>
                                           </div>
                                         </div>
-
                                         {/* Compact Edit Fields */}
                                         <div className="grid grid-cols-2 gap-2">
                                           <div>
@@ -2627,7 +2614,6 @@ Data Objects: Request form, User profile`,
                                             />
                                           </div>
                                         </div>
-
                                         {/* Participants - Compact */}
                                         <div>
                                           <div className="flex items-center justify-between mb-0.5">
@@ -2661,7 +2647,6 @@ Data Objects: Request form, User profile`,
                                             ))}
                                           </div>
                                         </div>
-
                                         {/* Activities - Compact */}
                                         <div>
                                           <div className="flex items-center justify-between mb-0.5">
@@ -2695,7 +2680,6 @@ Data Objects: Request form, User profile`,
                                             ))}
                                           </div>
                                         </div>
-
                                         {/* Edit Additional Elements */}
                                         <div>
                                           <div className="flex items-center justify-between mb-1">
@@ -2752,10 +2736,10 @@ Data Objects: Request form, User profile`,
                                             )}
                                           </div>
                                         </div>
-                                      </div>
+                                      </div>)
                                     ) : (
                                       /* Display Mode */
-                                      <>
+                                      (<>
                                         {/* BPMN Flow Analysis - 7 Section Structure */}
                                         <div className="space-y-3">
                                           {/* Section 1: Process Description */}
@@ -3237,11 +3221,10 @@ Data Objects: Request form, User profile`,
                                             </div>
                                           </div>
                                         </div>
-                                      </>
+                                      </>)
                                     )}
                                   </div>
                                 )}
-
                                 {/* BPMN Script Display */}
                                 {existingFlow?.bpmnXml && (
                                   <div className="space-y-3">
