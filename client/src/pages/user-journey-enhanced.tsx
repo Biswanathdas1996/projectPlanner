@@ -3331,15 +3331,17 @@ Data Objects: Request form, User profile`,
           </Card>
         )}
 
-        {/* Navigation Button at Bottom */}
-        <div className="mt-8 flex justify-center">
-          <Link href="/user-stories">
-            <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 text-lg">
-              <BookOpen className="h-5 w-5 mr-3" />
-              Continue to User Stories
-            </Button>
-          </Link>
-        </div>
+        {/* Navigation Button at Bottom - Only show after flow details are generated */}
+        {Object.values(flowDetails).length > 0 && (
+          <div className="mt-8 flex justify-center">
+            <Link href="/user-stories">
+              <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 text-lg">
+                <BookOpen className="h-5 w-5 mr-3" />
+                Continue to User Stories
+              </Button>
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );
