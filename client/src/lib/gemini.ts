@@ -125,7 +125,7 @@ export async function generateFlowAnalysis(prompt: string): Promise<string> {
     return text;
   } catch (error) {
     console.error("❌ Gemini API Error:", error);
-    throw new Error(`Gemini API failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`Gemini API failed: ${error.message}`);
   }
 }
 
