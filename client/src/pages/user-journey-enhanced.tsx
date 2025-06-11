@@ -1191,11 +1191,40 @@ Data Objects: Request form, User profile`,
     const details = flowDetails[flowKey];
     if (details) {
       setEditingFlowDetails(flowKey);
+      
+      // Extract processDescription and trigger from description if not directly available
+      let processDescription = details.processDescription || "";
+      let trigger = details.trigger || "";
+      
+      if (!processDescription && details.description) {
+        const processMatch = details.description.match(/✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/);
+        if (processMatch) {
+          processDescription = processMatch[1].trim();
+        } else {
+          // Fallback: use the first part of description
+          const firstSection = details.description.split('\n\n✅ 2.')[0];
+          processDescription = firstSection.replace(/✅ 1\. Process Name and Description\s*\n?/, '').trim();
+        }
+      }
+      
+      if (!trigger && details.description) {
+        const triggerMatch = details.description.match(/✅ 3\. Trigger \(Start Event\)\s*\n([^✅]*)/);
+        if (triggerMatch) {
+          trigger = triggerMatch[1].trim();
+        } else {
+          // Try alternative trigger patterns
+          const altTriggerMatch = details.description.match(/✅ 3\. Trigger[^✅]*\n([^✅]*)/);
+          if (altTriggerMatch) {
+            trigger = altTriggerMatch[1].trim();
+          }
+        }
+      }
+      
       setEditedFlowDetails({
         description: details.description,
-        processDescription: details.processDescription || "",
+        processDescription: processDescription,
         participants: [...(details.participants || [])],
-        trigger: details.trigger || "",
+        trigger: trigger,
         activities: [...(details.activities || [])],
         decisionPoints: [...(details.decisionPoints || [])],
         endEvent: details.endEvent || "",
