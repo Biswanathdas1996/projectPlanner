@@ -28,13 +28,15 @@ import {
   ExternalLink,
   Loader2,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
+  MapPin,
   CheckCircle,
   ArrowLeft,
   Lightbulb,
   BarChart3,
   Target,
   Zap,
-  Building,
   Star,
   Eye,
   Download,
@@ -62,6 +64,10 @@ export default function MarketResearch() {
   const [currentStep, setCurrentStep] = useState<
     "input" | "research" | "results"
   >("input");
+  
+  // Pagination state for competitor analysis
+  const [currentPage, setCurrentPage] = useState(1);
+  const competitorsPerPage = 6;
 
   // Load project input and existing research from localStorage
   useEffect(() => {

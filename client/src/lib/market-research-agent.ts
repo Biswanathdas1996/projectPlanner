@@ -11,6 +11,12 @@ interface CompetitorAnalysis {
   marketShare: string;
   founded: string;
   funding: string;
+  marketCap: string;
+  valuation: string;
+  employees: string;
+  revenue: string;
+  headquarters: string;
+  businessModel: string;
 }
 
 interface MarketInsight {
@@ -101,17 +107,20 @@ Generate detailed market research with the following structure:
 === MARKET OVERVIEW ===
 Provide a comprehensive overview of the market space, including total addressable market, current market conditions, and growth trajectory.
 
-=== DIRECT COMPETITORS ===
-List 3-5 real companies that offer similar solutions. For each competitor, provide:
-- Company name and website
-- Founded year and current stage (startup/established/enterprise)
+=== COMPREHENSIVE COMPETITOR ANALYSIS ===
+List 15-20 real companies that offer similar or adjacent solutions. For each competitor, provide:
+- Company name and website URL
+- Founded year and headquarters location
+- Business model and revenue streams
+- Market capitalization or valuation (in millions/billions USD)
+- Annual revenue and employee count
 - Key features and value proposition
 - Pricing model and typical price ranges
 - Target market and customer base
-- Market position (leader/challenger/niche)
+- Market position (leader/challenger/niche/startup)
 - Strengths and competitive advantages
 - Weaknesses and market gaps
-- Recent funding or revenue information if available
+- Recent funding rounds or financial milestones
 
 === MARKET SIZE AND TRENDS ===
 - Total addressable market (TAM) size and projections
