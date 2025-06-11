@@ -1,46 +1,36 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { BpmnCanvas } from '@/components/bpmn-canvas';
-import { ElementSidebar } from '@/components/element-sidebar';
-import { PropertiesPanel } from '@/components/properties-panel';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { NotificationSystem } from '@/components/notification-system';
-import { ConfirmationModal } from '@/components/confirmation-modal';
-import { HelpPanel } from '@/components/help-panel';
-import { ContextualToolbar } from '@/components/contextual-toolbar';
-import { useBpmn } from '@/hooks/use-bpmn';
-import { validateBpmnFile } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
+import { useBpmnEditor } from '@/hooks/use-bpmn-editor';
 import { Link } from 'wouter';
 import {
-  Plus,
   Save,
-  FolderOpen,
-  Upload,
   Download,
-  SlidersHorizontal,
+  Upload,
   ZoomIn,
   ZoomOut,
   Maximize2,
-  Workflow,
-  Sidebar,
-  ArrowRightLeft,
-  HelpCircle,
-  Sparkles,
+  RotateCcw,
+  FileText,
+  Settings,
+  Eye,
+  EyeOff,
   ArrowLeft,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
 } from 'lucide-react';
 
 export default function BpmnEditor() {
-  const [panelVisible, setPanelVisible] = useState(true);
-  const [sidebarVisible, setSidebarVisible] = useState(true);
-  const [helpVisible, setHelpVisible] = useState(false);
-  const [toolbarPosition, setToolbarPosition] = useState({ x: 0, y: 0 });
-  const [confirmationModal, setConfirmationModal] = useState({
-    open: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-  });
+  const [propertiesVisible, setPropertiesVisible] = useState(true);
+  const [xmlViewVisible, setXmlViewVisible] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -48,373 +38,294 @@ export default function BpmnEditor() {
     selectedElement,
     diagramXml,
     isLoading,
+    isModified,
     notifications,
     status,
     showNotification,
     removeNotification,
-    saveToStorage,
-    loadFromStorage,
-    createNew,
-    exportDiagram,
+    createNewDiagram,
+    saveDiagram,
     importDiagram,
-    importDiagramFromXml,
+    exportDiagram,
     zoomIn,
     zoomOut,
-    zoomFit,
+    zoomToFit,
     updateElementProperties,
-    copyXmlToClipboard,
-    handleElementSelect,
-    connectElements,
-    createConnection,
-    createElement,
-    deleteSelectedElement,
-    copySelectedElement,
-    activateConnectionMode,
-  } = useBpmn();
+  } = useBpmnEditor();
 
-  // Track click position for contextual toolbar
-  useEffect(() => {
-    const handleCanvasClick = (event: MouseEvent) => {
-      if (selectedElement) {
-        setToolbarPosition({
-          x: event.clientX,
-          y: event.clientY
-        });
-      }
-    };
-
-    const canvasElement = containerRef.current;
-    if (canvasElement) {
-      canvasElement.addEventListener('click', handleCanvasClick);
-      return () => canvasElement.removeEventListener('click', handleCanvasClick);
-    }
-  }, [selectedElement, containerRef]);
-
-  const handleCreateNew = () => {
-    setConfirmationModal({
-      open: true,
-      title: 'Create New Diagram',
-      message: 'Are you sure you want to create a new diagram? Unsaved changes will be lost.',
-      onConfirm: () => {
-        createNew();
-        setConfirmationModal(prev => ({ ...prev, open: false }));
-      },
-    });
-  };
-
-  const handleImport = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle file import
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    const isValid = await validateBpmnFile(file);
-    if (!isValid) {
-      showNotification('Invalid file format. Please select a valid BPMN or XML file.', 'error');
-      return;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const xml = e.target?.result as string;
+        if (xml) {
+          importDiagram(xml);
+        }
+      };
+      reader.readAsText(file);
     }
+  };
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (content) {
-        importDiagram(content);
-      }
+  // Status indicator component
+  const StatusIndicator = () => {
+    const getStatusColor = () => {
+      if (isLoading) return 'bg-blue-500';
+      if (isModified) return 'bg-orange-500';
+      if (status === 'Saved' || status === 'Auto-saved') return 'bg-green-500';
+      if (status === 'Error') return 'bg-red-500';
+      return 'bg-gray-500';
     };
-    reader.readAsText(file);
 
-    // Reset file input
-    event.target.value = '';
-  };
+    const getStatusIcon = () => {
+      if (isLoading) return <Loader2 className="h-3 w-3 animate-spin" />;
+      if (isModified) return <AlertCircle className="h-3 w-3" />;
+      if (status === 'Saved' || status === 'Auto-saved') return <CheckCircle className="h-3 w-3" />;
+      return null;
+    };
 
-  const togglePanel = () => {
-    setPanelVisible(!panelVisible);
-  };
-
-  const toggleSidebar = () => {
-    setSidebarVisible(!sidebarVisible);
-  };
-
-  const toggleHelp = () => {
-    setHelpVisible(!helpVisible);
-  };
-
-  // Keyboard shortcuts
-  const handleKeyDown = (event: React.KeyboardEvent) => {
-    if (event.ctrlKey || event.metaKey) {
-      switch (event.key) {
-        case 's':
-          event.preventDefault();
-          saveToStorage();
-          break;
-        case 'n':
-          event.preventDefault();
-          handleCreateNew();
-          break;
-        case 'o':
-          event.preventDefault();
-          handleImport();
-          break;
-        case 'l':
-          event.preventDefault();
-          connectElements();
-          break;
-      }
-    }
+    return (
+      <div className="flex items-center gap-2">
+        <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
+        {getStatusIcon()}
+        <span className="text-xs text-gray-600">{status}</span>
+      </div>
+    );
   };
 
   return (
-    <div className="h-screen bg-gray-50 font-roboto" onKeyDown={handleKeyDown} tabIndex={0}>
-      <NavigationBar title="BPMN Editor" showBackButton={false} />
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200 h-12 flex items-center justify-between px-6 relative z-50">
-        <div className="flex items-center space-x-6">
+    <div className="h-screen flex flex-col bg-gray-50">
+      {/* Navigation */}
+      <NavigationBar 
+        title="BPMN Editor" 
+        showBackButton={true}
+      />
+
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Left Toolbar */}
+        <div className="w-16 bg-white border-r border-gray-200 flex flex-col items-center py-4 gap-4">
+          <Button
+            onClick={createNewDiagram}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="New Diagram"
+          >
+            <RotateCcw className="h-4 w-4" />
+          </Button>
           
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Workflow className="text-white h-4 w-4" />
+          <Button
+            onClick={saveDiagram}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Save"
+          >
+            <Save className="h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Import"
+          >
+            <Upload className="h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={exportDiagram}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Export"
+          >
+            <Download className="h-4 w-4" />
+          </Button>
+
+          <Separator className="w-8" />
+
+          <Button
+            onClick={zoomIn}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Zoom In"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={zoomOut}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Zoom Out"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={zoomToFit}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Fit to Screen"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
+
+          <Separator className="w-8" />
+
+          <Button
+            onClick={() => setPropertiesVisible(!propertiesVisible)}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Toggle Properties"
+          >
+            <Settings className="h-4 w-4" />
+          </Button>
+
+          <Button
+            onClick={() => setXmlViewVisible(!xmlViewVisible)}
+            variant="ghost"
+            size="sm"
+            className="w-10 h-10 p-0"
+            title="Toggle XML View"
+          >
+            {xmlViewVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
+        </div>
+
+        {/* Canvas Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Top Status Bar */}
+          <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+            <StatusIndicator />
+            <div className="flex items-center gap-4">
+              {selectedElement && (
+                <Badge variant="outline" className="text-xs">
+                  {selectedElement.name} ({selectedElement.type})
+                </Badge>
+              )}
             </div>
-            <h1 className="text-xl font-medium text-gray-900">BPMN Designer</h1>
           </div>
 
-          <div className="flex items-center space-x-2">
-            <Button onClick={handleCreateNew} className="flex items-center space-x-2 shadow-sm">
-              <Plus className="h-4 w-4" />
-              <span className="font-medium">New</span>
-            </Button>
-
-            <Button 
-              onClick={saveToStorage} 
-              className="flex items-center space-x-2 bg-green-600 hover:bg-green-700 shadow-sm"
-            >
-              <Save className="h-4 w-4" />
-              <span className="font-medium">Save</span>
-            </Button>
-
-            <Button 
-              onClick={loadFromStorage} 
-              variant="outline"
-              className="flex items-center space-x-2"
-            >
-              <FolderOpen className="h-4 w-4" />
-              <span className="font-medium">Load</span>
-            </Button>
-
-            <Button 
-              onClick={connectElements} 
-              variant="outline"
-              className="flex items-center space-x-2 border-blue-200 text-blue-700 hover:bg-blue-50"
-            >
-              <ArrowRightLeft className="h-4 w-4" />
-              <span className="font-medium">Connect</span>
-            </Button>
-
-            <Link href="/">
-              <Button 
-                variant="outline"
-                className="flex items-center space-x-2 border-purple-200 text-purple-700 hover:bg-purple-50"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span className="font-medium">AI Planner</span>
-              </Button>
-            </Link>
+          {/* Canvas */}
+          <div className="flex-1 relative">
+            {isLoading && (
+              <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-10">
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-sm text-gray-600">Loading BPMN Editor...</span>
+                </div>
+              </div>
+            )}
+            
+            <div 
+              ref={containerRef}
+              className="w-full h-full bg-white"
+              style={{ minHeight: '400px' }}
+            />
           </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
-            <Button 
-              onClick={handleImport} 
-              variant="ghost"
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-            >
-              <Upload className="h-4 w-4" />
-              <span className="text-sm font-medium">Import</span>
-            </Button>
+        {/* Right Panels */}
+        <div className="flex">
+          {/* Properties Panel */}
+          {propertiesVisible && (
+            <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="font-semibold text-sm">Properties</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                {selectedElement ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="element-name" className="text-xs">Name</Label>
+                      <Input
+                        id="element-name"
+                        value={selectedElement.name}
+                        onChange={(e) => updateElementProperties({ name: e.target.value })}
+                        className="mt-1"
+                        placeholder="Element name"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs">Type</Label>
+                      <div className="mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          {selectedElement.type}
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-xs">ID</Label>
+                      <div className="mt-1">
+                        <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                          {selectedElement.id}
+                        </code>
+                      </div>
+                    </div>
 
-            <Button 
-              onClick={exportDiagram} 
-              variant="ghost"
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
-            >
-              <Download className="h-4 w-4" />
-              <span className="text-sm font-medium">Export</span>
-            </Button>
+                    {selectedElement.documentation && (
+                      <div>
+                        <Label htmlFor="element-docs" className="text-xs">Documentation</Label>
+                        <Textarea
+                          id="element-docs"
+                          value={selectedElement.documentation}
+                          onChange={(e) => updateElementProperties({ documentation: e.target.value })}
+                          className="mt-1"
+                          rows={3}
+                          placeholder="Element documentation"
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 text-sm py-8">
+                    Select an element to edit its properties
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-            <div className="w-px h-6 bg-gray-300" />
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  onClick={toggleSidebar} 
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                >
-                  <Sidebar className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Toggle Element Sidebar</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  onClick={togglePanel} 
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Toggle Properties Panel</p>
-              </TooltipContent>
-            </Tooltip>
-
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  onClick={toggleHelp} 
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 text-gray-600 hover:text-gray-900"
-                >
-                  <HelpCircle className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Show Help & Shortcuts</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-gray-600 font-medium">{status}</span>
-          </div>
+          {/* XML View Panel */}
+          {xmlViewVisible && (
+            <div className="w-96 bg-white border-l border-gray-200 flex flex-col">
+              <div className="p-4 border-b border-gray-200">
+                <h3 className="font-semibold text-sm">BPMN XML</h3>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4">
+                <pre className="text-xs bg-gray-50 p-3 rounded overflow-x-auto">
+                  <code>{diagramXml}</code>
+                </pre>
+              </div>
+            </div>
+          )}
         </div>
-      </header>
-
-      {/* Main Workspace */}
-      <div className="flex h-screen pt-16">
-        {/* Element Sidebar */}
-        <ElementSidebar 
-          visible={sidebarVisible} 
-          onElementSelect={handleElementSelect}
-        />
-        
-        <BpmnCanvas ref={containerRef} isLoading={isLoading} />
-
-        {/* Canvas Controls */}
-        <div className="absolute bottom-6 right-6 flex flex-col space-y-2 z-40">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                onClick={zoomIn}
-                size="sm"
-                className="w-12 h-12 bg-white shadow-lg rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                variant="outline"
-              >
-                <ZoomIn className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Zoom In</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                onClick={zoomOut}
-                size="sm"
-                className="w-12 h-12 bg-white shadow-lg rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                variant="outline"
-              >
-                <ZoomOut className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Zoom Out</p>
-            </TooltipContent>
-          </Tooltip>
-
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                onClick={zoomFit}
-                size="sm"
-                className="w-12 h-12 bg-white shadow-lg rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
-                variant="outline"
-              >
-                <Maximize2 className="h-4 w-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Fit to Screen</p>
-            </TooltipContent>
-          </Tooltip>
-        </div>
-
-        {/* Properties Panel */}
-        <PropertiesPanel
-          visible={panelVisible}
-          selectedElement={selectedElement}
-          diagramXml={diagramXml}
-          onClose={togglePanel}
-          onUpdateElement={updateElementProperties}
-          onCopyXml={copyXmlToClipboard}
-          onDiagramUpdate={importDiagramFromXml}
-        />
       </div>
-
-      {/* Notification System */}
-      <NotificationSystem
-        notifications={notifications}
-        onRemove={removeNotification}
-      />
-
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        open={confirmationModal.open}
-        title={confirmationModal.title}
-        message={confirmationModal.message}
-        onConfirm={confirmationModal.onConfirm}
-        onCancel={() => setConfirmationModal(prev => ({ ...prev, open: false }))}
-      />
-
-      {/* Help Panel */}
-      <HelpPanel
-        visible={helpVisible}
-        onClose={toggleHelp}
-      />
-
-      {/* Contextual Toolbar */}
-      <ContextualToolbar
-        selectedElement={selectedElement}
-        visible={!!selectedElement}
-        position={toolbarPosition}
-        onCreateConnection={createConnection}
-        onDeleteElement={deleteSelectedElement}
-        onCopyElement={copySelectedElement}
-        onShowProperties={() => setPanelVisible(true)}
-        onCreateElement={createElement}
-        onActivateConnectionMode={activateConnectionMode}
-      />
 
       {/* Hidden File Input */}
       <input
         ref={fileInputRef}
         type="file"
-        accept=".bpmn,.xml,.json"
-        onChange={handleFileChange}
+        accept=".bpmn,.xml"
+        onChange={handleFileImport}
         className="hidden"
+      />
+
+      {/* Notifications */}
+      <NotificationSystem
+        notifications={notifications}
+        onRemove={removeNotification}
       />
     </div>
   );
