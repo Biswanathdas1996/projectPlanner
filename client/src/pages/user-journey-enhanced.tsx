@@ -1129,19 +1129,52 @@ Data Objects: Request form, User profile`,
                 `Data Objects: Request form, User profile`,
               ],
             };
+            
+            // Update progress with fallback completion
+            setFlowGenerationProgress(prev => ({
+              ...prev,
+              completedFlows: [...prev.completedFlows, key],
+              status: `Completed ${flow.stakeholder} ${flow.flowType} (fallback) - ${prev.completedFlows.length + 1}/${allFlows.length} flows done`
+            }));
           }
         } catch (err) {
           console.error(`Failed to generate details for ${key}:`, err);
+          // Even on error, mark as attempted
+          setFlowGenerationProgress(prev => ({
+            ...prev,
+            completedFlows: [...prev.completedFlows, key],
+            status: `Error in ${flow.stakeholder} ${flow.flowType} - ${prev.completedFlows.length + 1}/${allFlows.length} flows processed`
+          }));
         }
       }
+
+      // Final completion status
+      setFlowGenerationProgress(prev => ({
+        ...prev,
+        status: `All flow details generated successfully! ${allFlows.length} flows completed.`
+      }));
 
       setFlowDetails(details);
       localStorage.setItem("flowDetails", JSON.stringify(details));
     } catch (err) {
       console.error("Error generating flow details:", err);
       setError("Failed to generate flow details. Please try again.");
+      setFlowGenerationProgress(prev => ({
+        ...prev,
+        status: "Error occurred during flow generation"
+      }));
     } finally {
       setIsGeneratingFlowDetails(false);
+      // Reset progress after a delay
+      setTimeout(() => {
+        setFlowGenerationProgress({
+          current: 0,
+          total: 0,
+          currentFlow: '',
+          completedFlows: [],
+          status: ''
+        });
+      }, 3000);
     }
   };
 
@@ -2201,6 +2234,77 @@ Data Objects: Request form, User profile`,
               </CardContent>
             </Card>
           )}
+
+        {/* Flow Generation Progress Indicator */}
+        {isGeneratingFlowDetails && flowGenerationProgress.total > 0 && (
+          <Card className="border-0 shadow-sm bg-gradient-to-r from-blue-50 to-purple-50 mb-6">
+            <CardContent className="p-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <Loader2 className="h-3 w-3 text-white animate-spin" />
+                    </div>
+                    <h3 className="font-semibold text-gray-800">Generating Flow Details</h3>
+                  </div>
+                  <div className="text-sm font-medium text-gray-600">
+                    {flowGenerationProgress.current} / {flowGenerationProgress.total}
+                  </div>
+                </div>
+                
+                {/* Progress Bar */}
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
+                    style={{ 
+                      width: `${(flowGenerationProgress.current / flowGenerationProgress.total) * 100}%` 
+                    }}
+                  ></div>
+                </div>
+                
+                {/* Current Flow and Status */}
+                <div className="space-y-1">
+                  {flowGenerationProgress.currentFlow && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      <span className="font-medium text-blue-700">Current:</span>
+                      <span className="text-gray-700">{flowGenerationProgress.currentFlow}</span>
+                    </div>
+                  )}
+                  <div className="text-sm text-gray-600">
+                    {flowGenerationProgress.status}
+                  </div>
+                </div>
+                
+                {/* Completed Flows List */}
+                {flowGenerationProgress.completedFlows.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+                      Completed Flows ({flowGenerationProgress.completedFlows.length})
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {flowGenerationProgress.completedFlows.slice(-6).map((flowKey, index) => (
+                        <Badge 
+                          key={index}
+                          variant="outline" 
+                          className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200"
+                        >
+                          <CheckCircle className="h-2.5 w-2.5 mr-1" />
+                          {flowKey.replace('-', ' - ')}
+                        </Badge>
+                      ))}
+                      {flowGenerationProgress.completedFlows.length > 6 && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600">
+                          +{flowGenerationProgress.completedFlows.length - 6} more
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Stakeholder Flow Analysis */}
         {Object.values(flowDetails).length > 0 && (
