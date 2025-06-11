@@ -617,13 +617,13 @@ Define precise, actionable trigger:
 - Business context that necessitates this process
 
 ✅ 4. Sequence of Activities (Tasks / Actions)
-Provide 6-8 detailed, sequential activities:
-- Use clear action verbs (Submit, Validate, Process, Generate, Send, Update)
-- Specify responsible participant for each task
-- Define task type (User Task, Service Task, Script Task, Manual Task)
-- Include input requirements and expected outputs
-- Add realistic time estimates
-- Specify any dependencies or prerequisites
+Provide 6-8 sequential activities using SHORT, BPMN-compliant names:
+- Use concise action verbs: Submit, Validate, Process, Generate, Send, Update
+- Activity names should be 2-4 words maximum
+- Follow BPMN naming conventions: "Verb + Object" format
+- Examples: "Submit Request", "Validate Data", "Process Payment", "Send Notification"
+- Avoid long descriptive sentences
+- Use standard BPMN task naming patterns
 
 ✅ 5. Decision Points (Gateways)
 Include 3-5 specific decision points with business rules:
@@ -671,7 +671,7 @@ Include specific BPMN elements with implementation details:
 - "Invoke [ExternalService] integration process"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Activity 1: Detailed action description", "Activity 2: Detailed action description", "Activity 3: Detailed action description", "Activity 4: Detailed action description", "Activity 5: Detailed action description", "Activity 6: Detailed action description"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
+{"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
 
           // Call Gemini API directly from client-side only
           console.log(`Starting flow analysis for ${key}...`);
@@ -832,12 +832,12 @@ ${flow.stakeholder}, System Backend, Database Service, Authentication Module, No
 ${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.
 
 ✅ 4. Sequence of Activities (Tasks / Actions)
-1. ${flow.stakeholder} authenticates and accesses the system
-2. System validates ${mainAction} request and permissions
-3. Backend processes ${mainAction} with business logic validation
-4. Database updates records and maintains data integrity
-5. System generates confirmation and audit trail
-6. Notification service sends confirmation to ${flow.stakeholder}
+1. Authenticate User
+2. Validate Request
+3. Process ${mainAction}
+4. Update Records
+5. Generate Confirmation
+6. Send Notification
 
 ✅ 5. Decision Points (Gateways)
 If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.
@@ -862,12 +862,12 @@ Data Objects: ${flow.flowType} form data, User session data, Audit log entries, 
               ],
               trigger: `${flow.stakeholder} initiates ${flow.flowType} request through the application interface or system entry point.`,
               activities: [
-                `${flow.stakeholder} authenticates and accesses the system`,
-                `System validates ${mainAction} request and permissions`,
-                `Backend processes ${mainAction} with business logic validation`,
-                `Database updates records and maintains data integrity`,
-                `System generates confirmation and audit trail`,
-                `Notification service sends confirmation to ${flow.stakeholder}`
+                "Authenticate User",
+                "Validate Request", 
+                `Process ${mainAction}`,
+                "Update Records",
+                "Generate Confirmation",
+                "Send Notification"
               ],
               decisionPoints: [
                 `If authentication fails, redirect to login; otherwise proceed to ${mainAction} validation.`,

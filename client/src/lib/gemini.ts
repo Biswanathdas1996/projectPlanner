@@ -923,10 +923,16 @@ export async function generatePersonaBpmnFlowWithType(
 
 **${flowType} Specific Elements:**
 - **Start Events**: Entry point for ${flowType}
-- **User Tasks**: Actions ${stakeholder} performs during ${flowType}
-- **Service Tasks**: System processes supporting ${flowType}
+- **User Tasks**: Use SHORT names (2-4 words): "Submit Request", "Validate Data", "Process Transaction"
+- **Service Tasks**: Use BPMN conventions: "Update Records", "Send Notification", "Generate Report" 
 - **Decision Points**: Branching logic specific to ${flowType}
 - **End Events**: Completion states for ${flowType}
+
+**Activity Naming Rules:**
+- Use "Verb + Object" format: "Submit Request", "Validate Data", "Process Payment"
+- Keep names under 20 characters when possible
+- Avoid long descriptive sentences
+- Use standard BPMN task naming patterns
 
 **Flow Patterns:**
 - Sequential steps for ${flowType}
@@ -999,7 +1005,8 @@ CRITICAL MAPPING REQUIREMENTS:
 3. **Element Creation Rules**:
    - Create one swimlane for each participant listed
    - Map trigger content to start event name
-   - Convert each activity item to a task element
+   - Convert each activity item to a task element with SHORT names (2-4 words)
+   - Use BPMN naming conventions: "Submit Request", "Validate Data", "Process Payment"
    - Transform decision points into gateway elements
    - Use end event content for end event name
    - Connect elements with sequenceFlow in logical order
