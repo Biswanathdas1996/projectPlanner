@@ -11,7 +11,7 @@ import {
   generatePersonaBpmnFlowWithType,
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
-import { InlineBpmnViewer } from "@/components/inline-bpmn-viewer";
+import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { Link } from "wouter";
@@ -3271,7 +3271,7 @@ ${flowEdges.join("\n")}
                                         </p>
                                       </div>
                                       <div className="p-2">
-                                        <InlineBpmnViewer
+                                        <SimpleBpmnViewer
                                           bpmnXml={existingFlow.bpmnXml}
                                           title={`${stakeholder} - ${flowType}`}
                                           height="300px"
