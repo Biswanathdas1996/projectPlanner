@@ -225,14 +225,34 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                 {new Date(researchData.timestamp).toLocaleTimeString()}
               </p>
             </div>
-            <Button
-              onClick={resetResearch}
-              variant="outline"
-              size="sm"
-              className="border-green-300 text-green-700 hover:bg-green-100"
-            >
-              New Research
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  if (projectInput) {
+                    handleStartResearch();
+                  }
+                }}
+                disabled={isResearching || !projectInput}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-blue-700 border-blue-300 hover:bg-blue-100"
+              >
+                {isResearching ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Search className="h-4 w-4" />
+                )}
+                Generate Enhanced Data
+              </Button>
+              <Button
+                onClick={resetResearch}
+                variant="outline"
+                size="sm"
+                className="border-green-300 text-green-700 hover:bg-green-100"
+              >
+                New Research
+              </Button>
+            </div>
           </div>
         )}
 
@@ -528,19 +548,27 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                       <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                         <div className="text-center">
                           <div className="text-xs text-gray-500 uppercase tracking-wide">Market Cap</div>
-                          <div className="font-semibold text-green-600">{competitor.marketCap || 'N/A'}</div>
+                          <div className="font-semibold text-green-600 text-sm">
+                            {competitor.marketCap || 'Generating...'}
+                          </div>
                         </div>
                         <div className="text-center">
                           <div className="text-xs text-gray-500 uppercase tracking-wide">Revenue</div>
-                          <div className="font-semibold text-blue-600">{competitor.revenue || 'N/A'}</div>
+                          <div className="font-semibold text-blue-600 text-sm">
+                            {competitor.revenue || 'Generating...'}
+                          </div>
                         </div>
                         <div className="text-center">
                           <div className="text-xs text-gray-500 uppercase tracking-wide">Founded</div>
-                          <div className="font-semibold text-gray-700">{competitor.founded || 'N/A'}</div>
+                          <div className="font-semibold text-gray-700 text-sm">
+                            {competitor.founded || 'Generating...'}
+                          </div>
                         </div>
                         <div className="text-center">
                           <div className="text-xs text-gray-500 uppercase tracking-wide">Employees</div>
-                          <div className="font-semibold text-purple-600">{competitor.employees || 'N/A'}</div>
+                          <div className="font-semibold text-purple-600 text-sm">
+                            {competitor.employees || 'Generating...'}
+                          </div>
                         </div>
                       </div>
 
