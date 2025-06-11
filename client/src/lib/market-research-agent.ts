@@ -107,24 +107,28 @@ Generate detailed market research with the following structure:
 === MARKET OVERVIEW ===
 Provide a comprehensive overview of the market space, including total addressable market, current market conditions, and growth trajectory.
 
-=== COMPREHENSIVE COMPETITOR ANALYSIS ===
-List 15-20 real companies that offer similar or adjacent solutions. For each competitor, provide SPECIFIC NUMERICAL DATA:
-- Company name and website URL
-- Founded year and headquarters location
-- Business model and revenue streams
-- Market capitalization (provide specific amounts like "$145.2B", "$28.5B", "$3.1B", etc.)
-- Annual revenue (provide specific amounts like "$50.3B", "$12.8B", "$890M", etc.)
-- Employee count (provide specific numbers like "156,000", "45,200", "8,500", etc.)
-- Valuation for private companies (provide specific amounts like "$12.4B", "$2.8B", etc.)
-- Key features and value proposition
-- Pricing model and typical price ranges
-- Target market and customer base
-- Market position (leader/challenger/niche/startup)
-- Strengths and competitive advantages
-- Weaknesses and market gaps
-- Recent funding rounds or financial milestones
+=== COMPETITOR ANALYSIS ===
+Research and identify 8-12 actual companies in the relevant industry. Only include companies that truly exist with verifiable business operations. For each real competitor, provide:
 
-IMPORTANT: Use real, research-backed financial data. Do not use placeholder values like "N/A", "Various", or vague ranges. Provide specific numbers based on recent public information and industry knowledge.
+- Exact company name (e.g., "Salesforce", "Microsoft", "Zoom", "Atlassian")
+- Official website URL
+- Founded year and headquarters city/country
+- Current market capitalization or latest valuation
+- Annual revenue from recent financial reports
+- Current employee count
+- Core product offerings and business model
+- Pricing structure and target customers
+- Market position and competitive strengths
+- Areas where they face challenges
+
+MANDATORY: Every company name must be a real, operating business. Research companies like:
+- Enterprise software: Salesforce, ServiceNow, Workday, Oracle
+- Communication tools: Zoom, Slack, Microsoft Teams, Discord
+- Productivity software: Atlassian, Notion, Asana, Monday.com
+- E-commerce platforms: Shopify, WooCommerce, BigCommerce
+- Developer tools: GitHub, GitLab, Stripe, Twilio
+
+Base all financial figures on actual public data or credible industry estimates for these real companies.
 
 === MARKET SIZE AND TRENDS ===
 - Total addressable market (TAM) size and projections
@@ -171,7 +175,7 @@ EXAMPLES OF REALISTIC FINANCIAL DATA:
 - Atlassian: Market Cap $45B, Revenue $3.5B, Employees 12,000, HQ Sydney, Australia
 - Slack (Private): Valuation $27B, Revenue $902M, Employees 2,500, HQ San Francisco, USA
 
-Generate similar authentic data for all competitors in the response. Research actual companies in the relevant industry and use their real financial metrics.
+CRITICAL: Only include REAL company names that actually exist in the industry. Do NOT use placeholder names like "Company A", "Company 5 Name", "[Company Name]", "TechCorp", or similar generic names. Research and identify actual competitors with verified business information. If you cannot identify real companies, limit the list to only the companies you know exist with authentic data.
 `;
 
     try {
@@ -203,24 +207,24 @@ Please analyze the search results and provide a detailed JSON response with the 
   "marketOverview": "Comprehensive overview of the market based on search results",
   "competitors": [
     {
-      "name": "Company name from search results",
-      "description": "Company description",
-      "website": "Website URL if found",
+      "name": "Actual company name (e.g., Salesforce, Microsoft, Zoom)",
+      "description": "Real company description",
+      "website": "Actual website URL",
       "marketPosition": "Market Leader/Rising Challenger/Niche Player/Enterprise Specialist",
-      "keyFeatures": ["Feature 1", "Feature 2", "Feature 3"],
-      "pricing": "Pricing information from search results",
-      "targetAudience": "Target audience",
-      "strengths": ["Strength 1", "Strength 2", "Strength 3"],
-      "weaknesses": ["Weakness 1", "Weakness 2", "Weakness 3"],
-      "marketShare": "Market share percentage or estimate",
-      "founded": "Founded year if available",
-      "funding": "Funding information if available",
-      "marketCap": "Specific market cap like $45.2B, $3.1B, $890M",
-      "valuation": "Private company valuation like $5.2B, $1.8B",
-      "employees": "Specific employee count like 45,200, 8,500, 1,200",
-      "revenue": "Annual revenue like $12.8B, $450M, $89M",
-      "headquarters": "City, Country location",
-      "businessModel": "Business model description"
+      "keyFeatures": ["Actual product features"],
+      "pricing": "Real pricing information",
+      "targetAudience": "Actual target market",
+      "strengths": ["Real competitive advantages"],
+      "weaknesses": ["Actual market challenges"],
+      "marketShare": "Real market share data",
+      "founded": "Actual founding year",
+      "funding": "Real funding information",
+      "marketCap": "Real market cap like $189B, $45B, $28B",
+      "valuation": "Real private valuation like $27B, $12B",
+      "employees": "Real employee count like 73,000, 19,000, 8,400",
+      "revenue": "Real annual revenue like $31.4B, $7.9B, $4.1B",
+      "headquarters": "Real headquarters location",
+      "businessModel": "Actual business model"
     }
   ],
   "marketInsights": {
@@ -248,12 +252,13 @@ CRITICAL REQUIREMENTS:
 - If exact data unavailable, provide realistic industry-standard estimates
 - Generate 15-20 competitors minimum
 
-IMPORTANT: 
-- Only use information that was found in the search results
-- If specific information is not available in search results, use realistic estimates based on the available data
-- Include 3-5 real competitors found in search results
-- Provide actionable recommendations based on the competitive analysis
-- Focus on factual data rather than speculation
+CRITICAL REQUIREMENTS:
+- Only include real companies that actually exist - NO placeholder names whatsoever
+- Every company name must be a real, verifiable business entity
+- Do NOT include names like "Company A", "TechCorp", "[Company Name]", "Startup X", etc.
+- If you cannot identify enough real competitors, include fewer companies rather than fake ones
+- All financial data must be authentic or industry-standard estimates for real companies
+- Focus on well-known companies in the relevant industry
 - Respond only with valid JSON, no additional text
 `;
 
@@ -274,23 +279,18 @@ IMPORTANT:
         throw new Error('Invalid analysis data structure');
       }
 
-      // Ensure all competitors have complete financial data
+      // Filter out any competitors with placeholder or generic names
       if (analysisData.competitors) {
-        analysisData.competitors = analysisData.competitors.map((competitor: any) => {
-          // Fill in missing financial data with realistic values based on company research
-          if (!competitor.marketCap || competitor.marketCap === 'N/A' || competitor.marketCap === 'Unknown') {
-            competitor.marketCap = this.generateRealisticFinancialData(competitor.name, 'marketCap', competitor.marketPosition);
-          }
-          if (!competitor.revenue || competitor.revenue === 'N/A' || competitor.revenue === 'Unknown') {
-            competitor.revenue = this.generateRealisticFinancialData(competitor.name, 'revenue', competitor.marketPosition);
-          }
-          if (!competitor.employees || competitor.employees === 'N/A' || competitor.employees === 'Unknown') {
-            competitor.employees = this.generateRealisticFinancialData(competitor.name, 'employees', competitor.marketPosition);
-          }
-          if (!competitor.headquarters) {
-            competitor.headquarters = this.generateRealisticFinancialData(competitor.name, 'headquarters', competitor.marketPosition);
-          }
-          return competitor;
+        analysisData.competitors = analysisData.competitors.filter((competitor: any) => {
+          const name = competitor.name.toLowerCase();
+          const isPlaceholder = 
+            name.includes('company') && (name.includes('name') || name.includes('a') || name.includes('b') || name.includes('c') || /\d/.test(name)) ||
+            name.includes('[') || name.includes(']') ||
+            name.includes('techcorp') || name.includes('startup') ||
+            name.includes('placeholder') || name.includes('example') ||
+            name === 'n/a' || name === 'unknown' || name === '';
+          
+          return !isPlaceholder && competitor.name.length > 2;
         });
       }
 
@@ -301,77 +301,7 @@ IMPORTANT:
     }
   }
 
-  private generateRealisticFinancialData(companyName: string, dataType: string, marketPosition: string): string {
-    const name = companyName.toLowerCase();
-    
-    // Real company financial data mappings
-    const realCompanyData: { [key: string]: any } = {
-      'microsoft': { marketCap: '$2.8T', revenue: '$211B', employees: '221,000', headquarters: 'Redmond, USA' },
-      'salesforce': { marketCap: '$189B', revenue: '$31.4B', employees: '73,000', headquarters: 'San Francisco, USA' },
-      'servicenow': { marketCap: '$130B', revenue: '$7.9B', employees: '19,000', headquarters: 'Santa Clara, USA' },
-      'atlassian': { marketCap: '$45B', revenue: '$3.5B', employees: '12,000', headquarters: 'Sydney, Australia' },
-      'zendesk': { marketCap: '$13.2B', revenue: '$1.7B', employees: '6,200', headquarters: 'San Francisco, USA' },
-      'slack': { marketCap: '$27B', revenue: '$902M', employees: '2,500', headquarters: 'San Francisco, USA' },
-      'zoom': { marketCap: '$28B', revenue: '$4.1B', employees: '8,400', headquarters: 'San Jose, USA' },
-      'shopify': { marketCap: '$67B', revenue: '$5.6B', employees: '12,000', headquarters: 'Ottawa, Canada' },
-      'stripe': { marketCap: '$95B', revenue: '$12B', employees: '4,000', headquarters: 'San Francisco, USA' },
-      'dropbox': { marketCap: '$8.9B', revenue: '$2.3B', employees: '3,200', headquarters: 'San Francisco, USA' },
-      'twilio': { marketCap: '$11B', revenue: '$3.8B', employees: '7,800', headquarters: 'San Francisco, USA' },
-      'okta': { marketCap: '$12B', revenue: '$1.9B', employees: '5,600', headquarters: 'San Francisco, USA' },
-      'workday': { marketCap: '$56B', revenue: '$6.2B', employees: '17,800', headquarters: 'Pleasanton, USA' },
-      'snowflake': { marketCap: '$52B', revenue: '$2.1B', employees: '6,300', headquarters: 'Bozeman, USA' },
-      'databricks': { marketCap: '$43B', revenue: '$1.6B', employees: '5,000', headquarters: 'San Francisco, USA' }
-    };
 
-    // Check if this is a known company
-    for (const [company, data] of Object.entries(realCompanyData)) {
-      if (name.includes(company)) {
-        return data[dataType] || this.generateByPosition(dataType, marketPosition);
-      }
-    }
-
-    // Generate realistic data based on market position for unknown companies
-    return this.generateByPosition(dataType, marketPosition);
-  }
-
-  private generateByPosition(dataType: string, marketPosition: string): string {
-    const position = marketPosition.toLowerCase();
-    
-    switch (dataType) {
-      case 'marketCap':
-        if (position.includes('leader')) {
-          return ['$145B', '$89B', '$67B', '$52B', '$38B'][Math.floor(Math.random() * 5)];
-        } else if (position.includes('challenger')) {
-          return ['$28B', '$19B', '$13B', '$8.9B', '$6.7B'][Math.floor(Math.random() * 5)];
-        } else {
-          return ['$4.2B', '$2.8B', '$1.9B', '$1.2B', '$890M'][Math.floor(Math.random() * 5)];
-        }
-      
-      case 'revenue':
-        if (position.includes('leader')) {
-          return ['$31B', '$21B', '$12B', '$8.9B', '$6.2B'][Math.floor(Math.random() * 5)];
-        } else if (position.includes('challenger')) {
-          return ['$4.1B', '$2.8B', '$1.9B', '$1.2B', '$890M'][Math.floor(Math.random() * 5)];
-        } else {
-          return ['$650M', '$420M', '$280M', '$180M', '$95M'][Math.floor(Math.random() * 5)];
-        }
-      
-      case 'employees':
-        if (position.includes('leader')) {
-          return ['73,000', '52,000', '38,000', '27,000', '19,000'][Math.floor(Math.random() * 5)];
-        } else if (position.includes('challenger')) {
-          return ['12,000', '8,400', '6,200', '4,500', '3,200'][Math.floor(Math.random() * 5)];
-        } else {
-          return ['2,500', '1,800', '1,200', '850', '620'][Math.floor(Math.random() * 5)];
-        }
-      
-      case 'headquarters':
-        return ['San Francisco, USA', 'New York, USA', 'London, UK', 'Toronto, Canada', 'Sydney, Australia'][Math.floor(Math.random() * 5)];
-      
-      default:
-        return 'N/A';
-    }
-  }
 
   private async retryableRequest(requestFn: () => Promise<any>): Promise<any> {
     let lastError: any;
