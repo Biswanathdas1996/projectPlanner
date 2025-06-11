@@ -69,6 +69,27 @@ export default function MarketResearch() {
   const [currentPage, setCurrentPage] = useState(1);
   const competitorsPerPage = 6;
 
+  // Helper function to convert market cap string to number for sorting
+  const parseMarketCap = (marketCap: string): number => {
+    if (!marketCap) return 0;
+    const cleanValue = marketCap.toLowerCase().replace(/[^0-9.]/g, '');
+    const numValue = parseFloat(cleanValue);
+    if (marketCap.toLowerCase().includes('trillion')) return numValue * 1000000;
+    if (marketCap.toLowerCase().includes('billion')) return numValue * 1000;
+    if (marketCap.toLowerCase().includes('million')) return numValue;
+    return numValue;
+  };
+
+  // Sort competitors by market cap in descending order
+  const sortedCompetitors = researchData?.competitors ? 
+    [...researchData.competitors].sort((a, b) => parseMarketCap(b.marketCap) - parseMarketCap(a.marketCap)) : [];
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedCompetitors.length / competitorsPerPage);
+  const startIndex = (currentPage - 1) * competitorsPerPage;
+  const endIndex = startIndex + competitorsPerPage;
+  const currentCompetitors = sortedCompetitors.slice(startIndex, endIndex);
+
   // Load project input and existing research from localStorage
   useEffect(() => {
     const savedProjectDescription = getProjectDescription();
@@ -437,16 +458,31 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
             <Card className="border-0 shadow-lg">
               <CardHeader className="bg-gradient-to-r from-orange-50 to-red-50 border-b">
                 <CardTitle className="flex items-center gap-3 text-xl">
-                  <Building className="h-6 w-6 text-orange-600" />
+                  <Users className="h-6 w-6 text-orange-600" />
                   Competitor Analysis
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {researchData.competitors.map((competitor, index) => (
+                {/* Competitors Header with Count */}
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center gap-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {sortedCompetitors.length} Competitors Found
+                    </h3>
+                    <Badge variant="outline" className="text-xs">
+                      Sorted by Market Cap
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-gray-500">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {currentCompetitors.map((competitor, index) => (
                     <div
-                      key={index}
-                      className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      key={startIndex + index}
+                      className="border border-gray-200 rounded-lg p-5 hover:shadow-lg transition-all duration-200 bg-white"
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
@@ -484,9 +520,47 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                         </div>
                       </div>
 
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 mb-4">
                         {competitor.description}
                       </p>
+
+                      {/* Business Metrics Grid */}
+                      <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Market Cap</div>
+                          <div className="font-semibold text-green-600">{competitor.marketCap || 'N/A'}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Revenue</div>
+                          <div className="font-semibold text-blue-600">{competitor.revenue || 'N/A'}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Founded</div>
+                          <div className="font-semibold text-gray-700">{competitor.founded || 'N/A'}</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">Employees</div>
+                          <div className="font-semibold text-purple-600">{competitor.employees || 'N/A'}</div>
+                        </div>
+                      </div>
+
+                      {/* Additional Business Info */}
+                      {(competitor.headquarters || competitor.valuation) && (
+                        <div className="mb-4 space-y-2">
+                          {competitor.headquarters && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <MapPin className="h-3 w-3 text-gray-400" />
+                              <span className="text-gray-600">{competitor.headquarters}</span>
+                            </div>
+                          )}
+                          {competitor.valuation && (
+                            <div className="flex items-center gap-2 text-sm">
+                              <DollarSign className="h-3 w-3 text-gray-400" />
+                              <span className="text-gray-600">Valuation: {competitor.valuation}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
 
                       <div className="space-y-2 text-xs">
                         <div className="flex justify-between">
@@ -551,6 +625,52 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                     </div>
                   ))}
                 </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
+                    <div className="text-sm text-gray-600">
+                      Showing {startIndex + 1}-{Math.min(endIndex, sortedCompetitors.length)} of {sortedCompetitors.length} competitors
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        disabled={currentPage === 1}
+                        className="gap-1"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                        Previous
+                      </Button>
+                      
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                          <Button
+                            key={page}
+                            variant={page === currentPage ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        disabled={currentPage === totalPages}
+                        className="gap-1"
+                      >
+                        Next
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
