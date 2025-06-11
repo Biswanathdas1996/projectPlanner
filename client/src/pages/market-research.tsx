@@ -617,17 +617,17 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                             Strengths:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {competitor.strengths
-                              .slice(0, 2)
-                              .map((strength, i) => (
-                                <Badge
-                                  key={i}
-                                  variant="outline"
-                                  className="text-xs bg-green-50 border-green-200 text-green-700"
-                                >
-                                  {strength}
-                                </Badge>
-                              ))}
+                            {Array.isArray(competitor.strengths) 
+                              ? competitor.strengths.slice(0, 2).map((strength, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="text-xs bg-green-50 border-green-200 text-green-700"
+                                  >
+                                    {strength}
+                                  </Badge>
+                                ))
+                              : null}
                           </div>
                         </div>
 
@@ -636,17 +636,17 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                             Weaknesses:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {competitor.weaknesses
-                              .slice(0, 2)
-                              .map((weakness, i) => (
-                                <Badge
-                                  key={i}
-                                  variant="outline"
-                                  className="text-xs bg-red-50 border-red-200 text-red-700"
-                                >
-                                  {weakness}
-                                </Badge>
-                              ))}
+                            {Array.isArray(competitor.weaknesses) 
+                              ? competitor.weaknesses.slice(0, 2).map((weakness, i) => (
+                                  <Badge
+                                    key={i}
+                                    variant="outline"
+                                    className="text-xs bg-red-50 border-red-200 text-red-700"
+                                  >
+                                    {weakness}
+                                  </Badge>
+                                ))
+                              : null}
                           </div>
                         </div>
                       </div>
