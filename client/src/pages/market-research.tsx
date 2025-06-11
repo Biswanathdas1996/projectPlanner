@@ -97,7 +97,7 @@ export default function MarketResearch() {
       const countrySpecificData = {
         ...researchData,
         targetCountry: selectedCountry,
-        marketAnalysis: `${researchData.marketAnalysis}\n\nTarget Market: ${selectedCountry}`
+        marketAnalysis: `${researchData.marketOverview}\n\nTarget Market: ${selectedCountry}`
       };
 
       setResearchData(countrySpecificData);
@@ -307,9 +307,12 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   Researching Market Landscape
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-gray-600 mb-2">
                   Analyzing competitors, market trends, and opportunities for
                   your project idea...
+                </p>
+                <p className="text-sm text-blue-600 font-medium mb-6">
+                  Focusing on {selectedCountry} market
                 </p>
                 <div className="flex flex-col gap-3 max-w-md mx-auto">
                   <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -341,7 +344,15 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                     <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                       <BarChart3 className="h-5 w-5 text-white" />
                     </div>
-                    Market Research Results
+                    <div>
+                      <div>Market Research Results</div>
+                      {researchData.targetCountry && (
+                        <div className="text-sm font-normal text-blue-600 flex items-center gap-1">
+                          <Globe className="h-3 w-3" />
+                          {researchData.targetCountry} Market
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <Button
