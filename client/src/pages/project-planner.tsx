@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
+import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
@@ -70,6 +71,10 @@ export default function ProjectPlanner() {
   const [progressSteps, setProgressSteps] = useState<{step: string; completed: boolean; current: boolean}[]>([]);
   const [overallProgress, setOverallProgress] = useState(0);
   const [currentProgressStep, setCurrentProgressStep] = useState('');
+  const [useAdvancedAgent, setUseAdvancedAgent] = useState(false);
+  const [comprehensivePlan, setComprehensivePlan] = useState<ComprehensiveProjectPlan | null>(null);
+  const [projectRequirements, setProjectRequirements] = useState<Partial<ProjectRequirements>>({});
+  const [isGeneratingComprehensive, setIsGeneratingComprehensive] = useState(false);
 
   const [location, setLocation] = useLocation();
 
@@ -185,6 +190,11 @@ export default function ProjectPlanner() {
   };
 
   const handleGenerateWithSuggestions = async () => {
+    if (useAdvancedAgent) {
+      await handleGenerateComprehensivePlan();
+      return;
+    }
+
     initializeProgressSteps(true);
     setIsGeneratingPlan(true);
     setError('');
@@ -239,6 +249,205 @@ Please ensure the project plan addresses all the selected requirements above and
     } finally {
       setIsGeneratingPlan(false);
     }
+  };
+
+  const handleGenerateComprehensivePlan = async () => {
+    setIsGeneratingComprehensive(true);
+    setError('');
+    setShowSuggestions(false);
+
+    try {
+      const agent = createAIProjectPlannerAgent();
+      
+      let enhancedInput = projectInput;
+      if (selectedSuggestions.length > 0) {
+        enhancedInput = `${projectInput}
+
+Additional Requirements:
+${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
+      }
+
+      const plan = await agent.generateComprehensiveProjectPlan(
+        enhancedInput,
+        projectRequirements,
+        (step: string, progress: number) => {
+          setCurrentProgressStep(step);
+          setOverallProgress(progress);
+        }
+      );
+
+      setComprehensivePlan(plan);
+      
+      // Convert comprehensive plan to HTML format for display
+      const htmlPlan = formatComprehensivePlanAsHtml(plan);
+      setProjectPlan(htmlPlan);
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlPlan);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      localStorage.setItem('comprehensive_plan', JSON.stringify(plan));
+      
+      setCurrentStep('plan');
+      setLocation('/plan');
+    } catch (err) {
+      console.error('Comprehensive plan generation error:', err);
+      setError('Failed to generate comprehensive project plan. Please try again.');
+    } finally {
+      setIsGeneratingComprehensive(false);
+      setOverallProgress(0);
+      setCurrentProgressStep('');
+    }
+  };
+
+  const formatComprehensivePlanAsHtml = (plan: ComprehensiveProjectPlan): string => {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Project Plan</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background: #f8f9fa; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        h1 { color: #2563eb; border-bottom: 3px solid #3b82f6; padding-bottom: 10px; margin-bottom: 30px; }
+        h2 { color: #1e40af; margin-top: 40px; margin-bottom: 20px; padding-left: 10px; border-left: 4px solid #3b82f6; }
+        h3 { color: #1e3a8a; margin-top: 25px; }
+        .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin: 30px 0; }
+        .summary-card { background: #f1f5f9; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; }
+        .summary-card h4 { margin: 0 0 10px 0; color: #1e40af; }
+        .summary-card p { margin: 0; font-weight: 600; color: #475569; }
+        .phase { background: #f8fafc; padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .priority-critical { border-left: 4px solid #dc2626; }
+        .priority-high { border-left: 4px solid #ea580c; }
+        .priority-medium { border-left: 4px solid #ca8a04; }
+        .priority-low { border-left: 4px solid #16a34a; }
+        .critical-path { background: #fef2f2; border: 2px solid #fca5a5; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .hours-estimate { background: #eff6ff; padding: 10px; border-radius: 6px; margin: 10px 0; font-weight: 600; color: #1d4ed8; }
+        ul { padding-left: 20px; }
+        li { margin: 8px 0; }
+        .section-content { margin: 15px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Comprehensive Project Plan</h1>
+        
+        <div class="summary-grid">
+            <div class="summary-card">
+                <h4>Total Estimated Hours</h4>
+                <p>${plan.totalEstimatedHours.toLocaleString()} hours</p>
+            </div>
+            <div class="summary-card">
+                <h4>Estimated Cost</h4>
+                <p>$${plan.totalEstimatedCost.toLocaleString()}</p>
+            </div>
+            <div class="summary-card">
+                <h4>Development Phases</h4>
+                <p>${plan.developmentPhases.length} phases</p>
+            </div>
+            <div class="summary-card">
+                <h4>Critical Path Items</h4>
+                <p>${plan.criticalPath.length} items</p>
+            </div>
+        </div>
+
+        <div class="critical-path">
+            <h3>🎯 Critical Path</h3>
+            <ul>
+                ${plan.criticalPath.map(item => `<li><strong>${item}</strong></li>`).join('')}
+            </ul>
+        </div>
+
+        <div class="section-content priority-${plan.projectOverview.priority}">
+            <h2>${plan.projectOverview.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.projectOverview.estimatedHours}</div>
+            ${plan.projectOverview.content}
+        </div>
+
+        <div class="section-content priority-${plan.technicalArchitecture.priority}">
+            <h2>${plan.technicalArchitecture.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.technicalArchitecture.estimatedHours}</div>
+            ${plan.technicalArchitecture.content}
+        </div>
+
+        <h2>Development Phases</h2>
+        ${plan.developmentPhases.map(phase => `
+            <div class="phase priority-${phase.priority}">
+                <h3>${phase.title}</h3>
+                <div class="hours-estimate">Estimated Hours: ${phase.estimatedHours}</div>
+                ${phase.content}
+            </div>
+        `).join('')}
+
+        <div class="section-content priority-${plan.riskManagement.priority}">
+            <h2>${plan.riskManagement.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.riskManagement.estimatedHours}</div>
+            ${plan.riskManagement.content}
+        </div>
+
+        <div class="section-content priority-${plan.qualityAssurance.priority}">
+            <h2>${plan.qualityAssurance.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.qualityAssurance.estimatedHours}</div>
+            ${plan.qualityAssurance.content}
+        </div>
+
+        <div class="section-content priority-${plan.deployment.priority}">
+            <h2>${plan.deployment.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.deployment.estimatedHours}</div>
+            ${plan.deployment.content}
+        </div>
+
+        <div class="section-content priority-${plan.maintenance.priority}">
+            <h2>${plan.maintenance.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.maintenance.estimatedHours}</div>
+            ${plan.maintenance.content}
+        </div>
+
+        <div class="section-content priority-${plan.budgetBreakdown.priority}">
+            <h2>${plan.budgetBreakdown.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.budgetBreakdown.estimatedHours}</div>
+            ${plan.budgetBreakdown.content}
+        </div>
+
+        <div class="section-content priority-${plan.timelineDetails.priority}">
+            <h2>${plan.timelineDetails.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.timelineDetails.estimatedHours}</div>
+            ${plan.timelineDetails.content}
+        </div>
+
+        <div class="section-content priority-${plan.teamStructure.priority}">
+            <h2>${plan.teamStructure.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.teamStructure.estimatedHours}</div>
+            ${plan.teamStructure.content}
+        </div>
+
+        <div class="section-content priority-${plan.stakeholderMatrix.priority}">
+            <h2>${plan.stakeholderMatrix.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.stakeholderMatrix.estimatedHours}</div>
+            ${plan.stakeholderMatrix.content}
+        </div>
+
+        <div class="section-content priority-${plan.complianceRequirements.priority}">
+            <h2>${plan.complianceRequirements.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.complianceRequirements.estimatedHours}</div>
+            ${plan.complianceRequirements.content}
+        </div>
+
+        <div class="section-content priority-${plan.scalabilityPlan.priority}">
+            <h2>${plan.scalabilityPlan.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.scalabilityPlan.estimatedHours}</div>
+            ${plan.scalabilityPlan.content}
+        </div>
+
+        <div class="section-content priority-${plan.securityFramework.priority}">
+            <h2>${plan.securityFramework.title}</h2>
+            <div class="hours-estimate">Estimated Hours: ${plan.securityFramework.estimatedHours}</div>
+            ${plan.securityFramework.content}
+        </div>
+    </div>
+</body>
+</html>`;
   };
 
   const handleGenerateBpmnDiagram = async () => {
@@ -972,12 +1181,112 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     <p className="text-blue-600 text-sm">No additional requirements selected</p>
                   )}
                 </div>
+
+                {/* AI Agent Selection */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 mb-6">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h4 className="font-medium text-purple-800 mb-1">Plan Generation Method</h4>
+                      <p className="text-sm text-purple-600">Choose between standard or comprehensive AI-powered planning</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="advanced-agent"
+                        checked={useAdvancedAgent}
+                        onCheckedChange={(checked) => setUseAdvancedAgent(checked as boolean)}
+                      />
+                      <label htmlFor="advanced-agent" className="text-sm font-medium text-purple-700 cursor-pointer">
+                        Use Advanced AI Agent
+                      </label>
+                    </div>
+                  </div>
+                  
+                  {useAdvancedAgent && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-purple-200">
+                      <div>
+                        <label className="block text-xs font-medium text-purple-700 mb-1">Project Scope</label>
+                        <select 
+                          className="w-full text-xs p-2 border border-purple-200 rounded"
+                          value={projectRequirements.scope || 'medium'}
+                          onChange={(e) => setProjectRequirements(prev => ({...prev, scope: e.target.value as any}))}
+                        >
+                          <option value="small">Small (1-3 months)</option>
+                          <option value="medium">Medium (3-6 months)</option>
+                          <option value="large">Large (6-12 months)</option>
+                          <option value="enterprise">Enterprise (12+ months)</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-purple-700 mb-1">Technical Complexity</label>
+                        <select 
+                          className="w-full text-xs p-2 border border-purple-200 rounded"
+                          value={projectRequirements.technicalComplexity || 'medium'}
+                          onChange={(e) => setProjectRequirements(prev => ({...prev, technicalComplexity: e.target.value as any}))}
+                        >
+                          <option value="low">Low - Basic CRUD</option>
+                          <option value="medium">Medium - Standard Features</option>
+                          <option value="high">High - Advanced Features</option>
+                          <option value="expert">Expert - Cutting Edge</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-purple-700 mb-1">Industry</label>
+                        <select 
+                          className="w-full text-xs p-2 border border-purple-200 rounded"
+                          value={projectRequirements.industry || 'technology'}
+                          onChange={(e) => setProjectRequirements(prev => ({...prev, industry: e.target.value}))}
+                        >
+                          <option value="technology">Technology</option>
+                          <option value="healthcare">Healthcare</option>
+                          <option value="finance">Finance</option>
+                          <option value="education">Education</option>
+                          <option value="retail">Retail</option>
+                          <option value="manufacturing">Manufacturing</option>
+                          <option value="other">Other</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-purple-700 mb-1">Team Size</label>
+                        <select 
+                          className="w-full text-xs p-2 border border-purple-200 rounded"
+                          value={projectRequirements.teamSize || '5-8 developers'}
+                          onChange={(e) => setProjectRequirements(prev => ({...prev, teamSize: e.target.value}))}
+                        >
+                          <option value="1-2 developers">1-2 developers</option>
+                          <option value="3-5 developers">3-5 developers</option>
+                          <option value="5-8 developers">5-8 developers</option>
+                          <option value="8-15 developers">8-15 developers</option>
+                          <option value="15+ developers">15+ developers</option>
+                        </select>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="mt-3 p-3 bg-white/60 rounded border border-purple-100">
+                    <div className="text-xs text-purple-700">
+                      {useAdvancedAgent ? (
+                        <div>
+                          <strong>Advanced AI Agent:</strong> Generates comprehensive 18-section project plan including technical architecture, risk management, compliance, scalability, security framework, detailed timelines, cost estimates, and critical path analysis.
+                        </div>
+                      ) : (
+                        <div>
+                          <strong>Standard Generation:</strong> Creates focused project plan with core requirements, basic timeline, and development phases.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Progress Bar for Plan Generation */}
-                {isGeneratingPlan && progressSteps.length > 0 && (
+                {(isGeneratingPlan || isGeneratingComprehensive) && (
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-blue-800">Creating Project Plan</h4>
+                      <h4 className="font-medium text-blue-800">
+                        {useAdvancedAgent ? 'Generating Comprehensive Project Plan' : 'Creating Project Plan'}
+                      </h4>
                       <span className="text-sm text-blue-600 font-medium">{Math.round(overallProgress)}%</span>
                     </div>
                     <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
@@ -992,22 +1301,32 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         {currentProgressStep}
                       </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                      {progressSteps.map((step, index) => (
-                        <div key={index} className="flex items-center text-sm bg-white/40 rounded-md p-2">
-                          {step.completed ? (
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                          ) : step.current ? (
-                            <Loader2 className="h-4 w-4 text-blue-500 mr-2 animate-spin flex-shrink-0" />
-                          ) : (
-                            <div className="h-4 w-4 rounded-full border-2 border-gray-300 mr-2 flex-shrink-0"></div>
-                          )}
-                          <span className={`${step.completed ? 'text-green-700 font-medium' : step.current ? 'text-blue-700 font-medium' : 'text-gray-500'} truncate`}>
-                            {step.step}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
+                    
+                    {useAdvancedAgent && isGeneratingComprehensive && (
+                      <div className="text-xs text-purple-700 bg-purple-50 p-2 rounded mb-3">
+                        Advanced AI Agent is generating 18 comprehensive sections including technical architecture, 
+                        risk management, compliance requirements, scalability planning, and detailed cost analysis.
+                      </div>
+                    )}
+                    
+                    {progressSteps.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        {progressSteps.map((step, index) => (
+                          <div key={index} className="flex items-center text-sm bg-white/40 rounded-md p-2">
+                            {step.completed ? (
+                              <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
+                            ) : step.current ? (
+                              <Loader2 className="h-4 w-4 text-blue-500 mr-2 animate-spin flex-shrink-0" />
+                            ) : (
+                              <div className="h-4 w-4 rounded-full border-2 border-gray-300 mr-2 flex-shrink-0"></div>
+                            )}
+                            <span className={`${step.completed ? 'text-green-700 font-medium' : step.current ? 'text-blue-700 font-medium' : 'text-gray-500'} truncate`}>
+                              {step.step}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -1022,18 +1341,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </Button>
                   <Button
                     onClick={handleGenerateWithSuggestions}
-                    disabled={isGeneratingPlan}
+                    disabled={isGeneratingPlan || isGeneratingComprehensive}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
-                    {isGeneratingPlan ? (
+                    {isGeneratingPlan || isGeneratingComprehensive ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating Plan...
+                        {useAdvancedAgent ? 'Generating Comprehensive Plan...' : 'Generating Plan...'}
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 mr-2" />
-                        Generate Enhanced Plan
+                        {useAdvancedAgent ? 'Generate Comprehensive Plan' : 'Generate Enhanced Plan'}
                       </>
                     )}
                   </Button>
