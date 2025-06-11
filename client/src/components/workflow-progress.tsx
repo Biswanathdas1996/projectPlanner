@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { hasMarketResearchData } from "@/lib/storage-utils";
 import {
   ArrowRight,
   CheckCircle,
@@ -43,23 +44,42 @@ export function WorkflowProgress({
     if (completedSteps.includes(step)) return "completed";
     if (currentStep === step) return "active";
 
+    // Check for completed steps based on available data
+    const hasResearchData = hasMarketResearchData();
+    
     // Route-based determination
     switch (location) {
+      case "/market-research":
+        if (step === "input") return "completed";
+        if (step === "research") return "active";
+        break;
       case "/plan":
         if (step === "input") return "completed";
+        if (step === "research") return hasResearchData ? "completed" : "pending";
         if (step === "plan") return "active";
         break;
       case "/user-journey":
       case "/user-journey-enhanced":
-        if (["input", "plan"].includes(step)) return "completed";
+        if (step === "input") return "completed";
+        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (["plan"].includes(step)) return "completed";
         if (step === "diagram") return "active";
         break;
       case "/user-stories":
-        if (["input", "plan", "diagram"].includes(step)) return "completed";
+        if (step === "input") return "completed";
+        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (["plan", "diagram"].includes(step)) return "completed";
         if (step === "stories") return "active";
+        break;
+      case "/code":
+        if (step === "input") return "completed";
+        if (step === "research") return hasResearchData ? "completed" : "pending";
+        if (["plan", "diagram", "stories"].includes(step)) return "completed";
+        if (step === "code") return "active";
         break;
       default:
         if (step === "input") return "active";
+        if (step === "research") return hasResearchData ? "completed" : "pending";
         break;
     }
 
