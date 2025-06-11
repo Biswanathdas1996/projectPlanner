@@ -13,6 +13,7 @@ import {
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { generateStructuredBpmn } from "@/lib/structured-bpmn-generator";
+import { BPMN_GENERATION_STRATEGIES, RECOMMENDED_STRATEGY } from "@/lib/bpmn-best-practices";
 import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
@@ -1371,7 +1372,7 @@ Data Objects: Request form, User profile`,
         additionalElements: details.additionalElements || [],
       };
 
-      console.log("✅ Generating BPMN using structured data converter...");
+      console.log("Generating BPMN using structured data converter...");
 
       // Generate BPMN XML using structured generator (no AI required)
       const { generateStructuredBpmn } = await import("../lib/structured-bpmn-generator");
@@ -1411,6 +1412,82 @@ Data Objects: Request form, User profile`,
     } catch (error) {
       console.error(`Error generating structured BPMN for ${stakeholder} ${flowType}:`, error);
       setError(`Failed to generate structured BPMN diagram. Please try again.`);
+    } finally {
+      setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
+  // Generate BPMN using best practices (Hybrid Validation Strategy)
+  const generateBestPracticeBpmn = async (
+    stakeholder: string,
+    flowType: string,
+  ) => {
+    const flowKey = `${stakeholder}-${flowType}`;
+    const details = flowDetails[flowKey];
+
+    if (!details) {
+      setError("Flow details not found. Please generate flow details first.");
+      return;
+    }
+
+    setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
+
+    try {
+      // Create structured content from flow details
+      const structuredContent = {
+        processName: `${stakeholder} - ${flowType}`,
+        processDescription: details.processDescription || details.description,
+        participants: details.participants || [],
+        trigger: details.trigger || "Process starts",
+        activities: details.activities || [],
+        decisionPoints: details.decisionPoints || [],
+        endEvent: details.endEvent || "Process completes",
+        additionalElements: details.additionalElements || [],
+      };
+
+      console.log("Generating BPMN using best practice hybrid validation strategy...");
+
+      // Use the recommended best practice strategy
+      const strategies = BPMN_GENERATION_STRATEGIES;
+      const bestStrategy = strategies.find(s => s.name === "Hybrid Validation");
+      
+      if (!bestStrategy) {
+        throw new Error("Best practice strategy not found");
+      }
+
+      const bpmnXml = await bestStrategy.implementation(structuredContent);
+
+      // Update stakeholder flows with generated BPMN
+      const updatedFlows = [...stakeholderFlows];
+      const existingFlowIndex = updatedFlows.findIndex(
+        (flow) =>
+          flow.stakeholder === stakeholder && flow.flowType === flowType,
+      );
+
+      if (existingFlowIndex >= 0) {
+        updatedFlows[existingFlowIndex] = {
+          ...updatedFlows[existingFlowIndex],
+          bpmnXml,
+        };
+      } else {
+        updatedFlows.push({
+          stakeholder,
+          flowType,
+          bpmnXml,
+          customPrompt: "",
+        });
+      }
+
+      updateStakeholderFlows(updatedFlows);
+
+      // Save the latest generated BPMN to localStorage for editor
+      localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
+      localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+    } catch (error) {
+      console.error(`Error generating best practice BPMN for ${stakeholder} ${flowType}:`, error);
+      setError(`Failed to generate best practice BPMN diagram. Please try again.`);
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
@@ -2279,7 +2356,29 @@ Data Objects: Request form, User profile`,
                                       ) : (
                                         <>
                                           <Zap className="h-3 w-3 mr-1" />
-                                          Direct BPMN
+                                          Direct
+                                        </>
+                                      )}
+                                    </Button>
+                                    <Button
+                                      onClick={() =>
+                                        generateBestPracticeBpmn(
+                                          stakeholder,
+                                          flowType,
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingBpmn[flowKey] || !details
+                                      }
+                                      size="sm"
+                                      className="text-xs px-1.5 py-1 h-7 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
+                                    >
+                                      {isGeneratingBpmn[flowKey] ? (
+                                        <Loader2 className="h-3 w-3 animate-spin" />
+                                      ) : (
+                                        <>
+                                          <CheckCircle className="h-3 w-3 mr-1" />
+                                          Best
                                         </>
                                       )}
                                     </Button>
