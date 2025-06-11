@@ -130,13 +130,8 @@ export default function CodeGenerator() {
     });
 
     try {
-      // Initialize the code generator only when needed
-      if (!codeGenerator) {
-        const generator = createAICodeGenerator();
-        setCodeGenerator(generator);
-      }
-
-      const activeGenerator = codeGenerator || createAICodeGenerator();
+      // Always create a fresh generator to ensure proper Gemini configuration
+      const activeGenerator = createAICodeGenerator();
 
       const projectStructure = await activeGenerator.generateCompleteProject(
         projectPlan,
