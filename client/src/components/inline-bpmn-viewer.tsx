@@ -43,23 +43,17 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       return;
     }
 
-    if (!containerRef.current) {
-      setError('Container not ready for BPMN viewer');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!window.BpmnJS) {
-      setError('BPMN.js library not loaded. Please refresh the page.');
-      setIsLoading(false);
-      return;
-    }
-
     const initViewer = async () => {
       try {
         // Clean up existing viewer
         if (viewerRef.current) {
           viewerRef.current.destroy();
+          viewerRef.current = null;
+        }
+
+        // Clear container content
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
         }
 
         // Create new viewer with proper configuration
@@ -68,7 +62,7 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           width: '100%',
           height: height,
           keyboard: {
-            bindTo: window
+            bindTo: document
           }
         });
 
@@ -109,15 +103,26 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       }
     };
 
-    // Load BPMN.js if not already loaded
-    if (!window.BpmnJS) {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/bpmn-js@17.7.1/dist/bpmn-navigated-viewer.production.min.js';
-      script.onload = initViewer;
-      document.head.appendChild(script);
-    } else {
+    // Wait for container and BPMN.js to be ready
+    const initializeBpmn = () => {
+      if (!containerRef.current) {
+        // Container not ready yet, try again in a short delay
+        setTimeout(initializeBpmn, 100);
+        return;
+      }
+
+      if (!window.BpmnJS) {
+        setError('BPMN.js library not loaded. Please refresh the page.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Container and library are ready, proceed with initialization
       initViewer();
-    }
+    };
+
+    // Start the initialization process
+    initializeBpmn();
 
     return () => {
       if (viewerRef.current) {
