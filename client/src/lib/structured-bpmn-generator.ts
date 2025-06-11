@@ -136,6 +136,9 @@ export function generateStructuredBpmn(data: StructuredBpmnData): string {
       </bpmndi:BPMNShape>`;
   }).join('\n');
 
+  // Calculate end event position
+  const endEventX = 250 + data.activities.length * 180 + data.decisionPoints.length * 100 + 50;
+
   // Create edge elements with proper gateway routing
   const flowEdges: string[] = [];
   
@@ -215,8 +218,6 @@ export function generateStructuredBpmn(data: StructuredBpmnData): string {
         <di:waypoint x="${endEventX}" y="230" />
       </bpmndi:BPMNEdge>`);
   }
-
-  const endEventX = 250 + data.activities.length * 180 + data.decisionPoints.length * 100 + 50;
 
   // Generate complete BPMN 2.0 XML
   return `<?xml version="1.0" encoding="UTF-8"?>
