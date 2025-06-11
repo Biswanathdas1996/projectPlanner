@@ -6,9 +6,20 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { NavigationBar } from "@/components/navigation-bar";
-import { createAICodeGenerator, type CodeGenerationConfig, type ProjectStructure, type GenerationProgress } from "@/lib/ai-code-generator";
+import {
+  createAICodeGenerator,
+  type CodeGenerationConfig,
+  type ProjectStructure,
+  type GenerationProgress,
+} from "@/lib/ai-code-generator";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import {
   Code,
@@ -41,16 +52,18 @@ export default function CodeGenerator() {
     database: "postgresql",
     styling: "tailwind",
     features: [],
-    deployment: "vercel"
+    deployment: "vercel",
   });
-  const [generatedProject, setGeneratedProject] = useState<ProjectStructure | null>(null);
+  const [generatedProject, setGeneratedProject] =
+    useState<ProjectStructure | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState<GenerationProgress>({
-    current: 0,
-    total: 0,
-    status: "",
-    currentTask: ""
-  });
+  const [generationProgress, setGenerationProgress] =
+    useState<GenerationProgress>({
+      current: 0,
+      total: 0,
+      status: "",
+      currentTask: "",
+    });
   const [codeGenerator, setCodeGenerator] = useState<any>(null);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -61,33 +74,39 @@ export default function CodeGenerator() {
     const projectPlanSources = [
       localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN),
       localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION),
-      localStorage.getItem("project-plan")
+      localStorage.getItem("project-plan"),
     ];
-    const savedProjectPlan = projectPlanSources.find(plan => plan && plan.trim());
-    
-    // Load stakeholder flows from multiple possible sources  
+    const savedProjectPlan = projectPlanSources.find(
+      (plan) => plan && plan.trim(),
+    );
+
+    // Load stakeholder flows from multiple possible sources
     const stakeholderFlowSources = [
       localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS),
       localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOW_DATA),
       localStorage.getItem("stakeholder-flow-data"),
       localStorage.getItem("stakeholder_analysis"),
-      localStorage.getItem("flow_details")
+      localStorage.getItem("flow_details"),
     ];
-    const savedStakeholderData = stakeholderFlowSources.find(data => data && data.trim());
-    
+    const savedStakeholderData = stakeholderFlowSources.find(
+      (data) => data && data.trim(),
+    );
+
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
     }
     if (savedStakeholderData) {
       setStakeholderFlows(savedStakeholderData);
     }
-    
+
     setDataLoaded(true);
   }, []);
 
   const generateProjectCode = async () => {
     if (!projectPlan.trim()) {
-      alert("Please ensure you have a project plan. Visit the Project Planner page first.");
+      alert(
+        "Please ensure you have a project plan. Visit the Project Planner page first.",
+      );
       return;
     }
 
@@ -107,7 +126,7 @@ export default function CodeGenerator() {
       current: 0,
       total: 7,
       status: "Initializing AI code generation...",
-      currentTask: "Preparing"
+      currentTask: "Preparing",
     });
 
     try {
@@ -118,50 +137,50 @@ export default function CodeGenerator() {
       }
 
       const activeGenerator = codeGenerator || createAICodeGenerator();
-      
+
       const projectStructure = await activeGenerator.generateCompleteProject(
         projectPlan,
         stakeholderFlows,
         config,
-        (progress) => {
+        (progress: GenerationProgress) => {
           setGenerationProgress(progress);
-        }
+        },
       );
 
       setGeneratedProject(projectStructure);
-
     } catch (error) {
       console.error("Error generating project:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate project code";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate project code";
       
       if (errorMessage.includes("API key")) {
-        alert("OpenAI API key is required for code generation. Please check your environment variables.");
+        alert("Gemini API key is required for code generation. Please check your environment variables.");
       } else {
-        alert(errorMessage);
+        alert(`Code generation failed: ${errorMessage}`);
       }
     } finally {
       setIsGenerating(false);
     }
   };
 
-
-
   const downloadProject = () => {
     if (!generatedProject) return;
 
     const projectData = {
       ...generatedProject,
-      config
+      config,
     };
 
     const blob = new Blob([JSON.stringify(projectData, null, 2)], {
-      type: 'application/json'
+      type: "application/json",
     });
-    
+
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${config.projectName || 'generated-project'}.json`;
+    a.download = `${config.projectName || "generated-project"}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -172,19 +191,19 @@ export default function CodeGenerator() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <NavigationBar 
-        title="Code Generator"
-        showBackButton={true}
-      />
-      
+      <NavigationBar title="Code Generator" showBackButton={true} />
+
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">AI Code Generator</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            AI Code Generator
+          </h1>
           <p className="text-gray-600">
-            Generate complete React project code based on your project plan and stakeholder analysis
+            Generate complete React project code based on your project plan and
+            stakeholder analysis
           </p>
-          
+
           {/* Data Loading Status */}
           {dataLoaded && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -192,26 +211,34 @@ export default function CodeGenerator() {
                 {projectPlan ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-green-600" />
-                    <span className="text-sm text-green-700">Project Plan Loaded</span>
+                    <span className="text-sm text-green-700">
+                      Project Plan Loaded
+                    </span>
                   </>
                 ) : (
                   <>
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm text-amber-700">No Project Plan Found</span>
+                    <span className="text-sm text-amber-700">
+                      No Project Plan Found
+                    </span>
                   </>
                 )}
               </div>
-              
+
               <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 {stakeholderFlows ? (
                   <>
                     <CheckCircle className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-blue-700">Stakeholder Data Loaded</span>
+                    <span className="text-sm text-blue-700">
+                      Stakeholder Data Loaded
+                    </span>
                   </>
                 ) : (
                   <>
                     <AlertTriangle className="h-4 w-4 text-amber-600" />
-                    <span className="text-sm text-amber-700">No Stakeholder Data Found</span>
+                    <span className="text-sm text-amber-700">
+                      No Stakeholder Data Found
+                    </span>
                   </>
                 )}
               </div>
@@ -234,14 +261,21 @@ export default function CodeGenerator() {
                 <Input
                   id="projectName"
                   value={config.projectName}
-                  onChange={(e) => setConfig({...config, projectName: e.target.value})}
+                  onChange={(e) =>
+                    setConfig({ ...config, projectName: e.target.value })
+                  }
                   placeholder="my-awesome-app"
                 />
               </div>
-              
+
               <div>
                 <Label htmlFor="framework">Frontend Framework</Label>
-                <Select value={config.framework} onValueChange={(value) => setConfig({...config, framework: value})}>
+                <Select
+                  value={config.framework}
+                  onValueChange={(value) =>
+                    setConfig({ ...config, framework: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -255,7 +289,12 @@ export default function CodeGenerator() {
 
               <div>
                 <Label htmlFor="backend">Backend</Label>
-                <Select value={config.backend} onValueChange={(value) => setConfig({...config, backend: value})}>
+                <Select
+                  value={config.backend}
+                  onValueChange={(value) =>
+                    setConfig({ ...config, backend: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -269,7 +308,12 @@ export default function CodeGenerator() {
 
               <div>
                 <Label htmlFor="database">Database</Label>
-                <Select value={config.database} onValueChange={(value) => setConfig({...config, database: value})}>
+                <Select
+                  value={config.database}
+                  onValueChange={(value) =>
+                    setConfig({ ...config, database: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -283,7 +327,12 @@ export default function CodeGenerator() {
 
               <div>
                 <Label htmlFor="styling">Styling</Label>
-                <Select value={config.styling} onValueChange={(value) => setConfig({...config, styling: value})}>
+                <Select
+                  value={config.styling}
+                  onValueChange={(value) =>
+                    setConfig({ ...config, styling: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -297,7 +346,12 @@ export default function CodeGenerator() {
 
               <div>
                 <Label htmlFor="deployment">Deployment</Label>
-                <Select value={config.deployment} onValueChange={(value) => setConfig({...config, deployment: value})}>
+                <Select
+                  value={config.deployment}
+                  onValueChange={(value) =>
+                    setConfig({ ...config, deployment: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -379,17 +433,19 @@ export default function CodeGenerator() {
                     {generationProgress.current} / {generationProgress.total}
                   </span>
                 </div>
-                
+
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ 
-                      width: `${(generationProgress.current / generationProgress.total) * 100}%` 
+                    style={{
+                      width: `${(generationProgress.current / generationProgress.total) * 100}%`,
                     }}
                   />
                 </div>
-                
-                <p className="text-sm text-gray-600">{generationProgress.status}</p>
+
+                <p className="text-sm text-gray-600">
+                  {generationProgress.status}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -442,7 +498,9 @@ export default function CodeGenerator() {
                 <TabsContent value="structure" className="mt-4">
                   <div className="relative">
                     <Button
-                      onClick={() => copyToClipboard(generatedProject.folderStructure)}
+                      onClick={() =>
+                        copyToClipboard(generatedProject.folderStructure)
+                      }
                       className="absolute top-2 right-2 z-10"
                       size="sm"
                       variant="outline"
@@ -457,52 +515,62 @@ export default function CodeGenerator() {
 
                 <TabsContent value="frontend" className="mt-4">
                   <div className="space-y-4">
-                    {Object.entries(generatedProject.frontendFiles).map(([filename, content]) => (
-                      <div key={filename} className="border rounded-lg">
-                        <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b">
-                          <span className="font-mono text-sm">{filename}</span>
-                          <Button
-                            onClick={() => copyToClipboard(content)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
+                    {Object.entries(generatedProject.frontendFiles).map(
+                      ([filename, content]) => (
+                        <div key={filename} className="border rounded-lg">
+                          <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b">
+                            <span className="font-mono text-sm">
+                              {filename}
+                            </span>
+                            <Button
+                              onClick={() => copyToClipboard(content)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <pre className="p-4 overflow-auto text-sm bg-gray-900 text-gray-100">
+                            {content}
+                          </pre>
                         </div>
-                        <pre className="p-4 overflow-auto text-sm bg-gray-900 text-gray-100">
-                          {content}
-                        </pre>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="backend" className="mt-4">
                   <div className="space-y-4">
-                    {Object.entries(generatedProject.backendFiles).map(([filename, content]) => (
-                      <div key={filename} className="border rounded-lg">
-                        <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b">
-                          <span className="font-mono text-sm">{filename}</span>
-                          <Button
-                            onClick={() => copyToClipboard(content)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
+                    {Object.entries(generatedProject.backendFiles).map(
+                      ([filename, content]) => (
+                        <div key={filename} className="border rounded-lg">
+                          <div className="flex items-center justify-between bg-gray-50 px-4 py-2 border-b">
+                            <span className="font-mono text-sm">
+                              {filename}
+                            </span>
+                            <Button
+                              onClick={() => copyToClipboard(content)}
+                              size="sm"
+                              variant="outline"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <pre className="p-4 overflow-auto text-sm bg-gray-900 text-gray-100">
+                            {content}
+                          </pre>
                         </div>
-                        <pre className="p-4 overflow-auto text-sm bg-gray-900 text-gray-100">
-                          {content}
-                        </pre>
-                      </div>
-                    ))}
+                      ),
+                    )}
                   </div>
                 </TabsContent>
 
                 <TabsContent value="database" className="mt-4">
                   <div className="relative">
                     <Button
-                      onClick={() => copyToClipboard(generatedProject.databaseSchema)}
+                      onClick={() =>
+                        copyToClipboard(generatedProject.databaseSchema)
+                      }
                       className="absolute top-2 right-2 z-10"
                       size="sm"
                       variant="outline"
@@ -518,7 +586,9 @@ export default function CodeGenerator() {
                 <TabsContent value="config" className="mt-4">
                   <div className="relative">
                     <Button
-                      onClick={() => copyToClipboard(generatedProject.packageJson)}
+                      onClick={() =>
+                        copyToClipboard(generatedProject.packageJson)
+                      }
                       className="absolute top-2 right-2 z-10"
                       size="sm"
                       variant="outline"
