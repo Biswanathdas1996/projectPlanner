@@ -213,34 +213,135 @@ Be thorough and extract 15-25 stakeholders minimum for a comprehensive analysis.
     
     stakeholders.forEach(stakeholder => {
       const flows = [];
+      const roleLower = stakeholder.role.toLowerCase();
+      const nameLower = stakeholder.name.toLowerCase();
       
-      // Generate flow types based on stakeholder role and type
-      if (stakeholder.name.toLowerCase().includes('user') || stakeholder.name.toLowerCase().includes('customer')) {
-        flows.push('User Registration', 'User Login', 'Core Feature Usage', 'User Support');
+      // Enhanced flow generation based on specific roles and responsibilities
+      
+      // End Users and Customers
+      if (nameLower.includes('user') || nameLower.includes('customer') || nameLower.includes('client')) {
+        flows.push('User Onboarding', 'Authentication Flow', 'Main Feature Access', 'Profile Management');
+        flows.push('Support Request', 'Feedback Submission', 'Account Settings', 'Data Export');
       }
       
-      if (stakeholder.name.toLowerCase().includes('admin') || stakeholder.role.toLowerCase().includes('admin')) {
-        flows.push('Admin Dashboard', 'User Management', 'System Configuration', 'Reporting');
+      // Administrative roles
+      if (nameLower.includes('admin') || roleLower.includes('admin') || roleLower.includes('administrator')) {
+        flows.push('Admin Dashboard Access', 'User Account Management', 'System Configuration');
+        flows.push('Reports Generation', 'Security Monitoring', 'Backup Management');
       }
       
-      if (stakeholder.name.toLowerCase().includes('manager') || stakeholder.role.toLowerCase().includes('manager')) {
-        flows.push('Project Planning', 'Team Coordination', 'Progress Monitoring', 'Resource Management');
+      // Management roles
+      if (nameLower.includes('manager') || roleLower.includes('manager') || roleLower.includes('supervisor')) {
+        flows.push('Team Overview', 'Resource Allocation', 'Performance Review');
+        flows.push('Budget Approval', 'Strategic Planning', 'Stakeholder Communication');
       }
       
-      if (stakeholder.type === 'system') {
-        flows.push('API Integration', 'Data Processing', 'System Monitoring', 'Error Handling');
+      // Development and Technical roles
+      if (roleLower.includes('developer') || roleLower.includes('engineer') || nameLower.includes('dev')) {
+        flows.push('Code Development', 'Testing Workflow', 'Deployment Process');
+        flows.push('Bug Resolution', 'Code Review', 'Documentation Update');
       }
       
+      // QA and Testing roles
+      if (roleLower.includes('qa') || roleLower.includes('test') || roleLower.includes('quality')) {
+        flows.push('Test Case Creation', 'Test Execution', 'Bug Reporting');
+        flows.push('Quality Review', 'Performance Testing', 'User Acceptance Testing');
+      }
+      
+      // Design roles
+      if (roleLower.includes('design') || roleLower.includes('ux') || roleLower.includes('ui')) {
+        flows.push('Design Creation', 'User Research', 'Prototype Development');
+        flows.push('Design Review', 'Usability Testing', 'Style Guide Management');
+      }
+      
+      // Business Analyst roles
+      if (roleLower.includes('analyst') || roleLower.includes('business')) {
+        flows.push('Requirements Gathering', 'Process Analysis', 'Documentation');
+        flows.push('Stakeholder Interviews', 'Gap Analysis', 'Solution Design');
+      }
+      
+      // Product roles
+      if (roleLower.includes('product') || nameLower.includes('product')) {
+        flows.push('Feature Planning', 'Roadmap Management', 'User Story Creation');
+        flows.push('Market Research', 'Product Launch', 'Metrics Analysis');
+      }
+      
+      // Support roles
+      if (roleLower.includes('support') || nameLower.includes('support')) {
+        flows.push('Ticket Management', 'Customer Assistance', 'Issue Escalation');
+        flows.push('Knowledge Base Update', 'Customer Communication', 'Problem Resolution');
+      }
+      
+      // Sales and Marketing
+      if (roleLower.includes('sales') || roleLower.includes('marketing')) {
+        flows.push('Lead Generation', 'Customer Engagement', 'Campaign Management');
+        flows.push('Sales Process', 'Market Analysis', 'Customer Retention');
+      }
+      
+      // DevOps and Infrastructure
+      if (roleLower.includes('devops') || roleLower.includes('infrastructure') || roleLower.includes('system')) {
+        flows.push('Infrastructure Setup', 'Deployment Pipeline', 'System Monitoring');
+        flows.push('Security Implementation', 'Backup Process', 'Performance Optimization');
+      }
+      
+      // External stakeholders
       if (stakeholder.type === 'external') {
-        flows.push('External Communication', 'Compliance Reporting', 'Partner Integration', 'Customer Feedback');
+        flows.push('External Communication', 'Contract Management', 'Compliance Reporting');
+        flows.push('Partnership Coordination', 'Vendor Management', 'Regulatory Interaction');
       }
       
-      // Default flows if none specified
+      // System stakeholders
+      if (stakeholder.type === 'system') {
+        flows.push('API Integration', 'Data Synchronization', 'System Health Check');
+        flows.push('Error Handling', 'Automated Monitoring', 'Data Backup');
+      }
+      
+      // Financial roles
+      if (roleLower.includes('finance') || roleLower.includes('accounting')) {
+        flows.push('Budget Planning', 'Financial Reporting', 'Cost Analysis');
+        flows.push('Invoice Processing', 'Payment Management', 'Financial Compliance');
+      }
+      
+      // Legal and Compliance
+      if (roleLower.includes('legal') || roleLower.includes('compliance')) {
+        flows.push('Legal Review', 'Compliance Monitoring', 'Risk Assessment');
+        flows.push('Contract Review', 'Regulatory Reporting', 'Policy Management');
+      }
+      
+      // Default flows based on responsibilities if none matched
       if (flows.length === 0) {
-        flows.push('Standard Workflow', 'Communication Flow', 'Feedback Process');
+        stakeholder.responsibilities.forEach(responsibility => {
+          const respLower = responsibility.toLowerCase();
+          if (respLower.includes('manage')) {
+            flows.push('Management Dashboard', 'Resource Oversight');
+          }
+          if (respLower.includes('develop')) {
+            flows.push('Development Workflow', 'Code Management');
+          }
+          if (respLower.includes('test')) {
+            flows.push('Testing Process', 'Quality Assurance');
+          }
+          if (respLower.includes('support')) {
+            flows.push('Support Workflow', 'Issue Resolution');
+          }
+        });
       }
       
-      flowTypes[stakeholder.name] = flows;
+      // Final fallback flows
+      if (flows.length === 0) {
+        flows.push('Standard Workflow', 'Communication Process', 'Status Updates');
+      }
+      
+      // Remove duplicates and limit to reasonable number
+      const uniqueFlows: string[] = [];
+      const seen = new Set<string>();
+      for (const flow of flows) {
+        if (!seen.has(flow) && uniqueFlows.length < 8) {
+          seen.add(flow);
+          uniqueFlows.push(flow);
+        }
+      }
+      flowTypes[stakeholder.name] = uniqueFlows;
     });
     
     return flowTypes;

@@ -877,27 +877,227 @@ export default function UserJourney() {
                   </div>
                 )}
 
-                {/* Flow Types Available */}
+                {/* Flow Types Management */}
                 <div>
-                  <h3 className="font-semibold text-lg mb-3">Available Flow Types</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {Object.entries(stakeholderAnalysis.flowTypes).slice(0, 9).map(([stakeholder, flows]) => (
-                      <div key={stakeholder} className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                        <h4 className="font-medium text-gray-800 mb-2 text-sm">{stakeholder}</h4>
-                        <div className="flex flex-wrap gap-1">
-                          {flows.slice(0, 3).map((flow, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {flow}
-                            </Badge>
-                          ))}
-                          {flows.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                              +{flows.length - 3}
-                            </Badge>
-                          )}
+                  <h3 className="font-semibold text-lg mb-4">Flow Types Management</h3>
+                  <p className="text-gray-600 mb-4">Each stakeholder has been assigned specific flow types based on their role and responsibilities in the project plan.</p>
+                  
+                  <div className="space-y-4">
+                    {stakeholderAnalysis.stakeholders.map((stakeholder, index) => {
+                      const assignedFlows = stakeholderAnalysis.flowTypes[stakeholder.name] || [];
+                      const categoryColor = stakeholder.category === 'key' ? 'red' : 
+                                          stakeholder.category === 'primary' ? 'blue' : 'yellow';
+                      
+                      return (
+                        <div key={index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-2">
+                                <h4 className="font-semibold text-gray-900">{stakeholder.name}</h4>
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    categoryColor === 'red' ? 'border-red-300 text-red-700 bg-red-50' :
+                                    categoryColor === 'blue' ? 'border-blue-300 text-blue-700 bg-blue-50' :
+                                    'border-yellow-300 text-yellow-700 bg-yellow-50'
+                                  }`}
+                                >
+                                  {stakeholder.category}
+                                </Badge>
+                                <Badge 
+                                  variant="outline" 
+                                  className={`text-xs ${
+                                    stakeholder.type === 'internal' ? 'border-green-300 text-green-700 bg-green-50' :
+                                    stakeholder.type === 'external' ? 'border-purple-300 text-purple-700 bg-purple-50' :
+                                    'border-gray-300 text-gray-700 bg-gray-50'
+                                  }`}
+                                >
+                                  {stakeholder.type}
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-3">{stakeholder.role}</p>
+                              
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div>
+                                  <h5 className="text-xs font-medium text-gray-700 mb-1">Influence & Interest</h5>
+                                  <div className="flex gap-2">
+                                    <span className={`text-xs px-2 py-1 rounded ${
+                                      stakeholder.influence === 'high' ? 'bg-red-100 text-red-700' :
+                                      stakeholder.influence === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
+                                    }`}>
+                                      {stakeholder.influence} influence
+                                    </span>
+                                    <span className={`text-xs px-2 py-1 rounded ${
+                                      stakeholder.interest === 'high' ? 'bg-red-100 text-red-700' :
+                                      stakeholder.interest === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-green-100 text-green-700'
+                                    }`}>
+                                      {stakeholder.interest} interest
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                {stakeholder.responsibilities.length > 0 && (
+                                  <div>
+                                    <h5 className="text-xs font-medium text-gray-700 mb-1">Key Responsibilities</h5>
+                                    <div className="text-xs text-gray-600">
+                                      {stakeholder.responsibilities.slice(0, 2).map((resp, idx) => (
+                                        <div key={idx} className="truncate">• {resp}</div>
+                                      ))}
+                                      {stakeholder.responsibilities.length > 2 && (
+                                        <div className="text-gray-500">+{stakeholder.responsibilities.length - 2} more</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-800 mb-2 flex items-center gap-2">
+                              <Workflow className="h-4 w-4 text-indigo-600" />
+                              Assigned Flow Types ({assignedFlows.length})
+                            </h5>
+                            
+                            {assignedFlows.length > 0 ? (
+                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
+                                {assignedFlows.map((flow, flowIndex) => (
+                                  <div 
+                                    key={flowIndex} 
+                                    className="flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-md p-2 text-sm"
+                                  >
+                                    <span className="text-indigo-800 font-medium text-xs truncate flex-1">
+                                      {flow}
+                                    </span>
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      className="h-6 w-6 p-0 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-100 ml-2"
+                                      onClick={() => {
+                                        // Generate BPMN for this specific flow
+                                        generatePersonaBpmnFlowWithType(
+                                          stakeholder.name.toLowerCase().replace(/\s+/g, '-'), 
+                                          flow,
+                                          `Generate a detailed BPMN flow for ${stakeholder.name} performing ${flow} in the context of the project.`
+                                        );
+                                      }}
+                                    >
+                                      <ArrowRight className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="bg-gray-50 border border-gray-200 rounded-md p-3 text-center">
+                                <p className="text-sm text-gray-500">No flows assigned</p>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="mt-2"
+                                  onClick={() => {
+                                    // Regenerate flows for this stakeholder
+                                    extractStakeholdersFromProjectPlan();
+                                  }}
+                                >
+                                  Generate Flows
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Quick Action Buttons */}
+                          <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => {
+                                generatePersonaBpmnFlowWithType(
+                                  stakeholder.name.toLowerCase().replace(/\s+/g, '-'), 
+                                  'comprehensive',
+                                  `Generate comprehensive BPMN flows for all activities of ${stakeholder.name} (${stakeholder.role}) in the project.`
+                                );
+                              }}
+                            >
+                              <Users className="h-3 w-3 mr-1" />
+                              Generate All Flows
+                            </Button>
+                            
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                              onClick={() => {
+                                const stakeholderData = JSON.stringify(stakeholder, null, 2);
+                                navigator.clipboard.writeText(stakeholderData);
+                              }}
+                            >
+                              <Copy className="h-3 w-3 mr-1" />
+                              Copy Details
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Bulk Actions */}
+                  <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg">
+                    <h4 className="font-medium text-indigo-900 mb-3 flex items-center gap-2">
+                      <Settings className="h-5 w-5" />
+                      Bulk Flow Management
+                    </h4>
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        size="sm"
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700"
+                        onClick={async () => {
+                          // Generate BPMN flows for all key stakeholders
+                          const keyStakeholders = stakeholderAnalysis.stakeholders.filter(s => s.category === 'key');
+                          for (const stakeholder of keyStakeholders.slice(0, 3)) {
+                            await generatePersonaBpmnFlowWithType(
+                              stakeholder.name.toLowerCase().replace(/\s+/g, '-'),
+                              'comprehensive',
+                              `Generate comprehensive BPMN flows for key stakeholder ${stakeholder.name} (${stakeholder.role}) including all their primary responsibilities and interactions.`
+                            );
+                          }
+                        }}
+                      >
+                        <Workflow className="h-4 w-4 mr-2" />
+                        Generate Key Stakeholder Flows
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-green-300 text-green-700 hover:bg-green-50"
+                        onClick={() => {
+                          // Export all stakeholder flow assignments
+                          const exportData = stakeholderAnalysis.stakeholders.map(s => ({
+                            name: s.name,
+                            role: s.role,
+                            type: s.type,
+                            category: s.category,
+                            assignedFlows: stakeholderAnalysis.flowTypes[s.name] || []
+                          }));
+                          
+                          const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                          const url = URL.createObjectURL(blob);
+                          const link = document.createElement('a');
+                          link.href = url;
+                          link.download = 'stakeholder_flow_assignments.json';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                          URL.revokeObjectURL(url);
+                        }}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Flow Assignments
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
