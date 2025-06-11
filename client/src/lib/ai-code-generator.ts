@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface CodeGenerationConfig {
   projectName: string;
@@ -33,8 +33,13 @@ export class AICodeGenerator {
   private readonly retryDelay = 2000;
 
   constructor() {
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    if (!apiKey) {
+      throw new Error("OpenAI API key is required. Please set VITE_OPENAI_API_KEY in your environment variables.");
+    }
+    
     this.openai = new OpenAI({
-      apiKey: import.meta.env.VITE_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+      apiKey: apiKey,
       dangerouslyAllowBrowser: true
     });
   }
