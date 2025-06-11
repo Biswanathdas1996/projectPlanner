@@ -1061,8 +1061,29 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
     flowContent = enhancedPrompt;
   }
 
-  // Client-side BPMN generation with enhanced structured input
-  return generateBpmnXmlClient(flowContent);
+  // Direct client-side BPMN generation using browser Gemini API
+  if (!import.meta.env.VITE_GEMINI_API_KEY) {
+    throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your environment.');
+  }
+
+  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+  const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+  const result = await model.generateContent(flowContent);
+  const response = await result.response;
+  let text = response.text();
+
+  // Clean up response to extract XML
+  text = text.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
+  
+  // Validate it starts with XML declaration or BPMN element
+  if (!text.startsWith('<?xml') && !text.startsWith('<bpmn')) {
+    console.error('Invalid BPMN XML response from AI');
+    throw new Error('AI did not generate valid BPMN XML');
+  }
+
+  return text;
 }
 
 export async function generateBpmnXmlClient(
