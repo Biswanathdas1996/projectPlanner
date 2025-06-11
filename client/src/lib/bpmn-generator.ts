@@ -13,38 +13,39 @@ interface BpmnData {
 }
 
 export function generateBpmnXmlFromStructuredData(data: BpmnData): string {
-  const processId = `Process_${sanitizeId(data.processName)}`;
-  const collaborationId = "Collaboration_1";
+  const timestamp = Date.now();
+  const processId = `Process_${sanitizeId(data.processName)}_${timestamp}`;
+  const collaborationId = `Collaboration_${timestamp}`;
   
   // Generate participants
   const participants = data.participants.map((participant, index) => {
-    const participantId = `Participant_${index + 1}`;
+    const participantId = `Participant_${index + 1}_${timestamp}`;
     return `    <bpmn2:participant id="${participantId}" name="${escapeXml(participant)}" processRef="${processId}" />`;
   }).join('\n');
 
   // Generate start event
-  const startEvent = `    <bpmn2:startEvent id="StartEvent_1" name="${escapeXml(data.trigger)}" />`;
+  const startEvent = `    <bpmn2:startEvent id="StartEvent_1_${timestamp}" name="${escapeXml(data.trigger)}" />`;
 
   // Generate user tasks from activities
   const tasks = data.activities.map((activity, index) => {
-    const taskId = `Task_${index + 1}`;
+    const taskId = `Task_${index + 1}_${timestamp}`;
     return `    <bpmn2:userTask id="${taskId}" name="${escapeXml(activity)}" />`;
   }).join('\n');
 
   // Generate gateways from decision points
   const gateways = data.decisionPoints.map((decision, index) => {
-    const gatewayId = `Gateway_${index + 1}`;
+    const gatewayId = `Gateway_${index + 1}_${timestamp}`;
     return `    <bpmn2:exclusiveGateway id="${gatewayId}" name="${escapeXml(decision)}" />`;
   }).join('\n');
 
   // Generate end event
-  const endEvent = `    <bpmn2:endEvent id="EndEvent_1" name="${escapeXml(data.endEvent)}" />`;
+  const endEvent = `    <bpmn2:endEvent id="EndEvent_1_${timestamp}" name="${escapeXml(data.endEvent)}" />`;
 
   // Generate sequence flows
-  const flows = generateSequenceFlows(data.activities.length, data.decisionPoints.length);
+  const flows = generateSequenceFlows(data.activities.length, data.decisionPoints.length, timestamp);
 
   // Generate visual layout
-  const { shapes, edges } = generateVisualLayout(data.participants.length, data.activities.length, data.decisionPoints.length);
+  const { shapes, edges } = generateVisualLayout(data.participants.length, data.activities.length, data.decisionPoints.length, timestamp);
 
   // Construct complete BPMN XML
   const bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -88,19 +89,19 @@ function escapeXml(text: string): string {
     .replace(/'/g, '&#39;');
 }
 
-function generateSequenceFlows(taskCount: number, gatewayCount: number): string {
+function generateSequenceFlows(taskCount: number, gatewayCount: number, timestamp: number): string {
   const flows: string[] = [];
   
   // Flow from start to first task
-  flows.push(`    <bpmn2:sequenceFlow id="Flow_start_1" sourceRef="StartEvent_1" targetRef="Task_1" />`);
+  flows.push(`    <bpmn2:sequenceFlow id="Flow_start_1_${timestamp}" sourceRef="StartEvent_1_${timestamp}" targetRef="Task_1_${timestamp}" />`);
   
   // Flows between tasks
   for (let i = 1; i < taskCount; i++) {
-    flows.push(`    <bpmn2:sequenceFlow id="Flow_${i}_${i + 1}" sourceRef="Task_${i}" targetRef="Task_${i + 1}" />`);
+    flows.push(`    <bpmn2:sequenceFlow id="Flow_${i}_${i + 1}_${timestamp}" sourceRef="Task_${i}_${timestamp}" targetRef="Task_${i + 1}_${timestamp}" />`);
   }
   
   // Flow from last task to end
-  flows.push(`    <bpmn2:sequenceFlow id="Flow_${taskCount}_end" sourceRef="Task_${taskCount}" targetRef="EndEvent_1" />`);
+  flows.push(`    <bpmn2:sequenceFlow id="Flow_${taskCount}_end_${timestamp}" sourceRef="Task_${taskCount}_${timestamp}" targetRef="EndEvent_1_${timestamp}" />`);
   
   return flows.join('\n');
 }

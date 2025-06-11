@@ -43,7 +43,14 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       return;
     }
 
-    if (!containerRef.current || !window.BpmnJS) {
+    if (!containerRef.current) {
+      setError('Container not ready for BPMN viewer');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!window.BpmnJS) {
+      setError('BPMN.js library not loaded. Please refresh the page.');
       setIsLoading(false);
       return;
     }
@@ -55,11 +62,14 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           viewerRef.current.destroy();
         }
 
-        // Create new viewer
+        // Create new viewer with proper configuration
         const viewer = new window.BpmnJS({
           container: containerRef.current,
           width: '100%',
-          height: height
+          height: height,
+          keyboard: {
+            bindTo: window
+          }
         });
 
         viewerRef.current = viewer;
