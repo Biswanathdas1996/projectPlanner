@@ -39,6 +39,7 @@ import {
   EyeOff,
   Users,
   BookOpen,
+  TrendingUp,
 } from 'lucide-react';
 
 export default function ProjectPlanner() {
@@ -1869,6 +1870,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </Button>
                 
                 <div className="flex flex-col sm:flex-row gap-3">
+                  <Link href="/market-research">
+                    <Button
+                      variant="outline"
+                      className="bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white border-0 shadow-lg"
+                    >
+                      <TrendingUp className="h-4 w-4 mr-2" />
+                      Market Research
+                    </Button>
+                  </Link>
+                  
                   <Link href="/user-journey">
                     <Button
                       variant="outline"
@@ -1878,8 +1889,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       User Journey Flows
                     </Button>
                   </Link>
-                  
-                  
                 </div>
               </div>
             </CardContent>

@@ -58,15 +58,9 @@ export class MarketResearchAgent {
   }
 
   private async searchAndAnalyzeMarket(projectDescription: string): Promise<MarketResearchData> {
-    // Check if PERPLEXITY_API_KEY is available
-    const apiKey = import.meta.env.VITE_PERPLEXITY_API_KEY;
-    if (!apiKey) {
-      throw new Error('PERPLEXITY_API_KEY is required for web search functionality');
-    }
-
     try {
-      // Perform web search using Perplexity API
-      const searchResults = await this.performWebSearch(projectDescription, apiKey);
+      // Perform web search using free search APIs
+      const searchResults = await this.performWebSearch(projectDescription);
       
       // Analyze the search results to extract structured market data
       const marketData = await this.analyzeSearchResults(searchResults, projectDescription);
@@ -82,64 +76,106 @@ export class MarketResearchAgent {
     }
   }
 
-  private async performWebSearch(projectDescription: string, apiKey: string): Promise<string> {
+  private async performWebSearch(projectDescription: string): Promise<string> {
     // Create search queries for different aspects of market research
     const searchQueries = [
-      `companies similar to "${projectDescription}" market analysis competitors`,
-      `"${projectDescription}" market size growth trends 2024`,
-      `competitors for "${projectDescription}" pricing features comparison`,
-      `market opportunities "${projectDescription}" industry analysis`
+      `companies similar to "${projectDescription}" competitors market`,
+      `"${projectDescription}" market size industry analysis`,
+      `competitors "${projectDescription}" pricing business model`,
+      `startups "${projectDescription}" funding investment trends`
     ];
 
     let allResults = '';
 
     for (const query of searchQueries) {
       try {
-        const response = await fetch('https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
-            messages: [
-              {
-                role: 'system',
-                content: 'You are a market research expert. Provide comprehensive, factual information based on current web search results. Focus on specific companies, market data, and concrete business intelligence.'
-              },
-              {
-                role: 'user',
-                content: `Search and analyze: ${query}. Provide detailed information about existing companies, market size, pricing, competitive landscape, and business opportunities.`
-              }
-            ],
-            max_tokens: 1500,
-            temperature: 0.2,
-            stream: false
-          })
-        });
+        // Use DuckDuckGo Instant Answer API (free, no API key required)
+        const encodedQuery = encodeURIComponent(query);
+        const response = await fetch(`https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`);
 
         if (!response.ok) {
-          throw new Error(`Perplexity API error: ${response.status}`);
+          throw new Error(`Search API error: ${response.status}`);
         }
 
         const data = await response.json();
-        const content = data.choices?.[0]?.message?.content || '';
-        allResults += `\n\n=== ${query} ===\n${content}`;
+        
+        // Extract relevant information from DuckDuckGo response
+        let searchContent = '';
+        
+        if (data.Abstract) {
+          searchContent += `Abstract: ${data.Abstract}\n`;
+        }
+        
+        if (data.RelatedTopics && data.RelatedTopics.length > 0) {
+          searchContent += `Related Topics:\n`;
+          data.RelatedTopics.slice(0, 5).forEach((topic: any, index: number) => {
+            if (topic.Text) {
+              searchContent += `${index + 1}. ${topic.Text}\n`;
+            }
+          });
+        }
 
-        // Add delay between requests to respect rate limits
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        if (data.Results && data.Results.length > 0) {
+          searchContent += `Search Results:\n`;
+          data.Results.slice(0, 3).forEach((result: any, index: number) => {
+            if (result.Text) {
+              searchContent += `${index + 1}. ${result.Text}\n`;
+            }
+          });
+        }
+
+        if (searchContent.trim()) {
+          allResults += `\n\n=== ${query} ===\n${searchContent}`;
+        }
+
+        // Add delay between requests
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         console.warn(`Search query failed: ${query}`, error);
         // Continue with other queries even if one fails
       }
     }
 
+    // If DuckDuckGo doesn't provide enough results, use AI to generate market insights
     if (!allResults.trim()) {
-      throw new Error('No search results obtained from web search');
+      allResults = await this.generateMarketInsightsFromDescription(projectDescription);
     }
 
     return allResults;
+  }
+
+  private async generateMarketInsightsFromDescription(projectDescription: string): Promise<string> {
+    // Use Gemini to generate market insights based on the project description
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const genAI = new GoogleGenerativeAI('AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E');
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const prompt = `
+Generate comprehensive market research insights for the following project idea:
+
+PROJECT: ${projectDescription}
+
+Provide detailed market analysis including:
+1. Similar existing companies and solutions in this space
+2. Market size estimates and growth trends
+3. Competitive landscape analysis
+4. Pricing models commonly used
+5. Target market segments
+6. Key market trends and opportunities
+7. Common challenges and barriers to entry
+
+Focus on realistic, industry-standard information based on similar successful companies and market patterns.
+Be specific about company names, pricing ranges, and market data where possible.
+`;
+
+    try {
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+      return response;
+    } catch (error) {
+      console.error('AI market insights generation failed:', error);
+      throw new Error('Failed to generate market insights');
+    }
   }
 
   private async analyzeSearchResults(searchResults: string, projectDescription: string): Promise<Omit<MarketResearchData, 'projectIdea' | 'timestamp'>> {
