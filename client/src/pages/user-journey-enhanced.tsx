@@ -1943,43 +1943,48 @@ Data Objects: Request form, User profile`,
           <CardContent className="pt-4">
             {extractedStakeholders.length > 0 ? (
               <div className="space-y-3">
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-gray-800 text-sm">
-                      Identified Stakeholders ({extractedStakeholders.length})
+                <div className="space-y-3">
+                  {/* Stakeholder Header with Inline Add */}
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                      <Users className="h-4 w-4 text-blue-600" />
+                      Stakeholders ({extractedStakeholders.length})
                     </h4>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={newStakeholderName}
-                        onChange={(e) => setNewStakeholderName(e.target.value)}
-                        placeholder="Add stakeholder..."
-                        className="text-xs h-8 w-32"
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            addStakeholder();
-                          }
-                        }}
-                      />
-                      <Button
-                        onClick={addStakeholder}
-                        size="sm"
-                        className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
-                      >
-                        <UserPlus className="h-3 w-3" />
-                      </Button>
-                    </div>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  
+                  {/* Add Stakeholder Input */}
+                  <div className="flex gap-2">
+                    <Input
+                      value={newStakeholderName}
+                      onChange={(e) => setNewStakeholderName(e.target.value)}
+                      placeholder="Add stakeholder..."
+                      className="text-xs h-7 flex-1 bg-gray-50 border-gray-200"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          addStakeholder();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={addStakeholder}
+                      size="sm"
+                      className="h-7 px-3 bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <UserPlus className="h-3 w-3 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+
+                  {/* Stakeholder Tags */}
+                  <div className="flex flex-wrap gap-1.5">
                     {extractedStakeholders.map((stakeholder, index) => (
-                      <div key={index} className="relative group">
+                      <div key={index} className="group">
                         {editingStakeholder === stakeholder ? (
-                          <div className="flex items-center gap-1 bg-white border border-blue-300 rounded-lg px-2 py-1">
+                          <div className="flex items-center gap-1 bg-white border-2 border-blue-300 rounded-md px-2 py-1">
                             <Input
                               value={editedStakeholderName}
-                              onChange={(e) =>
-                                setEditedStakeholderName(e.target.value)
-                              }
-                              className="text-xs h-6 w-24 border-0 p-0 focus:ring-0"
+                              onChange={(e) => setEditedStakeholderName(e.target.value)}
+                              className="text-xs h-5 w-24 border-0 p-0 focus:ring-0"
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") {
                                   saveStakeholderEdit();
@@ -1992,44 +1997,41 @@ Data Objects: Request form, User profile`,
                             <Button
                               onClick={saveStakeholderEdit}
                               size="sm"
-                              className="h-5 w-5 p-0 bg-green-600 hover:bg-green-700"
+                              className="h-4 w-4 p-0 bg-green-500"
                             >
-                              <Save className="h-3 w-3" />
+                              <Save className="h-2.5 w-2.5" />
                             </Button>
                             <Button
                               onClick={cancelStakeholderEdit}
                               size="sm"
                               variant="outline"
-                              className="h-5 w-5 p-0 border-gray-300"
+                              className="h-4 w-4 p-0"
                             >
-                              <X className="h-3 w-3" />
+                              <X className="h-2.5 w-2.5" />
                             </Button>
                           </div>
                         ) : (
                           <Badge
                             variant="secondary"
-                            className="bg-blue-100 text-blue-800 hover:bg-blue-200 pr-1 cursor-pointer"
+                            className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer transition-all group pr-1"
                           >
-                            <Users className="h-3 w-3 mr-1" />
-                            {stakeholder}
-                            <div className="ml-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="mr-1">{stakeholder}</span>
+                            <div className="inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                               <Button
-                                onClick={() =>
-                                  startEditingStakeholder(stakeholder)
-                                }
+                                onClick={() => startEditingStakeholder(stakeholder)}
                                 size="sm"
                                 variant="ghost"
-                                className="h-4 w-4 p-0 hover:bg-blue-200"
+                                className="h-3 w-3 p-0 hover:bg-blue-200 rounded-sm"
                               >
-                                <Edit3 className="h-2.5 w-2.5" />
+                                <Edit3 className="h-2 w-2" />
                               </Button>
                               <Button
                                 onClick={() => deleteStakeholder(stakeholder)}
                                 size="sm"
                                 variant="ghost"
-                                className="h-4 w-4 p-0 hover:bg-red-200 text-red-600"
+                                className="h-3 w-3 p-0 hover:bg-red-200 text-red-500 rounded-sm"
                               >
-                                <X className="h-2.5 w-2.5" />
+                                <X className="h-2 w-2" />
                               </Button>
                             </div>
                           </Badge>
@@ -2039,82 +2041,49 @@ Data Objects: Request form, User profile`,
                   </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">
-                    Flow Types Management
-                  </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="font-semibold text-gray-800 text-sm flex items-center gap-2">
+                      <Workflow className="h-4 w-4 text-indigo-600" />
+                      Flow Types Management
+                    </h4>
+                    <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700">
+                      {Object.keys(personaFlowTypes).length} stakeholders
+                    </Badge>
+                  </div>
+                  
+                  <div className="space-y-3">
                     {Object.entries(personaFlowTypes).map(
                       ([stakeholder, flowTypes], stakeholderIndex) => {
-                        const colorVariants = [
-                          {
-                            bg: "from-blue-50 to-indigo-50",
-                            border: "border-blue-200",
-                            accent: "bg-blue-500",
-                            text: "text-blue-800",
-                          },
-                          {
-                            bg: "from-emerald-50 to-teal-50",
-                            border: "border-emerald-200",
-                            accent: "bg-emerald-500",
-                            text: "text-emerald-800",
-                          },
-                          {
-                            bg: "from-purple-50 to-pink-50",
-                            border: "border-purple-200",
-                            accent: "bg-purple-500",
-                            text: "text-purple-800",
-                          },
-                          {
-                            bg: "from-orange-50 to-red-50",
-                            border: "border-orange-200",
-                            accent: "bg-orange-500",
-                            text: "text-orange-800",
-                          },
-                          {
-                            bg: "from-cyan-50 to-blue-50",
-                            border: "border-cyan-200",
-                            accent: "bg-cyan-500",
-                            text: "text-cyan-800",
-                          },
-                          {
-                            bg: "from-green-50 to-emerald-50",
-                            border: "border-green-200",
-                            accent: "bg-green-500",
-                            text: "text-green-800",
-                          },
+                        const colors = [
+                          { bg: "bg-blue-50", border: "border-blue-200", accent: "bg-blue-500", text: "text-blue-700" },
+                          { bg: "bg-emerald-50", border: "border-emerald-200", accent: "bg-emerald-500", text: "text-emerald-700" },
+                          { bg: "bg-purple-50", border: "border-purple-200", accent: "bg-purple-500", text: "text-purple-700" },
+                          { bg: "bg-orange-50", border: "border-orange-200", accent: "bg-orange-500", text: "text-orange-700" },
+                          { bg: "bg-cyan-50", border: "border-cyan-200", accent: "bg-cyan-500", text: "text-cyan-700" },
+                          { bg: "bg-green-50", border: "border-green-200", accent: "bg-green-500", text: "text-green-700" },
                         ];
-                        const variant =
-                          colorVariants[
-                            stakeholderIndex % colorVariants.length
-                          ];
+                        const color = colors[stakeholderIndex % colors.length];
 
                         return (
                           <div
                             key={stakeholder}
-                            className={`border ${variant.border} rounded-lg p-3 bg-gradient-to-br ${variant.bg} shadow-sm`}
+                            className={`${color.bg} ${color.border} border rounded-lg p-3 transition-all hover:shadow-sm`}
                           >
-                            {/* Stakeholder Header */}
+                            {/* Compact Header */}
                             <div className="flex items-center justify-between mb-2">
                               <div className="flex items-center gap-2">
-                                <div
-                                  className={`w-3 h-3 ${variant.accent} rounded-full`}
-                                ></div>
-                                <span
-                                  className={`font-medium text-sm ${variant.text}`}
-                                >
+                                <div className={`w-2 h-2 ${color.accent} rounded-full`}></div>
+                                <span className={`font-medium text-sm ${color.text}`}>
                                   {stakeholder}
                                 </span>
+                                <Badge variant="outline" className="text-xs h-4 px-1.5 bg-white/70">
+                                  {flowTypes.length}
+                                </Badge>
                               </div>
-                              <Badge
-                                variant="outline"
-                                className="text-xs px-1.5 py-0.5 bg-white/80"
-                              >
-                                {flowTypes.length}
-                              </Badge>
                             </div>
 
-                            {/* Add Flow Type */}
-                            <div className="flex items-center gap-1 mb-2">
+                            {/* Compact Flow Input */}
+                            <div className="flex gap-1 mb-2">
                               <Input
                                 value={newFlowType[stakeholder] || ""}
                                 onChange={(e) =>
@@ -2123,8 +2092,8 @@ Data Objects: Request form, User profile`,
                                     [stakeholder]: e.target.value,
                                   }))
                                 }
-                                placeholder="Add flow type..."
-                                className="text-xs h-6 flex-1 bg-white/80 border-white/50"
+                                placeholder="Add flow..."
+                                className="text-xs h-6 bg-white/80 border-white/50 placeholder:text-gray-400"
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
                                     addFlowType(stakeholder);
@@ -2134,36 +2103,29 @@ Data Objects: Request form, User profile`,
                               <Button
                                 onClick={() => addFlowType(stakeholder)}
                                 size="sm"
-                                className="h-6 px-2 bg-green-500 hover:bg-green-600 text-white"
+                                className="h-6 w-6 p-0 bg-green-500 hover:bg-green-600"
                               >
                                 <Plus className="h-3 w-3" />
                               </Button>
                             </div>
 
-                            {/* Flow Types Grid */}
+                            {/* Compact Flow Tags */}
                             <div className="flex flex-wrap gap-1">
                               {flowTypes.map((flowType, index) => {
                                 const editKey = `${stakeholder}-${flowType}`;
                                 const isEditing = editingFlowType === editKey;
 
                                 return (
-                                  <div key={index} className="relative group">
+                                  <div key={index} className="group">
                                     {isEditing ? (
-                                      <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-1.5 py-0.5">
+                                      <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-2 py-1">
                                         <Input
                                           value={editedFlowTypeName}
-                                          onChange={(e) =>
-                                            setEditedFlowTypeName(
-                                              e.target.value,
-                                            )
-                                          }
-                                          className="text-xs h-4 w-16 border-0 p-0 focus:ring-0"
+                                          onChange={(e) => setEditedFlowTypeName(e.target.value)}
+                                          className="text-xs h-4 w-20 border-0 p-0 focus:ring-0"
                                           onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                              saveFlowTypeEdit(
-                                                stakeholder,
-                                                flowType,
-                                              );
+                                              saveFlowTypeEdit(stakeholder, flowType);
                                             } else if (e.key === "Escape") {
                                               cancelFlowTypeEdit();
                                             }
@@ -2171,56 +2133,41 @@ Data Objects: Request form, User profile`,
                                           autoFocus
                                         />
                                         <Button
-                                          onClick={() =>
-                                            saveFlowTypeEdit(
-                                              stakeholder,
-                                              flowType,
-                                            )
-                                          }
+                                          onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
                                           size="sm"
-                                          className="h-3 w-3 p-0 bg-green-500 hover:bg-green-600"
+                                          className="h-4 w-4 p-0 bg-green-500"
                                         >
-                                          <Save className="h-2 w-2" />
+                                          <Save className="h-2.5 w-2.5" />
                                         </Button>
                                         <Button
                                           onClick={cancelFlowTypeEdit}
                                           size="sm"
                                           variant="outline"
-                                          className="h-3 w-3 p-0 border-gray-300"
+                                          className="h-4 w-4 p-0"
                                         >
-                                          <X className="h-2 w-2" />
+                                          <X className="h-2.5 w-2.5" />
                                         </Button>
                                       </div>
                                     ) : (
                                       <Badge
                                         variant="outline"
-                                        className="text-xs px-1.5 py-0.5 bg-white/90 border-white/60 cursor-pointer hover:bg-white pr-1 group"
+                                        className="text-xs px-2 py-1 bg-white/90 hover:bg-white cursor-pointer transition-all group"
                                       >
-                                        <span>{flowType}</span>
-                                        <div className="ml-1 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="mr-1">{flowType}</span>
+                                        <div className="inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <Button
-                                            onClick={() =>
-                                              startEditingFlowType(
-                                                stakeholder,
-                                                flowType,
-                                              )
-                                            }
+                                            onClick={() => startEditingFlowType(stakeholder, flowType)}
                                             size="sm"
                                             variant="ghost"
-                                            className="h-3 w-3 p-0 hover:bg-blue-200"
+                                            className="h-3 w-3 p-0 hover:bg-blue-100"
                                           >
                                             <Edit3 className="h-2 w-2" />
                                           </Button>
                                           <Button
-                                            onClick={() =>
-                                              deleteFlowType(
-                                                stakeholder,
-                                                flowType,
-                                              )
-                                            }
+                                            onClick={() => deleteFlowType(stakeholder, flowType)}
                                             size="sm"
                                             variant="ghost"
-                                            className="h-3 w-3 p-0 hover:bg-red-200 text-red-600"
+                                            className="h-3 w-3 p-0 hover:bg-red-100 text-red-500"
                                           >
                                             <X className="h-2 w-2" />
                                           </Button>
@@ -2239,18 +2186,17 @@ Data Objects: Request form, User profile`,
                 </div>
               </div>
             ) : (
-              <div className="text-center py-6">
-                <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                <p className="text-gray-500 text-sm mb-4">
-                  Extract stakeholders from your project plan or add them
-                  manually
+              <div className="text-center py-4">
+                <Users className="h-8 w-8 text-gray-300 mx-auto mb-2" />
+                <p className="text-gray-500 text-xs mb-3">
+                  Extract stakeholders from your project plan or add manually
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   <Input
                     value={newStakeholderName}
                     onChange={(e) => setNewStakeholderName(e.target.value)}
                     placeholder="Enter stakeholder name..."
-                    className="text-sm h-9 w-48"
+                    className="text-xs h-7 w-40 bg-gray-50"
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
                         addStakeholder();
@@ -2260,10 +2206,10 @@ Data Objects: Request form, User profile`,
                   <Button
                     onClick={addStakeholder}
                     size="sm"
-                    className="h-9 px-3 bg-green-600 hover:bg-green-700 text-white"
+                    className="h-7 px-3 bg-green-600 hover:bg-green-700 text-white text-xs"
                   >
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Add Stakeholder
+                    <UserPlus className="h-3 w-3 mr-1" />
+                    Add
                   </Button>
                 </div>
               </div>
