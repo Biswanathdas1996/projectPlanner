@@ -95,13 +95,55 @@ function generateSequenceFlows(taskCount: number, gatewayCount: number, timestam
   // Flow from start to first task
   flows.push(`    <bpmn2:sequenceFlow id="Flow_start_1_${timestamp}" sourceRef="StartEvent_1_${timestamp}" targetRef="Task_1_${timestamp}" />`);
   
-  // Flows between tasks
-  for (let i = 1; i < taskCount; i++) {
-    flows.push(`    <bpmn2:sequenceFlow id="Flow_${i}_${i + 1}_${timestamp}" sourceRef="Task_${i}_${timestamp}" targetRef="Task_${i + 1}_${timestamp}" />`);
+  let currentTaskIndex = 1;
+  let currentGatewayIndex = 1;
+  
+  // Generate flows with gateways interspersed
+  while (currentTaskIndex < taskCount || currentGatewayIndex <= gatewayCount) {
+    if (currentGatewayIndex <= gatewayCount && currentTaskIndex <= Math.ceil(taskCount / 2)) {
+      // Flow from task to gateway
+      flows.push(`    <bpmn2:sequenceFlow id="Flow_${currentTaskIndex}_gateway${currentGatewayIndex}_${timestamp}" sourceRef="Task_${currentTaskIndex}_${timestamp}" targetRef="Gateway_${currentGatewayIndex}_${timestamp}" />`);
+      
+      // Multiple conditional flows from gateway
+      const nextTask = currentTaskIndex + 1;
+      const alternativeTask = Math.min(currentTaskIndex + 2, taskCount);
+      
+      // Primary path (Yes/Approved)
+      if (nextTask <= taskCount) {
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway${currentGatewayIndex}_yes_${timestamp}" name="Yes" sourceRef="Gateway_${currentGatewayIndex}_${timestamp}" targetRef="Task_${nextTask}_${timestamp}">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">approved == true</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>`);
+      }
+      
+      // Alternative path (No/Rejected)
+      if (alternativeTask <= taskCount && alternativeTask !== nextTask) {
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway${currentGatewayIndex}_no_${timestamp}" name="No" sourceRef="Gateway_${currentGatewayIndex}_${timestamp}" targetRef="Task_${alternativeTask}_${timestamp}">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">approved == false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>`);
+      } else {
+        // If no alternative task, flow to end
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_gateway${currentGatewayIndex}_end_${timestamp}" name="No" sourceRef="Gateway_${currentGatewayIndex}_${timestamp}" targetRef="EndEvent_1_${timestamp}">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">approved == false</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>`);
+      }
+      
+      currentTaskIndex += 2;
+      currentGatewayIndex++;
+    } else {
+      // Flow between remaining tasks
+      if (currentTaskIndex < taskCount) {
+        flows.push(`    <bpmn2:sequenceFlow id="Flow_${currentTaskIndex}_${currentTaskIndex + 1}_${timestamp}" sourceRef="Task_${currentTaskIndex}_${timestamp}" targetRef="Task_${currentTaskIndex + 1}_${timestamp}" />`);
+        currentTaskIndex++;
+      } else {
+        break;
+      }
+    }
   }
   
-  // Flow from last task to end
-  flows.push(`    <bpmn2:sequenceFlow id="Flow_${taskCount}_end_${timestamp}" sourceRef="Task_${taskCount}_${timestamp}" targetRef="EndEvent_1_${timestamp}" />`);
+  // Flow from last task to end (if not already connected via gateway)
+  if (currentTaskIndex <= taskCount) {
+    flows.push(`    <bpmn2:sequenceFlow id="Flow_${taskCount}_end_${timestamp}" sourceRef="Task_${taskCount}_${timestamp}" targetRef="EndEvent_1_${timestamp}" />`);
+  }
   
   return flows.join('\n');
 }
