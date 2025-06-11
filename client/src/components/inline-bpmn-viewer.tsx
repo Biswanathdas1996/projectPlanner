@@ -66,8 +66,8 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           windowKeys: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
         });
 
-        // Use the BpmnViewer constructor from the loaded library
-        const BpmnConstructor = window.BpmnViewer || window.BpmnJS || window.BpmnModeler;
+        // Use the BpmnJS constructor from the loaded library (v14.1.1 exposes BpmnJS)
+        const BpmnConstructor = window.BpmnJS;
         
         if (!BpmnConstructor) {
           throw new Error('BPMN library constructor not found. Available globals: ' + 
@@ -127,8 +127,7 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
       }
 
       // Check for BPMN library availability
-      const BpmnLibrary = window.BpmnViewer || window.BpmnJS || window.BpmnModeler;
-      if (!BpmnLibrary) {
+      if (!window.BpmnJS) {
         setError('BPMN.js library not loaded. Please refresh the page.');
         setIsLoading(false);
         return;
