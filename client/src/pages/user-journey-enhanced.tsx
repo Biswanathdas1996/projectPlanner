@@ -71,29 +71,7 @@ interface FlowDetails {
   additionalElements: string[];
 }
 
-interface UserStory {
-  id: string;
-  title: string;
-  asA: string;
-  iWant: string;
-  soThat: string;
-  acceptanceCriteria: string[];
-  priority: 'Low' | 'Medium' | 'High' | 'Critical';
-  storyPoints: number;
-  epic: string;
-  labels: string[];
-  stakeholder: string;
-  flowType: string;
-  gherkinScenarios: GherkinScenario[];
-}
 
-interface GherkinScenario {
-  id: string;
-  title: string;
-  given: string[];
-  when: string[];
-  then: string[];
-}
 
 export default function UserJourneyEnhanced() {
   const [projectPlan, setProjectPlan] = useState("");
@@ -171,7 +149,7 @@ export default function UserJourneyEnhanced() {
     currentFlow: '',
     status: ''
   });
-  const [showUserStories, setShowUserStories] = useState(false);
+
 
   // Load data from localStorage when component mounts
   useEffect(() => {

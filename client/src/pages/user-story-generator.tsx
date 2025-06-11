@@ -122,7 +122,7 @@ export default function UserStoryGenerator() {
       }
     }
 
-    const savedFlowDetails = localStorage.getItem(STORAGE_KEYS.FLOW_DETAILS);
+    const savedFlowDetails = localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOW_DATA);
     if (savedFlowDetails) {
       try {
         setFlowDetails(JSON.parse(savedFlowDetails));
@@ -150,139 +150,6 @@ export default function UserStoryGenerator() {
       localStorage.setItem('generated_user_stories', JSON.stringify(userStories));
     }
   }, [userStories]);
-
-  // Generate user stories from selected stakeholder flow
-  const generateUserStoriesFromFlow = async () => {
-    if (!selectedFlow) {
-      setError('Please select a stakeholder flow first');
-      return;
-    }
-
-    const flow = stakeholderFlows.find(f => `${f.stakeholder}-${f.flowType}` === selectedFlow);
-    if (!flow) {
-      setError('Selected flow not found');
-      return;
-    }
-
-    setIsGenerating(true);
-    setError('');
-    setGenerationStatus('Analyzing workflow and generating user stories...');
-
-    try {
-      const prompt = `Based on the following BPMN workflow for stakeholder "${flow.stakeholder}" with flow type "${flow.flowType}", generate 2-3 user stories in Gherkin format.
-
-BPMN XML: ${flow.bpmnXml}
-Custom Requirements: ${flow.customPrompt}
-
-IMPORTANT: Respond ONLY with a valid JSON array. No explanations, no markdown formatting, just the JSON array.
-
-Example format:
-[
-  {
-    "title": "User Login Authentication",
-    "asA": "registered user",
-    "iWant": "to securely log into my account",
-    "soThat": "I can access my personal dashboard",
-    "acceptanceCriteria": ["Valid credentials allow access", "Invalid credentials show error message"],
-    "priority": "High",
-    "storyPoints": 5,
-    "epic": "User Management",
-    "labels": ["authentication", "security"],
-    "gherkinScenarios": [
-      {
-        "title": "Successful login with valid credentials",
-        "given": ["I am on the login page", "I have valid credentials"],
-        "when": ["I enter my username and password", "I click the login button"],
-        "then": ["I should be redirected to my dashboard", "I should see a welcome message"]
-      }
-    ]
-  }
-]
-
-Generate the JSON array now:`;
-
-      const response = await generateCustomSuggestions(prompt);
-      
-      try {
-        // Extract JSON from response - response is string array, join first
-        const responseText = Array.isArray(response) ? response.join(' ') : String(response);
-        console.log('Raw response:', responseText);
-        
-        // Try to find JSON array in the response
-        let jsonMatch = responseText.match(/\[[\s\S]*?\]/);
-        if (!jsonMatch) {
-          // Try to find JSON objects and wrap them in an array
-          const objectMatches = responseText.match(/\{[\s\S]*?\}/g);
-          if (objectMatches) {
-            jsonMatch = [`[${objectMatches.join(',')}]`];
-          }
-        }
-        
-        if (!jsonMatch) {
-          throw new Error('No valid JSON found in response');
-        }
-        
-        console.log('Extracted JSON:', jsonMatch[0]);
-        const generatedStories = JSON.parse(jsonMatch[0]);
-        
-        // Add IDs and process stories
-        const processedStories: UserStory[] = generatedStories.map((story: any, index: number) => ({
-          id: `story-${Date.now()}-${index}`,
-          ...story,
-          gherkinScenarios: story.gherkinScenarios?.map((scenario: any, scenarioIndex: number) => ({
-            id: `scenario-${Date.now()}-${index}-${scenarioIndex}`,
-            ...scenario
-          })) || []
-        }));
-
-        setUserStories(prev => [...prev, ...processedStories]);
-        setGenerationStatus(`Generated ${processedStories.length} user stories successfully!`);
-        setTimeout(() => setGenerationStatus(''), 3000);
-        
-      } catch (parseError) {
-        console.error('Error parsing generated stories:', parseError);
-        
-        // Create fallback user stories based on the flow information
-        const fallbackStories: UserStory[] = [
-          {
-            id: `story-${Date.now()}-fallback`,
-            title: `${flow.stakeholder} ${flow.flowType} Workflow`,
-            asA: flow.stakeholder.toLowerCase(),
-            iWant: `to complete the ${flow.flowType.toLowerCase()} process`,
-            soThat: "I can achieve my goals efficiently",
-            acceptanceCriteria: [
-              "The workflow can be initiated successfully",
-              "All required steps are completed",
-              "The outcome meets expectations"
-            ],
-            priority: "Medium" as const,
-            storyPoints: 5,
-            epic: `${flow.stakeholder} Experience`,
-            labels: [flow.stakeholder.toLowerCase(), flow.flowType.toLowerCase()],
-            gherkinScenarios: [
-              {
-                id: `scenario-${Date.now()}-fallback`,
-                title: `Complete ${flow.flowType} workflow`,
-                given: [`I am a ${flow.stakeholder.toLowerCase()}`, "I have access to the system"],
-                when: [`I start the ${flow.flowType.toLowerCase()} process`],
-                then: ["The workflow should proceed smoothly", "I should reach the desired outcome"]
-              }
-            ]
-          }
-        ];
-        
-        setUserStories(prev => [...prev, ...fallbackStories]);
-        setGenerationStatus('Generated fallback user story. AI response parsing failed but basic story created.');
-        setTimeout(() => setGenerationStatus(''), 4000);
-      }
-      
-    } catch (error) {
-      console.error('Error generating user stories:', error);
-      setError('Failed to generate user stories. Please check your API configuration.');
-    } finally {
-      setIsGenerating(false);
-    }
-  };
 
   // Generate user stories from stakeholder flows based on flow details
   const generateUserStoriesFromFlows = async () => {
@@ -518,7 +385,7 @@ Generate the JSON array:`;
       current: stakeholderFlows.length,
       total: stakeholderFlows.length,
       currentFlow: '',
-      status: `✅ Generated ${newUserStories.length} user stories successfully!`
+      status: `Generated ${newUserStories.length} user stories successfully!`
     });
 
     // Clear progress after delay
@@ -617,7 +484,7 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
   // Clear all user stories
   const clearAllStories = () => {
     setUserStories([]);
-    localStorage.removeItem('user_stories');
+    localStorage.removeItem('generated_user_stories');
     setGenerationStatus('All user stories cleared');
     setTimeout(() => setGenerationStatus(''), 2000);
   };
@@ -625,12 +492,12 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationBar title="User Story Generator" />
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <div className="container mx-auto px-4 py-8 max-w-[1400px]">
         <WorkflowProgress />
         
         <div className="mb-8 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm">
           <p className="text-gray-600 dark:text-gray-300">
-            Generate user stories in Gherkin format from your BPMN workflows and export to JIRA
+            Generate comprehensive user stories from your stakeholder flows with AI-powered analysis and Gherkin scenarios
           </p>
         </div>
 
@@ -644,146 +511,173 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
         )}
 
         {generationStatus && (
-        <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-900/20">
-          <CheckCircle className="h-4 w-4 text-green-600" />
-          <AlertDescription className="text-green-700 dark:text-green-300">
-            {generationStatus}
-          </AlertDescription>
-        </Alert>
-      )}
+          <Alert className="mb-6 border-green-200 bg-green-50 dark:bg-green-900/20">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <AlertDescription className="text-green-700 dark:text-green-300">
+              {generationStatus}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <Tabs defaultValue="generate" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="generate">Generate Stories</TabsTrigger>
-          <TabsTrigger value="stories">User Stories ({userStories.length})</TabsTrigger>
-          <TabsTrigger value="export">Export & JIRA</TabsTrigger>
-        </TabsList>
+        <Tabs defaultValue="generate" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="generate">Generate Stories</TabsTrigger>
+            <TabsTrigger value="stories">User Stories ({userStories.length})</TabsTrigger>
+            <TabsTrigger value="export">Export & JIRA</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="generate" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <FileText className="h-5 w-5 mr-2" />
-                Generate from Stakeholder Flows
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {stakeholderFlows.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p>No stakeholder flows found. Please generate workflows first in the User Journey page.</p>
-                </div>
-              ) : (
-                <>
-                  <div className="space-y-2">
-                    <Label htmlFor="flow-select">Select Stakeholder Flow</Label>
-                    <Select value={selectedFlow} onValueChange={setSelectedFlow}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Choose a stakeholder flow to generate user stories from" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {stakeholderFlows.map(flow => (
-                          <SelectItem key={`${flow.stakeholder}-${flow.flowType}`} value={`${flow.stakeholder}-${flow.flowType}`}>
-                            {flow.stakeholder} - {flow.flowType}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+          <TabsContent value="generate" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Generate from Stakeholder Flows
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {stakeholderFlows.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No stakeholder flows found. Please generate workflows first in the User Journey page.</p>
                   </div>
-
-                  <div className="flex gap-4">
-                    <Button 
-                      onClick={generateUserStoriesFromFlow}
-                      disabled={isGenerating || !selectedFlow}
-                      className="flex-1"
-                    >
-                      {isGenerating ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Plus className="h-4 w-4 mr-2" />
-                      )}
-                      Generate User Stories
-                    </Button>
-                    
-                    <Button 
-                      onClick={generateUserStoriesFromFlows}
-                      disabled={isGeneratingUserStories}
-                      variant="outline"
-                      className="flex-1"
-                    >
-                      {isGeneratingUserStories ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Zap className="h-4 w-4 mr-2" />
-                      )}
-                      Generate All Stories
-                    </Button>
-                  </div>
-
-                  {/* Progress tracking for comprehensive generation */}
-                  {isGeneratingUserStories && userStoryGenerationProgress.total > 0 && (
-                    <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
-                          Generating User Stories
-                        </span>
-                        <span className="text-sm text-blue-600 dark:text-blue-300">
-                          {userStoryGenerationProgress.current}/{userStoryGenerationProgress.total}
-                        </span>
-                      </div>
-                      <Progress 
-                        value={(userStoryGenerationProgress.current / userStoryGenerationProgress.total) * 100}
-                        className="mb-2"
-                      />
-                      <div className="text-sm text-blue-700 dark:text-blue-300">
-                        {userStoryGenerationProgress.currentFlow && (
-                          <div>Processing: {userStoryGenerationProgress.currentFlow}</div>
+                ) : (
+                  <>
+                    <div className="flex gap-4">
+                      <Button 
+                        onClick={generateUserStoriesFromFlows}
+                        disabled={isGeneratingUserStories}
+                        className="flex-1"
+                      >
+                        {isGeneratingUserStories ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <Zap className="h-4 w-4 mr-2" />
                         )}
-                        <div>{userStoryGenerationProgress.status}</div>
+                        Generate User Stories from All Flows
+                      </Button>
+                    </div>
+
+                    {/* Progress tracking for comprehensive generation */}
+                    {isGeneratingUserStories && userStoryGenerationProgress.total > 0 && (
+                      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                            Generating User Stories
+                          </span>
+                          <span className="text-sm text-blue-600 dark:text-blue-300">
+                            {userStoryGenerationProgress.current}/{userStoryGenerationProgress.total}
+                          </span>
+                        </div>
+                        <Progress 
+                          value={(userStoryGenerationProgress.current / userStoryGenerationProgress.total) * 100}
+                          className="mb-2"
+                        />
+                        <div className="text-sm text-blue-700 dark:text-blue-300">
+                          {userStoryGenerationProgress.currentFlow && (
+                            <div>Processing: {userStoryGenerationProgress.currentFlow}</div>
+                          )}
+                          <div>{userStoryGenerationProgress.status}</div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                      <h4 className="font-medium mb-2 text-gray-800 dark:text-gray-200">Available Flows:</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {stakeholderFlows.map(flow => (
+                          <div key={`${flow.stakeholder}-${flow.flowType}`} className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {flow.stakeholder}
+                            </Badge>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                              {flow.flowType}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="stories" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Generated User Stories</h2>
-            {userStories.length > 0 && (
-              <Button onClick={clearAllStories} variant="outline" size="sm">
-                <Trash2 className="h-4 w-4 mr-2" />
-                Clear All
-              </Button>
-            )}
-          </div>
-
-          {userStories.length === 0 ? (
-            <Card>
-              <CardContent className="text-center py-12">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p className="text-gray-500">No user stories generated yet. Go to the Generate tab to create some.</p>
+                  </>
+                )}
               </CardContent>
             </Card>
-          ) : (
-            <div className="space-y-4">
-              {userStories.map(story => (
-                <Card key={story.id} className="relative">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg">{story.title}</CardTitle>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant={story.priority === 'Critical' ? 'destructive' : story.priority === 'High' ? 'default' : 'secondary'}>
+          </TabsContent>
+
+          <TabsContent value="stories" className="space-y-6">
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  Generated User Stories ({userStories.length})
+                </div>
+                <div className="flex items-center gap-2 ml-4">
+                  <Button
+                    onClick={() => {
+                      const dataStr = JSON.stringify(userStories, null, 2);
+                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                      const url = URL.createObjectURL(dataBlob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'user-stories.json';
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export JSON
+                  </Button>
+                  {userStories.length > 0 && (
+                    <Button onClick={clearAllStories} variant="outline" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Clear All
+                    </Button>
+                  )}
+                </div>
+              </CardTitle>
+            </div>
+
+            {userStories.length === 0 ? (
+              <Card>
+                <CardContent className="text-center py-12">
+                  <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-gray-500">No user stories generated yet. Go to the Generate tab to create some.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-4">
+                {userStories.map((story, index) => (
+                  <div key={story.id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                    {/* Story Header */}
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          {story.stakeholder && (
+                            <Badge variant="outline" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                              {story.stakeholder}
+                            </Badge>
+                          )}
+                          {story.flowType && (
+                            <Badge variant="outline" className="text-xs px-2 py-1 bg-purple-50 text-purple-700 border-purple-200">
+                              {story.flowType}
+                            </Badge>
+                          )}
+                          <Badge 
+                            variant="outline" 
+                            className={`text-xs px-2 py-1 ${
+                              story.priority === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' :
+                              story.priority === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                              story.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                              'bg-gray-50 text-gray-700 border-gray-200'
+                            }`}
+                          >
                             {story.priority}
                           </Badge>
-                          <Badge variant="outline">{story.storyPoints} pts</Badge>
-                          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                            {story.epic}
+                          <Badge variant="outline" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200">
+                            {story.storyPoints} pts
                           </Badge>
                         </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{story.title}</h3>
                       </div>
                       <Button
                         onClick={() => removeUserStory(story.id)}
@@ -794,151 +688,148 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                      <p className="font-medium text-blue-800 dark:text-blue-200">
-                        As a <span className="font-bold">{story.asA}</span>, I want <span className="font-bold">{story.iWant}</span> so that <span className="font-bold">{story.soThat}</span>.
+
+                    {/* User Story Format */}
+                    <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                      <p className="text-sm text-gray-800">
+                        <span className="font-medium text-blue-600">As a</span> {story.asA}, <br/>
+                        <span className="font-medium text-green-600">I want</span> {story.iWant}, <br/>
+                        <span className="font-medium text-purple-600">So that</span> {story.soThat}
                       </p>
                     </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-2">Acceptance Criteria:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        {story.acceptanceCriteria.map((criteria, index) => (
-                          <li key={index}>{criteria}</li>
+                    {/* Acceptance Criteria */}
+                    <div className="mb-3">
+                      <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+                        Acceptance Criteria
+                      </h4>
+                      <ul className="text-sm text-gray-700 space-y-1">
+                        {story.acceptanceCriteria.map((criteria, idx) => (
+                          <li key={idx} className="flex items-start">
+                            <span className="text-green-500 mr-2 mt-0.5">•</span>
+                            {criteria}
+                          </li>
                         ))}
                       </ul>
                     </div>
 
-                    <Separator />
-
-                    <div>
-                      <h4 className="font-semibold mb-3">Gherkin Scenarios:</h4>
-                      <div className="space-y-4">
-                        {story.gherkinScenarios.map(scenario => (
-                          <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg font-mono text-sm">
-                            <div className="font-bold text-green-600 dark:text-green-400 mb-2">
-                              Scenario: {scenario.title}
-                            </div>
-                            <div className="space-y-1">
-                              {scenario.given.map((step, index) => (
-                                <div key={index} className="text-blue-600 dark:text-blue-400">
-                                  {index === 0 ? 'Given' : '  And'} {step}
-                                </div>
-                              ))}
-                              {scenario.when.map((step, index) => (
-                                <div key={index} className="text-orange-600 dark:text-orange-400">
-                                  {index === 0 ? 'When' : ' And'} {step}
-                                </div>
-                              ))}
-                              {scenario.then.map((step, index) => (
-                                <div key={index} className="text-purple-600 dark:text-purple-400">
-                                  {index === 0 ? 'Then' : ' And'} {step}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        ))}
+                    {/* Labels and Epic */}
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-500">Epic:</span>
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          {story.epic}
+                        </Badge>
                       </div>
-                    </div>
-
-                    {story.labels.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">Labels:</span>
-                        {story.labels.map(label => (
-                          <Badge key={label} variant="outline" className="text-xs">
+                      <div className="flex items-center gap-1">
+                        {story.labels.map((label, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs px-1.5 py-0.5">
                             {label}
                           </Badge>
                         ))}
                       </div>
+                    </div>
+
+                    {/* Gherkin Scenarios */}
+                    {story.gherkinScenarios && story.gherkinScenarios.length > 0 && (
+                      <div className="border-t pt-3">
+                        <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                          <GitBranch className="h-4 w-4 mr-1 text-blue-500" />
+                          Gherkin Scenarios
+                        </h4>
+                        <div className="space-y-2">
+                          {story.gherkinScenarios.map((scenario) => (
+                            <div key={scenario.id} className="bg-gray-50 p-3 rounded text-sm">
+                              <div className="font-medium text-gray-800 mb-1">{scenario.title}</div>
+                              <div className="space-y-1 text-gray-700 font-mono text-xs">
+                                {scenario.given.map((given, idx) => (
+                                  <div key={idx}><span className="text-blue-600">Given</span> {given}</div>
+                                ))}
+                                {scenario.when.map((when, idx) => (
+                                  <div key={idx}><span className="text-green-600">When</span> {when}</div>
+                                ))}
+                                {scenario.then.map((then, idx) => (
+                                  <div key={idx}><span className="text-purple-600">Then</span> {then}</div>
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </TabsContent>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
 
-        <TabsContent value="export" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <ExternalLink className="h-5 w-5 mr-2" />
-                JIRA Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="project-key">Project Key</Label>
-                  <Input
-                    id="project-key"
-                    placeholder="e.g., PROJ"
-                    value={jiraConfig.projectKey}
-                    onChange={(e) => setJiraConfig(prev => ({ ...prev, projectKey: e.target.value }))}
-                  />
+          <TabsContent value="export" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <ExternalLink className="h-5 w-5 mr-2" />
+                  JIRA Configuration
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="project-key">Project Key</Label>
+                    <Input
+                      id="project-key"
+                      placeholder="e.g., PROJ"
+                      value={jiraConfig.projectKey}
+                      onChange={(e) => setJiraConfig(prev => ({ ...prev, projectKey: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="issue-type">Issue Type</Label>
+                    <Select value={jiraConfig.issueType} onValueChange={(value) => setJiraConfig(prev => ({ ...prev, issueType: value }))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Story">Story</SelectItem>
+                        <SelectItem value="Task">Task</SelectItem>
+                        <SelectItem value="Epic">Epic</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="epic-key">Epic Key (Optional)</Label>
+                    <Input
+                      id="epic-key"
+                      placeholder="e.g., PROJ-123"
+                      value={jiraConfig.epicKey}
+                      onChange={(e) => setJiraConfig(prev => ({ ...prev, epicKey: e.target.value }))}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="issue-type">Issue Type</Label>
-                  <Select value={jiraConfig.issueType} onValueChange={(value) => setJiraConfig(prev => ({ ...prev, issueType: value }))}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Story">Story</SelectItem>
-                      <SelectItem value="Task">Task</SelectItem>
-                      <SelectItem value="Bug">Bug</SelectItem>
-                      <SelectItem value="Epic">Epic</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="epic-key">Epic Key (Optional)</Label>
-                  <Input
-                    id="epic-key"
-                    placeholder="e.g., PROJ-123"
-                    value={jiraConfig.epicKey}
-                    onChange={(e) => setJiraConfig(prev => ({ ...prev, epicKey: e.target.value }))}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Export Options</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  onClick={exportToJira}
-                  disabled={userStories.length === 0}
-                  className="w-full"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Export to JIRA Format
-                </Button>
-                <Button
-                  onClick={exportGherkinFeatures}
-                  disabled={userStories.length === 0}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Gherkin Features
-                </Button>
-              </div>
-              
-              <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <p><strong>JIRA Export:</strong> Creates a JSON file that can be imported into JIRA using CSV/JSON import tools.</p>
-                <p><strong>Gherkin Features:</strong> Exports as .feature files for use with Cucumber, SpecFlow, or other BDD frameworks.</p>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                <div className="flex gap-4">
+                  <Button 
+                    onClick={exportToJira}
+                    disabled={userStories.length === 0}
+                    className="flex-1"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export to JIRA JSON
+                  </Button>
+                  <Button 
+                    onClick={exportGherkinFeatures}
+                    disabled={userStories.length === 0}
+                    variant="outline"
+                    className="flex-1"
+                  >
+                    <FileText className="h-4 w-4 mr-2" />
+                    Export Gherkin Features
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
