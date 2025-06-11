@@ -1023,43 +1023,51 @@ export async function generateBpmnXmlClient(
     },
   });
 
-  const prompt = `Generate a complete BPMN 2.0 XML diagram based STRICTLY on these 7 structured sections:
+  const prompt = `Generate a complete BPMN 2.0 XML diagram with SWIMLANES based STRICTLY on these 7 structured sections:
 
 ${flowContent}
 
-MANDATORY MAPPING REQUIREMENTS:
-✅ 1. Process & Description → bpmn2:process name and documentation
-✅ 2. Participants (Swimlanes) → bpmn2:participant elements with pools/lanes
-✅ 3. Trigger (Start Event) → bpmn2:startEvent with exact trigger name
-✅ 4. Activities (Tasks) → bpmn2:userTask or bpmn2:serviceTask elements
-✅ 5. Decision Points (Gateways) → bpmn2:exclusiveGateway elements
-✅ 6. End Event → bpmn2:endEvent with exact end event name
+MANDATORY SWIMLANE MAPPING:
+✅ 1. Process & Description → Overall collaboration name and documentation
+✅ 2. Participants (Swimlanes) → Create one bpmn2:participant per participant with separate bpmn2:process
+✅ 3. Trigger (Start Event) → bpmn2:startEvent in first participant's process
+✅ 4. Activities (Tasks) → Distribute across participant processes logically
+✅ 5. Decision Points (Gateways) → bpmn2:exclusiveGateway in decision-making participant
+✅ 6. End Event → bpmn2:endEvent in final participant's process
 ✅ 7. Additional Elements → bpmn2:message, bpmn2:timer, bpmn2:dataObject as specified
+
+PARTICIPANT DISTRIBUTION LOGIC:
+- User/Customer participants: UI interactions, requests, approvals
+- Service participants: Authentication, validation, processing
+- System participants: Databases, APIs, external systems
+- Admin participants: Management, configuration, monitoring
 
 STRICT XML STRUCTURE:
 - Use bpmn2: namespace prefix consistently throughout
 - Include proper XML declaration: <?xml version="1.0" encoding="UTF-8"?>
 - Valid BPMN definitions with correct namespaces
-- Create collaboration with participants as pools/lanes
-- Process element with all flow elements
-- BPMNDiagram with visual coordinates
+- MANDATORY: Create bpmn2:collaboration with bpmn2:participant elements for swimlanes
+- Each participant must reference a separate bpmn2:process
+- Include bpmndi:BPMNDiagram with visual coordinates for participants and elements
 - Connect ALL elements with bpmn2:sequenceFlow
 - Ensure all XML tags are properly closed
 - Use correct namespace prefixes (bpmn2: for BPMN elements, bpmndi: for diagram)
 
-ELEMENT CREATION RULES:
-- Create exactly one swimlane per participant listed in section 2
-- Use exact trigger text from section 3 for start event name
-- Convert each activity from section 4 to individual task elements
-- Transform each decision point from section 5 to gateway elements
-- Use exact end event text from section 6
-- Add elements from section 7 as specified (messages, timers, data objects)
-- Generate unique IDs for all elements
+SWIMLANE CREATION RULES:
+- Create exactly one bpmn2:participant per participant listed in section 2
+- Each participant must have its own bpmn2:process with unique ID
+- Distribute activities from section 4 across appropriate participant processes
+- Place start event from section 3 in the first logical participant process
+- Place end event from section 6 in the last logical participant process
+- Decision points from section 5 go in processes where decisions are made
+- Cross-participant flows use message flows or sequence flows between processes
+- Generate unique IDs for all elements (participants, processes, tasks, events)
 
 CRITICAL XML VALIDATION:
-- Use bpmn2: prefix for ALL BPMN elements (bpmn2:startEvent, bpmn2:userTask, etc.)
+- Use ONLY bpmn2: prefix for ALL BPMN elements (NEVER use bpmn:)
+- Examples: bpmn2:startEvent, bpmn2:userTask, bpmn2:exclusiveGateway, bpmn2:sequenceFlow
 - Use bpmndi: prefix for ALL diagram elements (bpmndi:BPMNShape, bpmndi:BPMNEdge)
-- NO timer event definitions - use bpmn2:intermediateCatchEvent instead
+- NEVER mix bpmn: and bpmn2: prefixes - use bpmn2: consistently
 - Ensure ALL XML tags are properly closed
 - Validate namespace prefixes match element types
 
@@ -1070,7 +1078,7 @@ VISUAL LAYOUT:
 
 Return ONLY valid BPMN 2.0 XML with proper namespaces - no explanations or markdown.
 
-TEMPLATE STRUCTURE:
+MANDATORY SWIMLANE TEMPLATE:
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" 
                    xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" 
@@ -1080,20 +1088,47 @@ TEMPLATE STRUCTURE:
                    targetNamespace="http://bpmn.io/schema/bpmn">
   
   <bpmn2:collaboration id="Collaboration_1">
-    <!-- Create participant for each swimlane from content -->
+    <bpmn2:participant id="Participant_1" name="[Participant1 Name]" processRef="Process_1" />
+    <bpmn2:participant id="Participant_2" name="[Participant2 Name]" processRef="Process_2" />
+    <!-- Add participant for each swimlane from section 2 -->
   </bpmn2:collaboration>
   
   <bpmn2:process id="Process_1" isExecutable="true">
-    <!-- Map content sections to BPMN elements -->
-    <!-- Start event from trigger -->
-    <!-- Tasks from activities -->
-    <!-- Gateways from decision points -->
-    <!-- End event from end event content -->
-    <!-- Sequence flows connecting all elements -->
+    <!-- Elements for Participant 1 -->
+    <bpmn2:startEvent id="StartEvent_1" name="[Trigger from section 3]" />
+    <bpmn2:userTask id="Task_1" name="[Activity from section 4]" />
+    <bpmn2:exclusiveGateway id="Gateway_1" name="[Decision from section 5]" />
+    <bpmn2:endEvent id="EndEvent_1" name="[End event from section 6]" />
+    <!-- Sequence flows -->
+    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_1" />
+  </bpmn2:process>
+  
+  <bpmn2:process id="Process_2" isExecutable="true">
+    <!-- Elements for Participant 2 -->
   </bpmn2:process>
   
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
-    <!-- Visual layout with coordinates -->
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <!-- Participant shapes (swimlanes) -->
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <dc:Bounds x="160" y="80" width="800" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Participant_2_di" bpmnElement="Participant_2" isHorizontal="true">
+        <dc:Bounds x="160" y="350" width="800" height="250" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <!-- Element shapes within swimlanes -->
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="230" y="180" width="36" height="36" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <!-- Sequence flow edges -->
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="266" y="198" />
+        <di:waypoint x="320" y="198" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
   
 </bpmn2:definitions>
