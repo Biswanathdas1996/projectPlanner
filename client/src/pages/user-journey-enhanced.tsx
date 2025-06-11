@@ -609,12 +609,10 @@ Create detailed swimlane structure with specific roles:
 Minimum 4-6 distinct participants for comprehensive swimlanes.
 
 ✅ 3. Trigger (Start Event)
-Define precise, actionable trigger:
+Define SHORT, precise trigger (1-2 sentences max):
 - Specific triggering action or event
-- Pre-conditions that must be satisfied
-- Input data or parameters required
-- Event source (user interface, scheduled job, API call, message)
-- Business context that necessitates this process
+- Event source (UI, API, scheduled, message)
+- Keep descriptions concise and BPMN-focused
 
 ✅ 4. Sequence of Activities (Tasks / Actions)
 Provide 6-8 sequential activities using SHORT, BPMN-compliant names:
@@ -626,49 +624,33 @@ Provide 6-8 sequential activities using SHORT, BPMN-compliant names:
 - Use standard BPMN task naming patterns
 
 ✅ 5. Decision Points (Gateways)
-Include 3-5 specific decision points with business rules:
+Include 2-3 SHORT decision points with CONCISE rules:
 - Gateway type (Exclusive OR, Inclusive OR, Parallel AND)
-- Clear decision criteria with specific conditions
-- Branching logic with detailed outcomes
-- Error handling scenarios
-- Escalation rules and timeouts
-- Business rule specifications
+- Brief decision criteria (1 sentence each)
+- Simple branching logic
+- Keep gateway descriptions short and BPMN-focused
 
 ✅ 6. End Event
-Define comprehensive completion scenarios:
-- Primary success end event with completion criteria
-- Alternative end events for different outcomes
-- Error end events for failure scenarios
-- Data state at completion
-- Notifications and confirmations required
-- Process artifacts created or updated
+Define SHORT completion scenario (1-2 sentences max):
+- Primary success end event with brief completion criteria
+- Keep end event descriptions concise and BPMN-focused
 
 ✅ 7. Additional Elements
-Include specific BPMN elements with implementation details:
+Include SHORT, specific BPMN elements (1-2 words each):
 
 **Messages:**
-- "Email notification sent to ${flow.stakeholder} with [specific content]"
-- "API request sent to [system name] with [data payload]"
-- "SMS alert triggered for [specific condition]"
+- "Notification sent", "Confirmation email", "Status update"
 
 **Timers:**
-- "Business timer: Wait [X hours/days] for [specific response]"
-- "Escalation timer: If no action within [timeframe], then [escalation action]"
-- "Scheduled timer: Execute at [specific time/interval]"
+- "Wait 24 hours", "Escalation timer", "Daily check"
 
 **Data Objects:**
-- "[FormName] data object containing [specific fields]"
-- "[DocumentType] generated with [content specifications]"
-- "[RecordType] updated in [system name] database"
+- "Request form", "User profile", "Transaction record"
 
 **Error Events:**
-- "Handle [ErrorType] when [specific condition occurs]"
-- "Catch timeout exception if [system] doesn't respond within [timeframe]"
-- "Manage validation errors for [specific data requirements]"
-
+- "Validation error", "Network timeout", "Access denied"
 **Sub-processes:**
-- "Call [SubProcessName] for [specific functionality]"
-- "Invoke [ExternalService] integration process"
+- "Authentication flow", "Payment process", "Approval workflow"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
 {"description": "✅ 1. Process Name and Description\\n[detailed description]\\n\\n✅ 2. Participants (Swimlanes)\\n[detailed participants list]\\n\\n✅ 3. Trigger (Start Event)\\n[detailed trigger description]\\n\\n✅ 4. Sequence of Activities\\n[detailed activities list]\\n\\n✅ 5. Decision Points (Gateways)\\n[detailed decision points]\\n\\n✅ 6. End Event\\n[detailed end event description]\\n\\n✅ 7. Additional Elements\\n[detailed additional elements]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Detailed trigger description with specific conditions", "decisionPoints": ["Exclusive Gateway: If condition A, then path 1; otherwise path 2", "Parallel Gateway: Execute both task X and task Y simultaneously", "Inclusive Gateway: Based on criteria, execute one or more of the following paths"], "endEvent": "Detailed end event description with completion criteria", "additionalElements": ["Messages: Specific message details", "Timers: Specific timer configurations", "Data: Specific data object details", "Errors: Specific error handling"]}`;
