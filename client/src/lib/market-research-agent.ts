@@ -32,6 +32,8 @@ export interface MarketResearchData {
   recommendations: string[];
   differentiationOpportunities: string[];
   timestamp: string;
+  targetCountry?: string;
+  marketAnalysis?: string;
 }
 
 export class MarketResearchAgent {
