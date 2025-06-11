@@ -1301,7 +1301,7 @@ Data Objects: Request form, User profile`,
       });
 
       // Generate BPMN XML using client-side Gemini API with structured content
-      const { generateBpmnXmlClient } = await import("../lib/gemini");
+      const { generateBpmnXml } = await import("../lib/gemini");
 
       // Create BPMN content from the 7 structured sections
       const bpmnContent = `
@@ -1333,7 +1333,7 @@ ${structuredContent.additionalElements.map((e) => `- ${e}`).join("\n")}
         console.log("✅ Generating BPMN using AI with structured data...");
 
         // Use client-side AI-powered BPMN generator for accurate diagrams
-        bpmnXml = await generateBpmnXmlClient(bpmnContent);
+        bpmnXml = await generateBpmnXml(bpmnContent);
 
         console.log(
           "✅ AI-generated BPMN 2.0 XML with proper decision flows",
