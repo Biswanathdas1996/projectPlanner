@@ -413,21 +413,6 @@ Generate a comprehensive BPMN 2.0 XML that accurately represents the project wor
   
   return cleanedText;
 }
-        "name": "Code Complete?",
-        "lane": "Lane_1"
-      },
-      {
-        "type": "task",
-        "id": "Task_CodeReview",
-        "name": "Code Review Process",
-        "lane": "Lane_3"
-      },
-      {
-        "type": "exclusiveGateway",
-        "id": "Gateway_QualityGate",
-        "name": "Review Approved?",
-        "lane": "Lane_3"
-      },
       {
         "type": "task",
         "id": "Task_Build",
