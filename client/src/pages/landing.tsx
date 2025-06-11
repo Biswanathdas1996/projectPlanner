@@ -32,7 +32,8 @@ import {
   Underline,
   List,
   ListOrdered,
-  Quote
+  Quote,
+  TrendingUp
 } from 'lucide-react';
 import { InlineBpmnViewer } from '@/components/inline-bpmn-viewer';
 import html2canvas from 'html2canvas';
@@ -551,17 +552,56 @@ export default function Landing() {
         {/* Landing Page Content */}
         {currentStep === 'input' && !projectInput && (
           <div className="space-y-12">
+            {/* Features Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <Link href="/plan">
+                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
+                    <Sparkles className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">AI Project Planner</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Generate comprehensive project plans with technical architecture, development methodology, and risk management.
+                  </p>
+                </div>
+              </Link>
 
+              <Link href="/market-research">
+                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
+                    <TrendingUp className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Market Research</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Search the web for similar solutions, analyze competitors, and discover market opportunities for your project.
+                  </p>
+                </div>
+              </Link>
 
-            
+              <Link href="/user-journey">
+                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
+                    <Users className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">Stakeholder Journeys</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Create detailed BPMN workflows for each stakeholder persona with customizable flow types and automated diagrams.
+                  </p>
+                </div>
+              </Link>
 
-            
-
-            
-
-            
-
-            
+              <Link href="/user-stories">
+                <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
+                    <FileText className="h-6 w-6 text-white" />
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">User Stories & JIRA</h3>
+                  <p className="text-gray-600 text-sm leading-relaxed">
+                    Generate user stories in Gherkin format with acceptance criteria and export directly to JIRA.
+                  </p>
+                </div>
+              </Link>
+            </div>
           </div>
         )}
       </div>
