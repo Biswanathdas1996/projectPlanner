@@ -191,19 +191,19 @@ Example structure:
     // Validate it starts with XML declaration or BPMN element
     if (!text.startsWith('<?xml') && !text.startsWith('<bpmn')) {
       console.error('Invalid BPMN XML response:', text);
-      // Return a minimal fallback BPMN
+      // Return a minimal fallback BPMN with correct bpmn2 namespace
       text = `<?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:collaboration id="Collaboration_1">
-    <bpmn:participant id="Participant_1" name="${stakeholder || 'Stakeholder'}" processRef="Process_1" />
-  </bpmn:collaboration>
-  <bpmn:process id="Process_1" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1" name="Start ${flowType || 'Process'}" />
-    <bpmn:serviceTask id="Activity_1" name="Process Task" />
-    <bpmn:endEvent id="EndEvent_1" name="End ${flowType || 'Process'}" />
-    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
-  </bpmn:process>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Participant_1" name="${stakeholder || 'Stakeholder'}" processRef="Process_1" />
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <bpmn2:startEvent id="StartEvent_1" name="Start ${flowType || 'Process'}" />
+    <bpmn2:serviceTask id="Activity_1" name="Process Task" />
+    <bpmn2:endEvent id="EndEvent_1" name="End ${flowType || 'Process'}" />
+    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+    <bpmn2:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+  </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
       <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
@@ -228,7 +228,7 @@ Example structure:
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-</bpmn:definitions>`;
+</bpmn2:definitions>`;
     }
 
     // Return XML as plain text

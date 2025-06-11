@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, FileX, Code } from 'lucide-react';
+import { useRef, useEffect, useState } from 'react';
+import { FileX, AlertCircle } from 'lucide-react';
 
 interface InlineBpmnViewerProps {
   bpmnXml: string;
@@ -10,8 +10,6 @@ interface InlineBpmnViewerProps {
 declare global {
   interface Window {
     BpmnJS: any;
-    BpmnModeler: any;
-    BpmnViewer: any;
   }
 }
 
@@ -20,226 +18,120 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
   const viewerRef = useRef<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showXmlDetails, setShowXmlDetails] = useState(false);
-
-  console.log(`🚀 InlineBpmnViewer component mounted for: ${title}`, { 
-    hasXml: !!bpmnXml, 
-    xmlLength: bpmnXml?.length || 0 
-  });
 
   useEffect(() => {
-    console.log(`🔄 useEffect triggered for: ${title}`);
-    setError(null);
-    setIsLoading(true);
-    
     if (!bpmnXml) {
-      setError('No BPMN XML content provided');
-      setIsLoading(false);
-      return;
-    }
-
-    // Validate XML structure
-    if (bpmnXml.includes('<html>')) {
-      setError('Invalid BPMN content: Received HTML instead of XML. This usually indicates a server error or incorrect API response.');
-      setIsLoading(false);
-      return;
-    }
-
-    if (!bpmnXml.includes('bpmn') && !bpmnXml.includes('<?xml')) {
-      setError('Invalid BPMN format: Content does not appear to be valid BPMN XML.');
+      setError('No BPMN XML provided');
       setIsLoading(false);
       return;
     }
 
     const initViewer = async () => {
-      console.log(`🔄 Initializing BPMN viewer for: ${title}`);
-      
       try {
         // Clean up existing viewer
         if (viewerRef.current) {
-          console.log('🧹 Cleaning up existing viewer');
           viewerRef.current.destroy();
           viewerRef.current = null;
         }
 
-        // Clear container content
-        if (containerRef.current) {
-          containerRef.current.innerHTML = '';
-          console.log('📦 Container cleared, dimensions:', {
-            width: containerRef.current.offsetWidth,
-            height: containerRef.current.offsetHeight
-          });
+        // Wait for container to be ready
+        if (!containerRef.current) {
+          setTimeout(initViewer, 100);
+          return;
         }
 
-        // Debug: Check what BPMN constructors are available
-        console.log('🔍 Available BPMN constructors:', {
-          BpmnJS: !!window.BpmnJS,
-          BpmnModeler: !!window.BpmnModeler,
-          BpmnViewer: !!window.BpmnViewer,
-          windowKeys: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
-        });
-
-        // Use the available BpmnJS constructor
-        const BpmnConstructor = window.BpmnJS;
-        
-        if (!BpmnConstructor) {
-          throw new Error('BpmnJS constructor not found');
+        // Wait for BPMN library
+        if (!window.BpmnJS) {
+          setTimeout(initViewer, 100);
+          return;
         }
-        
-        console.log('🎯 Using BpmnJS constructor');
 
-        console.log('⚙️ Creating BPMN viewer instance...');
-        
-        // Create viewer instance
-        const viewer = new BpmnConstructor({
-          container: containerRef.current,
-          width: '100%',
-          height: height
+        // Clear container
+        containerRef.current.innerHTML = '';
+
+        // Create viewer with minimal configuration
+        const viewer = new window.BpmnJS({
+          container: containerRef.current
         });
 
         viewerRef.current = viewer;
-        console.log('✅ BPMN viewer created successfully');
 
-        // Validate XML before import
-        console.log('📋 BPMN XML to import:', {
-          length: bpmnXml.length,
-          hasXmlDeclaration: bpmnXml.includes('<?xml'),
-          hasBpmnDefinitions: bpmnXml.includes('bpmn2:definitions'),
-          preview: bpmnXml.substring(0, 200) + '...'
-        });
-
-        // Import the BPMN XML
-        console.log('📥 Importing BPMN XML...');
+        // Import XML and handle result
         const result = await viewer.importXML(bpmnXml);
-        console.log('🎯 Import result:', result);
         
         if (result.warnings && result.warnings.length > 0) {
-          const warningMessages = result.warnings.map((w: any) => w.message).join('; ');
-          console.warn(`BPMN warnings for ${title}:`, result.warnings);
-          setError(`BPMN rendering warnings: ${warningMessages}`);
+          console.warn('BPMN import warnings:', result.warnings);
         }
 
-        // Fit diagram to viewport
-        const canvas = viewer.get('canvas');
-        canvas.zoom('fit-viewport');
-        
+        // Fit to viewport
+        try {
+          const canvas = viewer.get('canvas');
+          canvas.zoom('fit-viewport');
+        } catch (e) {
+          console.warn('Could not fit to viewport:', e);
+        }
+
         setIsLoading(false);
+        setError(null);
 
       } catch (error: any) {
-        console.error(`Error loading BPMN diagram for ${title}:`, error);
-        
-        let errorMessage = 'Failed to render BPMN diagram';
-        if (error.message) {
-          errorMessage += `: ${error.message}`;
-        }
-        
-        if (error.warnings && error.warnings.length > 0) {
-          const warningDetails = error.warnings.map((w: any) => 
-            `Line ${w.line || '?'}: ${w.message || w.error?.message || 'Unknown error'}`
-          ).join('; ');
-          errorMessage += `. Validation errors: ${warningDetails}`;
-        }
-        
-        setError(errorMessage);
+        console.error('BPMN rendering error:', error);
+        setError(`Rendering failed: ${error.message || 'Unknown error'}`);
         setIsLoading(false);
       }
     };
 
-    // Wait for container and BPMN.js to be ready
-    const initializeBpmn = () => {
-      if (!containerRef.current) {
-        // Container not ready yet, try again in a short delay
-        setTimeout(initializeBpmn, 100);
-        return;
-      }
-
-      // Check for BPMN library availability
-      if (!window.BpmnJS) {
-        setError('BPMN.js library not loaded. Please refresh the page.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Container and library are ready, proceed with initialization
-      initViewer();
-    };
-
-    // Start the initialization process
-    initializeBpmn();
+    initViewer();
 
     return () => {
       if (viewerRef.current) {
-        viewerRef.current.destroy();
+        try {
+          viewerRef.current.destroy();
+        } catch (e) {
+          console.warn('Error destroying viewer:', e);
+        }
       }
     };
-  }, [bpmnXml, height, title]);
+  }, [bpmnXml]);
 
-  // Show error state with detailed information
-  if (error) {
+  // Show loading state
+  if (isLoading) {
     return (
-      <div className="w-full border border-red-200 rounded-lg overflow-hidden bg-red-50">
-        <div className="bg-red-100 px-4 py-2 border-b border-red-200">
-          <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-red-800 flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {title} - BPMN Generation Error
-            </h4>
-            <button
-              onClick={() => setShowXmlDetails(!showXmlDetails)}
-              className="text-xs bg-red-200 hover:bg-red-300 px-2 py-1 rounded flex items-center"
-            >
-              <Code className="h-3 w-3 mr-1" />
-              {showXmlDetails ? 'Hide Details' : 'Show Details'}
-            </button>
-          </div>
+      <div className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white">
+        <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+          <h4 className="text-sm font-medium text-gray-700">{title} - BPMN Flow</h4>
         </div>
-        <div className="p-4">
-          <div className="flex items-start space-x-3">
-            <div className="flex-1">
-              <p className="text-sm text-red-700 mb-2 font-medium">Error Details:</p>
-              <p className="text-sm text-red-600 mb-3">{error}</p>
-              
-              {showXmlDetails && (
-                <div className="mt-4">
-                  <p className="text-xs font-medium text-red-700 mb-2">Raw XML Content (first 500 chars):</p>
-                  <div className="bg-red-100 border border-red-200 rounded p-2">
-                    <pre className="text-xs text-red-800 whitespace-pre-wrap break-all">
-                      {bpmnXml ? bpmnXml.substring(0, 500) + (bpmnXml.length > 500 ? '...' : '') : 'No XML content'}
-                    </pre>
-                  </div>
-                </div>
-              )}
-              
-              <div className="mt-3 text-xs text-red-600">
-                <p className="font-medium mb-1">Common causes:</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>API returned HTML error page instead of BPMN XML</li>
-                  <li>Invalid BPMN XML structure or missing required elements</li>
-                  <li>Network connectivity issues with Gemini API</li>
-                  <li>BPMN.js library failed to parse the XML content</li>
-                </ul>
-              </div>
-            </div>
+        <div 
+          className="flex items-center justify-center bg-gray-50"
+          style={{ height }}
+        >
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+            <p className="text-gray-500 text-sm">Loading BPMN diagram...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  // Show loading state
-  if (isLoading) {
+  // Show error state
+  if (error) {
     return (
-      <div className="w-full border border-blue-200 rounded-lg overflow-hidden bg-blue-50">
-        <div className="bg-blue-100 px-4 py-2 border-b border-blue-200">
-          <h4 className="text-sm font-medium text-blue-800">{title} - Loading BPMN Diagram</h4>
+      <div className="w-full border border-red-200 rounded-lg overflow-hidden bg-red-50">
+        <div className="bg-red-100 px-4 py-2 border-b border-red-200">
+          <h4 className="text-sm font-medium text-red-700 flex items-center">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            {title} - Error
+          </h4>
         </div>
         <div 
           className="flex items-center justify-center"
           style={{ height }}
         >
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-            <p className="text-sm text-blue-600">Rendering BPMN diagram...</p>
+          <div className="text-center p-4">
+            <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-2" />
+            <p className="text-red-600 text-sm font-medium mb-1">Failed to render BPMN diagram</p>
+            <p className="text-red-500 text-xs">{error}</p>
           </div>
         </div>
       </div>
@@ -263,7 +155,6 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           <div className="text-center">
             <FileX className="h-12 w-12 text-gray-400 mx-auto mb-2" />
             <p className="text-gray-500 text-sm">No BPMN diagram available</p>
-            <p className="text-gray-400 text-xs mt-1">Generate flow details first, then create BPMN diagram</p>
           </div>
         </div>
       </div>
