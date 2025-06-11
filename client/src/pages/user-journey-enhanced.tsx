@@ -1842,11 +1842,11 @@ Data Objects: Request form, User profile`,
   return (
     <div className="min-h-screen bg-gray-50">
       <NavigationBar title="Stakeholder Journey Builder" />
-      <div className="max-w-[1400px] mx-auto p-6">
+      <div className="max-w-[1400px] mx-auto p-20">
         <WorkflowProgress />
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-8 bg-white rounded-lg p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-8 bg-white rounded-lg p-20 shadow-sm">
           <div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
@@ -1864,7 +1864,7 @@ Data Objects: Request form, User profile`,
         {/* Auto-generation Status */}
         {autoGenerationStatus && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
-            <CardContent className="pt-6">
+            <CardContent className="pt-20">
               <div className="flex items-center space-x-3">
                 <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
                 <span className="text-blue-800 font-medium">
@@ -1895,7 +1895,7 @@ Data Objects: Request form, User profile`,
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="bg-gray-50 p-4 rounded-lg">
+              <div className="bg-gray-50 p-20 rounded-lg">
                 <p className="text-sm text-gray-700 line-clamp-3">
                   {projectPlan || projectDescription}
                 </p>
@@ -1940,7 +1940,7 @@ Data Objects: Request form, User profile`,
               </div>
             </CardTitle>
           </CardHeader>
-          <CardContent className="pt-4">
+          <CardContent className="pt-20">
             {extractedStakeholders.length > 0 ? (
               <div className="space-y-3">
                 <div>
@@ -2277,7 +2277,7 @@ Data Objects: Request form, User profile`,
         {Object.keys(personaFlowTypes).length > 0 &&
           Object.values(flowDetails).length === 0 && (
             <Card className="mb-6">
-              <CardContent className="pt-6 text-center">
+              <CardContent className="pt-20 text-center">
                 <div className="space-y-4">
                   <div>
                     <Activity className="h-12 w-12 text-blue-500 mx-auto mb-3" />
