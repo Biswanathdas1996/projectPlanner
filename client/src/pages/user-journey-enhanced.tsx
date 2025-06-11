@@ -2317,19 +2317,35 @@ Data Objects: Request form, User profile`,
                   </div>
                   Stakeholder Flow Analysis
                 </div>
-                <Button
-                  onClick={generateAllSwimlanes}
-                  disabled={Object.values(isGeneratingBpmn).some(Boolean)}
-                  size="sm"
-                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
-                >
-                  {Object.values(isGeneratingBpmn).some(Boolean) ? (
-                    <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                  ) : (
-                    <Activity className="h-3 w-3 mr-1" />
-                  )}
-                  Generate All Swimlanes
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={generateFlowDetails}
+                    disabled={isGeneratingFlowDetails}
+                    size="sm"
+                    variant="outline"
+                    className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                  >
+                    {isGeneratingFlowDetails ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <Activity className="h-3 w-3 mr-1" />
+                    )}
+                    Re-generate Details
+                  </Button>
+                  <Button
+                    onClick={generateAllSwimlanes}
+                    disabled={Object.values(isGeneratingBpmn).some(Boolean)}
+                    size="sm"
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                  >
+                    {Object.values(isGeneratingBpmn).some(Boolean) ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <Activity className="h-3 w-3 mr-1" />
+                    )}
+                    Generate All Swimlanes
+                  </Button>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="px-4 pb-4">
