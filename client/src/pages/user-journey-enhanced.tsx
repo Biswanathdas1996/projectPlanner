@@ -3263,11 +3263,27 @@ ${flowEdges.join("\n")}
                                       </div>
                                     </div>
                                     
+                                    {/* BPMN Visual Diagram */}
+                                    <div className="bg-white rounded-lg border">
+                                      <div className="px-3 py-2 border-b bg-gray-50 rounded-t-lg">
+                                        <p className="text-xs font-medium text-gray-700">
+                                          BPMN Diagram - {stakeholder} {flowType}
+                                        </p>
+                                      </div>
+                                      <div className="p-2">
+                                        <InlineBpmnViewer
+                                          bpmnXml={existingFlow.bpmnXml}
+                                          title={`${stakeholder} - ${flowType}`}
+                                          height="300px"
+                                        />
+                                      </div>
+                                    </div>
+
                                     {/* BPMN XML Script Content */}
                                     <div className="bg-gray-50 rounded-lg border">
                                       <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
                                         <p className="text-xs font-medium text-gray-700">
-                                          BPMN 2.0 XML - {stakeholder} {flowType}
+                                          BPMN 2.0 XML Script - {stakeholder} {flowType}
                                         </p>
                                         <p className="text-xs text-gray-500">
                                           {existingFlow.bpmnXml.length} characters
