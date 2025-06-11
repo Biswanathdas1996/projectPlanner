@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import {
@@ -39,8 +41,19 @@ import {
   Copy,
 } from "lucide-react";
 
+// Country list for market research
+const COUNTRIES = [
+  "United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Netherlands", "Sweden", "Norway", "Denmark",
+  "Switzerland", "Austria", "Belgium", "Ireland", "Finland", "Italy", "Spain", "Portugal", "Japan", "South Korea",
+  "Singapore", "Hong Kong", "New Zealand", "Israel", "United Arab Emirates", "Saudi Arabia", "Brazil", "Mexico", "Argentina", "Chile",
+  "Colombia", "Peru", "India", "China", "Thailand", "Malaysia", "Indonesia", "Philippines", "Vietnam", "Taiwan",
+  "Poland", "Czech Republic", "Hungary", "Romania", "Bulgaria", "Croatia", "Slovenia", "Estonia", "Latvia", "Lithuania",
+  "South Africa", "Nigeria", "Kenya", "Egypt", "Morocco", "Ghana", "Turkey", "Russia", "Ukraine", "Belarus"
+];
+
 export default function MarketResearch() {
   const [projectInput, setProjectInput] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("United States");
   const [isResearching, setIsResearching] = useState(false);
   const [researchData, setResearchData] = useState<MarketResearchData | null>(
     null,
@@ -76,14 +89,22 @@ export default function MarketResearch() {
 
     try {
       const marketResearchAgent = createMarketResearchAgent();
+      const researchPrompt = `${projectInput}\n\nFocus research specifically on the ${selectedCountry} market. Include country-specific competitors, market conditions, regulations, and opportunities.`;
       const researchData =
-        await marketResearchAgent.performMarketResearch(projectInput);
+        await marketResearchAgent.performMarketResearch(researchPrompt);
 
-      setResearchData(researchData);
+      // Add country information to the research data
+      const countrySpecificData = {
+        ...researchData,
+        targetCountry: selectedCountry,
+        marketAnalysis: `${researchData.marketAnalysis}\n\nTarget Market: ${selectedCountry}`
+      };
+
+      setResearchData(countrySpecificData);
       setCurrentStep("results");
 
       // Save to localStorage using storage utilities
-      saveMarketResearchData(researchData);
+      saveMarketResearchData(countrySpecificData);
     } catch (err) {
       const errorMessage =
         err instanceof Error
@@ -214,13 +235,39 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                 help you understand the competitive landscape.
               </p>
 
-              <Textarea
-                placeholder="Describe your project idea... (e.g., Create a project management tool for remote teams with time tracking and collaboration features)"
-                value={projectInput}
-                onChange={(e) => setProjectInput(e.target.value)}
-                className="min-h-32 text-sm"
-                disabled={isResearching}
-              />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country-select" className="text-sm font-medium text-gray-700">
+                    Target Market Country
+                  </Label>
+                  <Select value={selectedCountry} onValueChange={setSelectedCountry} disabled={isResearching}>
+                    <SelectTrigger id="country-select" className="w-full">
+                      <SelectValue placeholder="Select a country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.map((country) => (
+                        <SelectItem key={country} value={country}>
+                          {country}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="project-description" className="text-sm font-medium text-gray-700">
+                    Project Description
+                  </Label>
+                  <Textarea
+                    id="project-description"
+                    placeholder="Describe your project idea... (e.g., Create a project management tool for remote teams with time tracking and collaboration features)"
+                    value={projectInput}
+                    onChange={(e) => setProjectInput(e.target.value)}
+                    className="min-h-32 text-sm"
+                    disabled={isResearching}
+                  />
+                </div>
+              </div>
 
               <div className="flex justify-between items-center pt-2">
                 <div className="text-xs text-gray-400">
