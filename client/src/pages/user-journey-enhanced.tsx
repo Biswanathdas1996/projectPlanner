@@ -1111,19 +1111,23 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
           cleanedXml = cleanedXml.replace(/^```\s*/, "").replace(/```\s*$/, "");
         }
         
-        // Fix common namespace and XML issues
-        cleanedXml = cleanedXml.replace(/bpmn:timerEventDefinition/g, 'bpmn2:timerEventDefinition');
+        // Comprehensive XML namespace and structure fixes
         cleanedXml = cleanedXml.replace(/xmlns:bpmn=/g, 'xmlns:bpmn2=');
         cleanedXml = cleanedXml.replace(/<bpmn:/g, '<bpmn2:');
         cleanedXml = cleanedXml.replace(/<\/bpmn:/g, '</bpmn2:');
         
-        // Fix unclosed tags and validate XML structure
+        // Remove problematic timer event definitions that cause validation errors
+        cleanedXml = cleanedXml.replace(/<bpmn2:timerEventDefinition[^>]*>/g, '');
+        cleanedXml = cleanedXml.replace(/<\/bpmn2:timerEventDefinition>/g, '');
+        cleanedXml = cleanedXml.replace(/<bpmn:timerEventDefinition[^>]*>/g, '');
+        cleanedXml = cleanedXml.replace(/<\/bpmn:timerEventDefinition>/g, '');
+        
+        // Fix malformed XML lines and empty tags
         const xmlLines = cleanedXml.split('\n');
         const validatedLines = xmlLines.filter(line => {
           const trimmedLine = line.trim();
-          // Skip empty lines and malformed tags
-          if (!trimmedLine || trimmedLine === '<' || trimmedLine === '>') return false;
-          // Ensure tags are properly formed
+          if (!trimmedLine) return false;
+          if (trimmedLine === '<' || trimmedLine === '>') return false;
           if (trimmedLine.startsWith('<') && !trimmedLine.includes('>')) return false;
           return true;
         });
@@ -1149,7 +1153,7 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
           }
           
           console.log('XML structure validated successfully');
-        } catch (validationError) {
+        } catch (validationError: any) {
           console.warn('XML validation issues detected:', validationError.message);
           throw new Error('XML validation failed: ' + validationError.message);
         }
