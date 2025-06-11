@@ -25,7 +25,11 @@ import {
   PlayCircle,
   StopCircle,
   GitBranch,
-  Users
+  Users,
+  Edit3,
+  Save,
+  X,
+  PlusCircle
 } from 'lucide-react';
 import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
@@ -83,6 +87,8 @@ export default function UserStoryGenerator() {
   const [generationStatus, setGenerationStatus] = useState('');
   const [projectName, setProjectName] = useState('');
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0 });
+  const [editingStoryId, setEditingStoryId] = useState<string | null>(null);
+  const [editingStory, setEditingStory] = useState<UserStory | null>(null);
   const [jiraConfig, setJiraConfig] = useState({
     projectKey: '',
     issueType: 'Story',
@@ -700,6 +706,102 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
     setTimeout(() => setGenerationStatus(''), 2000);
   };
 
+  // Start editing a user story
+  const startEditingStory = (story: UserStory) => {
+    setEditingStoryId(story.id);
+    setEditingStory({ ...story });
+  };
+
+  // Cancel editing
+  const cancelEditingStory = () => {
+    setEditingStoryId(null);
+    setEditingStory(null);
+  };
+
+  // Save edited story
+  const saveEditedStory = () => {
+    if (!editingStory) return;
+    
+    setUserStories(prev => prev.map(story => 
+      story.id === editingStory.id ? editingStory : story
+    ));
+    
+    setGenerationStatus('User story updated successfully');
+    setTimeout(() => setGenerationStatus(''), 2000);
+    cancelEditingStory();
+  };
+
+  // Update editing story field
+  const updateEditingStory = (field: keyof UserStory, value: any) => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  // Add new acceptance criteria
+  const addAcceptanceCriteria = () => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      acceptanceCriteria: [...prev.acceptanceCriteria, '']
+    } : null);
+  };
+
+  // Remove acceptance criteria
+  const removeAcceptanceCriteria = (index: number) => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      acceptanceCriteria: prev.acceptanceCriteria.filter((_, i) => i !== index)
+    } : null);
+  };
+
+  // Update acceptance criteria
+  const updateAcceptanceCriteria = (index: number, value: string) => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      acceptanceCriteria: prev.acceptanceCriteria.map((criteria, i) => 
+        i === index ? value : criteria
+      )
+    } : null);
+  };
+
+  // Add new label
+  const addLabel = () => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      labels: [...prev.labels, '']
+    } : null);
+  };
+
+  // Remove label
+  const removeLabel = (index: number) => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      labels: prev.labels.filter((_, i) => i !== index)
+    } : null);
+  };
+
+  // Update label
+  const updateLabel = (index: number, value: string) => {
+    if (!editingStory) return;
+    
+    setEditingStory(prev => prev ? {
+      ...prev,
+      labels: prev.labels.map((label, i) => 
+        i === index ? value : label
+      )
+    } : null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <NavigationBar title="User Story Generator" />
@@ -915,43 +1017,188 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                 <Card key={story.id} className="relative flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <CardTitle className="text-lg">{story.title}</CardTitle>
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <Badge variant={story.priority === 'Critical' ? 'destructive' : story.priority === 'High' ? 'default' : 'secondary'}>
-                            {story.priority}
-                          </Badge>
-                          <Badge variant="outline">{story.storyPoints} pts</Badge>
-                          <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
-                            {story.epic}
-                          </Badge>
+                      {editingStoryId === story.id ? (
+                        <div className="space-y-3 flex-1 mr-4">
+                          <Input
+                            value={editingStory?.title || ''}
+                            onChange={(e) => updateEditingStory('title', e.target.value)}
+                            className="font-semibold text-lg"
+                            placeholder="Story title"
+                          />
+                          <div className="grid grid-cols-3 gap-2">
+                            <Select 
+                              value={editingStory?.priority || 'Medium'} 
+                              onValueChange={(value) => updateEditingStory('priority', value)}
+                            >
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="Low">Low</SelectItem>
+                                <SelectItem value="Medium">Medium</SelectItem>
+                                <SelectItem value="High">High</SelectItem>
+                                <SelectItem value="Critical">Critical</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <Input
+                              type="number"
+                              value={editingStory?.storyPoints || 0}
+                              onChange={(e) => updateEditingStory('storyPoints', parseInt(e.target.value) || 0)}
+                              placeholder="Points"
+                              min="1"
+                              max="13"
+                            />
+                            <Input
+                              value={editingStory?.epic || ''}
+                              onChange={(e) => updateEditingStory('epic', e.target.value)}
+                              placeholder="Epic"
+                            />
+                          </div>
                         </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <CardTitle className="text-lg">{story.title}</CardTitle>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant={story.priority === 'Critical' ? 'destructive' : story.priority === 'High' ? 'default' : 'secondary'}>
+                              {story.priority}
+                            </Badge>
+                            <Badge variant="outline">{story.storyPoints} pts</Badge>
+                            <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200">
+                              {story.epic}
+                            </Badge>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-1">
+                        {editingStoryId === story.id ? (
+                          <>
+                            <Button
+                              onClick={saveEditedStory}
+                              variant="ghost"
+                              size="sm"
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              <Save className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={cancelEditingStory}
+                              variant="ghost"
+                              size="sm"
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <Button
+                              onClick={() => startEditingStory(story)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-blue-500 hover:text-blue-700"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              onClick={() => removeUserStory(story.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
                       </div>
-                      <Button
-                        onClick={() => removeUserStory(story.id)}
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-4 flex-1">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
-                      <p className="font-medium text-blue-800 dark:text-blue-200 text-sm">
-                        As a <span className="font-bold">{story.asA}</span>, I want <span className="font-bold">{story.iWant}</span> so that <span className="font-bold">{story.soThat}</span>.
-                      </p>
-                    </div>
+                    {editingStoryId === story.id ? (
+                      <div className="space-y-3">
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg space-y-2">
+                          <div className="grid grid-cols-1 gap-2">
+                            <div>
+                              <Label className="text-xs font-medium">As a</Label>
+                              <Input
+                                value={editingStory?.asA || ''}
+                                onChange={(e) => updateEditingStory('asA', e.target.value)}
+                                className="text-sm"
+                                placeholder="user role"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium">I want</Label>
+                              <Textarea
+                                value={editingStory?.iWant || ''}
+                                onChange={(e) => updateEditingStory('iWant', e.target.value)}
+                                className="text-sm min-h-[60px]"
+                                placeholder="user need"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium">So that</Label>
+                              <Textarea
+                                value={editingStory?.soThat || ''}
+                                onChange={(e) => updateEditingStory('soThat', e.target.value)}
+                                className="text-sm min-h-[60px]"
+                                placeholder="business value"
+                              />
+                            </div>
+                          </div>
+                        </div>
 
-                    <div>
-                      <h4 className="font-semibold mb-2 text-sm">Acceptance Criteria:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-xs">
-                        {story.acceptanceCriteria.map((criteria, index) => (
-                          <li key={index}>{criteria}</li>
-                        ))}
-                      </ul>
-                    </div>
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-sm">Acceptance Criteria:</h4>
+                            <Button
+                              onClick={addAcceptanceCriteria}
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2"
+                            >
+                              <PlusCircle className="h-3 w-3" />
+                            </Button>
+                          </div>
+                          <div className="space-y-2">
+                            {editingStory?.acceptanceCriteria.map((criteria, index) => (
+                              <div key={index} className="flex items-start gap-2">
+                                <Textarea
+                                  value={criteria}
+                                  onChange={(e) => updateAcceptanceCriteria(index, e.target.value)}
+                                  className="text-xs min-h-[40px] flex-1"
+                                  placeholder="Acceptance criteria"
+                                />
+                                <Button
+                                  onClick={() => removeAcceptanceCriteria(index)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                          <p className="font-medium text-blue-800 dark:text-blue-200 text-sm">
+                            As a <span className="font-bold">{story.asA}</span>, I want <span className="font-bold">{story.iWant}</span> so that <span className="font-bold">{story.soThat}</span>.
+                          </p>
+                        </div>
+
+                        <div>
+                          <h4 className="font-semibold mb-2 text-sm">Acceptance Criteria:</h4>
+                          <ul className="list-disc list-inside space-y-1 text-xs">
+                            {story.acceptanceCriteria.map((criteria, index) => (
+                              <li key={index}>{criteria}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
 
                     <Separator />
 
@@ -1056,15 +1303,51 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                       </div>
                     </div>
 
-                    {story.labels.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap mt-auto">
-                        <span className="text-xs font-medium">Labels:</span>
-                        {story.labels.map(label => (
-                          <Badge key={label} variant="outline" className="text-xs">
-                            {label}
-                          </Badge>
-                        ))}
+                    {editingStoryId === story.id ? (
+                      <div className="mt-auto">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs font-medium">Labels:</span>
+                          <Button
+                            onClick={addLabel}
+                            variant="outline"
+                            size="sm"
+                            className="h-6 px-2"
+                          >
+                            <PlusCircle className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <div className="space-y-2">
+                          {editingStory?.labels.map((label, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                              <Input
+                                value={label}
+                                onChange={(e) => updateLabel(index, e.target.value)}
+                                className="text-xs h-6 flex-1"
+                                placeholder="Label"
+                              />
+                              <Button
+                                onClick={() => removeLabel(index)}
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
+                    ) : (
+                      story.labels.length > 0 && (
+                        <div className="flex items-center gap-2 flex-wrap mt-auto">
+                          <span className="text-xs font-medium">Labels:</span>
+                          {story.labels.map(label => (
+                            <Badge key={label} variant="outline" className="text-xs">
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      )
                     )}
                   </CardContent>
                 </Card>
