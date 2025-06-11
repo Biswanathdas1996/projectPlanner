@@ -44,6 +44,12 @@ import {
   UserPlus,
   Sparkles,
   Zap,
+  FileText,
+  UserCheck,
+  Play,
+  GitBranch,
+  StopCircle,
+  Cog,
 } from "lucide-react";
 
 interface StakeholderFlow {
@@ -367,13 +373,15 @@ export default function UserJourneyEnhanced() {
     updateStakeholderFlows(updatedFlows);
   };
 
-  // Remove a flow
+  // Remove a flow with confirmation
   const removeFlow = (stakeholder: string, flowType: string) => {
-    const updatedFlows = stakeholderFlows.filter(
-      (flow) =>
-        !(flow.stakeholder === stakeholder && flow.flowType === flowType),
-    );
-    updateStakeholderFlows(updatedFlows);
+    if (window.confirm(`Are you sure you want to delete the BPMN flow for "${stakeholder} - ${flowType}"? This action cannot be undone.`)) {
+      const updatedFlows = stakeholderFlows.filter(
+        (flow) =>
+          !(flow.stakeholder === stakeholder && flow.flowType === flowType),
+      );
+      updateStakeholderFlows(updatedFlows);
+    }
   };
 
   // Update custom prompt for a flow
@@ -2475,29 +2483,28 @@ Data Objects: Request form, User profile`,
                                       )}
                                       Template
                                     </Button>
-                                    <Button
-                                      onClick={() => generateBestPracticeBpmn(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
-                                      size="sm"
-                                      className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
-                                    >
-                                      {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
-                                      ) : (
-                                        <CheckCircle className="h-2.5 w-2.5 mr-1" />
-                                      )}
-                                      Best Practice
-                                    </Button>
+                                    
                                     {existingFlow?.bpmnXml && (
-                                      <Button
-                                        onClick={() => openInEditor(stakeholder, flowType)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs px-2 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
-                                      >
-                                        <Edit3 className="h-2.5 w-2.5 mr-1" />
-                                        Editor
-                                      </Button>
+                                      <>
+                                        <Button
+                                          onClick={() => openInEditor(stakeholder, flowType)}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-2 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
+                                        >
+                                          <Edit3 className="h-2.5 w-2.5 mr-1" />
+                                          Editor
+                                        </Button>
+                                        <Button
+                                          onClick={() => removeFlow(stakeholder, flowType)}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-2 py-0.5 h-5 border-red-300 hover:bg-red-50 text-red-600"
+                                        >
+                                          <Trash2 className="h-2.5 w-2.5 mr-1" />
+                                          Delete
+                                        </Button>
+                                      </>
                                     )}
                                   </div>
                                 </div>
@@ -2690,8 +2697,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 1: Process Description */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0">
-                                                ✅ 1. Process & Description
+                                              <Badge className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 border-0 flex items-center gap-1">
+                                                <FileText className="h-3 w-3" />
+                                                1. Process & Description
                                               </Badge>
                                               <Button
                                                 onClick={() =>
@@ -2720,8 +2728,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 2: Participants (Swimlanes) - Editable */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0">
-                                                ✅ 2. Participants (Swimlanes)
+                                              <Badge className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 border-0 flex items-center gap-1">
+                                                <Users className="h-3 w-3" />
+                                                2. Participants (Swimlanes)
                                               </Badge>
                                               <Button
                                                 onClick={() =>
@@ -2754,8 +2763,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 3: Trigger (Start Event) */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0">
-                                                ✅ 3. Trigger (Start Event)
+                                              <Badge className="text-xs px-2 py-0.5 bg-green-100 text-green-700 border-0 flex items-center gap-1">
+                                                <Play className="h-3 w-3" />
+                                                3. Trigger (Start Event)
                                               </Badge>
                                               <Button
                                                 onClick={() =>
@@ -2787,8 +2797,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 4: Activities - Editable */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0">
-                                                ✅ 4. Activities (Tasks)
+                                              <Badge className="text-xs px-2 py-0.5 bg-orange-100 text-orange-700 border-0 flex items-center gap-1">
+                                                <Activity className="h-3 w-3" />
+                                                4. Activities (Tasks)
                                               </Badge>
                                               <Button
                                                 onClick={() =>
@@ -2823,8 +2834,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 5: Decision Points - Editable */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0">
-                                                ✅ 5. Decision Points (Gateways)
+                                              <Badge className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 border-0 flex items-center gap-1">
+                                                <GitBranch className="h-3 w-3" />
+                                                5. Decision Points (Gateways)
                                               </Badge>
                                               <Button
                                                 onClick={() =>
