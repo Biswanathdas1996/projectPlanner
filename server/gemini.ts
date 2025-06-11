@@ -149,7 +149,63 @@ export async function generateBpmnXml(req: Request, res: Response) {
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    const prompt = `Generate a BPMN 2.0 XML swimlane diagram based on this specification:
+    // Check if we have structured 7-element format for enhanced generation
+    const isStructuredFormat = projectPlan.includes('✅ 1. Process & Description') && 
+                               projectPlan.includes('✅ 2. Participants') &&
+                               projectPlan.includes('✅ 3. Trigger') &&
+                               projectPlan.includes('✅ 4. Activities') &&
+                               projectPlan.includes('✅ 5. Decision Points') &&
+                               projectPlan.includes('✅ 6. End Event') &&
+                               projectPlan.includes('✅ 7. Additional Elements');
+
+    let enhancedPrompt;
+    
+    if (isStructuredFormat) {
+      // Parse structured content for enhanced AI understanding
+      const sections = {
+        process: projectPlan.match(/✅ 1\. Process & Description\n([^✅]*)/)?.[1]?.trim() || '',
+        participants: projectPlan.match(/✅ 2\. Participants.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
+        trigger: projectPlan.match(/✅ 3\. Trigger.*?\n([^✅]*)/)?.[1]?.trim() || '',
+        activities: projectPlan.match(/✅ 4\. Activities.*?\n((?:\d+\. .*\n?)*)/)?.[1]?.trim() || '',
+        decisions: projectPlan.match(/✅ 5\. Decision Points.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
+        endEvent: projectPlan.match(/✅ 6\. End Event\n([^✅]*)/)?.[1]?.trim() || '',
+        additional: projectPlan.match(/✅ 7\. Additional Elements.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || ''
+      };
+
+      enhancedPrompt = `Generate a comprehensive BPMN 2.0 XML diagram from this structured business process data:
+
+PROCESS NAME & DESCRIPTION:
+${sections.process}
+
+PARTICIPANTS (Create swimlanes for each):
+${sections.participants}
+
+START EVENT:
+${sections.trigger}
+
+ACTIVITIES (Create userTask elements in sequence):
+${sections.activities}
+
+DECISION POINTS (Create exclusiveGateway elements):
+${sections.decisions}
+
+END EVENT:
+${sections.endEvent}
+
+ADDITIONAL ELEMENTS:
+${sections.additional}
+
+CRITICAL BPMN 2.0 XML REQUIREMENTS:
+- Use namespace: xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL"
+- Create collaboration with participant pools for each participant
+- Generate sequential userTask elements for each activity
+- Add exclusiveGateway elements for decision points with conditional flows
+- Include proper bpmndi:BPMNDiagram with coordinates
+- Ensure all sourceRef/targetRef IDs match exactly
+- Use unique IDs for all elements
+- Include sequence flows connecting all elements properly`;
+    } else {
+      enhancedPrompt = `Generate a BPMN 2.0 XML swimlane diagram based on this specification:
 
 ${projectPlan}
 
@@ -158,7 +214,10 @@ Create a BPMN 2.0 XML with proper swimlane structure including:
 - Process flows with start events, service tasks, and end events
 - Proper BPMN 2.0 XML namespace declarations
 - Valid diagram interchange (DI) elements for visual layout
-- Sequence flows connecting all elements
+- Sequence flows connecting all elements`;
+    }
+
+    const prompt = `${enhancedPrompt}
 
 Requirements:
 - Return ONLY valid BPMN 2.0 XML
