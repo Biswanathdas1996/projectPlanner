@@ -2903,8 +2903,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 6: End Event */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0">
-                                                ✅ 6. End Event
+                                              <Badge className="text-xs px-2 py-0.5 bg-red-100 text-red-700 border-0 flex items-center gap-1">
+                                                <StopCircle className="h-3 w-3" />
+                                                6. End Event
                                               </Badge>
                                               <Button
                                                 onClick={() =>
@@ -2936,8 +2937,9 @@ Data Objects: Request form, User profile`,
                                           {/* Section 7: Additional Elements - Editable */}
                                           <div className="group">
                                             <div className="flex items-center justify-between mb-1">
-                                              <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0">
-                                                ✅ 7. Additional Elements
+                                              <Badge className="text-xs px-2 py-0.5 bg-gray-100 text-gray-700 border-0 flex items-center gap-1">
+                                                <Cog className="h-3 w-3" />
+                                                7. Additional Elements
                                               </Badge>
                                               <Button
                                                 onClick={() =>
