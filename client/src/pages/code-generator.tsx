@@ -115,11 +115,7 @@ export default function CodeGenerator() {
       return;
     }
 
-    // Check for API key before proceeding
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      alert("Gemini API key is required for code generation. Please set your VITE_GEMINI_API_KEY environment variable and restart the application.");
-      return;
-    }
+    // API key is now embedded directly in the code generator
 
     setIsGenerating(true);
     setGenerationProgress({
