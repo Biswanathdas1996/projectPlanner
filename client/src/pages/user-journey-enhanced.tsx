@@ -236,7 +236,7 @@ export default function UserJourneyEnhanced() {
 
     try {
       const stakeholders = await extractStakeholdersFromProject(planContent);
-      if (stakeholders && stakeholders.length > 0) {
+      if (stakeholders && Array.isArray(stakeholders) && stakeholders.length > 0) {
         setExtractedStakeholders(stakeholders);
         localStorage.setItem(
           STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
@@ -245,7 +245,7 @@ export default function UserJourneyEnhanced() {
 
         // Initialize persona flow types for each stakeholder
         const initialFlowTypes: Record<string, string[]> = {};
-        stakeholders.forEach((stakeholder) => {
+        stakeholders.forEach((stakeholder: string) => {
           initialFlowTypes[stakeholder] = ["Core Process"];
         });
         setPersonaFlowTypes(initialFlowTypes);
