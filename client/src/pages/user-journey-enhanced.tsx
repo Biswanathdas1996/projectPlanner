@@ -1098,9 +1098,9 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
 
       let bpmnXml;
       try {
-        console.log('Sending BPMN content to Gemini:', bpmnContent);
+        console.log('Generating BPMN from 7 sections...');
         bpmnXml = await generateBpmnXml(bpmnContent);
-        console.log('Successfully generated BPMN XML:', bpmnXml.substring(0, 200) + '...');
+        console.log('Raw BPMN received, validating structure...');
         
         // Clean and validate the XML response
         let cleanedXml = bpmnXml.trim();
@@ -1111,15 +1111,53 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
           cleanedXml = cleanedXml.replace(/^```\s*/, "").replace(/```\s*$/, "");
         }
         
-        // Validate that we got proper XML
+        // Fix common namespace and XML issues
+        cleanedXml = cleanedXml.replace(/bpmn:timerEventDefinition/g, 'bpmn2:timerEventDefinition');
+        cleanedXml = cleanedXml.replace(/xmlns:bpmn=/g, 'xmlns:bpmn2=');
+        cleanedXml = cleanedXml.replace(/<bpmn:/g, '<bpmn2:');
+        cleanedXml = cleanedXml.replace(/<\/bpmn:/g, '</bpmn2:');
+        
+        // Fix unclosed tags and validate XML structure
+        const xmlLines = cleanedXml.split('\n');
+        const validatedLines = xmlLines.filter(line => {
+          const trimmedLine = line.trim();
+          // Skip empty lines and malformed tags
+          if (!trimmedLine || trimmedLine === '<' || trimmedLine === '>') return false;
+          // Ensure tags are properly formed
+          if (trimmedLine.startsWith('<') && !trimmedLine.includes('>')) return false;
+          return true;
+        });
+        cleanedXml = validatedLines.join('\n');
+        
+        // Final validation and error checking
         if (!cleanedXml.includes('<?xml') || !cleanedXml.includes('bpmn2:definitions')) {
-          throw new Error('Invalid BPMN XML received from Gemini');
+          console.warn('Generated XML failed validation, using fallback');
+          throw new Error('Invalid BPMN XML structure');
+        }
+        
+        // Validate XML structure and fix common issues
+        try {
+          // Basic XML structure validation
+          if (!cleanedXml.includes('</bpmn2:definitions>')) {
+            throw new Error('Missing closing definitions tag');
+          }
+          
+          // Check for timer event definition issues and fix them
+          if (cleanedXml.includes('timerEventDefinition')) {
+            cleanedXml = cleanedXml.replace(/<bpmn2:timerEventDefinition[^>]*>/g, '');
+            cleanedXml = cleanedXml.replace(/<\/bpmn2:timerEventDefinition>/g, '');
+          }
+          
+          console.log('XML structure validated successfully');
+        } catch (validationError) {
+          console.warn('XML validation issues detected:', validationError.message);
+          throw new Error('XML validation failed: ' + validationError.message);
         }
         
         bpmnXml = cleanedXml;
-        console.log('✅ BPMN XML generated successfully from 7 sections');
+        console.log('✅ BPMN XML validated and ready for display');
       } catch (bpmnError) {
-        console.error('Gemini BPMN generation failed, creating structured fallback:', bpmnError);
+        console.error('XML validation failed, using structured fallback:', bpmnError);
         
         // Create BPMN XML based on the 7 structured sections
         const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
@@ -1192,31 +1230,33 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
           }
         });
         
+        // Create valid BPMN 2.0 XML from structured sections
+        const diagramWidth = 300 + (structuredContent.activities.length * 150);
+        
         bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn2:collaboration id="Collaboration_1">
-${participantElements}
+    <bpmn2:participant id="Participant_1" name="${structuredContent.participants[0]?.replace(/"/g, '&quot;') || stakeholder}" processRef="${processId}" />
   </bpmn2:collaboration>
   <bpmn2:process id="${processId}" isExecutable="true">
     <bpmn2:startEvent id="StartEvent_1" name="${structuredContent.trigger.replace(/"/g, '&quot;')}" />
 ${taskElements}
-${gatewayElements}
     <bpmn2:endEvent id="EndEvent_1" name="${structuredContent.endEvent.replace(/"/g, '&quot;')}" />
 ${flowElements.join('\n')}
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
       <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
-        <dc:Bounds x="80" y="80" width="${200 + (structuredContent.activities.length * 150)}" height="250" />
+        <dc:Bounds x="80" y="80" width="${diagramWidth}" height="250" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
-        <dc:Bounds x="112" y="162" width="36" height="36" />
+        <dc:Bounds x="130" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
 ${taskShapes}
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="${200 + (structuredContent.activities.length * 150) + 20}" y="162" width="36" height="36" />
+        <dc:Bounds x="${200 + (structuredContent.activities.length * 150)}" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
 ${flowEdges.join('\n')}
