@@ -2453,46 +2453,50 @@ Data Objects: Request form, User profile`,
                                       onClick={() => generateBpmnWithAI(stakeholder, flowType)}
                                       disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className={`text-xs px-1 py-0.5 h-5 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
+                                      className={`text-xs px-2 py-0.5 h-5 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
                                       ) : (
-                                        <Sparkles className="h-2.5 w-2.5" />
+                                        <Sparkles className="h-2.5 w-2.5 mr-1" />
                                       )}
+                                      AI
                                     </Button>
                                     <Button
                                       onClick={() => generateStructuredBpmn(stakeholder, flowType)}
                                       disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
+                                      className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
                                       ) : (
-                                        <Zap className="h-2.5 w-2.5" />
+                                        <Zap className="h-2.5 w-2.5 mr-1" />
                                       )}
+                                      Template
                                     </Button>
                                     <Button
                                       onClick={() => generateBestPracticeBpmn(stakeholder, flowType)}
                                       disabled={isGeneratingBpmn[flowKey] || !details}
                                       size="sm"
-                                      className="text-xs px-1 py-0.5 h-5 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
+                                      className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-emerald-600 to-green-700 hover:opacity-90 text-white"
                                     >
                                       {isGeneratingBpmn[flowKey] ? (
-                                        <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
                                       ) : (
-                                        <CheckCircle className="h-2.5 w-2.5" />
+                                        <CheckCircle className="h-2.5 w-2.5 mr-1" />
                                       )}
+                                      Best Practice
                                     </Button>
                                     {existingFlow?.bpmnXml && (
                                       <Button
                                         onClick={() => openInEditor(stakeholder, flowType)}
                                         variant="outline"
                                         size="sm"
-                                        className="text-xs px-1 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
+                                        className="text-xs px-2 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
                                       >
-                                        <Edit3 className="h-2.5 w-2.5" />
+                                        <Edit3 className="h-2.5 w-2.5 mr-1" />
+                                        Editor
                                       </Button>
                                     )}
                                   </div>
