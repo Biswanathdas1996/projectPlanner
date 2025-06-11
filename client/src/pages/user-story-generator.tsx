@@ -840,49 +840,80 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
         </TabsList>
 
         <TabsContent value="generate" className="space-y-6">
-          {/* Stakeholder Flow Overview */}
+          {/* Stakeholder Flow Overview - Compact Design */}
           {stakeholderFlows.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
+            <Card className="bg-gradient-to-r from-blue-50 via-white to-purple-50 dark:from-blue-900/10 dark:via-gray-900 dark:to-purple-900/10">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-base">
                   <div className="flex items-center">
-                    <BookOpen className="h-5 w-5 mr-2" />
-                    Stakeholder Flow Analysis Data
+                    <div className="h-8 w-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3">
+                      <BookOpen className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold">Stakeholder Analysis</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-normal">Available flow data for story generation</p>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {stakeholderFlows.length} flows found
+                  <Badge variant="outline" className="text-xs bg-white/50 dark:bg-gray-800/50">
+                    {stakeholderFlows.length} flows
                   </Badge>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <CardContent className="pt-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                   {stakeholderFlows.map((flow, index) => {
                     const flowKey = `${flow.stakeholder}-${flow.flowType}`;
                     const details = flowDetails[flowKey];
                     return (
-                      <div key={flowKey} className="border rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                      <div key={flowKey} className="group bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border border-gray-200/60 dark:border-gray-700/60 rounded-lg p-3 hover:shadow-md transition-all duration-200 hover:bg-white dark:hover:bg-gray-800">
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <h4 className="font-medium text-sm">{flow.stakeholder}</h4>
-                            <Badge variant="secondary" className="text-xs">{flow.flowType}</Badge>
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center space-x-2 min-w-0 flex-1">
+                              <div className="h-6 w-6 rounded bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                <Users className="h-3 w-3 text-white" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <h4 className="font-medium text-xs truncate" title={flow.stakeholder}>{flow.stakeholder}</h4>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate" title={flow.flowType}>{flow.flowType}</p>
+                              </div>
+                            </div>
                           </div>
                           {details && (
-                            <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                              {details.processDescription && (
-                                <p className="line-clamp-2">{details.processDescription.substring(0, 80)}...</p>
-                              )}
-                              {details.activities.length > 0 && (
-                                <p><span className="font-medium">Activities:</span> {details.activities.length}</p>
-                              )}
-                              {details.participants.length > 0 && (
-                                <p><span className="font-medium">Participants:</span> {details.participants.length}</p>
-                              )}
+                            <div className="flex items-center justify-between text-xs">
+                              <div className="flex items-center space-x-3 text-gray-600 dark:text-gray-400">
+                                <div className="flex items-center space-x-1">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                                  <span>{details.activities.length}</span>
+                                </div>
+                                <div className="flex items-center space-x-1">
+                                  <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+                                  <span>{details.participants.length}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center">
+                                <CheckCircle className="h-3 w-3 text-green-500" />
+                              </div>
                             </div>
                           )}
                         </div>
                       </div>
                     );
                   })}
+                </div>
+                <div className="mt-3 pt-3 border-t border-gray-200/60 dark:border-gray-700/60">
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-4 text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center space-x-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-green-500"></div>
+                        <span>Activities</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-blue-500"></div>
+                        <span>Participants</span>
+                      </div>
+                    </div>
+                    <span className="text-gray-500 dark:text-gray-400">Ready for story generation</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
