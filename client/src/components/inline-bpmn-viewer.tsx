@@ -46,9 +46,12 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
     }
 
     const initViewer = async () => {
+      console.log(`🔄 Initializing BPMN viewer for: ${title}`);
+      
       try {
         // Clean up existing viewer
         if (viewerRef.current) {
+          console.log('🧹 Cleaning up existing viewer');
           viewerRef.current.destroy();
           viewerRef.current = null;
         }
@@ -56,10 +59,14 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
         // Clear container content
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
+          console.log('📦 Container cleared, dimensions:', {
+            width: containerRef.current.offsetWidth,
+            height: containerRef.current.offsetHeight
+          });
         }
 
         // Debug: Check what BPMN constructors are available
-        console.log('Available BPMN constructors:', {
+        console.log('🔍 Available BPMN constructors:', {
           BpmnJS: !!window.BpmnJS,
           BpmnModeler: !!window.BpmnModeler,
           BpmnViewer: !!window.BpmnViewer,
@@ -74,6 +81,8 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
             Object.keys(window).filter(key => key.toLowerCase().includes('bpmn')).join(', '));
         }
 
+        console.log('⚙️ Creating BPMN viewer instance...');
+        
         // Create viewer instance
         const viewer = new BpmnConstructor({
           container: containerRef.current,
@@ -82,9 +91,20 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
         });
 
         viewerRef.current = viewer;
+        console.log('✅ BPMN viewer created successfully');
+
+        // Validate XML before import
+        console.log('📋 BPMN XML to import:', {
+          length: bpmnXml.length,
+          hasXmlDeclaration: bpmnXml.includes('<?xml'),
+          hasBpmnDefinitions: bpmnXml.includes('bpmn2:definitions'),
+          preview: bpmnXml.substring(0, 200) + '...'
+        });
 
         // Import the BPMN XML
+        console.log('📥 Importing BPMN XML...');
         const result = await viewer.importXML(bpmnXml);
+        console.log('🎯 Import result:', result);
         
         if (result.warnings && result.warnings.length > 0) {
           const warningMessages = result.warnings.map((w: any) => w.message).join('; ');
