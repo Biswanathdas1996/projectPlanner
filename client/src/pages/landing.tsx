@@ -99,50 +99,6 @@ export default function Landing() {
     }
   }, [location]);
 
-  const getStepStatus = (step: "input" | "plan" | "diagram") => {
-    if (step === "input") {
-      return projectInput
-        ? "completed"
-        : currentStep === "input"
-          ? "active"
-          : "pending";
-    } else if (step === "plan") {
-      return projectPlan
-        ? "completed"
-        : currentStep === "plan"
-          ? "active"
-          : "pending";
-    } else if (step === "diagram") {
-      return generatedBpmnXml
-        ? "completed"
-        : currentStep === "diagram"
-          ? "active"
-          : "pending";
-    }
-    return "pending";
-  };
-
-  const resetPlanner = () => {
-    setProjectInput("");
-    setProjectPlan("");
-    setGeneratedBpmnXml("");
-    setCurrentStep("input");
-    setError("");
-    setIsEditingPlan(false);
-    setEditedPlanContent("");
-    setShowSuggestions(false);
-    setSelectedSuggestions([]);
-    setSuggestions([]);
-    setShowBpmnScript(false);
-    setIsEditingBpmn(false);
-    setEditedBpmnScript("");
-
-    // Clear localStorage
-    localStorage.removeItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
-    localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
-    localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
-  };
-
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
       setError("Please enter a project description");
@@ -504,175 +460,173 @@ export default function Landing() {
         )}
 
         {/* Step 1: Project Input */}
-        {currentStep === "input" && (
-          <Card className="mb-6 border-0 shadow-sm bg-white">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                  <Sparkles className="h-4 w-4 text-white" />
-                </div>
-                Describe Your Project
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-6 pb-6 space-y-4">
-              <p className="text-gray-600">
-                Provide a detailed description of your project. Include
-                features, requirements, and any specific goals you want to
-                achieve.
-              </p>
 
-              <Textarea
-                placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
-                value={projectInput}
-                onChange={(e) => setProjectInput(e.target.value)}
-                className="min-h-32 text-sm"
-                disabled={isGeneratingPlan}
-              />
-
-              {/* Compact Example Projects Section */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Quick Start Examples
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      Social Media
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Profiles, messaging, content sharing
-                    </p>
-                  </div>
-
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      Project Management
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Tasks, collaboration, timelines
-                    </p>
-                  </div>
-
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      Learning Platform
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Courses, quizzes, certifications
-                    </p>
-                  </div>
-
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      Finance App
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Expense tracking, investments
-                    </p>
-                  </div>
-
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      Healthcare Platform
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Records, telemedicine, billing
-                    </p>
-                  </div>
-
-                  <div
-                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                    onClick={() =>
-                      setProjectInput(
-                        "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.",
-                      )
-                    }
-                  >
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                      IoT Platform
-                    </h5>
-                    <p className="text-xs text-gray-500">
-                      Smart devices, automation
-                    </p>
-                  </div>
-                </div>
-                <p className="text-xs text-blue-600 mt-3">
-                  Click any example to use it as a starting point, then
-                  customize as needed.
-                </p>
+        <Card className="mb-6 border-0 shadow-sm bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Sparkles className="h-4 w-4 text-white" />
               </div>
+              Describe Your Project
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-6 pb-6 space-y-4">
+            <p className="text-gray-600">
+              Provide a detailed description of your project. Include features,
+              requirements, and any specific goals you want to achieve.
+            </p>
 
-              <div className="flex justify-between items-center pt-2">
-                <div className="text-xs text-gray-400">
-                  {projectInput.length}/1000 characters
-                </div>
-                <Button
-                  onClick={handleGenerateProjectPlan}
-                  disabled={
-                    !projectInput.trim() ||
-                    isGeneratingPlan ||
-                    isGeneratingSuggestions
+            <Textarea
+              placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
+              value={projectInput}
+              onChange={(e) => setProjectInput(e.target.value)}
+              className="min-h-32 text-sm"
+              disabled={isGeneratingPlan}
+            />
+
+            {/* Compact Example Projects Section */}
+            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Quick Start Examples
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.",
+                    )
                   }
-                  size="sm"
-                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
                 >
-                  {isGeneratingSuggestions ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                      Analyzing...
-                    </>
-                  ) : isGeneratingPlan ? (
-                    <>
-                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-3 w-3 mr-2" />
-                      Generate Plan
-                    </>
-                  )}
-                </Button>
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    Social Media
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Profiles, messaging, content sharing
+                  </p>
+                </div>
+
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.",
+                    )
+                  }
+                >
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    Project Management
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Tasks, collaboration, timelines
+                  </p>
+                </div>
+
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.",
+                    )
+                  }
+                >
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    Learning Platform
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Courses, quizzes, certifications
+                  </p>
+                </div>
+
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.",
+                    )
+                  }
+                >
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    Finance App
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Expense tracking, investments
+                  </p>
+                </div>
+
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.",
+                    )
+                  }
+                >
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    Healthcare Platform
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Records, telemedicine, billing
+                  </p>
+                </div>
+
+                <div
+                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                  onClick={() =>
+                    setProjectInput(
+                      "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.",
+                    )
+                  }
+                >
+                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                    IoT Platform
+                  </h5>
+                  <p className="text-xs text-gray-500">
+                    Smart devices, automation
+                  </p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <p className="text-xs text-blue-600 mt-3">
+                Click any example to use it as a starting point, then customize
+                as needed.
+              </p>
+            </div>
+
+            <div className="flex justify-between items-center pt-2">
+              <div className="text-xs text-gray-400">
+                {projectInput.length}/1000 characters
+              </div>
+              <Button
+                onClick={handleGenerateProjectPlan}
+                disabled={
+                  !projectInput.trim() ||
+                  isGeneratingPlan ||
+                  isGeneratingSuggestions
+                }
+                size="sm"
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
+              >
+                {isGeneratingSuggestions ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                    Analyzing...
+                  </>
+                ) : isGeneratingPlan ? (
+                  <>
+                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-3 w-3 mr-2" />
+                    Generate Plan
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Landing Page Content */}
         {currentStep === "input" && !projectInput && (
