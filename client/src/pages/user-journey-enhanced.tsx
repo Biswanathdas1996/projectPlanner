@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   generateUserJourneyFlows,
   extractStakeholdersFromProject,
@@ -3263,38 +3264,62 @@ ${flowEdges.join("\n")}
                                       </div>
                                     </div>
                                     
-                                    {/* BPMN Visual Diagram */}
-                                    <div className="bg-white rounded-lg border w-full">
-                                      <div className="px-3 py-2 border-b bg-gray-50 rounded-t-lg">
-                                        <p className="text-xs font-medium text-gray-700">
-                                          BPMN Diagram - {stakeholder} {flowType}
-                                        </p>
-                                      </div>
-                                      <div className="w-full">
-                                        <SimpleBpmnViewer
-                                          bpmnXml={existingFlow.bpmnXml}
-                                          title={`${stakeholder} - ${flowType}`}
-                                          height="400px"
-                                        />
-                                      </div>
-                                    </div>
+                                    {/* BPMN Tabbed View */}
+                                    <Tabs defaultValue="diagram" className="w-full">
+                                      <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3">
+                                        <TabsTrigger value="diagram" className="text-xs">
+                                          📊 Visual Diagram
+                                        </TabsTrigger>
+                                        <TabsTrigger value="script" className="text-xs">
+                                          📄 XML Script
+                                        </TabsTrigger>
+                                      </TabsList>
 
-                                    {/* BPMN XML Script Content */}
-                                    <div className="bg-gray-50 rounded-lg border">
-                                      <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
-                                        <p className="text-xs font-medium text-gray-700">
-                                          BPMN 2.0 XML Script - {stakeholder} {flowType}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                          {existingFlow.bpmnXml.length} characters
-                                        </p>
-                                      </div>
-                                      <div className="p-3">
-                                        <pre className="text-xs text-gray-800 overflow-auto whitespace-pre-wrap bg-white rounded border p-3 max-h-64 font-mono leading-relaxed">
-                                          {existingFlow.bpmnXml}
-                                        </pre>
-                                      </div>
-                                    </div>
+                                      <TabsContent value="diagram" className="mt-0">
+                                        <div className="bg-white rounded-lg border w-full">
+                                          <SimpleBpmnViewer
+                                            bpmnXml={existingFlow.bpmnXml}
+                                            title={`${stakeholder} - ${flowType}`}
+                                            height="450px"
+                                          />
+                                        </div>
+                                      </TabsContent>
+
+                                      <TabsContent value="script" className="mt-0">
+                                        <div className="bg-gray-50 rounded-lg border">
+                                          <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
+                                            <div className="flex items-center justify-between">
+                                              <div>
+                                                <p className="text-xs font-medium text-gray-700">
+                                                  BPMN 2.0 XML Script - {stakeholder} {flowType}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                  {existingFlow.bpmnXml.length} characters
+                                                </p>
+                                              </div>
+                                              <Button
+                                                onClick={() =>
+                                                  copyXmlToClipboard(
+                                                    existingFlow.bpmnXml,
+                                                  )
+                                                }
+                                                variant="outline"
+                                                size="sm"
+                                                className="text-xs px-2 py-1 h-6 border-gray-300"
+                                              >
+                                                <Copy className="h-3 w-3 mr-1" />
+                                                Copy
+                                              </Button>
+                                            </div>
+                                          </div>
+                                          <div className="p-3">
+                                            <pre className="text-xs text-gray-800 overflow-auto whitespace-pre-wrap bg-white rounded border p-3 max-h-96 font-mono leading-relaxed">
+                                              {existingFlow.bpmnXml}
+                                            </pre>
+                                          </div>
+                                        </div>
+                                      </TabsContent>
+                                    </Tabs>
                                   </div>
                                 )}
                               </div>
