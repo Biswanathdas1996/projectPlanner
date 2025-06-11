@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { AlertCircle, FileX, ZoomIn, ZoomOut, Move, RotateCcw } from 'lucide-react';
+import { AlertCircle, FileX, ZoomIn, ZoomOut, Move, RotateCcw, Maximize2 } from 'lucide-react';
 
 interface SimpleBpmnViewerProps {
   bpmnXml: string;
@@ -31,9 +31,11 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
   const parseBpmnElements = (xml: string): BpmnElement[] => {
     try {
       const elements: BpmnElement[] = [];
+      console.log('Parsing BPMN XML, length:', xml.length);
       
       // Extract start events
       const startEventMatches = xml.match(/<bpmn2:startEvent[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      console.log('Start events found:', startEventMatches?.length || 0);
       if (startEventMatches) {
         startEventMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
@@ -54,6 +56,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
 
       // Extract user tasks
       const taskMatches = xml.match(/<bpmn2:userTask[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      console.log('User tasks found:', taskMatches?.length || 0);
       if (taskMatches) {
         taskMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
@@ -74,6 +77,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
 
       // Extract end events
       const endEventMatches = xml.match(/<bpmn2:endEvent[^>]*id="([^"]*)"[^>]*name="([^"]*)"[^>]*\/>/g);
+      console.log('End events found:', endEventMatches?.length || 0);
       if (endEventMatches) {
         endEventMatches.forEach((match, index) => {
           const idMatch = match.match(/id="([^"]*)"/);
@@ -95,6 +99,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
 
       // Extract sequence flows
       const flowMatches = xml.match(/<bpmn2:sequenceFlow[^>]*id="([^"]*)"[^>]*sourceRef="([^"]*)"[^>]*targetRef="([^"]*)"[^>]*\/>/g);
+      console.log('Sequence flows found:', flowMatches?.length || 0);
       if (flowMatches) {
         flowMatches.forEach(match => {
           const idMatch = match.match(/id="([^"]*)"/);
@@ -112,6 +117,7 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
         });
       }
 
+      console.log('Total elements parsed:', elements.length);
       return elements;
     } catch (error) {
       console.error('Error parsing BPMN XML:', error);
@@ -120,6 +126,16 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
   };
 
   const elements = parseBpmnElements(bpmnXml);
+
+  // Auto-fit to view when elements change
+  useEffect(() => {
+    if (elements.length > 0) {
+      const timer = setTimeout(() => {
+        handleFitToView();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [elements.length]);
 
   // Handle zoom
   const handleZoomIn = () => {
@@ -132,6 +148,20 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
 
   const handleReset = () => {
     setScale(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleFitToView = () => {
+    if (!svgRef.current) return;
+    
+    const containerWidth = svgRef.current.parentElement?.clientWidth || 800;
+    const containerHeight = svgRef.current.parentElement?.clientHeight || 300;
+    
+    const scaleX = (containerWidth - 40) / svgWidth;
+    const scaleY = (containerHeight - 40) / svgHeight;
+    const newScale = Math.min(scaleX, scaleY, 1);
+    
+    setScale(newScale);
     setPan({ x: 0, y: 0 });
   };
 
@@ -209,10 +239,14 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
     );
   }
 
-  // Calculate SVG dimensions
-  const maxX = Math.max(...elements.filter(e => e.x).map(e => (e.x || 0) + (e.width || 0)));
-  const svgWidth = Math.max(maxX + 100, 600);
-  const svgHeight = parseInt(height.replace('px', '')) || 300;
+  // Calculate SVG dimensions based on all elements
+  const elementsWithPosition = elements.filter(e => e.x !== undefined && e.y !== undefined);
+  const maxX = elementsWithPosition.length > 0 ? Math.max(...elementsWithPosition.map(e => (e.x || 0) + (e.width || 0))) : 600;
+  const maxY = elementsWithPosition.length > 0 ? Math.max(...elementsWithPosition.map(e => (e.y || 0) + (e.height || 0))) : 200;
+  
+  // Add padding and ensure minimum dimensions
+  const svgWidth = Math.max(maxX + 150, 800);
+  const svgHeight = Math.max(maxY + 100, 400);
 
   // Get flows for drawing connections
   const flows = elements.filter(e => e.type === 'sequenceFlow');
@@ -240,8 +274,15 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
             <ZoomIn className="h-4 w-4" />
           </button>
           <button
-            onClick={handleReset}
+            onClick={handleFitToView}
             className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded ml-1"
+            title="Fit to View"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-200 rounded"
             title="Reset View"
           >
             <RotateCcw className="h-4 w-4" />
@@ -263,9 +304,9 @@ export function SimpleBpmnViewer({ bpmnXml, height = "300px", title }: SimpleBpm
       >
         <svg 
           ref={svgRef}
-          width={svgWidth} 
-          height={svgHeight} 
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full h-full"
+          preserveAspectRatio="xMidYMid meet"
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})`,
             transformOrigin: 'center center'
