@@ -49,6 +49,8 @@ import {
   GitBranch,
   StopCircle,
   Cog,
+  Star,
+  Target,
 } from "lucide-react";
 
 interface StakeholderFlow {
@@ -1975,69 +1977,76 @@ Data Objects: Request form, User profile`,
                     </Button>
                   </div>
 
-                  {/* Stakeholder Tags */}
-                  <div className="flex flex-wrap gap-1.5">
-                    {extractedStakeholders.map((stakeholder, index) => (
-                      <div key={index} className="group">
-                        {editingStakeholder === stakeholder ? (
-                          <div className="flex items-center gap-1 bg-white border-2 border-blue-300 rounded-md px-2 py-1">
-                            <Input
-                              value={editedStakeholderName}
-                              onChange={(e) => setEditedStakeholderName(e.target.value)}
-                              className="text-xs h-5 w-24 border-0 p-0 focus:ring-0"
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  saveStakeholderEdit();
-                                } else if (e.key === "Escape") {
-                                  cancelStakeholderEdit();
-                                }
-                              }}
-                              autoFocus
-                            />
-                            <Button
-                              onClick={saveStakeholderEdit}
-                              size="sm"
-                              className="h-4 w-4 p-0 bg-green-500"
-                            >
-                              <Save className="h-2.5 w-2.5" />
-                            </Button>
-                            <Button
-                              onClick={cancelStakeholderEdit}
-                              size="sm"
-                              variant="outline"
-                              className="h-4 w-4 p-0"
-                            >
-                              <X className="h-2.5 w-2.5" />
-                            </Button>
-                          </div>
-                        ) : (
-                          <Badge
-                            variant="secondary"
-                            className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer transition-all group pr-1"
-                          >
-                            <span className="mr-1">{stakeholder}</span>
-                            <div className="inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Enhanced Stakeholder Tags */}
+                  <div className="flex flex-wrap gap-2">
+                    {extractedStakeholders.map((stakeholder, index) => {
+                      const stakeholderIcons = [User, Shield, Star, Target, Activity, Settings];
+                      const StakeholderIcon = stakeholderIcons[index % stakeholderIcons.length];
+                      
+                      return (
+                        <div key={index} className="group">
+                          {editingStakeholder === stakeholder ? (
+                            <div className="flex items-center gap-2 bg-white border-2 border-blue-300 rounded-lg px-3 py-2 shadow-sm">
+                              <User className="h-3 w-3 text-blue-500" />
+                              <Input
+                                value={editedStakeholderName}
+                                onChange={(e) => setEditedStakeholderName(e.target.value)}
+                                className="text-sm h-5 w-28 border-0 p-0 focus:ring-0"
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    saveStakeholderEdit();
+                                  } else if (e.key === "Escape") {
+                                    cancelStakeholderEdit();
+                                  }
+                                }}
+                                autoFocus
+                              />
                               <Button
-                                onClick={() => startEditingStakeholder(stakeholder)}
+                                onClick={saveStakeholderEdit}
                                 size="sm"
-                                variant="ghost"
-                                className="h-3 w-3 p-0 hover:bg-blue-200 rounded-sm"
+                                className="h-5 w-5 p-0 bg-green-500 hover:bg-green-600"
                               >
-                                <Edit3 className="h-2 w-2" />
+                                <Save className="h-3 w-3" />
                               </Button>
                               <Button
-                                onClick={() => deleteStakeholder(stakeholder)}
+                                onClick={cancelStakeholderEdit}
                                 size="sm"
-                                variant="ghost"
-                                className="h-3 w-3 p-0 hover:bg-red-200 text-red-500 rounded-sm"
+                                variant="outline"
+                                className="h-5 w-5 p-0"
                               >
-                                <X className="h-2 w-2" />
+                                <X className="h-3 w-3" />
                               </Button>
                             </div>
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
+                          ) : (
+                            <Badge
+                              variant="secondary"
+                              className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 cursor-pointer transition-all group pr-1 px-3 py-1.5 text-sm"
+                            >
+                              <StakeholderIcon className="h-3 w-3 mr-1.5" />
+                              <span className="mr-2">{stakeholder}</span>
+                              <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  onClick={() => startEditingStakeholder(stakeholder)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-blue-200 rounded"
+                                >
+                                  <Edit3 className="h-2.5 w-2.5" />
+                                </Button>
+                                <Button
+                                  onClick={() => deleteStakeholder(stakeholder)}
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-4 w-4 p-0 hover:bg-red-200 text-red-500 rounded"
+                                >
+                                  <X className="h-2.5 w-2.5" />
+                                </Button>
+                              </div>
+                            </Badge>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
                 <div>
@@ -2051,66 +2060,95 @@ Data Objects: Request form, User profile`,
                     </Badge>
                   </div>
                   
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {Object.entries(personaFlowTypes).map(
                       ([stakeholder, flowTypes], stakeholderIndex) => {
                         const colors = [
-                          { bg: "bg-blue-50", border: "border-blue-200", accent: "bg-blue-500", text: "text-blue-700" },
-                          { bg: "bg-emerald-50", border: "border-emerald-200", accent: "bg-emerald-500", text: "text-emerald-700" },
-                          { bg: "bg-purple-50", border: "border-purple-200", accent: "bg-purple-500", text: "text-purple-700" },
-                          { bg: "bg-orange-50", border: "border-orange-200", accent: "bg-orange-500", text: "text-orange-700" },
-                          { bg: "bg-cyan-50", border: "border-cyan-200", accent: "bg-cyan-500", text: "text-cyan-700" },
-                          { bg: "bg-green-50", border: "border-green-200", accent: "bg-green-500", text: "text-green-700" },
+                          { bg: "bg-blue-50", border: "border-blue-200", accent: "bg-blue-500", text: "text-blue-700", icon: "User" },
+                          { bg: "bg-emerald-50", border: "border-emerald-200", accent: "bg-emerald-500", text: "text-emerald-700", icon: "Shield" },
+                          { bg: "bg-purple-50", border: "border-purple-200", accent: "bg-purple-500", text: "text-purple-700", icon: "Star" },
+                          { bg: "bg-orange-50", border: "border-orange-200", accent: "bg-orange-500", text: "text-orange-700", icon: "Crown" },
+                          { bg: "bg-cyan-50", border: "border-cyan-200", accent: "bg-cyan-500", text: "text-cyan-700", icon: "Target" },
+                          { bg: "bg-green-50", border: "border-green-200", accent: "bg-green-500", text: "text-green-700", icon: "Briefcase" },
                         ];
                         const color = colors[stakeholderIndex % colors.length];
+                        
+                        const IconComponent = {
+                          User: User,
+                          Shield: Shield,
+                          Star: Star,
+                          Crown: User, // Crown not available, using User as fallback
+                          Target: Target,
+                          Briefcase: User, // Briefcase not available, using User as fallback
+                        }[color.icon] || User;
 
                         return (
                           <div
                             key={stakeholder}
-                            className={`${color.bg} ${color.border} border rounded-lg p-3 transition-all hover:shadow-sm`}
+                            className={`${color.bg} ${color.border} border rounded-xl p-5 transition-all hover:shadow-md hover:scale-[1.01]`}
                           >
-                            {/* Compact Header */}
-                            <div className="flex items-center justify-between mb-2">
+                            {/* Enhanced Header */}
+                            <div className="flex items-center justify-between mb-4">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-8 h-8 ${color.accent} rounded-lg flex items-center justify-center shadow-sm`}>
+                                  <IconComponent className="h-4 w-4 text-white" />
+                                </div>
+                                <div>
+                                  <span className={`font-semibold text-base ${color.text}`}>
+                                    {stakeholder}
+                                  </span>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="outline" className="text-xs h-5 px-2 bg-white/80 border-white/60">
+                                      <Activity className="h-2.5 w-2.5 mr-1" />
+                                      {flowTypes.length} flows
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </div>
                               <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 ${color.accent} rounded-full`}></div>
-                                <span className={`font-medium text-sm ${color.text}`}>
-                                  {stakeholder}
-                                </span>
-                                <Badge variant="outline" className="text-xs h-4 px-1.5 bg-white/70">
-                                  {flowTypes.length}
-                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs bg-white/60 hover:bg-white/80"
+                                >
+                                  <Settings className="h-3 w-3" />
+                                </Button>
                               </div>
                             </div>
 
-                            {/* Compact Flow Input */}
-                            <div className="flex gap-1 mb-2">
-                              <Input
-                                value={newFlowType[stakeholder] || ""}
-                                onChange={(e) =>
-                                  setNewFlowType((prev) => ({
-                                    ...prev,
-                                    [stakeholder]: e.target.value,
-                                  }))
-                                }
-                                placeholder="Add flow..."
-                                className="text-xs h-6 bg-white/80 border-white/50 placeholder:text-gray-400"
-                                onKeyDown={(e) => {
-                                  if (e.key === "Enter") {
-                                    addFlowType(stakeholder);
+                            {/* Enhanced Flow Input */}
+                            <div className="flex gap-2 mb-4">
+                              <div className="relative flex-1">
+                                <FileText className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
+                                <Input
+                                  value={newFlowType[stakeholder] || ""}
+                                  onChange={(e) =>
+                                    setNewFlowType((prev) => ({
+                                      ...prev,
+                                      [stakeholder]: e.target.value,
+                                    }))
                                   }
-                                }}
-                              />
+                                  placeholder="Add new flow type..."
+                                  className="text-sm h-8 pl-7 bg-white/90 border-white/60 placeholder:text-gray-400"
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") {
+                                      addFlowType(stakeholder);
+                                    }
+                                  }}
+                                />
+                              </div>
                               <Button
                                 onClick={() => addFlowType(stakeholder)}
                                 size="sm"
-                                className="h-6 w-6 p-0 bg-green-500 hover:bg-green-600"
+                                className="h-8 px-3 bg-green-500 hover:bg-green-600 text-white"
                               >
-                                <Plus className="h-3 w-3" />
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add
                               </Button>
                             </div>
 
-                            {/* Compact Flow Tags */}
-                            <div className="flex flex-wrap gap-1">
+                            {/* Enhanced Flow Tags */}
+                            <div className="flex flex-wrap gap-2">
                               {flowTypes.map((flowType, index) => {
                                 const editKey = `${stakeholder}-${flowType}`;
                                 const isEditing = editingFlowType === editKey;
@@ -2118,11 +2156,11 @@ Data Objects: Request form, User profile`,
                                 return (
                                   <div key={index} className="group">
                                     {isEditing ? (
-                                      <div className="flex items-center gap-1 bg-white border border-blue-300 rounded px-2 py-1">
+                                      <div className="flex items-center gap-2 bg-white border-2 border-blue-300 rounded-lg px-3 py-2">
                                         <Input
                                           value={editedFlowTypeName}
                                           onChange={(e) => setEditedFlowTypeName(e.target.value)}
-                                          className="text-xs h-4 w-20 border-0 p-0 focus:ring-0"
+                                          className="text-sm h-5 w-28 border-0 p-0 focus:ring-0"
                                           onKeyDown={(e) => {
                                             if (e.key === "Enter") {
                                               saveFlowTypeEdit(stakeholder, flowType);
@@ -2135,41 +2173,42 @@ Data Objects: Request form, User profile`,
                                         <Button
                                           onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
                                           size="sm"
-                                          className="h-4 w-4 p-0 bg-green-500"
+                                          className="h-5 w-5 p-0 bg-green-500"
                                         >
-                                          <Save className="h-2.5 w-2.5" />
+                                          <Save className="h-3 w-3" />
                                         </Button>
                                         <Button
                                           onClick={cancelFlowTypeEdit}
                                           size="sm"
                                           variant="outline"
-                                          className="h-4 w-4 p-0"
+                                          className="h-5 w-5 p-0"
                                         >
-                                          <X className="h-2.5 w-2.5" />
+                                          <X className="h-3 w-3" />
                                         </Button>
                                       </div>
                                     ) : (
                                       <Badge
                                         variant="outline"
-                                        className="text-xs px-2 py-1 bg-white/90 hover:bg-white cursor-pointer transition-all group"
+                                        className="text-sm px-3 py-1.5 bg-white/90 hover:bg-white cursor-pointer transition-all group border border-white/60 hover:border-white"
                                       >
-                                        <span className="mr-1">{flowType}</span>
-                                        <div className="inline-flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Zap className="h-3 w-3 mr-1.5 text-gray-500" />
+                                        <span className="mr-2">{flowType}</span>
+                                        <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <Button
                                             onClick={() => startEditingFlowType(stakeholder, flowType)}
                                             size="sm"
                                             variant="ghost"
-                                            className="h-3 w-3 p-0 hover:bg-blue-100"
+                                            className="h-4 w-4 p-0 hover:bg-blue-100 rounded"
                                           >
-                                            <Edit3 className="h-2 w-2" />
+                                            <Edit3 className="h-2.5 w-2.5" />
                                           </Button>
                                           <Button
                                             onClick={() => deleteFlowType(stakeholder, flowType)}
                                             size="sm"
                                             variant="ghost"
-                                            className="h-3 w-3 p-0 hover:bg-red-100 text-red-500"
+                                            className="h-4 w-4 p-0 hover:bg-red-100 text-red-500 rounded"
                                           >
-                                            <X className="h-2 w-2" />
+                                            <X className="h-2.5 w-2.5" />
                                           </Button>
                                         </div>
                                       </Badge>
@@ -2177,6 +2216,14 @@ Data Objects: Request form, User profile`,
                                   </div>
                                 );
                               })}
+                              
+                              {/* Quick Add Flow Button */}
+                              {flowTypes.length === 0 && (
+                                <div className="flex items-center gap-2 text-gray-400 text-sm">
+                                  <ArrowRight className="h-3 w-3" />
+                                  <span>Add your first flow type above</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
