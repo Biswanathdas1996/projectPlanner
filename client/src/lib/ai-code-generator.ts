@@ -33,10 +33,7 @@ export class AICodeGenerator {
   private readonly retryDelay = 2000;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("Gemini API key is required. Please set VITE_GEMINI_API_KEY in your environment variables.");
-    }
+    const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
     
     try {
       const genAI = new GoogleGenerativeAI(apiKey);
