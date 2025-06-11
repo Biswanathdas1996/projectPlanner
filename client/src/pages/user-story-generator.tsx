@@ -941,12 +941,9 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                     <div>
                       <h4 className="font-semibold mb-2 text-sm">Acceptance Criteria:</h4>
                       <ul className="list-disc list-inside space-y-1 text-xs">
-                        {story.acceptanceCriteria.slice(0, 3).map((criteria, index) => (
+                        {story.acceptanceCriteria.map((criteria, index) => (
                           <li key={index}>{criteria}</li>
                         ))}
-                        {story.acceptanceCriteria.length > 3 && (
-                          <li className="text-gray-500 italic">+{story.acceptanceCriteria.length - 3} more criteria</li>
-                        )}
                       </ul>
                     </div>
 
@@ -955,49 +952,41 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                     <div className="flex-1">
                       <h4 className="font-semibold mb-2 text-sm">Gherkin Scenarios:</h4>
                       <div className="space-y-3">
-                        {story.gherkinScenarios.slice(0, 1).map(scenario => (
+                        {story.gherkinScenarios.map(scenario => (
                           <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg font-mono text-xs">
                             <div className="font-bold text-green-600 dark:text-green-400 mb-1">
                               Scenario: {scenario.title}
                             </div>
                             <div className="space-y-0.5">
-                              {scenario.given.slice(0, 2).map((step, index) => (
+                              {scenario.given.map((step, index) => (
                                 <div key={index} className="text-blue-600 dark:text-blue-400">
                                   {index === 0 ? 'Given' : '  And'} {step}
                                 </div>
                               ))}
-                              {scenario.when.slice(0, 1).map((step, index) => (
+                              {scenario.when.map((step, index) => (
                                 <div key={index} className="text-orange-600 dark:text-orange-400">
-                                  When {step}
+                                  {index === 0 ? 'When' : ' And'} {step}
                                 </div>
                               ))}
-                              {scenario.then.slice(0, 1).map((step, index) => (
+                              {scenario.then.map((step, index) => (
                                 <div key={index} className="text-purple-600 dark:text-purple-400">
-                                  Then {step}
+                                  {index === 0 ? 'Then' : ' And'} {step}
                                 </div>
                               ))}
                             </div>
                           </div>
                         ))}
-                        {story.gherkinScenarios.length > 1 && (
-                          <p className="text-xs text-gray-500 italic">+{story.gherkinScenarios.length - 1} more scenarios</p>
-                        )}
                       </div>
                     </div>
 
                     {story.labels.length > 0 && (
                       <div className="flex items-center gap-2 flex-wrap mt-auto">
                         <span className="text-xs font-medium">Labels:</span>
-                        {story.labels.slice(0, 3).map(label => (
+                        {story.labels.map(label => (
                           <Badge key={label} variant="outline" className="text-xs">
                             {label}
                           </Badge>
                         ))}
-                        {story.labels.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
-                            +{story.labels.length - 3}
-                          </Badge>
-                        )}
                       </div>
                     )}
                   </CardContent>
