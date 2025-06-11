@@ -706,16 +706,23 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                       className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-all duration-200 bg-white"
                     >
                       <div className="flex items-start justify-between mb-2">
-                        <h4 className="font-semibold text-gray-900 text-sm">
-                          {competitor.name}
-                        </h4>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900 text-base">
+                            {competitor.productName || competitor.name}
+                          </h4>
+                          {competitor.productName && competitor.name !== competitor.productName && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              by {competitor.name}
+                            </p>
+                          )}
+                        </div>
                         {competitor.website && (
                           <a
                             href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
-                            title={`Visit ${competitor.name} website`}
+                            title={`Visit ${competitor.productName || competitor.name} website`}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>

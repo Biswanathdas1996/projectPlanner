@@ -1,5 +1,6 @@
 interface CompetitorAnalysis {
   name: string;
+  productName: string;
   description: string;
   website: string;
   marketPosition: string;
@@ -110,7 +111,8 @@ Provide a comprehensive overview of the market space, including total addressabl
 === COMPETITOR ANALYSIS ===
 Research and identify 8-12 actual companies in the relevant industry. Only include companies that truly exist with verifiable business operations. For each real competitor, provide:
 
-- Exact company name (e.g., "Salesforce", "Microsoft", "Zoom", "Atlassian")
+- Primary product name (e.g., "Slack", "Teams", "Zoom", "ChatGPT", "Alexa", "Notion")
+- Company name (e.g., "Slack Technologies", "Microsoft", "Zoom Video Communications")
 - Official website URL
 - Founded year and headquarters city/country
 - Current market capitalization or latest valuation
@@ -208,6 +210,7 @@ Please analyze the search results and provide a detailed JSON response with the 
   "competitors": [
     {
       "name": "Actual company name (e.g., Salesforce, Microsoft, Zoom)",
+      "productName": "Primary product name (e.g., Slack, Teams, ChatGPT, Alexa, Notion)",
       "description": "Real company description",
       "website": "Actual website URL",
       "marketPosition": "Market Leader/Rising Challenger/Niche Player/Enterprise Specialist",
