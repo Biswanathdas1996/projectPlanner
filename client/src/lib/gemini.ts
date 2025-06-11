@@ -995,13 +995,15 @@ MANDATORY MAPPING REQUIREMENTS:
 ✅ 7. Additional Elements → bpmn2:message, bpmn2:timer, bpmn2:dataObject as specified
 
 STRICT XML STRUCTURE:
-- Use bpmn2: namespace prefix consistently
+- Use bpmn2: namespace prefix consistently throughout
 - Include proper XML declaration: <?xml version="1.0" encoding="UTF-8"?>
-- Valid BPMN definitions with namespaces
+- Valid BPMN definitions with correct namespaces
 - Create collaboration with participants as pools/lanes
 - Process element with all flow elements
 - BPMNDiagram with visual coordinates
 - Connect ALL elements with bpmn2:sequenceFlow
+- Ensure all XML tags are properly closed
+- Use correct namespace prefixes (bpmn2: for BPMN elements, bpmndi: for diagram)
 
 ELEMENT CREATION RULES:
 - Create exactly one swimlane per participant listed in section 2
@@ -1012,12 +1014,19 @@ ELEMENT CREATION RULES:
 - Add elements from section 7 as specified (messages, timers, data objects)
 - Generate unique IDs for all elements
 
+CRITICAL XML VALIDATION:
+- Use bpmn2: prefix for ALL BPMN elements (bpmn2:startEvent, bpmn2:userTask, etc.)
+- Use bpmndi: prefix for ALL diagram elements (bpmndi:BPMNShape, bpmndi:BPMNEdge)
+- NO timer event definitions - use bpmn2:intermediateCatchEvent instead
+- Ensure ALL XML tags are properly closed
+- Validate namespace prefixes match element types
+
 VISUAL LAYOUT:
 - Include bpmndi:BPMNDiagram with proper coordinates
 - Arrange elements left-to-right in process flow
 - Position swimlanes vertically
 
-Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.
+Return ONLY valid BPMN 2.0 XML with proper namespaces - no explanations or markdown.
 
 TEMPLATE STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>
