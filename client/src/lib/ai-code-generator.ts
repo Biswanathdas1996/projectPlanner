@@ -37,9 +37,29 @@ export class AICodeGenerator {
       const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
       this.gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       console.log("AI Code Generator initialized with Gemini successfully");
+      
+      // Test the API connection
+      this.testApiConnection();
     } catch (error) {
       console.error("Failed to initialize Gemini:", error);
       throw new Error("Failed to initialize Gemini AI model. Please check your API key.");
+    }
+  }
+
+  private async testApiConnection() {
+    try {
+      console.log("Testing Gemini API connection...");
+      const result = await this.gemini.generateContent("Say hello");
+      const response = await result.response;
+      const text = response.text();
+      console.log("Gemini API test successful:", text);
+    } catch (error: any) {
+      console.error("Gemini API test failed:", {
+        message: error?.message,
+        status: error?.status,
+        statusText: error?.statusText,
+        name: error?.name
+      });
     }
   }
 
@@ -214,7 +234,7 @@ Include:
 Return only the folder structure in tree format.
     `;
 
-    const result = await this.gemini.generateContent(prompt);
+    const result = await this.retryableRequest(() => this.gemini.generateContent(prompt));
     const response = await result.response;
     return response.text();
   }
