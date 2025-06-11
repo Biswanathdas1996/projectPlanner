@@ -7,10 +7,11 @@ import {
   Users,
   BookOpen,
   Code,
+  TrendingUp,
 } from "lucide-react";
 
 interface WorkflowProgressProps {
-  currentStep?: "input" | "plan" | "diagram" | "stories" | "code";
+  currentStep?: "input" | "research" | "plan" | "diagram" | "stories" | "code";
   completedSteps?: string[];
 }
 
@@ -23,6 +24,7 @@ export function WorkflowProgress({
   // Navigation mapping for each step
   const stepRoutes = {
     input: "/",
+    research: "/market-research",
     plan: "/plan",
     diagram: "/user-journey",
     stories: "/user-stories",
@@ -111,7 +113,50 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 2: Plan */}
+          {/* Step 2: Market Research */}
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
+              getStepStatus("research") === "active"
+                ? "bg-blue-100 shadow-md"
+                : getStepStatus("research") === "completed"
+                ? "bg-green-100"
+                : "bg-white"
+            }`}
+            onClick={() => handleStepClick("research")}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                getStepStatus("research") === "active"
+                  ? "bg-blue-500 text-white"
+                  : getStepStatus("research") === "completed"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {getStepStatus("research") === "completed" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : getStepStatus("research") === "active" ? (
+                <TrendingUp className="h-4 w-4" />
+              ) : (
+                "2"
+              )}
+            </div>
+            <span
+              className={`text-sm font-medium hidden sm:block ${
+                getStepStatus("research") === "active"
+                  ? "text-blue-700"
+                  : getStepStatus("research") === "completed"
+                  ? "text-green-700"
+                  : "text-gray-600"
+              }`}
+            >
+              Market Research
+            </span>
+          </div>
+
+          <ArrowRight className="h-4 w-4 text-gray-300" />
+
+          {/* Step 3: Plan */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("plan") === "active"
@@ -136,7 +181,7 @@ export function WorkflowProgress({
               ) : getStepStatus("plan") === "active" ? (
                 <FileText className="h-4 w-4" />
               ) : (
-                "2"
+                "3"
               )}
             </div>
             <span
@@ -154,7 +199,7 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 3: Process Mapping */}
+          {/* Step 4: Process Mapping */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("diagram") === "active"
@@ -179,7 +224,7 @@ export function WorkflowProgress({
               ) : getStepStatus("diagram") === "active" ? (
                 <Users className="h-4 w-4" />
               ) : (
-                "3"
+                "4"
               )}
             </div>
             <span
@@ -197,7 +242,7 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 4: User Stories */}
+          {/* Step 5: User Stories */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("stories") === "active"
