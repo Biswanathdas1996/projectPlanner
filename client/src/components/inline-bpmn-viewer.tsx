@@ -22,7 +22,13 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
   const [isLoading, setIsLoading] = useState(true);
   const [showXmlDetails, setShowXmlDetails] = useState(false);
 
+  console.log(`🚀 InlineBpmnViewer component mounted for: ${title}`, { 
+    hasXml: !!bpmnXml, 
+    xmlLength: bpmnXml?.length || 0 
+  });
+
   useEffect(() => {
+    console.log(`🔄 useEffect triggered for: ${title}`);
     setError(null);
     setIsLoading(true);
     
@@ -73,13 +79,14 @@ export function InlineBpmnViewer({ bpmnXml, height = "400px", title }: InlineBpm
           windowKeys: Object.keys(window).filter(key => key.toLowerCase().includes('bpmn'))
         });
 
-        // Use the BpmnJS constructor from the loaded library (v14.1.1 exposes BpmnJS)
+        // Use the available BpmnJS constructor
         const BpmnConstructor = window.BpmnJS;
         
         if (!BpmnConstructor) {
-          throw new Error('BPMN library constructor not found. Available globals: ' + 
-            Object.keys(window).filter(key => key.toLowerCase().includes('bpmn')).join(', '));
+          throw new Error('BpmnJS constructor not found');
         }
+        
+        console.log('🎯 Using BpmnJS constructor');
 
         console.log('⚙️ Creating BPMN viewer instance...');
         
