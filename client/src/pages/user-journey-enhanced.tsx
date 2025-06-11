@@ -3631,6 +3631,155 @@ Return only a JSON array of user stories, no additional text.`;
           </Card>
         )}
 
+        {/* User Stories Display */}
+        {userStories.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2 text-green-600" />
+                  Generated User Stories ({userStories.length})
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={() => {
+                      const dataStr = JSON.stringify(userStories, null, 2);
+                      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                      const url = URL.createObjectURL(dataBlob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = 'user-stories.json';
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export JSON
+                  </Button>
+                  <Button
+                    onClick={() => setShowUserStories(!showUserStories)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    {showUserStories ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                    {showUserStories ? 'Hide' : 'Show'} Stories
+                  </Button>
+                </div>
+              </CardTitle>
+            </CardHeader>
+            {showUserStories && (
+              <CardContent>
+                <div className="space-y-4">
+                  {userStories.map((story, index) => (
+                    <div key={story.id} className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                      {/* Story Header */}
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge variant="outline" className="text-xs px-2 py-1 bg-blue-50 text-blue-700 border-blue-200">
+                              {story.stakeholder}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-1 bg-purple-50 text-purple-700 border-purple-200">
+                              {story.flowType}
+                            </Badge>
+                            <Badge 
+                              variant="outline" 
+                              className={`text-xs px-2 py-1 ${
+                                story.priority === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' :
+                                story.priority === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                                story.priority === 'Medium' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                                'bg-gray-50 text-gray-700 border-gray-200'
+                              }`}
+                            >
+                              {story.priority}
+                            </Badge>
+                            <Badge variant="outline" className="text-xs px-2 py-1 bg-green-50 text-green-700 border-green-200">
+                              {story.storyPoints} pts
+                            </Badge>
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2">{story.title}</h3>
+                        </div>
+                      </div>
+
+                      {/* User Story Format */}
+                      <div className="bg-gray-50 p-3 rounded-lg mb-3">
+                        <p className="text-sm text-gray-800">
+                          <span className="font-medium text-blue-600">As a</span> {story.asA}, <br/>
+                          <span className="font-medium text-green-600">I want</span> {story.iWant}, <br/>
+                          <span className="font-medium text-purple-600">So that</span> {story.soThat}
+                        </p>
+                      </div>
+
+                      {/* Acceptance Criteria */}
+                      <div className="mb-3">
+                        <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+                          Acceptance Criteria
+                        </h4>
+                        <ul className="text-sm text-gray-700 space-y-1">
+                          {story.acceptanceCriteria.map((criteria, idx) => (
+                            <li key={idx} className="flex items-start">
+                              <span className="text-green-500 mr-2 mt-0.5">•</span>
+                              {criteria}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      {/* Labels and Epic */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Epic:</span>
+                          <Badge variant="outline" className="text-xs px-2 py-0.5">
+                            {story.epic}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {story.labels.map((label, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs px-1.5 py-0.5">
+                              {label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Gherkin Scenarios */}
+                      {story.gherkinScenarios && story.gherkinScenarios.length > 0 && (
+                        <div className="border-t pt-3">
+                          <h4 className="text-sm font-semibold text-gray-800 mb-2 flex items-center">
+                            <GitBranch className="h-4 w-4 mr-1 text-blue-500" />
+                            Gherkin Scenarios
+                          </h4>
+                          <div className="space-y-2">
+                            {story.gherkinScenarios.map((scenario) => (
+                              <div key={scenario.id} className="bg-gray-50 p-3 rounded text-sm">
+                                <div className="font-medium text-gray-800 mb-1">{scenario.title}</div>
+                                <div className="space-y-1 text-gray-700 font-mono text-xs">
+                                  {scenario.given.map((given, idx) => (
+                                    <div key={idx}><span className="text-blue-600">Given</span> {given}</div>
+                                  ))}
+                                  {scenario.when.map((when, idx) => (
+                                    <div key={idx}><span className="text-green-600">When</span> {when}</div>
+                                  ))}
+                                  {scenario.then.map((then, idx) => (
+                                    <div key={idx}><span className="text-purple-600">Then</span> {then}</div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        )}
+
         {/* Navigation Button at Bottom */}
         <div className="mt-8 flex justify-center">
           <Link href="/user-stories">
