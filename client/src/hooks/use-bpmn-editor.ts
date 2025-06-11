@@ -18,6 +18,7 @@ interface NotificationData {
 declare global {
   interface Window {
     BpmnJS: any;
+    BpmnModeler: any;
   }
 }
 
@@ -62,13 +63,16 @@ export function useBpmnEditor() {
       setIsLoading(true);
       setStatus('Loading BPMN editor...');
 
-      // Create modeler with enhanced configuration
+      // Create modeler with enhanced configuration for editing capabilities
       const modeler = new window.BpmnJS({
         container: containerRef.current,
         keyboard: {
           bindTo: document
         },
-        additionalModules: [],
+        // Enable editing modules
+        additionalModules: [
+          // Core editing modules are included by default in modeler build
+        ],
         moddleExtensions: {},
         height: '100%',
         width: '100%'
