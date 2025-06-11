@@ -340,13 +340,54 @@
         stroke-width: 2px !important;
       }
       
-      /* Basic element styling without conflicts */
+      /* BPMN Element Dragging Fix */
+      .djs-element {
+        cursor: default;
+      }
+      
       .djs-element:hover {
         cursor: move;
       }
       
+      .djs-shape {
+        cursor: move !important;
+      }
+      
+      .djs-shape:hover {
+        cursor: move !important;
+      }
+      
+      /* Ensure elements can be selected and dragged */
+      .djs-element .djs-visual {
+        pointer-events: all;
+      }
+      
+      /* Dragging state visual feedback */
       .djs-dragging {
         opacity: 0.7;
+        cursor: grabbing !important;
+      }
+      
+      /* Disable text selection during dragging */
+      .djs-container {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+      
+      /* Ensure proper interaction layers */
+      .djs-shape, .djs-connection {
+        pointer-events: all;
+      }
+      
+      /* Canvas background should allow panning on empty areas */
+      .viewport {
+        cursor: grab;
+      }
+      
+      .viewport:active {
+        cursor: grabbing;
       }
       
       /* Connection points visibility */
