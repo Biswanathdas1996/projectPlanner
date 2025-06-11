@@ -1156,17 +1156,17 @@ BPMN STRUCTURE REQUIREMENTS:
 
 EXAMPLE VALID STRUCTURE:
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
-  <bpmn:collaboration id="Collaboration_1">
-    <bpmn:participant id="Pool_${cleanStakeholder}" name="${stakeholder}" processRef="Process_${cleanStakeholder}_${cleanFlowType}" />
-  </bpmn:collaboration>
-  <bpmn:process id="Process_${cleanStakeholder}_${cleanFlowType}" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1" name="Start ${flowType}" />
-    <bpmn:serviceTask id="Activity_1" name="Task Name" />
-    <bpmn:endEvent id="EndEvent_1" name="End ${flowType}" />
-    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
-    <bpmn:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
-  </bpmn:process>
+<bpmn2:definitions xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn2:collaboration id="Collaboration_1">
+    <bpmn2:participant id="Pool_${cleanStakeholder}" name="${stakeholder}" processRef="Process_${cleanStakeholder}_${cleanFlowType}" />
+  </bpmn2:collaboration>
+  <bpmn2:process id="Process_${cleanStakeholder}_${cleanFlowType}" isExecutable="true">
+    <bpmn2:startEvent id="StartEvent_1" name="Start ${flowType}" />
+    <bpmn2:serviceTask id="Activity_1" name="Task Name" />
+    <bpmn2:endEvent id="EndEvent_1" name="End ${flowType}" />
+    <bpmn2:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Activity_1" />
+    <bpmn2:sequenceFlow id="Flow_2" sourceRef="Activity_1" targetRef="EndEvent_1" />
+  </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
       <bpmndi:BPMNShape id="Pool_${cleanStakeholder}_di" bpmnElement="Pool_${cleanStakeholder}" isHorizontal="true">
@@ -1191,7 +1191,7 @@ EXAMPLE VALID STRUCTURE:
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
-</bpmn:definitions>
+</bpmn2:definitions>
 
 Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 
