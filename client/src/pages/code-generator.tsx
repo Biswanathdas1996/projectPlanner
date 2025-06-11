@@ -34,7 +34,6 @@ import {
   AlertTriangle,
   Sparkles,
   Layers,
-  Server,
   Globe,
   Settings,
   Zap,
@@ -78,7 +77,7 @@ export default function CodeGenerator() {
       localStorage.getItem("project-plan"),
     ];
     const savedProjectPlan = projectPlanSources.find(
-      (plan) => plan && plan.trim(),
+      (plan) => plan && plan.trim()
     );
 
     // Load stakeholder flows from multiple possible sources
@@ -90,7 +89,7 @@ export default function CodeGenerator() {
       localStorage.getItem("flow_details"),
     ];
     const savedStakeholderData = stakeholderFlowSources.find(
-      (data) => data && data.trim(),
+      (data) => data && data.trim()
     );
 
     if (savedProjectPlan) {
@@ -106,7 +105,7 @@ export default function CodeGenerator() {
   const generateProjectCode = async () => {
     if (!projectPlan.trim()) {
       alert(
-        "Please ensure you have a project plan. Visit the Project Planner page first.",
+        "Please ensure you have a project plan. Visit the Project Planner page first."
       );
       return;
     }
@@ -136,7 +135,7 @@ export default function CodeGenerator() {
         config,
         (progress: GenerationProgress) => {
           setGenerationProgress(progress);
-        },
+        }
       );
 
       setGeneratedProject(projectStructure);
@@ -146,9 +145,11 @@ export default function CodeGenerator() {
         error instanceof Error
           ? error.message
           : "Failed to generate project code";
-      
+
       if (errorMessage.includes("API key")) {
-        alert("Gemini API key is required for code generation. Please check your environment variables.");
+        alert(
+          "Gemini API key is required for code generation. Please check your environment variables."
+        );
       } else {
         alert(`Code generation failed: ${errorMessage}`);
       }
@@ -187,8 +188,11 @@ export default function CodeGenerator() {
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Workflow Progress */}
-        <WorkflowProgress currentStep="code" completedSteps={['input', 'plan', 'diagram', 'stories']} />
-        
+        <WorkflowProgress
+          currentStep="code"
+          completedSteps={["input", "plan", "diagram", "stories"]}
+        />
+
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -433,7 +437,11 @@ export default function CodeGenerator() {
                   <div
                     className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{
-                      width: `${(generationProgress.current / generationProgress.total) * 100}%`,
+                      width: `${
+                        (generationProgress.current /
+                          generationProgress.total) *
+                        100
+                      }%`,
                     }}
                   />
                 </div>
@@ -529,7 +537,7 @@ export default function CodeGenerator() {
                             {content}
                           </pre>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </TabsContent>
@@ -555,7 +563,7 @@ export default function CodeGenerator() {
                             {content}
                           </pre>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </TabsContent>
