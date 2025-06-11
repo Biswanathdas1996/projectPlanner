@@ -50,18 +50,19 @@ export default function CodeGenerator() {
     status: "",
     currentTask: ""
   });
-  const [codeGenerator] = useState(() => createAICodeGenerator());
+  const [codeGenerator, setCodeGenerator] = useState<any>(null);
+  const [apiKeyError, setApiKeyError] = useState<string | null>(null);
 
   // Load data from localStorage
   useEffect(() => {
     const savedProjectPlan = localStorage.getItem("project-plan");
-    const savedStakeholderFlows = localStorage.getItem("stakeholder-flows");
+    const savedStakeholderData = localStorage.getItem("stakeholder-flow-data");
     
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
     }
-    if (savedStakeholderFlows) {
-      setStakeholderFlows(savedStakeholderFlows);
+    if (savedStakeholderData) {
+      setStakeholderFlows(savedStakeholderData);
     }
   }, []);
 
@@ -76,6 +77,12 @@ export default function CodeGenerator() {
       return;
     }
 
+    // Check for API key before proceeding
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      alert("OpenAI API key is required for code generation. Please set your VITE_OPENAI_API_KEY environment variable and restart the application.");
+      return;
+    }
+
     setIsGenerating(true);
     setGenerationProgress({
       current: 0,
@@ -85,7 +92,15 @@ export default function CodeGenerator() {
     });
 
     try {
-      const projectStructure = await codeGenerator.generateCompleteProject(
+      // Initialize the code generator only when needed
+      if (!codeGenerator) {
+        const generator = createAICodeGenerator();
+        setCodeGenerator(generator);
+      }
+
+      const activeGenerator = codeGenerator || createAICodeGenerator();
+      
+      const projectStructure = await activeGenerator.generateCompleteProject(
         projectPlan,
         stakeholderFlows,
         config,
@@ -101,7 +116,7 @@ export default function CodeGenerator() {
       const errorMessage = error instanceof Error ? error.message : "Failed to generate project code";
       
       if (errorMessage.includes("API key")) {
-        alert("OpenAI API key is required for code generation. Please set your OPENAI_API_KEY environment variable.");
+        alert("OpenAI API key is required for code generation. Please check your environment variables.");
       } else {
         alert(errorMessage);
       }
