@@ -1848,21 +1848,7 @@ Data Objects: Request form, User profile`,
       <div className="max-w-[1400px] mx-auto p-6">
         <WorkflowProgress />
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8 bg-white rounded-lg p-4 shadow-sm">
-          <div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Enhanced User Journey & BPMN Flows
-              </h1>
-              <p className="text-gray-600 mt-1">
-                Stakeholder-based BPMN workflow generation with multiple flows
-                per persona
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-2"></div>
-        </div>
+        
 
         {/* Auto-generation Status */}
         {autoGenerationStatus && (
@@ -1888,24 +1874,7 @@ Data Objects: Request form, User profile`,
           </Card>
         )}
 
-        {/* Project Plan Summary */}
-        {(projectPlan || projectDescription) && (
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Workflow className="h-5 w-5 mr-2" />
-                Project Context
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-700 line-clamp-3">
-                  {projectPlan || projectDescription}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        
 
         {/* Stakeholder Extraction Section */}
         <Card className="mb-6">
