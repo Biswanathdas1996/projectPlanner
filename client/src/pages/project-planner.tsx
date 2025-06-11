@@ -104,27 +104,7 @@ export default function ProjectPlanner() {
     setProgressSteps([]);
     setOverallProgress(0);
     setCurrentProgressStep('');
-
-    // Update current step based on route and available data
-    const path = window.location.pathname;
-    if (path === '/plan' && savedProjectPlan) {
-      setCurrentStep('plan');
-    } else if (path === '/diagram' && savedDiagram) {
-      setCurrentStep('diagram');
-    } else if (savedProjectDescription || savedProjectPlan || savedDiagram) {
-      // If we have data but are on the wrong route, redirect to appropriate step
-      if (savedDiagram) {
-        setCurrentStep('diagram');
-        setLocation('/diagram');
-      } else if (savedProjectPlan) {
-        setCurrentStep('plan');
-        setLocation('/plan');
-      } else {
-        setCurrentStep('input');
-        setLocation('/');
-      }
-    }
-  }, [location, setLocation]);
+  }, [location]);
 
   const initializeProgressSteps = (includeAllSteps = false) => {
     const steps = [
