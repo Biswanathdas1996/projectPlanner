@@ -1265,7 +1265,7 @@ Data Objects: Request form, User profile`,
     }
   };
 
-  // Generate BPMN XML using AI (Gemini) with structured 7-element data
+  // Generate large-scale BPMN XML using advanced AI agent
   const generateBpmnWithAI = async (
     stakeholder: string,
     flowType: string,
@@ -1282,8 +1282,8 @@ Data Objects: Request form, User profile`,
     setError("");
 
     try {
-      // Create structured content from flow details
-      const structuredContent = {
+      // Create structured workflow data for AI agent
+      const workflowData = {
         processName: `${stakeholder} - ${flowType}`,
         processDescription: details.processDescription || details.description,
         participants: details.participants || [],
@@ -1294,19 +1294,37 @@ Data Objects: Request form, User profile`,
         additionalElements: details.additionalElements || [],
       };
 
-      console.log("Sending 7-element structured data to AI for customized BPMN generation:", {
-        "1. Process & Description": structuredContent.processName,
-        "2. Participants": structuredContent.participants,
-        "3. Trigger": structuredContent.trigger,
-        "4. Activities": structuredContent.activities,
-        "5. Decision Points": structuredContent.decisionPoints,
-        "6. End Event": structuredContent.endEvent,
-        "7. Additional Elements": structuredContent.additionalElements,
+      console.log("AI Agent processing 7-element workflow structure:", {
+        "1. Process & Description": workflowData.processName,
+        "2. Participants": workflowData.participants,
+        "3. Trigger": workflowData.trigger,
+        "4. Activities": workflowData.activities,
+        "5. Decision Points": workflowData.decisionPoints,
+        "6. End Event": workflowData.endEvent,
+        "7. Additional Elements": workflowData.additionalElements,
       });
 
-      // Call the new customized AI BPMN generation function
-      const { generateCustomizedBpmnFromStructuredData } = await import("../lib/gemini");
-      const bpmnXml = await generateCustomizedBpmnFromStructuredData(structuredContent);
+      // Determine complexity based on workflow characteristics
+      const complexity = determineComplexity(workflowData);
+      
+      // Configure AI agent options
+      const agentOptions = {
+        complexity,
+        includeSubProcesses: workflowData.activities.length > 8,
+        includeMessageFlows: workflowData.participants.length > 2,
+        includeTimerEvents: workflowData.additionalElements.some(el => 
+          el.toLowerCase().includes('timer') || el.toLowerCase().includes('timeout')
+        ),
+        includeErrorHandling: workflowData.decisionPoints.length > 1,
+        swimlaneLayout: 'horizontal' as const
+      };
+
+      console.log(`AI Agent configuration: ${complexity} complexity with advanced features`);
+
+      // Initialize and run AI BPMN agent
+      const { createAIBpmnAgent } = await import("../lib/ai-bpmn-agent");
+      const aiAgent = createAIBpmnAgent();
+      const bpmnXml = await aiAgent.generateLargeBpmn(workflowData, agentOptions);
 
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
@@ -1341,6 +1359,21 @@ Data Objects: Request form, User profile`,
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
+  };
+
+  // Helper function to determine process complexity
+  const determineComplexity = (data: any): 'simple' | 'standard' | 'complex' | 'enterprise' => {
+    const activityCount = data.activities.length;
+    const participantCount = data.participants.length;
+    const decisionCount = data.decisionPoints.length;
+    const additionalCount = data.additionalElements.length;
+    
+    const complexityScore = activityCount + (participantCount * 2) + (decisionCount * 3) + additionalCount;
+    
+    if (complexityScore >= 25) return 'enterprise';
+    if (complexityScore >= 15) return 'complex';
+    if (complexityScore >= 8) return 'standard';
+    return 'simple';
   };
 
   // Generate BPMN XML directly from structured data (No AI)

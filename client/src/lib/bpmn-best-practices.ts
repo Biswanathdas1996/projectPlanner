@@ -46,17 +46,44 @@ async function generateTemplateBasedBpmn(structuredData: any): Promise<string> {
   return buildValidatedBpmnXml(structuredData, elements, timestamp);
 }
 
-// AI-enhanced generation with context understanding
+// AI-enhanced generation with advanced agent
 async function generateAIEnhancedBpmn(structuredData: any): Promise<string> {
-  const { generateCustomizedBpmnFromStructuredData } = await import('./gemini');
-  
   try {
-    const aiXml = await generateCustomizedBpmnFromStructuredData(structuredData);
+    // Use the advanced AI BPMN agent
+    const { createAIBpmnAgent } = await import('./ai-bpmn-agent');
+    
+    // Determine complexity based on data characteristics
+    const activityCount = structuredData.activities?.length || 0;
+    const participantCount = structuredData.participants?.length || 0;
+    const decisionCount = structuredData.decisionPoints?.length || 0;
+    const additionalCount = structuredData.additionalElements?.length || 0;
+    
+    const complexityScore = activityCount + (participantCount * 2) + (decisionCount * 3) + additionalCount;
+    
+    let complexity: 'simple' | 'standard' | 'complex' | 'enterprise' = 'standard';
+    if (complexityScore >= 25) complexity = 'enterprise';
+    else if (complexityScore >= 15) complexity = 'complex';
+    else if (complexityScore >= 8) complexity = 'standard';
+    else complexity = 'simple';
+
+    const agentOptions = {
+      complexity,
+      includeSubProcesses: activityCount > 8,
+      includeMessageFlows: participantCount > 2,
+      includeTimerEvents: structuredData.additionalElements?.some((el: string) => 
+        el.toLowerCase().includes('timer') || el.toLowerCase().includes('timeout')
+      ) || false,
+      includeErrorHandling: decisionCount > 1,
+      swimlaneLayout: 'horizontal' as const
+    };
+
+    const aiAgent = createAIBpmnAgent();
+    const aiXml = await aiAgent.generateLargeBpmn(structuredData, agentOptions);
     
     // Validate and fix common AI generation issues
     return validateAndFixBpmnXml(aiXml, structuredData);
   } catch (error) {
-    console.error("AI generation failed, falling back to template:", error);
+    console.error("Advanced AI generation failed, falling back to template:", error);
     return generateTemplateBasedBpmn(structuredData);
   }
 }
