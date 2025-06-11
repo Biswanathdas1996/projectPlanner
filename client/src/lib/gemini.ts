@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize Gemini with fallback API key for client-side usage
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+// Initialize Gemini for client-side usage
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.VITE_GOOGLE_AI_API_KEY || "");
 
 // Add error handling and logging for debugging
 const originalConsoleError = console.error;
@@ -967,12 +967,17 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 }
 
 export async function generateBpmnXml(flowContent: string): Promise<string> {
+  // Client-side BPMN generation - moved from server
+  return generateBpmnXmlClient(flowContent);
+}
+
+export async function generateBpmnXmlClient(flowContent: string): Promise<string> {
   if (!flowContent.trim()) {
     throw new Error("Flow content is required");
   }
 
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.2,
       topK: 30,
