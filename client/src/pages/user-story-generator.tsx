@@ -19,7 +19,13 @@ import {
   BookOpen,
   Loader2,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Eye,
+  ArrowRight,
+  PlayCircle,
+  StopCircle,
+  GitBranch,
+  Users
 } from 'lucide-react';
 import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
@@ -945,6 +951,77 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                           <li key={index}>{criteria}</li>
                         ))}
                       </ul>
+                    </div>
+
+                    <Separator />
+
+                    {/* Visual Flow Diagram Section */}
+                    <div>
+                      <h4 className="font-semibold mb-3 text-sm flex items-center">
+                        <Eye className="h-3 w-3 mr-1" />
+                        Process Flow Visualization
+                      </h4>
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-3 rounded-lg border">
+                        <div className="space-y-2">
+                          {/* Flow Steps Visualization */}
+                          <div className="flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-1">
+                              <PlayCircle className="h-3 w-3 text-green-600" />
+                              <span className="font-medium">Start</span>
+                            </div>
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <Users className="h-3 w-3 text-blue-600" />
+                              <span className="font-medium">Process</span>
+                            </div>
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <GitBranch className="h-3 w-3 text-orange-600" />
+                              <span className="font-medium">Decision</span>
+                            </div>
+                            <ArrowRight className="h-3 w-3 text-gray-400" />
+                            <div className="flex items-center space-x-1">
+                              <StopCircle className="h-3 w-3 text-red-600" />
+                              <span className="font-medium">End</span>
+                            </div>
+                          </div>
+                          
+                          {/* Journey Steps */}
+                          <div className="mt-2 space-y-1">
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">User Journey:</span> {story.asA} → {story.iWant} → {story.soThat}
+                            </div>
+                            
+                            {/* Extract key process steps from acceptance criteria */}
+                            {story.acceptanceCriteria.length > 0 && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Key Steps:</span>
+                                <div className="ml-2 mt-1 flex flex-wrap gap-1">
+                                  {story.acceptanceCriteria.slice(0, 4).map((criteria, index) => {
+                                    // Extract the main action from criteria
+                                    const action = criteria.split(' ').slice(0, 4).join(' ').replace(/[^\w\s]/gi, '');
+                                    return (
+                                      <span key={index} className="bg-white/60 dark:bg-gray-700/60 px-2 py-1 rounded text-xs border">
+                                        {index + 1}. {action}...
+                                      </span>
+                                    );
+                                  })}
+                                  {story.acceptanceCriteria.length > 4 && (
+                                    <span className="text-gray-500 italic">+{story.acceptanceCriteria.length - 4} more</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Stakeholder touchpoints */}
+                            {story.labels.some(label => label.includes('stakeholder') || label.includes('multi')) && (
+                              <div className="text-xs text-gray-600 dark:text-gray-400">
+                                <span className="font-medium">Stakeholder Interactions:</span> Multi-party workflow with coordination points
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <Separator />
