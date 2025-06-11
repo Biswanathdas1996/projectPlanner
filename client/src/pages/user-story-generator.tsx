@@ -760,9 +760,9 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {userStories.map(story => (
-                <Card key={story.id} className="relative">
+                <Card key={story.id} className="relative flex flex-col">
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
@@ -787,62 +787,73 @@ ${story.gherkinScenarios.map(scenario => `  Scenario: ${scenario.title}
                       </Button>
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
-                      <p className="font-medium text-blue-800 dark:text-blue-200">
+                  <CardContent className="space-y-4 flex-1">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg">
+                      <p className="font-medium text-blue-800 dark:text-blue-200 text-sm">
                         As a <span className="font-bold">{story.asA}</span>, I want <span className="font-bold">{story.iWant}</span> so that <span className="font-bold">{story.soThat}</span>.
                       </p>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold mb-2">Acceptance Criteria:</h4>
-                      <ul className="list-disc list-inside space-y-1 text-sm">
-                        {story.acceptanceCriteria.map((criteria, index) => (
+                      <h4 className="font-semibold mb-2 text-sm">Acceptance Criteria:</h4>
+                      <ul className="list-disc list-inside space-y-1 text-xs">
+                        {story.acceptanceCriteria.slice(0, 3).map((criteria, index) => (
                           <li key={index}>{criteria}</li>
                         ))}
+                        {story.acceptanceCriteria.length > 3 && (
+                          <li className="text-gray-500 italic">+{story.acceptanceCriteria.length - 3} more criteria</li>
+                        )}
                       </ul>
                     </div>
 
                     <Separator />
 
-                    <div>
-                      <h4 className="font-semibold mb-3">Gherkin Scenarios:</h4>
-                      <div className="space-y-4">
-                        {story.gherkinScenarios.map(scenario => (
-                          <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg font-mono text-sm">
-                            <div className="font-bold text-green-600 dark:text-green-400 mb-2">
+                    <div className="flex-1">
+                      <h4 className="font-semibold mb-2 text-sm">Gherkin Scenarios:</h4>
+                      <div className="space-y-3">
+                        {story.gherkinScenarios.slice(0, 1).map(scenario => (
+                          <div key={scenario.id} className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg font-mono text-xs">
+                            <div className="font-bold text-green-600 dark:text-green-400 mb-1">
                               Scenario: {scenario.title}
                             </div>
-                            <div className="space-y-1">
-                              {scenario.given.map((step, index) => (
+                            <div className="space-y-0.5">
+                              {scenario.given.slice(0, 2).map((step, index) => (
                                 <div key={index} className="text-blue-600 dark:text-blue-400">
                                   {index === 0 ? 'Given' : '  And'} {step}
                                 </div>
                               ))}
-                              {scenario.when.map((step, index) => (
+                              {scenario.when.slice(0, 1).map((step, index) => (
                                 <div key={index} className="text-orange-600 dark:text-orange-400">
-                                  {index === 0 ? 'When' : ' And'} {step}
+                                  When {step}
                                 </div>
                               ))}
-                              {scenario.then.map((step, index) => (
+                              {scenario.then.slice(0, 1).map((step, index) => (
                                 <div key={index} className="text-purple-600 dark:text-purple-400">
-                                  {index === 0 ? 'Then' : ' And'} {step}
+                                  Then {step}
                                 </div>
                               ))}
                             </div>
                           </div>
                         ))}
+                        {story.gherkinScenarios.length > 1 && (
+                          <p className="text-xs text-gray-500 italic">+{story.gherkinScenarios.length - 1} more scenarios</p>
+                        )}
                       </div>
                     </div>
 
                     {story.labels.length > 0 && (
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">Labels:</span>
-                        {story.labels.map(label => (
+                      <div className="flex items-center gap-2 flex-wrap mt-auto">
+                        <span className="text-xs font-medium">Labels:</span>
+                        {story.labels.slice(0, 3).map(label => (
                           <Badge key={label} variant="outline" className="text-xs">
                             {label}
                           </Badge>
                         ))}
+                        {story.labels.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{story.labels.length - 3}
+                          </Badge>
+                        )}
                       </div>
                     )}
                   </CardContent>
