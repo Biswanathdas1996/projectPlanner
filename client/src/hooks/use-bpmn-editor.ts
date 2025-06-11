@@ -96,9 +96,45 @@ export function useBpmnEditor() {
           palette.open();
         }
         
-        // Ensure dragging is enabled
+        // Configure interaction behavior to prioritize element dragging
         if (dragging && move) {
           console.log('✅ Drag services available');
+          
+          // Configure canvas to prevent panning when clicking on elements
+          const canvas = modeler.get('canvas');
+          const eventBus = modeler.get('eventBus');
+          
+          // Configure drag behavior to override canvas interactions
+          const zoomScroll = modeler.get('zoomScroll');
+          if (zoomScroll) {
+            // Disable zoom scroll to prevent interference
+            zoomScroll.toggle(false);
+          }
+          
+          // Override element interaction to prevent canvas panning
+          eventBus.on('element.mousedown', (event: any) => {
+            if (event.element && event.element.type !== 'bpmn:Process' && event.element.type !== 'label') {
+              console.log('Element mousedown detected:', event.element.id);
+              // Mark this as an element interaction, not canvas interaction
+              event.stopPropagation = true;
+            }
+          });
+          
+          // Debug drag events
+          eventBus.on('drag.init', (event: any) => {
+            console.log('Drag initialized for:', event.context?.shape?.id || 'unknown');
+          });
+          
+          eventBus.on('drag.start', (event: any) => {
+            console.log('Drag started for:', event.context?.shape?.id || 'unknown');
+          });
+          
+          // Enable direct manipulation mode
+          eventBus.on('canvas.init', () => {
+            const directEditing = modeler.get('directEditing');
+            console.log('Canvas initialized, direct editing:', !!directEditing);
+          });
+          
         } else {
           console.log('❌ Missing drag services');
         }
