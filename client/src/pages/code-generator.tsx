@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NavigationBar } from "@/components/navigation-bar";
 import { createAICodeGenerator, type CodeGenerationConfig, type ProjectStructure, type GenerationProgress } from "@/lib/ai-code-generator";
+import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import {
   Code,
   Database,
@@ -52,11 +53,27 @@ export default function CodeGenerator() {
   });
   const [codeGenerator, setCodeGenerator] = useState<any>(null);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   // Load data from localStorage
   useEffect(() => {
-    const savedProjectPlan = localStorage.getItem("project-plan");
-    const savedStakeholderData = localStorage.getItem("stakeholder-flow-data");
+    // Load project plan from multiple possible sources
+    const projectPlanSources = [
+      localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN),
+      localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION),
+      localStorage.getItem("project-plan")
+    ];
+    const savedProjectPlan = projectPlanSources.find(plan => plan && plan.trim());
+    
+    // Load stakeholder flows from multiple possible sources  
+    const stakeholderFlowSources = [
+      localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS),
+      localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOW_DATA),
+      localStorage.getItem("stakeholder-flow-data"),
+      localStorage.getItem("stakeholder_analysis"),
+      localStorage.getItem("flow_details")
+    ];
+    const savedStakeholderData = stakeholderFlowSources.find(data => data && data.trim());
     
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
@@ -64,6 +81,8 @@ export default function CodeGenerator() {
     if (savedStakeholderData) {
       setStakeholderFlows(savedStakeholderData);
     }
+    
+    setDataLoaded(true);
   }, []);
 
   const generateProjectCode = async () => {
@@ -165,6 +184,39 @@ export default function CodeGenerator() {
           <p className="text-gray-600">
             Generate complete React project code based on your project plan and stakeholder analysis
           </p>
+          
+          {/* Data Loading Status */}
+          {dataLoaded && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                {projectPlan ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-green-700">Project Plan Loaded</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm text-amber-700">No Project Plan Found</span>
+                  </>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                {stakeholderFlows ? (
+                  <>
+                    <CheckCircle className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-blue-700">Stakeholder Data Loaded</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                    <span className="text-sm text-amber-700">No Stakeholder Data Found</span>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Configuration */}
