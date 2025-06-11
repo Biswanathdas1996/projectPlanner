@@ -1,6 +1,17 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+// Initialize Gemini with fallback API key for client-side usage
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+
+// Add error handling and logging for debugging
+const originalConsoleError = console.error;
+console.error = (...args) => {
+  if (args[0]?.includes?.('Gemini') || args[0]?.includes?.('API')) {
+    originalConsoleError('🔥 GEMINI API DEBUG:', ...args);
+  } else {
+    originalConsoleError(...args);
+  }
+};
 
 export async function generateFlowAnalysis(
   prompt: string,
@@ -9,21 +20,35 @@ export async function generateFlowAnalysis(
     throw new Error("Prompt is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
-    generationConfig: {
-      temperature: 0.3,
-      topK: 40,
-      topP: 0.95,
-      maxOutputTokens: 2048,
+  console.log('🚀 Starting Gemini API call for flow analysis...');
+  
+  try {
+    const model = genAI.getGenerativeModel({ 
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        temperature: 0.3,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 2048,
+      }
+    });
+
+    console.log('📡 Sending request to Gemini API...');
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    console.log('✅ Received response from Gemini API, length:', text.length);
+    
+    if (!text || text.trim().length === 0) {
+      throw new Error("Empty response from Gemini API");
     }
-  });
 
-  const result = await model.generateContent(prompt);
-  const response = await result.response;
-  const text = response.text();
-
-  return text;
+    return text;
+  } catch (error) {
+    console.error('❌ Gemini API Error:', error);
+    throw new Error(`Gemini API failed: ${error.message}`);
+  }
 }
 
 export async function generateCustomSuggestions(

@@ -584,6 +584,7 @@ export default function UserJourneyEnhanced() {
         const key = `${flow.stakeholder}-${flow.flowType}`;
         
         try {
+          console.log(`Generating flow details for ${flow.stakeholder} - ${flow.flowType}`);
           const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${flow.stakeholder} - ${flow.flowType} with fine granular details for perfect BPMN diagram generation:
 
 PROJECT CONTEXT:
@@ -676,10 +677,12 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
           console.log(`Starting flow analysis for ${key}...`);
           const { generateFlowAnalysis } = await import('../lib/gemini');
           
+          console.log(`Calling Gemini API with prompt length: ${prompt.length}`);
           const result = await generateFlowAnalysis(prompt);
-          console.log(`Gemini response for ${key}:`, result);
+          console.log(`Raw Gemini response for ${key}:`, result);
           
           if (!result || result.trim().length === 0) {
+            console.error(`Empty response from Gemini API for ${key}`);
             throw new Error(`Empty response from Gemini API for ${key}`);
           }
           
