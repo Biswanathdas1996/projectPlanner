@@ -442,11 +442,29 @@ export default function UserJourneyEnhanced() {
   };
 
   // Navigate to editor with specific diagram
-  const openInEditor = (bpmnXml: string) => {
+  const openInEditor = (stakeholderOrXml: string, flowType?: string) => {
+    let bpmnXml = '';
+    
+    if (flowType) {
+      // Called with stakeholder and flowType
+      const existingFlow = stakeholderFlows.find(
+        (f) => f.stakeholder === stakeholderOrXml && f.flowType === flowType,
+      );
+      bpmnXml = existingFlow?.bpmnXml || '';
+    } else {
+      // Called with just bpmnXml
+      bpmnXml = stakeholderOrXml;
+    }
+
     if (bpmnXml) {
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
+      
+      // Navigate to BPMN editor
+      window.location.href = '/bpmn-editor';
+    } else {
+      setError("No BPMN diagram found to edit. Please generate a diagram first.");
     }
   };
 
@@ -1526,6 +1544,8 @@ Data Objects: Request form, User profile`,
     }
   };
 
+
+
   // Generate fallback BPMN when API fails
   const generateFallbackBpmn = (
     stakeholder: string,
@@ -2415,6 +2435,17 @@ Data Objects: Request form, User profile`,
                                         </>
                                       )}
                                     </Button>
+                                    {existingFlow?.bpmnXml && (
+                                      <Button
+                                        onClick={() => openInEditor(stakeholder, flowType)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs px-2 py-1 h-7 border-purple-300 hover:bg-purple-50 text-purple-600"
+                                      >
+                                        <Edit3 className="h-3 w-3 mr-1" />
+                                        Edit BPMN
+                                      </Button>
+                                    )}
                                     <Button
                                       onClick={() =>
                                         removeFlow(stakeholder, flowType)
