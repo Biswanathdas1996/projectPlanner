@@ -2501,7 +2501,7 @@ Data Objects: Request form, User profile`,
                             return (
                               <div
                                 key={flowIndex}
-                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-md p-2 shadow-sm"
+                                className="bg-white/90 backdrop-blur-sm border border-white/60 rounded-md p-2 shadow-sm mt-[20px] mb-[20px]"
                               >
                                 {/* Flow Header - Compact */}
                                 <div className="flex items-center justify-between mb-2">
