@@ -2237,7 +2237,7 @@ ${flowEdges.join("\n")}
               </CardTitle>
             </CardHeader>
             <CardContent className="px-6 pb-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {Object.entries(personaFlowTypes).map(
                   ([stakeholder, flowTypes], stakeholderIndex) => {
                     const colorVariants = [
@@ -3264,17 +3264,17 @@ ${flowEdges.join("\n")}
                                     </div>
                                     
                                     {/* BPMN Visual Diagram */}
-                                    <div className="bg-white rounded-lg border">
+                                    <div className="bg-white rounded-lg border w-full">
                                       <div className="px-3 py-2 border-b bg-gray-50 rounded-t-lg">
                                         <p className="text-xs font-medium text-gray-700">
                                           BPMN Diagram - {stakeholder} {flowType}
                                         </p>
                                       </div>
-                                      <div className="p-2">
+                                      <div className="w-full">
                                         <SimpleBpmnViewer
                                           bpmnXml={existingFlow.bpmnXml}
                                           title={`${stakeholder} - ${flowType}`}
-                                          height="300px"
+                                          height="400px"
                                         />
                                       </div>
                                     </div>
