@@ -23,7 +23,7 @@ export function WorkflowProgress({
 
   // Navigation mapping for each step
   const stepRoutes = {
-    input: "/",
+    input: "/start-over",
     research: "/market-research",
     plan: "/plan",
     diagram: "/user-journey",
@@ -76,8 +76,8 @@ export function WorkflowProgress({
               getStepStatus("input") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("input") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("input")}
           >
@@ -86,8 +86,8 @@ export function WorkflowProgress({
                 getStepStatus("input") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("input") === "completed"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("input") === "completed" ? (
@@ -103,8 +103,8 @@ export function WorkflowProgress({
                 getStepStatus("input") === "active"
                   ? "text-blue-700"
                   : getStepStatus("input") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               Describe Idea
@@ -119,8 +119,8 @@ export function WorkflowProgress({
               getStepStatus("research") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("research") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("research")}
           >
@@ -129,8 +129,8 @@ export function WorkflowProgress({
                 getStepStatus("research") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("research") === "completed"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("research") === "completed" ? (
@@ -146,8 +146,8 @@ export function WorkflowProgress({
                 getStepStatus("research") === "active"
                   ? "text-blue-700"
                   : getStepStatus("research") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               Market Research
@@ -162,8 +162,8 @@ export function WorkflowProgress({
               getStepStatus("plan") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("plan") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("plan")}
           >
@@ -172,8 +172,8 @@ export function WorkflowProgress({
                 getStepStatus("plan") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("plan") === "completed"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("plan") === "completed" ? (
@@ -189,8 +189,8 @@ export function WorkflowProgress({
                 getStepStatus("plan") === "active"
                   ? "text-blue-700"
                   : getStepStatus("plan") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               Project Planning
@@ -205,8 +205,8 @@ export function WorkflowProgress({
               getStepStatus("diagram") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("diagram") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("diagram")}
           >
@@ -215,8 +215,8 @@ export function WorkflowProgress({
                 getStepStatus("diagram") === "completed"
                   ? "bg-green-500 text-white"
                   : getStepStatus("diagram") === "active"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("diagram") === "completed" ? (
@@ -232,8 +232,8 @@ export function WorkflowProgress({
                 getStepStatus("diagram") === "active"
                   ? "text-blue-700"
                   : getStepStatus("diagram") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               Stakeholder & Process Mapping{" "}
@@ -248,8 +248,8 @@ export function WorkflowProgress({
               getStepStatus("stories") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("stories") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("stories")}
           >
@@ -258,8 +258,8 @@ export function WorkflowProgress({
                 getStepStatus("stories") === "completed"
                   ? "bg-green-500 text-white"
                   : getStepStatus("stories") === "active"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("stories") === "completed" ? (
@@ -275,8 +275,8 @@ export function WorkflowProgress({
                 getStepStatus("stories") === "active"
                   ? "text-blue-700"
                   : getStepStatus("stories") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               User Stories
@@ -291,8 +291,8 @@ export function WorkflowProgress({
               getStepStatus("code") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("code") === "completed"
-                ? "bg-green-100"
-                : "bg-white"
+                  ? "bg-green-100"
+                  : "bg-white"
             }`}
             onClick={() => handleStepClick("code")}
           >
@@ -301,8 +301,8 @@ export function WorkflowProgress({
                 getStepStatus("code") === "completed"
                   ? "bg-green-500 text-white"
                   : getStepStatus("code") === "active"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-600"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("code") === "completed" ? (
@@ -318,8 +318,8 @@ export function WorkflowProgress({
                 getStepStatus("code") === "active"
                   ? "text-blue-700"
                   : getStepStatus("code") === "completed"
-                  ? "text-green-700"
-                  : "text-gray-600"
+                    ? "text-green-700"
+                    : "text-gray-600"
               }`}
             >
               Code
