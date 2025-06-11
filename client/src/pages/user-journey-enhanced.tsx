@@ -1058,6 +1058,16 @@ Data Objects: Request form, User profile`,
         additionalElements: details.additionalElements || []
       };
 
+      console.log('✅ Structured content from 7 sections:', {
+        '1. Process & Description': structuredContent.processName,
+        '2. Participants': structuredContent.participants,
+        '3. Trigger': structuredContent.trigger,
+        '4. Activities': structuredContent.activities,
+        '5. Decision Points': structuredContent.decisionPoints,
+        '6. End Event': structuredContent.endEvent,
+        '7. Additional Elements': structuredContent.additionalElements
+      });
+
       // Generate BPMN XML using Gemini API with structured content
       const { generateBpmnXml } = await import('../lib/gemini');
       
@@ -1088,10 +1098,28 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
 
       let bpmnXml;
       try {
+        console.log('Sending BPMN content to Gemini:', bpmnContent);
         bpmnXml = await generateBpmnXml(bpmnContent);
         console.log('Successfully generated BPMN XML:', bpmnXml.substring(0, 200) + '...');
+        
+        // Clean and validate the XML response
+        let cleanedXml = bpmnXml.trim();
+        if (cleanedXml.startsWith("```xml")) {
+          cleanedXml = cleanedXml.replace(/^```xml\s*/, "").replace(/```\s*$/, "");
+        }
+        if (cleanedXml.startsWith("```")) {
+          cleanedXml = cleanedXml.replace(/^```\s*/, "").replace(/```\s*$/, "");
+        }
+        
+        // Validate that we got proper XML
+        if (!cleanedXml.includes('<?xml') || !cleanedXml.includes('bpmn2:definitions')) {
+          throw new Error('Invalid BPMN XML received from Gemini');
+        }
+        
+        bpmnXml = cleanedXml;
+        console.log('✅ BPMN XML generated successfully from 7 sections');
       } catch (bpmnError) {
-        console.error('Gemini BPMN generation failed, creating fallback:', bpmnError);
+        console.error('Gemini BPMN generation failed, creating structured fallback:', bpmnError);
         
         // Create BPMN XML based on the 7 structured sections
         const cleanStakeholder = stakeholder.replace(/[^a-zA-Z0-9]/g, '_');
@@ -1139,7 +1167,7 @@ ${structuredContent.additionalElements.map(e => `- ${e}`).join('\n')}
       </bpmndi:BPMNShape>`;
         }).join('\n');
         
-        const flowEdges = [];
+        const flowEdges: string[] = [];
         structuredContent.activities.forEach((_, index) => {
           if (index === 0) {
             flowEdges.push(`      <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
