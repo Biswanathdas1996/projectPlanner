@@ -192,6 +192,7 @@ export default function WireframeDesigner() {
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
   const [contentGenerationProgress, setContentGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
+  const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
 
   const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
@@ -329,7 +330,14 @@ export default function WireframeDesigner() {
 
   // Generate HTML wireframes from page content
   const handleGenerateWireframes = async () => {
-    if (pageContentCards.length === 0) return;
+    if (pageContentCards.length === 0) {
+      toast({
+        title: "No Content Available",
+        description: "Please generate page content first before creating wireframes.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setIsGeneratingWireframes(true);
     setError("");
@@ -353,9 +361,19 @@ export default function WireframeDesigner() {
       
       setGeneratedWireframes(wireframes);
       
+      toast({
+        title: "Wireframes Generated",
+        description: `Successfully created ${wireframes.length} wireframe(s).`,
+      });
+      
     } catch (err) {
       console.error("Error generating wireframes:", err);
       setError(err instanceof Error ? err.message : "Failed to generate wireframes");
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate wireframes. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsGeneratingWireframes(false);
       setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
@@ -2305,42 +2323,7 @@ export default function WireframeDesigner() {
               {/* Generate Wireframes Button */}
               <div className="flex justify-center pt-4 border-t border-gray-200">
                 <Button
-                  onClick={async () => {
-                    if (pageContentCards.length === 0) {
-                      toast({
-                        title: "No Content Available",
-                        description: "Please generate page content first before creating wireframes.",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-
-                    setIsGeneratingWireframes(true);
-                    try {
-                      const newWireframes = [];
-                      
-                      for (const card of pageContentCards) {
-                        const wireframe = await generatePageWireframe(card);
-                        newWireframes.push(wireframe);
-                      }
-                      
-                      setGeneratedWireframes(newWireframes);
-                      
-                      toast({
-                        title: "Wireframes Generated",
-                        description: `Successfully created ${newWireframes.length} wireframe(s).`,
-                      });
-                    } catch (error) {
-                      console.error('Error generating wireframes:', error);
-                      toast({
-                        title: "Generation Failed",
-                        description: "Failed to generate wireframes. Please try again.",
-                        variant: "destructive",
-                      });
-                    } finally {
-                      setIsGeneratingWireframes(false);
-                    }
-                  }}
+                  onClick={handleGenerateWireframes}
                   disabled={isGeneratingWireframes || pageContentCards.length === 0}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
                 >
