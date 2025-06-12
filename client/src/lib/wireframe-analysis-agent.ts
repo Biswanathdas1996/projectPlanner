@@ -416,6 +416,7 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
         pageRequirements: this.validatePageRequirements(
           analysisResult.pageRequirements || [],
         ),
+        stakeholders: analysisResult.stakeholders || [],
         commonElements: analysisResult.commonElements || [],
         userFlowConnections: analysisResult.userFlowConnections || [],
         dataFlowMap: analysisResult.dataFlowMap || [],
@@ -517,6 +518,7 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
       projectContext: "Generated from stakeholder flow analysis",
       totalPages: pageRequirements.length,
       pageRequirements,
+      stakeholders: Object.keys(flowTypes),
       commonElements: [
         {
           type: "navigation",
