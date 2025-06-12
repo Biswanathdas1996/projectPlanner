@@ -2282,25 +2282,27 @@ Provide a JSON object with this structure:
             )}
 
             {/* Generate All Button */}
-            <div className="text-center">
-              <Button
-                onClick={() => generateAllWireframes()}
-                disabled={isGenerating}
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Generating All Wireframes...
-                  </>
-                ) : (
-                  <>
-                    <Grid className="h-4 w-4 mr-2" />
-                    Generate All HTML Wireframes
-                  </>
-                )}
-              </Button>
-            </div>
+            {editableContentCards.length > 0 && (
+              <div className="text-center">
+                <Button
+                  onClick={() => generateAllWireframes()}
+                  disabled={isGenerating}
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3"
+                >
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating All Wireframes...
+                    </>
+                  ) : (
+                    <>
+                      <Grid className="h-4 w-4 mr-2" />
+                      Generate All HTML Wireframes
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
