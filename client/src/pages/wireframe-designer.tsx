@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
@@ -1677,32 +1678,186 @@ export default function WireframeDesigner() {
                           )}
                         </div>
                         
-                        {/* Page Layout Selector */}
+                        {/* Page Layout Selector with Visual Previews */}
                         <div className="mt-3 pt-2 border-t border-gray-200">
-                          <Label className="text-xs font-medium text-gray-700 mb-2 block">Page Layout</Label>
-                          <Select 
-                            value={pageLayouts[card.id] || 'standard-header'} 
-                            onValueChange={(value) => {
-                              setPageLayouts(prev => ({
-                                ...prev,
-                                [card.id]: value
-                              }));
-                            }}
-                          >
-                            <SelectTrigger className="h-7 text-xs">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="standard-header">🔷 Standard Header</SelectItem>
-                              <SelectItem value="hero-banner">🎯 Hero Banner</SelectItem>
-                              <SelectItem value="sidebar-layout">📋 Sidebar Layout</SelectItem>
-                              <SelectItem value="dashboard-grid">⚡ Dashboard Grid</SelectItem>
-                              <SelectItem value="centered-content">📄 Centered Content</SelectItem>
-                              <SelectItem value="landing-page">🚀 Landing Page</SelectItem>
-                              <SelectItem value="blog-layout">📝 Blog Layout</SelectItem>
-                              <SelectItem value="ecommerce-grid">🛒 E-commerce Grid</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="layout" className="border-0">
+                              <AccordionTrigger className="text-xs font-medium text-gray-700 py-2 hover:no-underline">
+                                <div className="flex items-center gap-2">
+                                  🎨 Page Layout: {(() => {
+                                    const layoutNames = {
+                                      'standard-header': 'Standard Header',
+                                      'hero-banner': 'Hero Banner',
+                                      'sidebar-layout': 'Sidebar Layout',
+                                      'dashboard-grid': 'Dashboard Grid',
+                                      'centered-content': 'Centered Content',
+                                      'landing-page': 'Landing Page',
+                                      'blog-layout': 'Blog Layout',
+                                      'ecommerce-grid': 'E-commerce Grid'
+                                    };
+                                    return layoutNames[pageLayouts[card.id] as keyof typeof layoutNames] || 'Standard Header';
+                                  })()}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="pt-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                  {[
+                                    {
+                                      id: 'standard-header',
+                                      name: 'Standard Header',
+                                      description: 'Traditional layout',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-2 bg-blue-500"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded w-1/2"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-2/3"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'hero-banner',
+                                      name: 'Hero Banner',
+                                      description: 'Large hero section',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-purple-500"></div>
+                                          <div className="h-5 bg-gradient-to-r from-purple-100 to-blue-100"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-200 rounded w-1/3 mx-auto"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'sidebar-layout',
+                                      name: 'Sidebar Layout',
+                                      description: 'Side navigation',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden flex">
+                                          <div className="w-1/4 bg-gray-600"></div>
+                                          <div className="flex-1 p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-2/3"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'dashboard-grid',
+                                      name: 'Dashboard Grid',
+                                      description: 'Card-based layout',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-green-500"></div>
+                                          <div className="p-0.5 grid grid-cols-2 gap-0.5">
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'centered-content',
+                                      name: 'Centered Content',
+                                      description: 'Clean centered',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-indigo-500"></div>
+                                          <div className="p-1.5 flex justify-center">
+                                            <div className="w-3/4 space-y-0.5">
+                                              <div className="h-0.5 bg-gray-300 rounded mx-auto"></div>
+                                              <div className="h-0.5 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                                              <div className="h-0.5 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'landing-page',
+                                      name: 'Landing Page',
+                                      description: 'Marketing focus',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-0.5 bg-orange-500"></div>
+                                          <div className="h-4 bg-gradient-to-b from-orange-50 to-yellow-50"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                                            <div className="h-0.5 bg-orange-300 rounded w-1/4 mx-auto"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'blog-layout',
+                                      name: 'Blog Layout',
+                                      description: 'Article focused',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-teal-500"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-400 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-5/6"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'ecommerce-grid',
+                                      name: 'E-commerce Grid',
+                                      description: 'Product showcase',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-pink-500"></div>
+                                          <div className="p-0.5 grid grid-cols-3 gap-0.5">
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    }
+                                  ].map((layout) => (
+                                    <div
+                                      key={layout.id}
+                                      className={`cursor-pointer border rounded-md p-2 transition-all duration-200 hover:shadow-sm ${
+                                        (pageLayouts[card.id] || 'standard-header') === layout.id
+                                          ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                          : 'border-gray-200 bg-white hover:border-gray-300'
+                                      }`}
+                                      onClick={() => {
+                                        setPageLayouts(prev => ({
+                                          ...prev,
+                                          [card.id]: layout.id
+                                        }));
+                                      }}
+                                    >
+                                      <div className="mb-1">
+                                        {layout.preview}
+                                      </div>
+                                      <div className="text-center">
+                                        <h4 className="text-xs font-medium text-gray-800 mb-0.5">{layout.name}</h4>
+                                        <p className="text-xs text-gray-500">{layout.description}</p>
+                                      </div>
+                                      {(pageLayouts[card.id] || 'standard-header') === layout.id && (
+                                        <div className="mt-1 flex justify-center">
+                                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                         </div>
                       </div>
                       <Button
