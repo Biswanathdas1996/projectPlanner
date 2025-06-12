@@ -950,7 +950,7 @@ export default function WireframeDesigner() {
                                   updatedResult.pageRequirements[idx] = {
                                     ...page,
                                     isEditing: !page.isEditing
-                                  };
+                                  } as PageRequirement;
                                   setAnalysisResult(updatedResult);
                                 }}
                               >
@@ -981,7 +981,9 @@ export default function WireframeDesigner() {
                                   value={page.pageName}
                                   onChange={(e) => {
                                     const updatedResult = { ...analysisResult };
-                                    updatedResult.pageRequirements[idx].pageName = e.target.value;
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.pageName = e.target.value;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
                                     setAnalysisResult(updatedResult);
                                   }}
                                   className="text-xs h-7 mt-1"
@@ -994,7 +996,9 @@ export default function WireframeDesigner() {
                                   value={page.pageType}
                                   onChange={(e) => {
                                     const updatedResult = { ...analysisResult };
-                                    updatedResult.pageRequirements[idx].pageType = e.target.value;
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.pageType = e.target.value;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
                                     setAnalysisResult(updatedResult);
                                   }}
                                   className="text-xs h-7 mt-1"
@@ -1008,7 +1012,9 @@ export default function WireframeDesigner() {
                                     value={page.purpose || ''}
                                     onChange={(e) => {
                                       const updatedResult = { ...analysisResult };
-                                      updatedResult.pageRequirements[idx].purpose = e.target.value;
+                                      const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                      updatedPage.purpose = e.target.value;
+                                      updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
                                       setAnalysisResult(updatedResult);
                                     }}
                                     className="text-xs min-h-[60px] mt-1"
@@ -1022,7 +1028,9 @@ export default function WireframeDesigner() {
                                   className="h-6 text-xs px-2 bg-green-600 hover:bg-green-700"
                                   onClick={() => {
                                     const updatedResult = { ...analysisResult };
-                                    updatedResult.pageRequirements[idx].isEditing = false;
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.isEditing = false;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
                                     setAnalysisResult(updatedResult);
                                   }}
                                 >
@@ -1034,7 +1042,9 @@ export default function WireframeDesigner() {
                                   className="h-6 text-xs px-2"
                                   onClick={() => {
                                     const updatedResult = { ...analysisResult };
-                                    updatedResult.pageRequirements[idx].isEditing = false;
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.isEditing = false;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
                                     setAnalysisResult(updatedResult);
                                   }}
                                 >
