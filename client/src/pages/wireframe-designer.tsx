@@ -705,6 +705,324 @@ export default function WireframeDesigner() {
             </div>
           </div>
         )}
+
+        {/* Page Content Cards Display */}
+        {pageContentCards.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
+            <div className="grid gap-6">
+              {pageContentCards.map((card, index) => (
+                <Card key={card.id} className="border-2 border-gray-200">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg font-semibold text-purple-700">
+                          {card.pageName}
+                        </CardTitle>
+                        <p className="text-sm text-gray-600 mt-1">
+                          <span className="font-medium">Type:</span> {card.pageType} | 
+                          <span className="font-medium ml-2">Purpose:</span> {card.purpose}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {card.stakeholders.map((stakeholder, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {stakeholder}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const updatedCards = [...pageContentCards];
+                          updatedCards[index] = { ...card, isEdited: !card.isEdited };
+                          setPageContentCards(updatedCards);
+                        }}
+                      >
+                        {card.isEdited ? "Save" : "Edit"}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <Tabs defaultValue="content" className="w-full">
+                      <TabsList className="grid w-full grid-cols-5">
+                        <TabsTrigger value="content">Content</TabsTrigger>
+                        <TabsTrigger value="forms">Forms</TabsTrigger>
+                        <TabsTrigger value="buttons">Buttons</TabsTrigger>
+                        <TabsTrigger value="media">Media</TabsTrigger>
+                        <TabsTrigger value="navigation">Navigation</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="content" className="mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold mb-2">Headers</h4>
+                            <div className="space-y-1">
+                              {card.headers.map((header, idx) => (
+                                <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={header}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].headers[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm"
+                                    />
+                                  ) : (
+                                    header
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-semibold mb-2">Text Content</h4>
+                            <div className="space-y-1">
+                              {card.textContent.map((text, idx) => (
+                                <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={text}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].textContent[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm"
+                                    />
+                                  ) : (
+                                    text
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="forms" className="mt-4">
+                        <div className="space-y-4">
+                          {card.forms.map((form, formIdx) => (
+                            <div key={formIdx} className="border rounded-lg p-4 bg-gray-50">
+                              <h4 className="font-semibold mb-2">{form.title}</h4>
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label className="text-sm font-medium">Form Fields</Label>
+                                  <div className="space-y-1 mt-1">
+                                    {form.fields.map((field, fieldIdx) => (
+                                      <div key={fieldIdx} className="p-2 bg-white rounded text-sm">
+                                        {card.isEdited ? (
+                                          <Input
+                                            value={field}
+                                            onChange={(e) => {
+                                              const updatedCards = [...pageContentCards];
+                                              updatedCards[index].forms[formIdx].fields[fieldIdx] = e.target.value;
+                                              setPageContentCards(updatedCards);
+                                            }}
+                                            className="text-sm"
+                                          />
+                                        ) : (
+                                          field
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                
+                                <div>
+                                  <Label className="text-sm font-medium">Submit Action</Label>
+                                  <div className="p-2 bg-white rounded text-sm mt-1">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={form.submitAction}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].forms[formIdx].submitAction = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-sm"
+                                      />
+                                    ) : (
+                                      form.submitAction
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="buttons" className="mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {card.buttons.map((button, btnIdx) => (
+                            <div key={btnIdx} className="border rounded-lg p-3 bg-gray-50">
+                              <div className="space-y-2">
+                                <div>
+                                  <Label className="text-xs">Label</Label>
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={button.label}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].buttons[btnIdx].label = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm mt-1"
+                                    />
+                                  ) : (
+                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.label}</div>
+                                  )}
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Action</Label>
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={button.action}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].buttons[btnIdx].action = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm mt-1"
+                                    />
+                                  ) : (
+                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.action}</div>
+                                  )}
+                                </div>
+                                <div>
+                                  <Label className="text-xs">Style</Label>
+                                  {card.isEdited ? (
+                                    <Select
+                                      value={button.style}
+                                      onValueChange={(value) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].buttons[btnIdx].style = value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                    >
+                                      <SelectTrigger className="text-sm mt-1">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="primary">Primary</SelectItem>
+                                        <SelectItem value="secondary">Secondary</SelectItem>
+                                        <SelectItem value="outline">Outline</SelectItem>
+                                        <SelectItem value="ghost">Ghost</SelectItem>
+                                        <SelectItem value="destructive">Destructive</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.style}</div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="media" className="mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold mb-2">Images</h4>
+                            <div className="space-y-2">
+                              {card.images.map((image, imgIdx) => (
+                                <div key={imgIdx} className="border rounded-lg p-3 bg-gray-50">
+                                  <div className="space-y-1">
+                                    <div className="text-sm font-medium">{image.alt}</div>
+                                    <div className="text-xs text-gray-600">{image.description}</div>
+                                    <div className="text-xs">
+                                      <span className="font-medium">Position:</span> {image.position}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-semibold mb-2">Lists</h4>
+                            <div className="space-y-2">
+                              {card.lists.map((list, listIdx) => (
+                                <div key={listIdx} className="border rounded-lg p-3 bg-gray-50">
+                                  <div className="font-medium text-sm mb-1">{list.title}</div>
+                                  <div className="text-xs text-gray-600 mb-2">Type: {list.type}</div>
+                                  <div className="space-y-1">
+                                    {list.items.map((item, itemIdx) => (
+                                      <div key={itemIdx} className="text-sm p-1 bg-white rounded">
+                                        • {item}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="navigation" className="mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <h4 className="font-semibold mb-2">Navigation Items</h4>
+                            <div className="space-y-1">
+                              {card.navigation.map((navItem, navIdx) => (
+                                <div key={navIdx} className="p-2 bg-gray-50 rounded text-sm">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={navItem}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].navigation[navIdx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm"
+                                    />
+                                  ) : (
+                                    navItem
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="font-semibold mb-2">Additional Content</h4>
+                            <div className="space-y-1">
+                              {card.additionalContent.map((content, contentIdx) => (
+                                <div key={contentIdx} className="p-2 bg-gray-50 rounded text-sm">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={content}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].additionalContent[contentIdx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-sm"
+                                    />
+                                  ) : (
+                                    content
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
