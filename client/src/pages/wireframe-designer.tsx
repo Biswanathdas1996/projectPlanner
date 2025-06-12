@@ -48,6 +48,7 @@ import {
   Bell,
   Menu,
   Plus,
+  Trash2,
   Edit3,
   Trash2,
   Save,
@@ -2239,19 +2240,33 @@ Provide a JSON object with this structure:
                           <Label className="text-xs text-gray-600 mb-1 block">Main Headers</Label>
                           <div className="space-y-2">
                             {card.headers.map((header, hIndex) => (
-                              <Textarea
-                                key={hIndex}
-                                value={header}
-                                onChange={(e) => {
-                                  const newCards = [...editableContentCards];
-                                  newCards[index].headers[hIndex] = e.target.value;
-                                  newCards[index].isEdited = true;
-                                  setEditableContentCards(newCards);
-                                }}
-                                className="w-full text-sm resize-none"
-                                rows={2}
-                                placeholder="Enter header text..."
-                              />
+                              <div key={hIndex} className="flex gap-2 items-start">
+                                <Textarea
+                                  value={header}
+                                  onChange={(e) => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].headers[hIndex] = e.target.value;
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="flex-1 text-sm resize-none"
+                                  rows={2}
+                                  placeholder="Enter header text..."
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].headers.splice(hIndex, 1);
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="text-xs h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             ))}
                             <Button
                               size="sm"
@@ -2275,18 +2290,32 @@ Provide a JSON object with this structure:
                           <Label className="text-xs text-gray-600 mb-1 block">Button Labels</Label>
                           <div className="space-y-2">
                             {card.buttons.map((button, bIndex) => (
-                              <Input
-                                key={bIndex}
-                                value={button.label}
-                                onChange={(e) => {
-                                  const newCards = [...editableContentCards];
-                                  newCards[index].buttons[bIndex].label = e.target.value;
-                                  newCards[index].isEdited = true;
-                                  setEditableContentCards(newCards);
-                                }}
-                                className="text-sm"
-                                placeholder="Button text..."
-                              />
+                              <div key={bIndex} className="flex gap-2 items-center">
+                                <Input
+                                  value={button.label}
+                                  onChange={(e) => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].buttons[bIndex].label = e.target.value;
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="flex-1 text-sm"
+                                  placeholder="Button text..."
+                                />
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].buttons.splice(bIndex, 1);
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="text-xs h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             ))}
                             <Button
                               size="sm"
@@ -2312,32 +2341,75 @@ Provide a JSON object with this structure:
                             <div className="space-y-3">
                               {card.forms.map((form, fIndex) => (
                                 <div key={fIndex} className="p-3 bg-gray-50 rounded border">
-                                  <Input
-                                    value={form.title}
-                                    onChange={(e) => {
-                                      const newCards = [...editableContentCards];
-                                      newCards[index].forms[fIndex].title = e.target.value;
-                                      newCards[index].isEdited = true;
-                                      setEditableContentCards(newCards);
-                                    }}
-                                    className="text-sm font-medium mb-2"
-                                    placeholder="Form title..."
-                                  />
+                                  <div className="flex gap-2 items-center mb-2">
+                                    <Input
+                                      value={form.title}
+                                      onChange={(e) => {
+                                        const newCards = [...editableContentCards];
+                                        newCards[index].forms[fIndex].title = e.target.value;
+                                        newCards[index].isEdited = true;
+                                        setEditableContentCards(newCards);
+                                      }}
+                                      className="flex-1 text-sm font-medium"
+                                      placeholder="Form title..."
+                                    />
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        const newCards = [...editableContentCards];
+                                        newCards[index].forms.splice(fIndex, 1);
+                                        newCards[index].isEdited = true;
+                                        setEditableContentCards(newCards);
+                                      }}
+                                      className="text-xs h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
+                                    </Button>
+                                  </div>
                                   <div className="space-y-1">
                                     {form.fields.map((field, fieldIndex) => (
-                                      <Input
-                                        key={fieldIndex}
-                                        value={field}
-                                        onChange={(e) => {
-                                          const newCards = [...editableContentCards];
-                                          newCards[index].forms[fIndex].fields[fieldIndex] = e.target.value;
-                                          newCards[index].isEdited = true;
-                                          setEditableContentCards(newCards);
-                                        }}
-                                        className="text-xs"
-                                        placeholder="Field label..."
-                                      />
+                                      <div key={fieldIndex} className="flex gap-2 items-center">
+                                        <Input
+                                          value={field}
+                                          onChange={(e) => {
+                                            const newCards = [...editableContentCards];
+                                            newCards[index].forms[fIndex].fields[fieldIndex] = e.target.value;
+                                            newCards[index].isEdited = true;
+                                            setEditableContentCards(newCards);
+                                          }}
+                                          className="flex-1 text-xs"
+                                          placeholder="Field label..."
+                                        />
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => {
+                                            const newCards = [...editableContentCards];
+                                            newCards[index].forms[fIndex].fields.splice(fieldIndex, 1);
+                                            newCards[index].isEdited = true;
+                                            setEditableContentCards(newCards);
+                                          }}
+                                          className="text-xs h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                        >
+                                          <X className="h-2 w-2" />
+                                        </Button>
+                                      </div>
                                     ))}
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => {
+                                        const newCards = [...editableContentCards];
+                                        newCards[index].forms[fIndex].fields.push('New Field');
+                                        newCards[index].isEdited = true;
+                                        setEditableContentCards(newCards);
+                                      }}
+                                      className="text-xs h-6 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                    >
+                                      <Plus className="h-2 w-2 mr-1" />
+                                      Add Field
+                                    </Button>
                                   </div>
                                 </div>
                               ))}
@@ -2351,20 +2423,48 @@ Provide a JSON object with this structure:
                             <Label className="text-xs text-gray-600 mb-1 block">Additional Content</Label>
                             <div className="space-y-2">
                               {card.additionalContent.map((content, cIndex) => (
-                                <Textarea
-                                  key={cIndex}
-                                  value={content}
-                                  onChange={(e) => {
-                                    const newCards = [...editableContentCards];
-                                    newCards[index].additionalContent[cIndex] = e.target.value;
-                                    newCards[index].isEdited = true;
-                                    setEditableContentCards(newCards);
-                                  }}
-                                  className="text-sm resize-none"
-                                  rows={3}
-                                  placeholder="Enter additional content..."
-                                />
+                                <div key={cIndex} className="flex gap-2 items-start">
+                                  <Textarea
+                                    value={content}
+                                    onChange={(e) => {
+                                      const newCards = [...editableContentCards];
+                                      newCards[index].additionalContent[cIndex] = e.target.value;
+                                      newCards[index].isEdited = true;
+                                      setEditableContentCards(newCards);
+                                    }}
+                                    className="flex-1 text-sm resize-none"
+                                    rows={3}
+                                    placeholder="Enter additional content..."
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const newCards = [...editableContentCards];
+                                      newCards[index].additionalContent.splice(cIndex, 1);
+                                      newCards[index].isEdited = true;
+                                      setEditableContentCards(newCards);
+                                    }}
+                                    className="text-xs h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               ))}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  const newCards = [...editableContentCards];
+                                  newCards[index].additionalContent.push('New content item');
+                                  newCards[index].isEdited = true;
+                                  setEditableContentCards(newCards);
+                                }}
+                                className="text-xs h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add Content
+                              </Button>
                             </div>
                           </div>
                         )}
@@ -2375,19 +2475,47 @@ Provide a JSON object with this structure:
                             <Label className="text-xs text-gray-600 mb-1 block">Navigation Items</Label>
                             <div className="space-y-2">
                               {card.navigation.map((navItem, nIndex) => (
-                                <Input
-                                  key={nIndex}
-                                  value={navItem}
-                                  onChange={(e) => {
-                                    const newCards = [...editableContentCards];
-                                    newCards[index].navigation[nIndex] = e.target.value;
-                                    newCards[index].isEdited = true;
-                                    setEditableContentCards(newCards);
-                                  }}
-                                  className="text-sm"
-                                  placeholder="Navigation item..."
-                                />
+                                <div key={nIndex} className="flex gap-2 items-center">
+                                  <Input
+                                    value={navItem}
+                                    onChange={(e) => {
+                                      const newCards = [...editableContentCards];
+                                      newCards[index].navigation[nIndex] = e.target.value;
+                                      newCards[index].isEdited = true;
+                                      setEditableContentCards(newCards);
+                                    }}
+                                    className="flex-1 text-sm"
+                                    placeholder="Navigation item..."
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const newCards = [...editableContentCards];
+                                      newCards[index].navigation.splice(nIndex, 1);
+                                      newCards[index].isEdited = true;
+                                      setEditableContentCards(newCards);
+                                    }}
+                                    className="text-xs h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                  </Button>
+                                </div>
                               ))}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  const newCards = [...editableContentCards];
+                                  newCards[index].navigation.push('New navigation item');
+                                  newCards[index].isEdited = true;
+                                  setEditableContentCards(newCards);
+                                }}
+                                className="text-xs h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Add Navigation Item
+                              </Button>
                             </div>
                           </div>
                         )}
