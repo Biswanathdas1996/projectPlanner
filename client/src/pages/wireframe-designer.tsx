@@ -236,69 +236,82 @@ export default function WireframeDesigner() {
     }
   };
 
-  const generateWireframes = async () => {
-    // Get stakeholder flow data from local storage
-    const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
-    const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
-    const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan');
-    
-    // Use stakeholder data if available, otherwise require manual input
-    let screenTypesToGenerate = designPrompt.screenTypes;
-    let projectContext = projectInput;
-    
-    if (stakeholderFlowData && personaFlowTypes) {
-      const flowTypes = JSON.parse(personaFlowTypes);
-      
-      // Extract all unique screen types from stakeholder flows
-      const extractedScreenTypes: string[] = [];
-      Object.entries(flowTypes).forEach(([stakeholder, flows]: [string, any]) => {
-        if (Array.isArray(flows)) {
-          flows.forEach(flow => {
-            if (!extractedScreenTypes.includes(flow)) {
-              extractedScreenTypes.push(flow);
-            }
-          });
-        }
-      });
-
-      if (extractedScreenTypes.length > 0) {
-        screenTypesToGenerate = extractedScreenTypes;
-      }
-
-      // Use project description from stakeholder analysis
-      if (projectDescription) {
-        projectContext = projectDescription;
-      }
-    } else if (!projectInput.trim() || !designPrompt.projectType || designPrompt.screenTypes.length === 0) {
-      setError("Please complete the Stakeholder Flow Analysis first, or manually fill in all required fields");
+  const generateWireframesFromAnalysis = async () => {
+    if (!analysisResult) {
+      setError("Please analyze stakeholder flows first");
       return;
     }
 
     setIsGenerating(true);
     setError("");
     setCurrentStep("generating");
-    setGenerationProgress({ current: 0, total: screenTypesToGenerate.length, status: "Analyzing stakeholder flows..." });
+    setGenerationProgress({ 
+      current: 0, 
+      total: analysisResult.pageRequirements.length, 
+      status: "Generating wireframes from analysis..." 
+    });
 
     try {
       const newWireframes: WireframeData[] = [];
 
-      for (let i = 0; i < screenTypesToGenerate.length; i++) {
-        const screenType = screenTypesToGenerate[i];
+      for (let i = 0; i < analysisResult.pageRequirements.length; i++) {
+        const pageReq = analysisResult.pageRequirements[i];
         setGenerationProgress({ 
           current: i + 1, 
-          total: screenTypesToGenerate.length, 
-          status: `Generating ${screenType} wireframe...` 
+          total: analysisResult.pageRequirements.length, 
+          status: `Generating ${pageReq.pageName} wireframe...` 
         });
 
         // Simulate AI generation with realistic delay
+        await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 1800));
+
+        const wireframe = generateWireframeFromPageRequirement(pageReq, i);
+        newWireframes.push(wireframe);
+      }
+
+      setWireframes(prev => [...prev, ...newWireframes]);
+      localStorage.setItem('wireframe_designs', JSON.stringify([...wireframes, ...newWireframes]));
+      setCurrentStep("results");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate wireframes");
+      setCurrentStep("input");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateWireframes = async () => {
+    // Use analysis result if available, otherwise use manual input
+    if (analysisResult) {
+      return generateWireframesFromAnalysis();
+    }
+
+    // Fallback to manual generation
+    if (!projectInput.trim() || !designPrompt.projectType || designPrompt.screenTypes.length === 0) {
+      setError("Please analyze stakeholder flows first or fill in all required fields");
+      return;
+    }
+
+    setIsGenerating(true);
+    setError("");
+    setCurrentStep("generating");
+    setGenerationProgress({ current: 0, total: designPrompt.screenTypes.length, status: "Generating wireframes..." });
+
+    try {
+      const newWireframes: WireframeData[] = [];
+
+      for (let i = 0; i < designPrompt.screenTypes.length; i++) {
+        const screenType = designPrompt.screenTypes[i];
+        setGenerationProgress({ 
+          current: i + 1, 
+          total: designPrompt.screenTypes.length, 
+          status: `Generating ${screenType} wireframe...` 
+        });
+
         await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
 
         const wireframe = generateWireframeData(screenType, i);
-        
-        // Update wireframe description with project context
-        if (projectContext) {
-          wireframe.description = `${screenType} interface for: ${projectContext.substring(0, 100)}${projectContext.length > 100 ? '...' : ''}`;
-        }
+        wireframe.description = `${screenType} interface for: ${projectInput.substring(0, 100)}${projectInput.length > 100 ? '...' : ''}`;
         
         newWireframes.push(wireframe);
       }
@@ -312,6 +325,104 @@ export default function WireframeDesigner() {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const generateWireframeFromPageRequirement = (pageReq: PageRequirement, index: number): WireframeData => {
+    const id = `wireframe_${Date.now()}_${index}`;
+    const components = generateComponentsFromContentElements(pageReq.contentElements, designPrompt.deviceType);
+
+    return {
+      id,
+      name: pageReq.pageName,
+      description: pageReq.purpose,
+      deviceType: designPrompt.deviceType as 'mobile' | 'tablet' | 'desktop',
+      screenType: pageReq.pageType,
+      components,
+      colorScheme: designPrompt.colorPreference,
+      style: designPrompt.designStyle,
+      timestamp: new Date().toISOString()
+    };
+  };
+
+  const generateComponentsFromContentElements = (contentElements: ContentElement[], deviceType: string): WireframeComponent[] => {
+    const components: WireframeComponent[] = [];
+    const isDesktop = deviceType === 'desktop';
+    const isMobile = deviceType === 'mobile';
+    
+    let yPosition = 0;
+    
+    contentElements.forEach((element, index) => {
+      let componentWidth = 90;
+      let componentHeight = 15;
+      let xPosition = 5;
+      
+      // Adjust positioning based on element position preference
+      switch (element.position) {
+        case 'top':
+          yPosition = Math.max(0, yPosition - 5);
+          break;
+        case 'sidebar':
+          if (!isMobile) {
+            componentWidth = 25;
+            xPosition = 70;
+          }
+          break;
+        case 'left':
+          if (!isMobile) {
+            componentWidth = 45;
+            xPosition = 5;
+          }
+          break;
+        case 'right':
+          if (!isMobile) {
+            componentWidth = 45;
+            xPosition = 50;
+          }
+          break;
+      }
+      
+      // Adjust component height based on type
+      switch (element.type) {
+        case 'header':
+          componentHeight = isMobile ? 12 : 8;
+          break;
+        case 'form':
+          componentHeight = isMobile ? 40 : 30;
+          break;
+        case 'table':
+        case 'list':
+          componentHeight = isMobile ? 35 : 25;
+          break;
+        case 'chart':
+          componentHeight = isMobile ? 30 : 25;
+          break;
+        case 'button':
+          componentHeight = isMobile ? 8 : 6;
+          break;
+        case 'input':
+        case 'dropdown':
+          componentHeight = isMobile ? 6 : 4;
+          break;
+      }
+      
+      const component: WireframeComponent = {
+        id: `${element.type}_${index}`,
+        type: element.type,
+        label: element.label,
+        content: element.content,
+        position: { x: xPosition, y: yPosition },
+        size: { width: componentWidth, height: componentHeight },
+        style: {
+          backgroundColor: element.required ? '#fef3c7' : '#f8fafc',
+          border: element.required ? '2px solid #f59e0b' : '1px solid #e2e8f0'
+        }
+      };
+      
+      components.push(component);
+      yPosition += componentHeight + 5;
+    });
+    
+    return components;
   };
 
   const generateWireframeData = (screenType: string, index: number): WireframeData => {
@@ -618,14 +729,111 @@ export default function WireframeDesigner() {
           </div>
         )}
 
-        {/* Design Input Form */}
+        {/* AI Analysis Section */}
         {currentStep === "input" && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Paintbrush className="h-5 w-5" />
-                Design Specifications
+                <Sparkles className="h-5 w-5" />
+                AI-Powered Stakeholder Flow Analysis
               </CardTitle>
+              <p className="text-sm text-gray-600">
+                Analyze your stakeholder flows to automatically generate contextual wireframes
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  onClick={analyzeStakeholderFlows}
+                  disabled={isAnalyzing}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing Flows...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Analyze Stakeholder Flows
+                    </>
+                  )}
+                </Button>
+                
+                {analysisResult && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700">
+                      {analysisResult.totalPages} pages analyzed
+                    </Badge>
+                    <Button
+                      onClick={generateWireframes}
+                      disabled={isGenerating}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Grid className="h-4 w-4 mr-2" />
+                          Generate Wireframes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              
+              {analysisResult && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-3">Analysis Results</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-blue-700 mb-2">
+                        <strong>Project Context:</strong> {analysisResult.projectContext}
+                      </p>
+                      <p className="text-sm text-blue-700">
+                        <strong>Total Pages:</strong> {analysisResult.totalPages}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-blue-700 mb-2">
+                        <strong>Page Types:</strong>
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {analysisResult.pageRequirements.slice(0, 5).map((page, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {page.pageName}
+                          </Badge>
+                        ))}
+                        {analysisResult.pageRequirements.length > 5 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{analysisResult.pageRequirements.length - 5} more
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Manual Design Input Form */}
+        {currentStep === "input" && !analysisResult && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Paintbrush className="h-5 w-5" />
+                Manual Design Specifications
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                Or manually specify your wireframe requirements
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Project Description */}
@@ -813,8 +1021,33 @@ export default function WireframeDesigner() {
           </Card>
         )}
 
+        {/* Analysis Progress */}
+        {currentStep === "analyzing" && (
+          <Card className="mb-6 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
+            <CardContent className="pt-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
+                      <Loader2 className="h-4 w-4 text-white animate-spin" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800">Analyzing Stakeholder Flows</h3>
+                      <p className="text-sm text-gray-600">Processing your business flows to determine wireframe requirements...</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-purple-500 to-indigo-600 h-2 rounded-full animate-pulse w-3/4" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Generation Progress */}
-        {isGenerating && (
+        {currentStep === "generating" && (
           <Card className="mb-6 border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50">
             <CardContent className="pt-6">
               <div className="space-y-4">
