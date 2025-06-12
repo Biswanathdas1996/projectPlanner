@@ -1553,14 +1553,15 @@ export default function WireframeDesigner() {
                                 <div key={idx} className="group flex items-center gap-1">
                                   <div className="flex-1 p-1 bg-gray-50 rounded text-xs">
                                     {card.isEdited ? (
-                                      <Input
+                                      <Textarea
                                         value={text}
                                         onChange={(e) => {
                                           const updatedCards = [...pageContentCards];
                                           updatedCards[index].textContent[idx] = e.target.value;
                                           setPageContentCards(updatedCards);
                                         }}
-                                        className="text-xs h-6"
+                                        className="text-xs min-h-[60px] resize-none"
+                                        placeholder="Enter text content"
                                       />
                                     ) : (
                                       typeof text === 'string' ? text : String(text)
