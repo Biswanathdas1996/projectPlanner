@@ -2761,17 +2761,17 @@ export default function WireframeDesigner() {
                         <div className="relative h-80 bg-white">
                           <iframe
                             srcDoc={wireframe.htmlCode}
-                            className="w-full h-full border-0 transform scale-[0.75] origin-top-left"
+                            className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
-                              width: '133.33%', 
-                              height: '133.33%',
+                              width: '250%', 
+                              height: '250%',
                               overflow: 'hidden'
                             }}
                             title={`Preview of ${wireframe.pageName}`}
                             sandbox="allow-same-origin"
-                            scrolling="yes"
+                            scrolling="no"
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none"></div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none"></div>
                         </div>
                       </div>
                       
