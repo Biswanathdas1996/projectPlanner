@@ -422,6 +422,97 @@ const generateFieldsForActivity = (activity: string): string[] => {
   return fields;
 };
 
+// Client-side wireframe prompt builder
+const buildWireframePrompt = (pageContent: PageContentCard, designStyle: string, deviceType: string): string => {
+  return `Generate a complete HTML wireframe with embedded CSS for a ${pageContent.pageType} page.
+
+**Page Details:**
+- Page Name: ${pageContent.pageName}
+- Purpose: ${pageContent.purpose}
+- Target Users: ${pageContent.stakeholders.join(', ')}
+- Design Style: ${designStyle}
+- Device Type: ${deviceType}
+
+**Content Elements to Include:**
+
+**Headers:** ${pageContent.headers.join(', ')}
+
+**Buttons:** ${pageContent.buttons.map(btn => `${btn.label} (${btn.style} style)`).join(', ')}
+
+**Forms:** ${pageContent.forms.map(form => `${form.title} with fields: ${form.fields.join(', ')}`).join(' | ')}
+
+**Lists:** ${pageContent.lists.map(list => `${list.title}: ${list.items.join(', ')}`).join(' | ')}
+
+**Navigation:** ${pageContent.navigation.join(', ')}
+
+**Requirements:**
+1. Create a complete HTML page with modern, responsive design
+2. Use inline CSS styles for a self-contained wireframe
+3. Include all specified content elements
+4. Make it visually appealing and functional
+5. Use ${designStyle} design principles
+6. Optimize for ${deviceType} viewing
+7. Include realistic placeholder content
+8. Add proper semantic HTML structure
+9. Use modern CSS with flexbox/grid layouts
+10. Ensure good typography and spacing
+
+**Response Format:**
+Provide the HTML code first, followed by additional CSS if needed.
+
+Generate a professional, realistic wireframe that could be used as a starting point for actual development.`;
+};
+
+// Client-side code extraction
+const extractCodeFromResponse = (response: string): { htmlCode: string; cssCode: string } => {
+  // Extract HTML code
+  const htmlMatch = response.match(/```html\s*([\s\S]*?)\s*```/i) || 
+                   response.match(/<html[\s\S]*?<\/html>/i) ||
+                   response.match(/<!DOCTYPE html[\s\S]*?<\/html>/i);
+  
+  let htmlCode = htmlMatch ? htmlMatch[1] || htmlMatch[0] : '';
+  
+  // If no HTML found, try to extract from general code blocks
+  if (!htmlCode) {
+    const codeMatch = response.match(/```\s*([\s\S]*?)\s*```/);
+    if (codeMatch && codeMatch[1].includes('<html')) {
+      htmlCode = codeMatch[1];
+    }
+  }
+
+  // Extract CSS code (separate from HTML)
+  const cssMatch = response.match(/```css\s*([\s\S]*?)\s*```/i);
+  let cssCode = cssMatch ? cssMatch[1] : '';
+
+  // If HTML doesn't include DOCTYPE, add it
+  if (htmlCode && !htmlCode.includes('<!DOCTYPE')) {
+    if (!htmlCode.includes('<html')) {
+      htmlCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+  </style>
+</head>
+<body>
+${htmlCode}
+</body>
+</html>`;
+    } else {
+      htmlCode = `<!DOCTYPE html>\n${htmlCode}`;
+    }
+  }
+
+  // Clean up the code
+  htmlCode = htmlCode.trim();
+  cssCode = cssCode.trim();
+
+  return { htmlCode, cssCode };
+};
+
 // Helper functions for content generation
 const generateHeadersForPageType = (pageType: string, pageName: string): string[] => {
   const headers = [pageName];
@@ -734,33 +825,30 @@ export default function WireframeDesigner() {
     }
   };
 
-  // Generate individual wireframe using Gemini AI
+  // Generate individual wireframe using client-side Gemini AI
   const generateIndividualWireframe = async (card: PageContentCard, index: number) => {
     setCurrentGeneratingIndex(index);
     setError("");
 
     try {
-      const response = await fetch('/api/generate-wireframe-html', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pageContent: card,
-          designStyle: designPrompt.designStyle || 'modern',
-          deviceType: designPrompt.deviceType || 'desktop'
-        })
-      });
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate wireframe HTML');
-      }
+      const prompt = buildWireframePrompt(card, designPrompt.designStyle || 'modern', designPrompt.deviceType || 'desktop');
+      
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
 
-      const result = await response.json();
+      // Extract HTML and CSS from the response
+      const { htmlCode, cssCode } = extractCodeFromResponse(text);
       
       // Show the generated code in modal
       setSelectedPageCode({
         pageName: card.pageName,
-        htmlCode: result.htmlCode,
-        cssCode: result.cssCode
+        htmlCode,
+        cssCode
       });
       setShowCodeModal(true);
 
@@ -771,7 +859,7 @@ export default function WireframeDesigner() {
     }
   };
 
-  // Generate all wireframes
+  // Generate all wireframes using client-side Gemini AI
   const generateAllWireframes = async () => {
     setIsGenerating(true);
     setError("");
@@ -779,6 +867,10 @@ export default function WireframeDesigner() {
     setGenerationProgress({ current: 0, total: editableContentCards.length, status: "Generating HTML wireframes..." });
 
     try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
       const newDetailedWireframes: DetailedPageContent[] = [];
 
       for (let i = 0; i < editableContentCards.length; i++) {
@@ -789,21 +881,14 @@ export default function WireframeDesigner() {
           status: `Generating ${card.pageName}...` 
         });
 
-        const response = await fetch('/api/generate-wireframe-html', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            pageContent: card,
-            designStyle: designPrompt.designStyle || 'modern',
-            deviceType: designPrompt.deviceType || 'desktop'
-          })
-        });
+        const prompt = buildWireframePrompt(card, designPrompt.designStyle || 'modern', designPrompt.deviceType || 'desktop');
+        
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-        if (!response.ok) {
-          throw new Error(`Failed to generate wireframe for ${card.pageName}`);
-        }
-
-        const result = await response.json();
+        // Extract HTML and CSS from the response
+        const { htmlCode, cssCode } = extractCodeFromResponse(text);
         
         // Convert to DetailedPageContent format
         const detailedPage: DetailedPageContent = {
@@ -811,8 +896,8 @@ export default function WireframeDesigner() {
           pageType: card.pageType,
           purpose: card.purpose,
           stakeholders: card.stakeholders,
-          htmlContent: result.htmlCode,
-          cssStyles: result.cssCode,
+          htmlContent: htmlCode,
+          cssStyles: cssCode,
           contentDetails: {
             headers: card.headers,
             texts: [],
@@ -826,7 +911,7 @@ export default function WireframeDesigner() {
         newDetailedWireframes.push(detailedPage);
         
         // Small delay between generations
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
       setDetailedWireframes(newDetailedWireframes);
