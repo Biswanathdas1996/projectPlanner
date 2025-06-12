@@ -11,6 +11,7 @@ import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
 import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
+import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { Link } from "wouter";
 import {
   Palette,
@@ -138,6 +139,8 @@ export default function WireframeDesigner() {
     htmlCode: string;
     cssCode: string;
   } | null>(null);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
+  const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
 
   // Load saved data
   useEffect(() => {
@@ -178,6 +181,40 @@ export default function WireframeDesigner() {
     }
   };
 
+  // Generate detailed page content
+  const handleGeneratePageContent = async () => {
+    if (!analysisResult) return;
+    
+    setIsGeneratingContent(true);
+    setError("");
+    
+    try {
+      // Get flow data from localStorage
+      const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
+      const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
+      const projectDescription = localStorage.getItem('project_description') || '';
+      
+      // Create content generation agent
+      const contentAgent = createPageContentAgent();
+      
+      // Generate content for each page
+      const contentCards = await contentAgent.generatePageContent({
+        analysisResult,
+        stakeholderFlows,
+        flowTypes,
+        projectDescription
+      });
+      
+      setPageContentCards(contentCards);
+      
+    } catch (err) {
+      console.error("Error generating page content:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate page content");
+    } finally {
+      setIsGeneratingContent(false);
+    }
+  };
+
   // Generate wireframes from analysis
   const generateWireframes = async () => {
     if (!analysisResult) return;
@@ -209,7 +246,7 @@ export default function WireframeDesigner() {
           projectDescription
         );
 
-        newWireframes.push(result);
+        newWireframes.push(...result);
       }
 
       setDetailedWireframes(newWireframes);
@@ -385,6 +422,24 @@ export default function WireframeDesigner() {
                         </div>
                       ))}
                     </div>
+                  </div>
+                  
+                  {/* Generate Content Button */}
+                  <div className="mt-6 flex justify-center">
+                    <Button 
+                      onClick={handleGeneratePageContent}
+                      disabled={isGeneratingContent}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {isGeneratingContent ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Generating Content...
+                        </>
+                      ) : (
+                        'Generate content of all pages'
+                      )}
+                    </Button>
                   </div>
                 </div>
               )}
