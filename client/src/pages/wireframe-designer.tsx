@@ -467,13 +467,118 @@ export default function WireframeDesigner() {
         dataFlowMap: []
       });
       
-      setCurrentStep("input");
+      setCurrentStep("content-review");
       setGenerationProgress({ current: 0, total: 0, status: "" });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to analyze stakeholder flows");
       setCurrentStep("input");
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Generate individual wireframe using Gemini AI
+  const generateIndividualWireframe = async (card: PageContentCard, index: number) => {
+    setCurrentGeneratingIndex(index);
+    setError("");
+
+    try {
+      const response = await fetch('/api/generate-wireframe-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          pageContent: card,
+          designStyle: designPrompt.designStyle || 'modern',
+          deviceType: designPrompt.deviceType || 'desktop'
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate wireframe HTML');
+      }
+
+      const result = await response.json();
+      
+      // Show the generated code in modal
+      setSelectedPageCode({
+        pageName: card.pageName,
+        htmlCode: result.htmlCode,
+        cssCode: result.cssCode
+      });
+      setShowCodeModal(true);
+
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate wireframe");
+    } finally {
+      setCurrentGeneratingIndex(-1);
+    }
+  };
+
+  // Generate all wireframes
+  const generateAllWireframes = async () => {
+    setIsGenerating(true);
+    setError("");
+    setCurrentStep("generating");
+    setGenerationProgress({ current: 0, total: editableContentCards.length, status: "Generating HTML wireframes..." });
+
+    try {
+      const newDetailedWireframes: DetailedPageContent[] = [];
+
+      for (let i = 0; i < editableContentCards.length; i++) {
+        const card = editableContentCards[i];
+        setGenerationProgress({ 
+          current: i + 1, 
+          total: editableContentCards.length, 
+          status: `Generating ${card.pageName}...` 
+        });
+
+        const response = await fetch('/api/generate-wireframe-html', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pageContent: card,
+            designStyle: designPrompt.designStyle || 'modern',
+            deviceType: designPrompt.deviceType || 'desktop'
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to generate wireframe for ${card.pageName}`);
+        }
+
+        const result = await response.json();
+        
+        // Convert to DetailedPageContent format
+        const detailedPage: DetailedPageContent = {
+          pageName: card.pageName,
+          pageType: card.pageType,
+          purpose: card.purpose,
+          stakeholders: card.stakeholders,
+          htmlContent: result.htmlCode,
+          cssStyles: result.cssCode,
+          contentDetails: {
+            headers: card.headers,
+            buttons: card.buttons,
+            forms: card.forms,
+            lists: card.lists,
+            navigation: card.navigation
+          }
+        };
+
+        newDetailedWireframes.push(detailedPage);
+        
+        // Small delay between generations
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      setDetailedWireframes(newDetailedWireframes);
+      localStorage.setItem('detailed_wireframe_designs', JSON.stringify(newDetailedWireframes));
+      setCurrentStep("results");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate wireframes");
+      setCurrentStep("content-review");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -1314,6 +1419,234 @@ export default function WireframeDesigner() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Content Review Section */}
+        {currentStep === "content-review" && editableContentCards.length > 0 && (
+          <div className="space-y-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Edit Page Content</h2>
+              <p className="text-gray-600">
+                Review the generated content for each page. Edit any elements as needed before generating wireframes.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {editableContentCards.map((card, index) => (
+                <Card key={card.id} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{card.pageName}</CardTitle>
+                      <Badge variant="outline" className="text-xs">
+                        {card.pageType}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">{card.purpose}</p>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {/* Headers Section */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-800 mb-2">Headers</h4>
+                      <div className="space-y-2">
+                        {card.headers.map((header, hIndex) => (
+                          <input
+                            key={hIndex}
+                            type="text"
+                            value={header}
+                            onChange={(e) => {
+                              const newCards = [...editableContentCards];
+                              newCards[index].headers[hIndex] = e.target.value;
+                              newCards[index].isEdited = true;
+                              setEditableContentCards(newCards);
+                            }}
+                            className="w-full px-3 py-1 text-sm border rounded"
+                          />
+                        ))}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newCards = [...editableContentCards];
+                            newCards[index].headers.push('New Header');
+                            newCards[index].isEdited = true;
+                            setEditableContentCards(newCards);
+                          }}
+                          className="text-xs"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Header
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Buttons Section */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-800 mb-2">Buttons</h4>
+                      <div className="space-y-2">
+                        {card.buttons.map((button, bIndex) => (
+                          <div key={bIndex} className="flex gap-2">
+                            <input
+                              type="text"
+                              value={button.label}
+                              onChange={(e) => {
+                                const newCards = [...editableContentCards];
+                                newCards[index].buttons[bIndex].label = e.target.value;
+                                newCards[index].isEdited = true;
+                                setEditableContentCards(newCards);
+                              }}
+                              className="flex-1 px-2 py-1 text-xs border rounded"
+                              placeholder="Button label"
+                            />
+                            <select
+                              value={button.style}
+                              onChange={(e) => {
+                                const newCards = [...editableContentCards];
+                                newCards[index].buttons[bIndex].style = e.target.value;
+                                newCards[index].isEdited = true;
+                                setEditableContentCards(newCards);
+                              }}
+                              className="px-2 py-1 text-xs border rounded"
+                            >
+                              <option value="primary">Primary</option>
+                              <option value="secondary">Secondary</option>
+                              <option value="outline">Outline</option>
+                              <option value="link">Link</option>
+                            </select>
+                          </div>
+                        ))}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newCards = [...editableContentCards];
+                            newCards[index].buttons.push({ label: 'New Button', action: 'click', style: 'primary' });
+                            newCards[index].isEdited = true;
+                            setEditableContentCards(newCards);
+                          }}
+                          className="text-xs"
+                        >
+                          <Plus className="h-3 w-3 mr-1" />
+                          Add Button
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Forms Section */}
+                    {card.forms.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-800 mb-2">Forms</h4>
+                        <div className="space-y-3">
+                          {card.forms.map((form, fIndex) => (
+                            <div key={fIndex} className="border rounded p-3 bg-gray-50">
+                              <input
+                                type="text"
+                                value={form.title}
+                                onChange={(e) => {
+                                  const newCards = [...editableContentCards];
+                                  newCards[index].forms[fIndex].title = e.target.value;
+                                  newCards[index].isEdited = true;
+                                  setEditableContentCards(newCards);
+                                }}
+                                className="w-full px-2 py-1 text-sm font-medium border rounded mb-2"
+                                placeholder="Form title"
+                              />
+                              <div className="space-y-1">
+                                {form.fields.map((field, fieldIndex) => (
+                                  <input
+                                    key={fieldIndex}
+                                    type="text"
+                                    value={field}
+                                    onChange={(e) => {
+                                      const newCards = [...editableContentCards];
+                                      newCards[index].forms[fIndex].fields[fieldIndex] = e.target.value;
+                                      newCards[index].isEdited = true;
+                                      setEditableContentCards(newCards);
+                                    }}
+                                    className="w-full px-2 py-1 text-xs border rounded"
+                                    placeholder="Field name"
+                                  />
+                                ))}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].forms[fIndex].fields.push('New Field');
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="text-xs"
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Add Field
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Stakeholders */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-800 mb-1">Target Users</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {card.stakeholders.map((stakeholder, sIndex) => (
+                          <Badge key={sIndex} variant="secondary" className="text-xs">
+                            {stakeholder}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Generate Individual Wireframe */}
+                    <div className="pt-3 border-t">
+                      <Button
+                        onClick={() => generateIndividualWireframe(card, index)}
+                        disabled={currentGeneratingIndex === index}
+                        className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                        size="sm"
+                      >
+                        {currentGeneratingIndex === index ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Code className="h-3 w-3 mr-2" />
+                            Generate HTML Wireframe
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Generate All Button */}
+            <div className="text-center">
+              <Button
+                onClick={() => generateAllWireframes()}
+                disabled={isGenerating}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Generating All Wireframes...
+                  </>
+                ) : (
+                  <>
+                    <Grid className="h-4 w-4 mr-2" />
+                    Generate All HTML Wireframes
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
         )}
 
         {/* Detailed HTML Wireframes Results */}
