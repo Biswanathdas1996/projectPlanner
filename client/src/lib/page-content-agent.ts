@@ -149,7 +149,7 @@ Generate realistic, relevant content that matches the page purpose and stakehold
 `;
   }
 
-  private parseContentResponse(response: string, pageReq: any): Omit<PageContentCard, 'id' | 'isEdited'> {
+  parseContentResponse(response: string, pageReq: any): Omit<PageContentCard, 'id' | 'isEdited'> {
     try {
       // Extract JSON from response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
