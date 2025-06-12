@@ -33,12 +33,7 @@ export class WireframeAnalysisAgent {
   private model: any;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Gemini API key not found. Please set VITE_GEMINI_API_KEY environment variable.');
-    }
-    
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
     this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   }
 
