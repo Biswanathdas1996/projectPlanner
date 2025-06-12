@@ -50,6 +50,7 @@ import {
   Menu,
   Plus,
   Trash2,
+  Edit2,
   Edit3,
   Save,
   RefreshCw,
@@ -927,13 +928,152 @@ export default function WireframeDesigner() {
                     <p className="text-sm text-blue-700 mb-2">
                       <strong>Page Types Identified:</strong>
                     </p>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                       {analysisResult.pageRequirements.map((page, idx) => (
-                        <div key={idx} className="bg-white p-2 rounded border">
-                          <p className="font-medium text-xs">{page.pageName}</p>
-                          <p className="text-xs text-gray-600">{page.pageType}</p>
+                        <div key={idx} className="bg-white p-3 rounded border border-gray-200 hover:border-blue-300 transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-gray-900 truncate">{page.pageName}</p>
+                              <p className="text-xs text-gray-600 mt-1">{page.pageType}</p>
+                              {page.purpose && (
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{page.purpose}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-1 ml-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-blue-100"
+                                onClick={() => {
+                                  // Toggle edit mode for this page
+                                  const updatedResult = { ...analysisResult };
+                                  updatedResult.pageRequirements[idx] = {
+                                    ...page,
+                                    isEditing: !page.isEditing
+                                  };
+                                  setAnalysisResult(updatedResult);
+                                }}
+                              >
+                                <Edit2 className="h-3 w-3 text-blue-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-red-100"
+                                onClick={() => {
+                                  // Remove this page from analysis results
+                                  const updatedResult = { ...analysisResult };
+                                  updatedResult.pageRequirements = updatedResult.pageRequirements.filter((_, i) => i !== idx);
+                                  updatedResult.totalPages = updatedResult.pageRequirements.length;
+                                  setAnalysisResult(updatedResult);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3 text-red-600" />
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          {page.isEditing && (
+                            <div className="mt-3 space-y-2 border-t pt-2">
+                              <div>
+                                <Label className="text-xs font-medium text-gray-700">Page Name</Label>
+                                <Input
+                                  value={page.pageName}
+                                  onChange={(e) => {
+                                    const updatedResult = { ...analysisResult };
+                                    updatedResult.pageRequirements[idx].pageName = e.target.value;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                  className="text-xs h-7 mt-1"
+                                  placeholder="Enter page name"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs font-medium text-gray-700">Page Type</Label>
+                                <Input
+                                  value={page.pageType}
+                                  onChange={(e) => {
+                                    const updatedResult = { ...analysisResult };
+                                    updatedResult.pageRequirements[idx].pageType = e.target.value;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                  className="text-xs h-7 mt-1"
+                                  placeholder="Enter page type"
+                                />
+                              </div>
+                              {page.purpose !== undefined && (
+                                <div>
+                                  <Label className="text-xs font-medium text-gray-700">Purpose</Label>
+                                  <Textarea
+                                    value={page.purpose || ''}
+                                    onChange={(e) => {
+                                      const updatedResult = { ...analysisResult };
+                                      updatedResult.pageRequirements[idx].purpose = e.target.value;
+                                      setAnalysisResult(updatedResult);
+                                    }}
+                                    className="text-xs min-h-[60px] mt-1"
+                                    placeholder="Enter page purpose"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex gap-2 pt-1">
+                                <Button
+                                  size="sm"
+                                  className="h-6 text-xs px-2 bg-green-600 hover:bg-green-700"
+                                  onClick={() => {
+                                    const updatedResult = { ...analysisResult };
+                                    updatedResult.pageRequirements[idx].isEditing = false;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => {
+                                    const updatedResult = { ...analysisResult };
+                                    updatedResult.pageRequirements[idx].isEditing = false;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       ))}
+                    </div>
+                    
+                    {/* Add New Page Button */}
+                    <div className="mt-3 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+                        onClick={() => {
+                          const updatedResult = { ...analysisResult };
+                          const newPage: PageRequirement = {
+                            pageName: "New Page",
+                            pageType: "Custom",
+                            purpose: "Enter page purpose",
+                            stakeholders: [],
+                            contentElements: [],
+                            userInteractions: [],
+                            dataRequirements: [],
+                            priority: "medium" as const,
+                            isEditing: true
+                          };
+                          updatedResult.pageRequirements.push(newPage);
+                          updatedResult.totalPages = updatedResult.pageRequirements.length;
+                          setAnalysisResult(updatedResult);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add New Page
+                      </Button>
                     </div>
                   </div>
                   
@@ -1592,23 +1732,7 @@ export default function WireframeDesigner() {
                 </div>
               </div>
 
-              {/* Generate Wireframes Button */}
-              <div className="flex justify-center">
-                <Button 
-                  onClick={handleGenerateWireframes}
-                  disabled={isGeneratingWireframes}
-                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-2"
-                >
-                  {isGeneratingWireframes ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Generating Wireframes...
-                    </>
-                  ) : (
-                    'Generate wireframe of each pages'
-                  )}
-                </Button>
-              </div>
+              
             </div>
           </div>
         )}
