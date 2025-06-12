@@ -129,11 +129,44 @@ export default function WireframeDesigner() {
   const [currentStep, setCurrentStep] = useState<"input" | "generating" | "results">("input");
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0, status: "" });
 
-  // Load saved data
+  // Load saved data and stakeholder flows
   useEffect(() => {
     const savedWireframes = localStorage.getItem('wireframe_designs');
     if (savedWireframes) {
       setWireframes(JSON.parse(savedWireframes));
+    }
+
+    // Load stakeholder flow data to populate screen types
+    const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
+    const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
+    const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan');
+    
+    if (stakeholderFlowData && personaFlowTypes) {
+      const flowData = JSON.parse(stakeholderFlowData);
+      const flowTypes = JSON.parse(personaFlowTypes);
+      
+      // Extract screen types from stakeholder flows
+      const availableScreenTypes: string[] = [];
+      Object.entries(flowTypes).forEach(([stakeholder, flows]: [string, any]) => {
+        if (Array.isArray(flows)) {
+          flows.forEach(flow => {
+            if (!availableScreenTypes.includes(flow)) {
+              availableScreenTypes.push(flow);
+            }
+          });
+        }
+      });
+
+      // Auto-populate design prompt with stakeholder data
+      setDesignPrompt(prev => ({
+        ...prev,
+        screenTypes: availableScreenTypes.slice(0, 8), // Limit to 8 screens initially
+      }));
+
+      // Auto-populate project input if available
+      if (projectDescription) {
+        setProjectInput(projectDescription);
+      }
     }
   }, []);
 
@@ -180,31 +213,69 @@ export default function WireframeDesigner() {
   ];
 
   const generateWireframes = async () => {
-    if (!projectInput.trim() || !designPrompt.projectType || designPrompt.screenTypes.length === 0) {
-      setError("Please fill in all required fields");
+    // Get stakeholder flow data from local storage
+    const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
+    const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
+    const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan');
+    
+    // Use stakeholder data if available, otherwise require manual input
+    let screenTypesToGenerate = designPrompt.screenTypes;
+    let projectContext = projectInput;
+    
+    if (stakeholderFlowData && personaFlowTypes) {
+      const flowTypes = JSON.parse(personaFlowTypes);
+      
+      // Extract all unique screen types from stakeholder flows
+      const extractedScreenTypes: string[] = [];
+      Object.entries(flowTypes).forEach(([stakeholder, flows]: [string, any]) => {
+        if (Array.isArray(flows)) {
+          flows.forEach(flow => {
+            if (!extractedScreenTypes.includes(flow)) {
+              extractedScreenTypes.push(flow);
+            }
+          });
+        }
+      });
+
+      if (extractedScreenTypes.length > 0) {
+        screenTypesToGenerate = extractedScreenTypes;
+      }
+
+      // Use project description from stakeholder analysis
+      if (projectDescription) {
+        projectContext = projectDescription;
+      }
+    } else if (!projectInput.trim() || !designPrompt.projectType || designPrompt.screenTypes.length === 0) {
+      setError("Please complete the Stakeholder Flow Analysis first, or manually fill in all required fields");
       return;
     }
 
     setIsGenerating(true);
     setError("");
     setCurrentStep("generating");
-    setGenerationProgress({ current: 0, total: designPrompt.screenTypes.length, status: "Initializing..." });
+    setGenerationProgress({ current: 0, total: screenTypesToGenerate.length, status: "Analyzing stakeholder flows..." });
 
     try {
       const newWireframes: WireframeData[] = [];
 
-      for (let i = 0; i < designPrompt.screenTypes.length; i++) {
-        const screenType = designPrompt.screenTypes[i];
+      for (let i = 0; i < screenTypesToGenerate.length; i++) {
+        const screenType = screenTypesToGenerate[i];
         setGenerationProgress({ 
           current: i + 1, 
-          total: designPrompt.screenTypes.length, 
+          total: screenTypesToGenerate.length, 
           status: `Generating ${screenType} wireframe...` 
         });
 
         // Simulate AI generation with realistic delay
-        await new Promise(resolve => setTimeout(resolve, 2000 + Math.random() * 3000));
+        await new Promise(resolve => setTimeout(resolve, 1500 + Math.random() * 2000));
 
         const wireframe = generateWireframeData(screenType, i);
+        
+        // Update wireframe description with project context
+        if (projectContext) {
+          wireframe.description = `${screenType} interface for: ${projectContext.substring(0, 100)}${projectContext.length > 100 ? '...' : ''}`;
+        }
+        
         newWireframes.push(wireframe);
       }
 
@@ -241,6 +312,25 @@ export default function WireframeDesigner() {
     const isDesktop = deviceType === 'desktop';
     const isMobile = deviceType === 'mobile';
 
+    // Get stakeholder flow details for this screen type
+    const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
+    let flowDetails: any = null;
+    
+    if (stakeholderFlowData) {
+      try {
+        const flowData = JSON.parse(stakeholderFlowData);
+        // Find flow details for this screen type
+        Object.values(flowData).forEach((details: any) => {
+          if (details && details.processDescription && 
+              details.processDescription.toLowerCase().includes(screenType.toLowerCase())) {
+            flowDetails = details;
+          }
+        });
+      } catch (error) {
+        console.warn('Error parsing stakeholder flow data:', error);
+      }
+    }
+
     // Common header/navigation
     if (isDesktop) {
       baseComponents.push({
@@ -262,9 +352,92 @@ export default function WireframeDesigner() {
       });
     }
 
-    // Screen-specific components
-    switch (screenType.toLowerCase()) {
-      case 'dashboard':
+    // Generate components based on flow details
+    if (flowDetails && typeof flowDetails === 'object') {
+      let yPosition = isDesktop ? 15 : 20;
+      
+      // Add trigger component if available
+      if (flowDetails.trigger && typeof flowDetails.trigger === 'string') {
+        baseComponents.push({
+          id: 'trigger-section',
+          type: 'trigger',
+          label: 'Trigger Section',
+          position: { x: 5, y: yPosition },
+          size: { width: 90, height: 15 },
+          content: flowDetails.trigger
+        });
+        yPosition += 20;
+      }
+
+      // Add activities as interactive elements
+      if (flowDetails.activities && Array.isArray(flowDetails.activities)) {
+        const activitiesPerRow = isMobile ? 1 : isDesktop ? 3 : 2;
+        const componentWidth = isMobile ? 90 : isDesktop ? 28 : 42;
+        
+        flowDetails.activities.slice(0, 6).forEach((activity: string, index: number) => {
+          const row = Math.floor(index / activitiesPerRow);
+          const col = index % activitiesPerRow;
+          const xPos = 5 + (col * (componentWidth + 5));
+          const yPos = yPosition + (row * 25);
+          
+          baseComponents.push({
+            id: `activity-${index}`,
+            type: 'activity-card',
+            label: `Activity ${index + 1}`,
+            position: { x: xPos, y: yPos },
+            size: { width: componentWidth, height: 20 },
+            content: activity && typeof activity === 'string' && activity.length > 30 ? activity.substring(0, 30) + '...' : activity
+          });
+        });
+        yPosition += Math.ceil(flowDetails.activities.length / activitiesPerRow) * 25 + 10;
+      }
+
+      // Add decision points as interactive elements
+      if (flowDetails.decisionPoints && Array.isArray(flowDetails.decisionPoints)) {
+        flowDetails.decisionPoints.slice(0, 3).forEach((decision: string, index: number) => {
+          baseComponents.push({
+            id: `decision-${index}`,
+            type: 'decision-point',
+            label: `Decision ${index + 1}`,
+            position: { x: 5 + (index * 30), y: yPosition },
+            size: { width: 25, height: 15 },
+            content: decision && typeof decision === 'string' && decision.length > 20 ? decision.substring(0, 20) + '...' : decision,
+            style: { backgroundColor: '#fef3c7', border: '2px solid #f59e0b' }
+          });
+        });
+        yPosition += 20;
+      }
+
+      // Add participants as user elements
+      if (flowDetails.participants && Array.isArray(flowDetails.participants)) {
+        baseComponents.push({
+          id: 'participants-section',
+          type: 'participants',
+          label: 'Stakeholders',
+          position: { x: 5, y: yPosition },
+          size: { width: 90, height: 12 },
+          content: `Involved: ${flowDetails.participants.slice(0, 3).join(', ')}`
+        });
+        yPosition += 17;
+      }
+
+      // Add end event
+      if (flowDetails.endEvent && typeof flowDetails.endEvent === 'string') {
+        baseComponents.push({
+          id: 'end-section',
+          type: 'end-event',
+          label: 'Completion',
+          position: { x: 5, y: yPosition },
+          size: { width: 90, height: 10 },
+          content: flowDetails.endEvent,
+          style: { backgroundColor: '#dcfce7', border: '1px solid #16a34a' }
+        });
+      }
+    } else {
+      // Fallback to generic components based on screen type name
+      const screenTypeLower = screenType.toLowerCase();
+      
+      if (screenTypeLower.includes('dashboard') || screenTypeLower.includes('analytics')) {
         baseComponents.push(
           {
             id: 'stats-grid',
@@ -272,91 +445,65 @@ export default function WireframeDesigner() {
             label: 'Key Metrics',
             position: { x: 5, y: isDesktop ? 15 : 20 },
             size: { width: 90, height: 25 },
-            content: 'Statistics Cards'
+            content: 'Statistics and KPIs'
           },
           {
             id: 'chart-area',
             type: 'chart',
-            label: 'Analytics Chart',
+            label: 'Data Visualization',
             position: { x: 5, y: isDesktop ? 45 : 50 },
             size: { width: isMobile ? 90 : 60, height: 30 },
-            content: 'Chart Visualization'
+            content: 'Charts and Graphs'
           }
         );
-        if (!isMobile) {
-          baseComponents.push({
-            id: 'sidebar-widget',
-            type: 'widget',
-            label: 'Recent Activity',
-            position: { x: 70, y: 45 },
-            size: { width: 25, height: 30 },
-            content: 'Activity Feed'
-          });
-        }
-        break;
-
-      case 'product list':
-        baseComponents.push({
-          id: 'product-grid',
-          type: 'product-grid',
-          label: 'Product Grid',
-          position: { x: 5, y: isDesktop ? 20 : 25 },
-          size: { width: 90, height: 65 },
-          content: 'Product Cards Grid'
-        });
-        if (isDesktop) {
-          baseComponents.push({
-            id: 'filters-sidebar',
-            type: 'filters',
-            label: 'Filters',
-            position: { x: 5, y: 20 },
-            size: { width: 20, height: 65 },
-            content: 'Filter Options'
-          });
-        }
-        break;
-
-      case 'login':
-        baseComponents.push({
-          id: 'login-form',
-          type: 'form',
-          label: 'Login Form',
-          position: { x: isMobile ? 10 : 30, y: 25 },
-          size: { width: isMobile ? 80 : 40, height: 40 },
-          content: 'Email, Password, Login Button'
-        });
-        break;
-
-      case 'profile':
+      } else if (screenTypeLower.includes('approval') || screenTypeLower.includes('review')) {
         baseComponents.push(
           {
-            id: 'profile-header',
-            type: 'profile-header',
-            label: 'Profile Info',
+            id: 'approval-form',
+            type: 'form',
+            label: 'Approval Form',
             position: { x: 5, y: isDesktop ? 15 : 20 },
-            size: { width: 90, height: 20 },
-            content: 'Avatar, Name, Stats'
+            size: { width: 90, height: 40 },
+            content: 'Approval workflow interface'
           },
           {
-            id: 'profile-content',
-            type: 'content-area',
-            label: 'Profile Content',
-            position: { x: 5, y: isDesktop ? 40 : 45 },
-            size: { width: 90, height: 45 },
-            content: 'Tabs, Posts, Activity'
+            id: 'action-buttons',
+            type: 'actions',
+            label: 'Action Buttons',
+            position: { x: 5, y: isDesktop ? 60 : 65 },
+            size: { width: 90, height: 15 },
+            content: 'Approve, Reject, Request Changes'
           }
         );
-        break;
-
-      default:
+      } else if (screenTypeLower.includes('management') || screenTypeLower.includes('admin')) {
+        baseComponents.push(
+          {
+            id: 'management-grid',
+            type: 'data-grid',
+            label: 'Management Grid',
+            position: { x: 5, y: isDesktop ? 15 : 20 },
+            size: { width: 90, height: 50 },
+            content: 'Data management interface'
+          },
+          {
+            id: 'management-controls',
+            type: 'controls',
+            label: 'Management Controls',
+            position: { x: 5, y: isDesktop ? 70 : 75 },
+            size: { width: 90, height: 15 },
+            content: 'Add, Edit, Delete, Export'
+          }
+        );
+      } else {
         baseComponents.push({
           id: 'main-content',
           type: 'content-area',
           label: 'Main Content',
           position: { x: 5, y: isDesktop ? 15 : 20 },
           size: { width: 90, height: 70 },
-          content: `${screenType} Content Area`
+          content: `${screenType} Interface`
         });
+      }
     }
 
     return baseComponents;
