@@ -113,6 +113,206 @@ interface DesignPrompt {
   screenTypes: string[];
 }
 
+interface PageContentCard {
+  id: string;
+  pageName: string;
+  pageType: string;
+  purpose: string;
+  stakeholders: string[];
+  headers: string[];
+  buttons: { label: string; action: string; style: string }[];
+  forms: { title: string; fields: string[]; submitAction: string }[];
+  lists: { title: string; items: string[]; type: string }[];
+  navigation: string[];
+  additionalContent: string[];
+  isEdited: boolean;
+}
+
+// Generate content cards from stakeholder flows
+const generateContentCardsFromFlows = async (stakeholderData: any, flowTypes: any, projectDescription: string): Promise<PageContentCard[]> => {
+  const cards: PageContentCard[] = [];
+  
+  // Extract page types from flow data
+  const pageTypes = flowTypes?.map((flow: any) => ({
+    name: flow.name || flow.pageName,
+    type: flow.type || flow.pageType || 'dashboard',
+    stakeholders: flow.stakeholders || [],
+    description: flow.description || flow.purpose
+  })) || [];
+
+  for (let i = 0; i < pageTypes.length; i++) {
+    const pageType = pageTypes[i];
+    
+    // Generate content based on page type and stakeholder needs
+    const headers = generateHeadersForPageType(pageType.type, pageType.name);
+    const buttons = generateButtonsForPageType(pageType.type, pageType.stakeholders);
+    const forms = generateFormsForPageType(pageType.type);
+    const lists = generateListsForPageType(pageType.type, pageType.stakeholders);
+    const navigation = generateNavigationForPageType(pageType.type);
+    
+    cards.push({
+      id: `card_${Date.now()}_${i}`,
+      pageName: pageType.name,
+      pageType: pageType.type,
+      purpose: pageType.description || `${pageType.type} interface for managing business processes`,
+      stakeholders: pageType.stakeholders,
+      headers,
+      buttons,
+      forms,
+      lists,
+      navigation,
+      additionalContent: [],
+      isEdited: false
+    });
+  }
+
+  return cards;
+};
+
+// Helper functions for content generation
+const generateHeadersForPageType = (pageType: string, pageName: string): string[] => {
+  const headers = [pageName];
+  
+  switch (pageType.toLowerCase()) {
+    case 'dashboard':
+      headers.push('Overview', 'Recent Activity', 'Key Metrics');
+      break;
+    case 'login':
+      headers.push('Welcome Back', 'Sign In to Your Account');
+      break;
+    case 'profile':
+      headers.push('My Profile', 'Account Settings', 'Personal Information');
+      break;
+    case 'admin':
+      headers.push('Admin Panel', 'System Management', 'User Management');
+      break;
+    case 'reports':
+      headers.push('Reports & Analytics', 'Performance Metrics', 'Data Insights');
+      break;
+    default:
+      headers.push('Welcome', 'Main Content', 'Actions');
+  }
+  
+  return headers;
+};
+
+const generateButtonsForPageType = (pageType: string, stakeholders: string[]): { label: string; action: string; style: string }[] => {
+  const buttons = [];
+  
+  switch (pageType.toLowerCase()) {
+    case 'dashboard':
+      buttons.push(
+        { label: 'View Reports', action: 'navigate', style: 'primary' },
+        { label: 'Create New', action: 'modal', style: 'secondary' },
+        { label: 'Export Data', action: 'download', style: 'outline' }
+      );
+      break;
+    case 'login':
+      buttons.push(
+        { label: 'Sign In', action: 'submit', style: 'primary' },
+        { label: 'Forgot Password?', action: 'link', style: 'link' },
+        { label: 'Create Account', action: 'navigate', style: 'outline' }
+      );
+      break;
+    case 'profile':
+      buttons.push(
+        { label: 'Save Changes', action: 'submit', style: 'primary' },
+        { label: 'Cancel', action: 'reset', style: 'outline' },
+        { label: 'Change Password', action: 'modal', style: 'secondary' }
+      );
+      break;
+    default:
+      buttons.push(
+        { label: 'Save', action: 'submit', style: 'primary' },
+        { label: 'Cancel', action: 'reset', style: 'outline' }
+      );
+  }
+  
+  return buttons;
+};
+
+const generateFormsForPageType = (pageType: string): { title: string; fields: string[]; submitAction: string }[] => {
+  const forms = [];
+  
+  switch (pageType.toLowerCase()) {
+    case 'login':
+      forms.push({
+        title: 'Login Form',
+        fields: ['Email Address', 'Password', 'Remember Me'],
+        submitAction: 'authenticate'
+      });
+      break;
+    case 'profile':
+      forms.push({
+        title: 'Profile Information',
+        fields: ['First Name', 'Last Name', 'Email', 'Phone Number', 'Department'],
+        submitAction: 'updateProfile'
+      });
+      break;
+    case 'admin':
+      forms.push({
+        title: 'User Management',
+        fields: ['Username', 'Role', 'Permissions', 'Status'],
+        submitAction: 'manageUser'
+      });
+      break;
+    default:
+      if (pageType !== 'dashboard' && pageType !== 'reports') {
+        forms.push({
+          title: 'Data Entry Form',
+          fields: ['Title', 'Description', 'Category', 'Status'],
+          submitAction: 'saveData'
+        });
+      }
+  }
+  
+  return forms;
+};
+
+const generateListsForPageType = (pageType: string, stakeholders: string[]): { title: string; items: string[]; type: string }[] => {
+  const lists = [];
+  
+  switch (pageType.toLowerCase()) {
+    case 'dashboard':
+      lists.push(
+        { title: 'Recent Activities', items: ['Process Completed', 'New User Registered', 'Report Generated'], type: 'activity' },
+        { title: 'Quick Actions', items: ['Create Process', 'View Analytics', 'Manage Users'], type: 'actions' }
+      );
+      break;
+    case 'reports':
+      lists.push(
+        { title: 'Available Reports', items: ['Monthly Summary', 'User Activity', 'Performance Metrics'], type: 'data' }
+      );
+      break;
+    case 'admin':
+      lists.push(
+        { title: 'System Users', items: ['Active Users', 'Pending Approvals', 'Recently Added'], type: 'users' }
+      );
+      break;
+    default:
+      lists.push(
+        { title: 'Items', items: ['Item 1', 'Item 2', 'Item 3'], type: 'general' }
+      );
+  }
+  
+  return lists;
+};
+
+const generateNavigationForPageType = (pageType: string): string[] => {
+  const baseNav = ['Home', 'Dashboard'];
+  
+  switch (pageType.toLowerCase()) {
+    case 'dashboard':
+      return [...baseNav, 'Reports', 'Settings', 'Profile'];
+    case 'admin':
+      return [...baseNav, 'Users', 'System', 'Logs', 'Settings'];
+    case 'reports':
+      return [...baseNav, 'Analytics', 'Export', 'Schedule'];
+    default:
+      return [...baseNav, 'Profile', 'Settings'];
+  }
+};
+
 export default function WireframeDesigner() {
   const [projectInput, setProjectInput] = useState("");
   const [designPrompt, setDesignPrompt] = useState<DesignPrompt>({
@@ -128,11 +328,19 @@ export default function WireframeDesigner() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedWireframe, setSelectedWireframe] = useState<WireframeData | null>(null);
   const [error, setError] = useState("");
-  const [currentStep, setCurrentStep] = useState<"input" | "analyzing" | "generating" | "results">("input");
+  const [currentStep, setCurrentStep] = useState<"input" | "analyzing" | "content-review" | "generating" | "results">("input");
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0, status: "" });
   const [analysisResult, setAnalysisResult] = useState<WireframeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detailedWireframes, setDetailedWireframes] = useState<DetailedPageContent[]>([]);
+  const [editableContentCards, setEditableContentCards] = useState<PageContentCard[]>([]);
+  const [currentGeneratingIndex, setCurrentGeneratingIndex] = useState(-1);
+  const [showCodeModal, setShowCodeModal] = useState(false);
+  const [selectedPageCode, setSelectedPageCode] = useState<{
+    pageName: string;
+    htmlCode: string;
+    cssCode: string;
+  } | null>(null);
 
   // Load saved data and stakeholder flows
   useEffect(() => {
@@ -237,19 +445,18 @@ export default function WireframeDesigner() {
       const flowTypes = JSON.parse(personaFlowTypes);
       const stakeholderData = stakeholderFlowData ? JSON.parse(stakeholderFlowData) : {};
       
-      // Generate detailed HTML wireframes
-      const htmlGenerator = createHTMLWireframeGenerator();
-      const detailedPages = await htmlGenerator.generateDetailedWireframes(stakeholderData, flowTypes, projectDescription);
+      // Generate content cards for editing
+      const contentCards = await generateContentCardsFromFlows(stakeholderData, flowTypes, projectDescription);
       
-      setDetailedWireframes(detailedPages);
+      setEditableContentCards(contentCards);
       setAnalysisResult({
         projectContext: projectDescription || 'Business Process Management System',
-        totalPages: detailedPages.length,
-        pageRequirements: detailedPages.map(page => ({
-          pageName: page.pageName,
-          pageType: page.pageType,
-          purpose: page.purpose,
-          stakeholders: page.stakeholders,
+        totalPages: contentCards.length,
+        pageRequirements: contentCards.map(card => ({
+          pageName: card.pageName,
+          pageType: card.pageType,
+          purpose: card.purpose,
+          stakeholders: card.stakeholders,
           contentElements: [],
           userInteractions: [],
           dataRequirements: [],
