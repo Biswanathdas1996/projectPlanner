@@ -156,6 +156,8 @@ export default function WireframeDesigner() {
     const savedWireframes = localStorage.getItem('wireframe_designs');
     const savedPageContent = localStorage.getItem('page_content_cards');
     const savedGeneratedWireframes = localStorage.getItem('generated_wireframes');
+    const savedAnalysisResult = localStorage.getItem('analysis_result');
+    
     if (savedWireframes) {
       setWireframes(JSON.parse(savedWireframes));
     }
@@ -164,6 +166,9 @@ export default function WireframeDesigner() {
     }
     if (savedGeneratedWireframes) {
       setGeneratedWireframes(JSON.parse(savedGeneratedWireframes));
+    }
+    if (savedAnalysisResult) {
+      setAnalysisResult(JSON.parse(savedAnalysisResult));
     }
   }, []);
 
@@ -187,6 +192,13 @@ export default function WireframeDesigner() {
       localStorage.setItem('generated_wireframes', JSON.stringify(generatedWireframes));
     }
   }, [generatedWireframes]);
+
+  // Save analysis results to localStorage
+  useEffect(() => {
+    if (analysisResult) {
+      localStorage.setItem('analysis_result', JSON.stringify(analysisResult));
+    }
+  }, [analysisResult]);
 
   // Analyze stakeholder flows using AI
   const analyzeStakeholderFlows = async () => {
