@@ -164,15 +164,15 @@ Generate realistic, relevant content that matches the page purpose and stakehold
         pageType: parsed.pageType || pageReq.pageType,
         purpose: parsed.purpose || pageReq.purpose,
         stakeholders: parsed.stakeholders || pageReq.stakeholders || [],
-        headers: Array.isArray(parsed.headers) ? parsed.headers : this.generateFallbackHeaders(pageReq),
-        textContent: Array.isArray(parsed.textContent) ? parsed.textContent : this.generateFallbackTextContent(pageReq),
+        headers: Array.isArray(parsed.headers) ? this.sanitizeStringArray(parsed.headers) : this.generateFallbackHeaders(pageReq),
+        textContent: Array.isArray(parsed.textContent) ? this.sanitizeStringArray(parsed.textContent) : this.generateFallbackTextContent(pageReq),
         buttons: Array.isArray(parsed.buttons) ? this.validateButtons(parsed.buttons) : this.generateFallbackButtons(pageReq),
         forms: Array.isArray(parsed.forms) ? this.validateForms(parsed.forms) : this.generateFallbackForms(pageReq),
         inputs: Array.isArray(parsed.inputs) ? this.validateInputs(parsed.inputs) : this.generateFallbackInputs(pageReq),
         lists: Array.isArray(parsed.lists) ? this.validateLists(parsed.lists) : this.generateFallbackLists(pageReq),
         images: Array.isArray(parsed.images) ? this.validateImages(parsed.images) : this.generateFallbackImages(pageReq),
-        navigation: Array.isArray(parsed.navigation) ? parsed.navigation : this.generateFallbackNavigation(pageReq),
-        additionalContent: Array.isArray(parsed.additionalContent) ? parsed.additionalContent : this.generateFallbackAdditionalContent(pageReq)
+        navigation: Array.isArray(parsed.navigation) ? this.sanitizeStringArray(parsed.navigation) : this.generateFallbackNavigation(pageReq),
+        additionalContent: Array.isArray(parsed.additionalContent) ? this.sanitizeStringArray(parsed.additionalContent) : this.generateFallbackAdditionalContent(pageReq)
       };
       
     } catch (error) {
@@ -362,6 +362,33 @@ Generate realistic, relevant content that matches the page purpose and stakehold
       description: String(image.description || image.caption || "Image description"),
       position: String(image.position || image.location || "center")
     }));
+  }
+
+  private sanitizeStringArray(array: any[]): string[] {
+    return array.map(item => {
+      if (typeof item === 'string') {
+        return item;
+      } else if (typeof item === 'object' && item !== null) {
+        // Handle objects with label/url or similar structures
+        if (item.label && item.url) {
+          return `${item.label} (${item.url})`;
+        } else if (item.text) {
+          return String(item.text);
+        } else if (item.label) {
+          return String(item.label);
+        } else if (item.name) {
+          return String(item.name);
+        } else if (item.title) {
+          return String(item.title);
+        } else {
+          // Convert object to JSON string as fallback
+          return JSON.stringify(item);
+        }
+      } else {
+        // Convert any other type to string
+        return String(item);
+      }
+    });
   }
 }
 
