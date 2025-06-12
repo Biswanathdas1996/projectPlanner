@@ -39,30 +39,74 @@ export class WireframeAnalysisAgent {
 
   async analyzeStakeholderFlows(): Promise<WireframeAnalysisResult> {
     try {
+      console.log('Starting stakeholder flow analysis...');
+      
       // Get stakeholder flow data from local storage
       const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
       const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
       const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan') || '';
       const extractedStakeholders = localStorage.getItem('bpmn-extracted-stakeholders');
 
+      console.log('Retrieved data:', {
+        hasStakeholderFlowData: !!stakeholderFlowData,
+        hasPersonaFlowTypes: !!personaFlowTypes,
+        hasProjectDescription: !!projectDescription,
+        hasExtractedStakeholders: !!extractedStakeholders
+      });
+
       if (!stakeholderFlowData || !personaFlowTypes) {
         throw new Error('No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first.');
       }
 
-      const flowData = JSON.parse(stakeholderFlowData);
-      const flowTypes = JSON.parse(personaFlowTypes);
-      const stakeholders = extractedStakeholders ? JSON.parse(extractedStakeholders) : [];
+      let flowData, flowTypes, stakeholders;
+      
+      try {
+        flowData = JSON.parse(stakeholderFlowData);
+        flowTypes = JSON.parse(personaFlowTypes);
+        stakeholders = extractedStakeholders ? JSON.parse(extractedStakeholders) : [];
+        
+        console.log('Parsed data successfully:', {
+          flowDataKeys: Object.keys(flowData || {}),
+          flowTypesKeys: Object.keys(flowTypes || {}),
+          stakeholdersCount: stakeholders.length
+        });
+      } catch (parseError) {
+        console.error('Error parsing stored data:', parseError);
+        throw new Error('Invalid stakeholder flow data format. Please regenerate the stakeholder analysis.');
+      }
+
+      // If no valid data, provide fallback analysis
+      if (!flowData || Object.keys(flowData).length === 0 || !flowTypes || Object.keys(flowTypes).length === 0) {
+        console.log('No valid flow data found, generating fallback analysis');
+        return this.generateFallbackAnalysis(flowData || {}, flowTypes || {});
+      }
 
       const analysisPrompt = this.buildAnalysisPrompt(flowData, flowTypes, projectDescription, stakeholders);
+      console.log('Generated analysis prompt, calling Gemini API...');
       
       const result = await this.model.generateContent(analysisPrompt);
       const response = await result.response;
       const analysisText = response.text();
 
+      console.log('Received Gemini response, parsing results...');
       return this.parseAnalysisResult(analysisText, flowData, flowTypes);
     } catch (error) {
       console.error('Error analyzing stakeholder flows:', error);
-      throw new Error('Failed to analyze stakeholder flows. Please try again.');
+      
+      // Provide more specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('API key')) {
+          throw new Error('API key issue. Please check your Gemini API configuration.');
+        } else if (error.message.includes('quota') || error.message.includes('limit')) {
+          throw new Error('API quota exceeded. Please try again later.');
+        } else if (error.message.includes('network') || error.message.includes('fetch')) {
+          throw new Error('Network error. Please check your internet connection.');
+        } else if (error.message.includes('stakeholder flow data')) {
+          throw error; // Pass through our custom error messages
+        }
+      }
+      
+      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
