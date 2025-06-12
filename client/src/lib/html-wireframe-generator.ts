@@ -483,7 +483,7 @@ export class HTMLWireframeGenerator {
         </div>
         
         <div class="settings-actions">
-          ${content.buttons.map(btn => `<button class="btn-${btn.action.includes('save') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
+          ${content.buttons.map((btn: any) => `<button class="btn-${btn.action.includes('save') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
         </div>
       </main>
     </div>`;
