@@ -1298,7 +1298,7 @@ export default function WireframeDesigner() {
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Headers</h4>
                             <div className="space-y-1">
-                              {card.headers.slice(0, 3).map((header, idx) => (
+                              {card.headers.map((header, idx) => (
                                 <div key={idx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
@@ -1315,16 +1315,13 @@ export default function WireframeDesigner() {
                                   )}
                                 </div>
                               ))}
-                              {card.headers.length > 3 && (
-                                <div className="text-xs text-gray-500">+{card.headers.length - 3} more</div>
-                              )}
                             </div>
                           </div>
                           
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Text Content</h4>
                             <div className="space-y-1">
-                              {card.textContent.slice(0, 2).map((text, idx) => (
+                              {card.textContent.map((text, idx) => (
                                 <div key={idx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
@@ -1337,15 +1334,10 @@ export default function WireframeDesigner() {
                                       className="text-xs h-6"
                                     />
                                   ) : (
-                                    typeof text === 'string' 
-                                      ? text.substring(0, 50) + (text.length > 50 ? '...' : '')
-                                      : String(text).substring(0, 50) + (String(text).length > 50 ? '...' : '')
+                                    typeof text === 'string' ? text : String(text)
                                   )}
                                 </div>
                               ))}
-                              {card.textContent.length > 2 && (
-                                <div className="text-xs text-gray-500">+{card.textContent.length - 2} more</div>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -1353,14 +1345,14 @@ export default function WireframeDesigner() {
                       
                       <TabsContent value="forms" className="mt-3">
                         <div className="space-y-2">
-                          {card.forms.slice(0, 2).map((form, formIdx) => (
+                          {card.forms.map((form, formIdx) => (
                             <div key={formIdx} className="border rounded p-2 bg-gray-50">
                               <h4 className="font-medium text-sm mb-1">{form.title}</h4>
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
                                   <Label className="text-xs font-medium">Fields</Label>
                                   <div className="space-y-1">
-                                    {form.fields.slice(0, 2).map((field, fieldIdx) => (
+                                    {form.fields.map((field, fieldIdx) => (
                                       <div key={fieldIdx} className="p-1 bg-white rounded text-xs">
                                         {card.isEdited ? (
                                           <Input
@@ -1377,9 +1369,6 @@ export default function WireframeDesigner() {
                                         )}
                                       </div>
                                     ))}
-                                    {form.fields.length > 2 && (
-                                      <div className="text-xs text-gray-500">+{form.fields.length - 2} more</div>
-                                    )}
                                   </div>
                                 </div>
                                 
@@ -1404,15 +1393,12 @@ export default function WireframeDesigner() {
                               </div>
                             </div>
                           ))}
-                          {card.forms.length > 2 && (
-                            <div className="text-xs text-gray-500">+{card.forms.length - 2} more forms</div>
-                          )}
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="buttons" className="mt-3">
                         <div className="grid grid-cols-2 gap-2">
-                          {card.buttons.slice(0, 4).map((button, btnIdx) => (
+                          {card.buttons.map((button, btnIdx) => (
                             <div key={btnIdx} className="border rounded p-2 bg-gray-50">
                               <div className="space-y-1">
                                 <div className="text-xs font-medium">{button.label}</div>
@@ -1423,11 +1409,6 @@ export default function WireframeDesigner() {
                               </div>
                             </div>
                           ))}
-                          {card.buttons.length > 4 && (
-                            <div className="col-span-2 text-xs text-gray-500 text-center">
-                              +{card.buttons.length - 4} more buttons
-                            </div>
-                          )}
                         </div>
                       </TabsContent>
                       
@@ -1436,30 +1417,30 @@ export default function WireframeDesigner() {
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Images</h4>
                             <div className="space-y-1">
-                              {card.images.slice(0, 2).map((image, imgIdx) => (
+                              {card.images.map((image, imgIdx) => (
                                 <div key={imgIdx} className="border rounded p-2 bg-gray-50">
                                   <div className="text-xs font-medium">{image.alt}</div>
-                                  <div className="text-xs text-gray-600">{image.position}</div>
+                                  <div className="text-xs text-gray-600">{image.description}</div>
+                                  <div className="text-xs text-gray-500">Position: {image.position}</div>
                                 </div>
                               ))}
-                              {card.images.length > 2 && (
-                                <div className="text-xs text-gray-500">+{card.images.length - 2} more</div>
-                              )}
                             </div>
                           </div>
                           
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Lists</h4>
                             <div className="space-y-1">
-                              {card.lists.slice(0, 2).map((list, listIdx) => (
+                              {card.lists.map((list, listIdx) => (
                                 <div key={listIdx} className="border rounded p-2 bg-gray-50">
                                   <div className="font-medium text-xs">{list.title}</div>
                                   <div className="text-xs text-gray-600">{list.type} • {list.items.length} items</div>
+                                  <div className="space-y-0.5 mt-1">
+                                    {list.items.map((item, itemIdx) => (
+                                      <div key={itemIdx} className="text-xs bg-white p-1 rounded">• {item}</div>
+                                    ))}
+                                  </div>
                                 </div>
                               ))}
-                              {card.lists.length > 2 && (
-                                <div className="text-xs text-gray-500">+{card.lists.length - 2} more</div>
-                              )}
                             </div>
                           </div>
                         </div>
@@ -1470,7 +1451,7 @@ export default function WireframeDesigner() {
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Navigation</h4>
                             <div className="space-y-1">
-                              {card.navigation.slice(0, 3).map((navItem, navIdx) => (
+                              {card.navigation.map((navItem, navIdx) => (
                                 <div key={navIdx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
@@ -1487,16 +1468,13 @@ export default function WireframeDesigner() {
                                   )}
                                 </div>
                               ))}
-                              {card.navigation.length > 3 && (
-                                <div className="text-xs text-gray-500">+{card.navigation.length - 3} more</div>
-                              )}
                             </div>
                           </div>
                           
                           <div>
                             <h4 className="font-medium mb-1 text-sm">Additional</h4>
                             <div className="space-y-1">
-                              {card.additionalContent.slice(0, 2).map((content, contentIdx) => (
+                              {card.additionalContent.map((content, contentIdx) => (
                                 <div key={contentIdx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
@@ -1509,15 +1487,10 @@ export default function WireframeDesigner() {
                                       className="text-xs h-6"
                                     />
                                   ) : (
-                                    typeof content === 'string' 
-                                      ? content.substring(0, 40) + (content.length > 40 ? '...' : '')
-                                      : String(content).substring(0, 40) + (String(content).length > 40 ? '...' : '')
+                                    typeof content === 'string' ? content : String(content)
                                   )}
                                 </div>
                               ))}
-                              {card.additionalContent.length > 2 && (
-                                <div className="text-xs text-gray-500">+{card.additionalContent.length - 2} more</div>
-                              )}
                             </div>
                           </div>
                         </div>
