@@ -1604,92 +1604,110 @@ export default function WireframeDesigner() {
         {/* Generated Wireframes Display */}
         {generatedWireframes.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">Generated Wireframes</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {generatedWireframes.map((wireframe, index) => (
-                <Card key={index} className="border border-gray-200">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 py-2">
-                    <div className="flex justify-between items-center">
-                      <CardTitle className="text-sm font-semibold text-green-700 truncate">
-                        {wireframe.pageName}
-                      </CardTitle>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => {
-                            setSelectedPageCode({
-                              pageName: wireframe.pageName,
-                              htmlCode: wireframe.htmlCode,
-                              cssCode: wireframe.cssCode
-                            });
-                            setShowCodeModal(true);
-                          }}
-                        >
-                          <Eye className="h-3 w-3" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-6 w-6 p-0"
-                          onClick={() => {
-                            const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.href = url;
-                            a.download = `${wireframe.pageName.replace(/\s+/g, '_')}.html`;
-                            a.click();
-                            URL.revokeObjectURL(url);
-                          }}
-                        >
-                          <Download className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  
-                  <CardContent className="p-3">
-                    <div className="border rounded overflow-hidden bg-white">
-                      <div className="bg-gray-100 px-2 py-1 border-b">
-                        <div className="flex items-center gap-1">
-                          <div className="w-2 h-2 rounded-full bg-red-400"></div>
-                          <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
-                          <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                          <span className="ml-2 text-xs text-gray-600 truncate">{wireframe.pageName}</span>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-100">
+              <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Generated Wireframes ({generatedWireframes.length})
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {generatedWireframes.map((wireframe, index) => (
+                  <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="flex justify-between items-center relative z-10">
+                        <CardTitle className="text-sm font-semibold truncate flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                          {wireframe.pageName}
+                        </CardTitle>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-white/20 text-white"
+                            onClick={() => {
+                              setSelectedPageCode({
+                                pageName: wireframe.pageName,
+                                htmlCode: wireframe.htmlCode,
+                                cssCode: wireframe.cssCode
+                              });
+                              setShowCodeModal(true);
+                            }}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-white/20 text-white"
+                            onClick={() => {
+                              const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${wireframe.pageName.replace(/\s+/g, '_')}.html`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
                         </div>
                       </div>
-                      <div className="h-48 overflow-auto">
-                        <iframe
-                          srcDoc={wireframe.htmlCode}
-                          className="w-full h-full border-0 transform scale-75 origin-top-left"
-                          style={{ width: '133.33%', height: '133.33%' }}
-                          title={`Preview of ${wireframe.pageName}`}
-                          sandbox="allow-same-origin"
-                        />
-                      </div>
-                    </div>
+                    </CardHeader>
                     
-                    <div className="mt-2 flex justify-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs"
-                        onClick={() => {
-                          const newWindow = window.open('', '_blank');
-                          if (newWindow) {
-                            newWindow.document.write(wireframe.htmlCode);
-                            newWindow.document.close();
-                          }
-                        }}
-                      >
-                        <Frame className="h-3 w-3 mr-1" />
-                        Open
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    <CardContent className="p-4">
+                      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden border border-gray-200 group-hover:border-blue-200 transition-colors duration-300">
+                        <div className="bg-gradient-to-r from-gray-200 to-gray-300 px-3 py-2 border-b border-gray-300">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></div>
+                              <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></div>
+                              <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div>
+                            </div>
+                            <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 truncate font-mono">
+                              {wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="relative h-56 bg-white">
+                          <iframe
+                            srcDoc={wireframe.htmlCode}
+                            className="w-full h-full border-0 transform scale-[0.6] origin-top-left"
+                            style={{ 
+                              width: '166.67%', 
+                              height: '166.67%',
+                              overflow: 'hidden'
+                            }}
+                            title={`Preview of ${wireframe.pageName}`}
+                            sandbox="allow-same-origin"
+                            scrolling="no"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-white/20 to-transparent pointer-events-none"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                          onClick={() => {
+                            const newWindow = window.open('', '_blank');
+                            if (newWindow) {
+                              newWindow.document.write(wireframe.htmlCode);
+                              newWindow.document.close();
+                            }
+                          }}
+                        >
+                          <Frame className="h-3 w-3 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
           </div>
         )}
