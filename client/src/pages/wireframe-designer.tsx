@@ -2158,152 +2158,173 @@ Provide a JSON object with this structure:
                   </CardHeader>
                   
                   <CardContent className="space-y-4">
-                    {/* Headers Section */}
+                    {/* Page Content Text (Editable) */}
                     <div>
-                      <h4 className="font-medium text-sm text-gray-800 mb-2">Headers</h4>
-                      <div className="space-y-2">
-                        {card.headers.map((header, hIndex) => (
-                          <input
-                            key={hIndex}
-                            type="text"
-                            value={header}
-                            onChange={(e) => {
-                              const newCards = [...editableContentCards];
-                              newCards[index].headers[hIndex] = e.target.value;
-                              newCards[index].isEdited = true;
-                              setEditableContentCards(newCards);
-                            }}
-                            className="w-full px-3 py-1 text-sm border rounded"
-                          />
-                        ))}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const newCards = [...editableContentCards];
-                            newCards[index].headers.push('New Header');
-                            newCards[index].isEdited = true;
-                            setEditableContentCards(newCards);
-                          }}
-                          className="text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Header
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Buttons Section */}
-                    <div>
-                      <h4 className="font-medium text-sm text-gray-800 mb-2">Buttons</h4>
-                      <div className="space-y-2">
-                        {card.buttons.map((button, bIndex) => (
-                          <div key={bIndex} className="flex gap-2">
-                            <input
-                              type="text"
-                              value={button.label}
-                              onChange={(e) => {
-                                const newCards = [...editableContentCards];
-                                newCards[index].buttons[bIndex].label = e.target.value;
-                                newCards[index].isEdited = true;
-                                setEditableContentCards(newCards);
-                              }}
-                              className="flex-1 px-2 py-1 text-xs border rounded"
-                              placeholder="Button label"
-                            />
-                            <select
-                              value={button.style}
-                              onChange={(e) => {
-                                const newCards = [...editableContentCards];
-                                newCards[index].buttons[bIndex].style = e.target.value;
-                                newCards[index].isEdited = true;
-                                setEditableContentCards(newCards);
-                              }}
-                              className="px-2 py-1 text-xs border rounded"
-                            >
-                              <option value="primary">Primary</option>
-                              <option value="secondary">Secondary</option>
-                              <option value="outline">Outline</option>
-                              <option value="link">Link</option>
-                            </select>
-                          </div>
-                        ))}
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            const newCards = [...editableContentCards];
-                            newCards[index].buttons.push({ label: 'New Button', action: 'click', style: 'primary' });
-                            newCards[index].isEdited = true;
-                            setEditableContentCards(newCards);
-                          }}
-                          className="text-xs"
-                        >
-                          <Plus className="h-3 w-3 mr-1" />
-                          Add Button
-                        </Button>
-                      </div>
-                    </div>
-
-                    {/* Forms Section */}
-                    {card.forms.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-sm text-gray-800 mb-2">Forms</h4>
-                        <div className="space-y-3">
-                          {card.forms.map((form, fIndex) => (
-                            <div key={fIndex} className="border rounded p-3 bg-gray-50">
-                              <input
-                                type="text"
-                                value={form.title}
+                      <h4 className="font-medium text-sm text-gray-800 mb-2">Page Content</h4>
+                      <div className="space-y-3">
+                        {/* Main Headers */}
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">Main Headers</Label>
+                          <div className="space-y-2">
+                            {card.headers.map((header, hIndex) => (
+                              <Textarea
+                                key={hIndex}
+                                value={header}
                                 onChange={(e) => {
                                   const newCards = [...editableContentCards];
-                                  newCards[index].forms[fIndex].title = e.target.value;
+                                  newCards[index].headers[hIndex] = e.target.value;
                                   newCards[index].isEdited = true;
                                   setEditableContentCards(newCards);
                                 }}
-                                className="w-full px-2 py-1 text-sm font-medium border rounded mb-2"
-                                placeholder="Form title"
+                                className="w-full text-sm resize-none"
+                                rows={2}
+                                placeholder="Enter header text..."
                               />
-                              <div className="space-y-1">
-                                {form.fields.map((field, fieldIndex) => (
-                                  <input
-                                    key={fieldIndex}
-                                    type="text"
-                                    value={field}
+                            ))}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const newCards = [...editableContentCards];
+                                newCards[index].headers.push('New Header');
+                                newCards[index].isEdited = true;
+                                setEditableContentCards(newCards);
+                              }}
+                              className="text-xs h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Header
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Button Labels */}
+                        <div>
+                          <Label className="text-xs text-gray-600 mb-1 block">Button Labels</Label>
+                          <div className="space-y-2">
+                            {card.buttons.map((button, bIndex) => (
+                              <Input
+                                key={bIndex}
+                                value={button.label}
+                                onChange={(e) => {
+                                  const newCards = [...editableContentCards];
+                                  newCards[index].buttons[bIndex].label = e.target.value;
+                                  newCards[index].isEdited = true;
+                                  setEditableContentCards(newCards);
+                                }}
+                                className="text-sm"
+                                placeholder="Button text..."
+                              />
+                            ))}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                const newCards = [...editableContentCards];
+                                newCards[index].buttons.push({ label: 'New Button', action: 'click', style: 'primary' });
+                                newCards[index].isEdited = true;
+                                setEditableContentCards(newCards);
+                              }}
+                              className="text-xs h-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            >
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Button
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Form Labels (if any) */}
+                        {card.forms.length > 0 && (
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">Form Content</Label>
+                            <div className="space-y-3">
+                              {card.forms.map((form, fIndex) => (
+                                <div key={fIndex} className="p-3 bg-gray-50 rounded border">
+                                  <Input
+                                    value={form.title}
                                     onChange={(e) => {
                                       const newCards = [...editableContentCards];
-                                      newCards[index].forms[fIndex].fields[fieldIndex] = e.target.value;
+                                      newCards[index].forms[fIndex].title = e.target.value;
                                       newCards[index].isEdited = true;
                                       setEditableContentCards(newCards);
                                     }}
-                                    className="w-full px-2 py-1 text-xs border rounded"
-                                    placeholder="Field name"
+                                    className="text-sm font-medium mb-2"
+                                    placeholder="Form title..."
                                   />
-                                ))}
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
+                                  <div className="space-y-1">
+                                    {form.fields.map((field, fieldIndex) => (
+                                      <Input
+                                        key={fieldIndex}
+                                        value={field}
+                                        onChange={(e) => {
+                                          const newCards = [...editableContentCards];
+                                          newCards[index].forms[fIndex].fields[fieldIndex] = e.target.value;
+                                          newCards[index].isEdited = true;
+                                          setEditableContentCards(newCards);
+                                        }}
+                                        className="text-xs"
+                                        placeholder="Field label..."
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Additional Content */}
+                        {card.additionalContent && card.additionalContent.length > 0 && (
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">Additional Content</Label>
+                            <div className="space-y-2">
+                              {card.additionalContent.map((content, cIndex) => (
+                                <Textarea
+                                  key={cIndex}
+                                  value={content}
+                                  onChange={(e) => {
                                     const newCards = [...editableContentCards];
-                                    newCards[index].forms[fIndex].fields.push('New Field');
+                                    newCards[index].additionalContent[cIndex] = e.target.value;
                                     newCards[index].isEdited = true;
                                     setEditableContentCards(newCards);
                                   }}
-                                  className="text-xs"
-                                >
-                                  <Plus className="h-3 w-3 mr-1" />
-                                  Add Field
-                                </Button>
-                              </div>
+                                  className="text-sm resize-none"
+                                  rows={3}
+                                  placeholder="Enter additional content..."
+                                />
+                              ))}
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                          </div>
+                        )}
 
-                    {/* Stakeholders */}
+                        {/* Navigation Items (if any) */}
+                        {card.navigation && card.navigation.length > 0 && (
+                          <div>
+                            <Label className="text-xs text-gray-600 mb-1 block">Navigation Items</Label>
+                            <div className="space-y-2">
+                              {card.navigation.map((navItem, nIndex) => (
+                                <Input
+                                  key={nIndex}
+                                  value={navItem}
+                                  onChange={(e) => {
+                                    const newCards = [...editableContentCards];
+                                    newCards[index].navigation[nIndex] = e.target.value;
+                                    newCards[index].isEdited = true;
+                                    setEditableContentCards(newCards);
+                                  }}
+                                  className="text-sm"
+                                  placeholder="Navigation item..."
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Target Users */}
                     <div>
-                      <h4 className="font-medium text-sm text-gray-800 mb-1">Target Users</h4>
+                      <Label className="text-xs text-gray-600 mb-1 block">Target Users</Label>
                       <div className="flex flex-wrap gap-1">
                         {card.stakeholders.map((stakeholder, sIndex) => (
                           <Badge key={sIndex} variant="secondary" className="text-xs">
