@@ -133,12 +133,31 @@ const generateContentCardsFromFlows = async (stakeholderData: any, flowTypes: an
   const cards: PageContentCard[] = [];
   
   // Extract page types from flow data
-  const pageTypes = flowTypes?.map((flow: any) => ({
-    name: flow.name || flow.pageName,
-    type: flow.type || flow.pageType || 'dashboard',
-    stakeholders: flow.stakeholders || [],
-    description: flow.description || flow.purpose
-  })) || [];
+  let pageTypes = [];
+  
+  if (Array.isArray(flowTypes)) {
+    pageTypes = flowTypes.map((flow: any) => ({
+      name: flow.name || flow.pageName,
+      type: flow.type || flow.pageType || 'dashboard',
+      stakeholders: flow.stakeholders || [],
+      description: flow.description || flow.purpose
+    }));
+  } else if (flowTypes && typeof flowTypes === 'object') {
+    // Handle object format - convert to array
+    pageTypes = Object.values(flowTypes).map((flow: any) => ({
+      name: flow.name || flow.pageName || flow.flowName,
+      type: flow.type || flow.pageType || flow.flowType || 'dashboard',
+      stakeholders: flow.stakeholders || flow.users || [],
+      description: flow.description || flow.purpose || flow.details
+    }));
+  } else {
+    // Fallback: create default pages from stakeholder data
+    pageTypes = [
+      { name: 'Dashboard', type: 'dashboard', stakeholders: [], description: 'Main dashboard interface' },
+      { name: 'User Management', type: 'admin', stakeholders: [], description: 'User administration panel' },
+      { name: 'Reports', type: 'reports', stakeholders: [], description: 'Analytics and reporting interface' }
+    ];
+  }
 
   for (let i = 0; i < pageTypes.length; i++) {
     const pageType = pageTypes[i];
@@ -444,6 +463,10 @@ export default function WireframeDesigner() {
 
       const flowTypes = JSON.parse(personaFlowTypes);
       const stakeholderData = stakeholderFlowData ? JSON.parse(stakeholderFlowData) : {};
+      
+      // Debug log the data structure
+      console.log('Flow Types Data:', flowTypes);
+      console.log('Stakeholder Data:', stakeholderData);
       
       // Generate content cards for editing
       const contentCards = await generateContentCardsFromFlows(stakeholderData, flowTypes, projectDescription);
