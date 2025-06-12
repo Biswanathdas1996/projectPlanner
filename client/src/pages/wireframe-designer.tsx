@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
+import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
 import { Link } from "wouter";
 import {
   Palette,
@@ -126,8 +127,10 @@ export default function WireframeDesigner() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [selectedWireframe, setSelectedWireframe] = useState<WireframeData | null>(null);
   const [error, setError] = useState("");
-  const [currentStep, setCurrentStep] = useState<"input" | "generating" | "results">("input");
+  const [currentStep, setCurrentStep] = useState<"input" | "analyzing" | "generating" | "results">("input");
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0, status: "" });
+  const [analysisResult, setAnalysisResult] = useState<WireframeAnalysisResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Load saved data and stakeholder flows
   useEffect(() => {
@@ -211,6 +214,27 @@ export default function WireframeDesigner() {
     { value: "creative", label: "Creative & Artistic" },
     { value: "corporate", label: "Corporate" }
   ];
+
+  const analyzeStakeholderFlows = async () => {
+    setIsAnalyzing(true);
+    setError("");
+    setCurrentStep("analyzing");
+    setGenerationProgress({ current: 0, total: 1, status: "Analyzing stakeholder flows..." });
+
+    try {
+      const analysisAgent = createWireframeAnalysisAgent();
+      const result = await analysisAgent.analyzeStakeholderFlows();
+      
+      setAnalysisResult(result);
+      setCurrentStep("input");
+      setGenerationProgress({ current: 0, total: 0, status: "" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to analyze stakeholder flows");
+      setCurrentStep("input");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   const generateWireframes = async () => {
     // Get stakeholder flow data from local storage
