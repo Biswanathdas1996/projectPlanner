@@ -41,29 +41,49 @@ export class WireframeAnalysisAgent {
     try {
       console.log('Starting stakeholder flow analysis...');
       
-      // Get stakeholder flow data from local storage
-      const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
+      // Get stakeholder flow data from local storage - try multiple possible keys
+      const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data') || 
+                                  localStorage.getItem('bpmn-stakeholder-flows') ||
+                                  localStorage.getItem('bpmn-user-journey-flows');
       const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
       const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan') || '';
       const extractedStakeholders = localStorage.getItem('bpmn-extracted-stakeholders');
+      const personaBpmnFlows = localStorage.getItem('bpmn-persona-flows');
 
       console.log('Retrieved data:', {
         hasStakeholderFlowData: !!stakeholderFlowData,
         hasPersonaFlowTypes: !!personaFlowTypes,
         hasProjectDescription: !!projectDescription,
-        hasExtractedStakeholders: !!extractedStakeholders
+        hasExtractedStakeholders: !!extractedStakeholders,
+        hasPersonaBpmnFlows: !!personaBpmnFlows
       });
 
-      if (!stakeholderFlowData || !personaFlowTypes) {
-        throw new Error('No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first.');
+      // Check if we have any flow-related data
+      if (!personaFlowTypes && !stakeholderFlowData && !personaBpmnFlows) {
+        throw new Error('No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page and generating flow details.');
       }
 
-      let flowData, flowTypes, stakeholders;
+      let flowData = {};
+      let flowTypes = {};
+      let stakeholders = [];
       
       try {
-        flowData = JSON.parse(stakeholderFlowData);
-        flowTypes = JSON.parse(personaFlowTypes);
-        stakeholders = extractedStakeholders ? JSON.parse(extractedStakeholders) : [];
+        // Parse available data
+        if (stakeholderFlowData) {
+          flowData = JSON.parse(stakeholderFlowData);
+        }
+        if (personaFlowTypes) {
+          flowTypes = JSON.parse(personaFlowTypes);
+        }
+        if (extractedStakeholders) {
+          stakeholders = JSON.parse(extractedStakeholders);
+        }
+        
+        // If we have persona flows but no flow data, use persona flows as flow data
+        if (personaBpmnFlows && (!flowData || Object.keys(flowData).length === 0)) {
+          const personaFlows = JSON.parse(personaBpmnFlows);
+          flowData = personaFlows;
+        }
         
         console.log('Parsed data successfully:', {
           flowDataKeys: Object.keys(flowData || {}),
@@ -72,13 +92,18 @@ export class WireframeAnalysisAgent {
         });
       } catch (parseError) {
         console.error('Error parsing stored data:', parseError);
-        throw new Error('Invalid stakeholder flow data format. Please regenerate the stakeholder analysis.');
+        // Continue with empty objects rather than failing
+        flowData = {};
+        flowTypes = {};
+        stakeholders = [];
       }
 
-      // If no valid data, provide fallback analysis
-      if (!flowData || Object.keys(flowData).length === 0 || !flowTypes || Object.keys(flowTypes).length === 0) {
-        console.log('No valid flow data found, generating fallback analysis');
-        return this.generateFallbackAnalysis(flowData || {}, flowTypes || {});
+      // If we have flow types but no detailed flow data, we can still analyze
+      if (Object.keys(flowTypes).length > 0) {
+        console.log('Using flow types for analysis');
+      } else if (Object.keys(flowData).length === 0 && Object.keys(flowTypes).length === 0) {
+        console.log('No valid flow data found, generating basic analysis from stakeholders');
+        return this.generateBasicAnalysisFromStakeholders(stakeholders, projectDescription);
       }
 
       const analysisPrompt = this.buildAnalysisPrompt(flowData, flowTypes, projectDescription, stakeholders);
@@ -108,6 +133,110 @@ export class WireframeAnalysisAgent {
       
       throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  private generateBasicAnalysisFromStakeholders(stakeholders: string[], projectDescription: string): WireframeAnalysisResult {
+    console.log('Generating basic analysis from stakeholders:', stakeholders);
+    
+    const pageRequirements: PageRequirement[] = [];
+    
+    // Create basic pages for each stakeholder
+    stakeholders.forEach((stakeholder, index) => {
+      pageRequirements.push({
+        pageName: `${stakeholder} Dashboard`,
+        pageType: 'dashboard',
+        purpose: `Main interface for ${stakeholder} to manage their tasks and view relevant information`,
+        stakeholders: [stakeholder],
+        contentElements: [
+          {
+            type: 'header',
+            label: `${stakeholder} Dashboard`,
+            content: `Welcome ${stakeholder}`,
+            position: 'top',
+            required: true,
+            interactions: ['navigate']
+          },
+          {
+            type: 'navigation',
+            label: 'Main Navigation',
+            content: 'Navigation menu',
+            position: 'top',
+            required: true,
+            interactions: ['navigate']
+          },
+          {
+            type: 'list',
+            label: 'Tasks & Activities',
+            content: `${stakeholder} specific tasks and activities`,
+            position: 'center',
+            required: true,
+            interactions: ['view', 'edit', 'complete']
+          },
+          {
+            type: 'button',
+            label: 'Action Buttons',
+            content: 'Primary actions',
+            position: 'bottom',
+            required: true,
+            interactions: ['click', 'submit']
+          }
+        ],
+        userInteractions: ['View tasks', 'Complete actions', 'Navigate'],
+        dataRequirements: ['User data', 'Task data', 'Status information'],
+        priority: 'high'
+      });
+    });
+
+    // Add common pages
+    pageRequirements.push({
+      pageName: 'Login Page',
+      pageType: 'form',
+      purpose: 'User authentication and system access',
+      stakeholders: stakeholders,
+      contentElements: [
+        {
+          type: 'form',
+          label: 'Login Form',
+          content: 'Username and password fields',
+          position: 'center',
+          required: true,
+          interactions: ['input', 'submit']
+        },
+        {
+          type: 'button',
+          label: 'Login Button',
+          content: 'Submit credentials',
+          position: 'center',
+          required: true,
+          interactions: ['click']
+        }
+      ],
+      userInteractions: ['Enter credentials', 'Submit form'],
+      dataRequirements: ['User credentials'],
+      priority: 'critical'
+    });
+
+    return {
+      projectContext: projectDescription || 'Business process management system',
+      totalPages: pageRequirements.length,
+      pageRequirements,
+      commonElements: [
+        {
+          type: 'navigation',
+          label: 'Main Navigation',
+          content: 'Site navigation',
+          position: 'top',
+          required: true,
+          interactions: ['navigate']
+        }
+      ],
+      userFlowConnections: [
+        { from: 'Login Page', to: `${stakeholders[0]} Dashboard`, trigger: 'successful login' }
+      ],
+      dataFlowMap: [
+        { source: 'Login Page', destination: 'User Dashboard', dataType: 'authentication data' }
+      ]
+    };
   }
 
   private buildAnalysisPrompt(flowData: any, flowTypes: any, projectDescription: string, stakeholders: string[]): string {
