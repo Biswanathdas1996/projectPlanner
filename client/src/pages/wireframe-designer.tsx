@@ -407,7 +407,7 @@ export default function WireframeDesigner() {
     </style>
 </head>
 <body>
-    <div class="wireframe-container">
+    <div class="wireframe-container layout-${layout}">
         <!-- Header -->
         <header class="page-header">
             <h1>${card.headers[0] || card.pageName}</h1>
@@ -776,6 +776,121 @@ export default function WireframeDesigner() {
             margin-bottom: 0.5rem;
         }
 
+        /* Layout-specific styles */
+        .layout-hero-banner .page-header {
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 1rem 2rem;
+        }
+
+        .layout-hero-banner .main-content {
+            background: linear-gradient(135deg, ${colors.primary}20 0%, ${colors.secondary}20 100%);
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+        }
+
+        .layout-sidebar-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .layout-sidebar-layout .page-header {
+            width: 250px;
+            background: ${colors.secondary};
+            padding: 2rem 1rem;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .layout-sidebar-layout .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .layout-dashboard-grid .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .layout-dashboard-grid .content-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: ${borderRadius};
+            box-shadow: ${shadows};
+            border: 1px solid ${colors.accent}30;
+        }
+
+        .layout-centered-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .layout-centered-content .main-content {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .layout-landing-page .main-content {
+            background: linear-gradient(180deg, ${colors.bg} 0%, ${colors.accent}10 100%);
+        }
+
+        .layout-landing-page .content-section:first-child {
+            background: linear-gradient(135deg, ${colors.primary}15 0%, ${colors.secondary}15 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            border-radius: ${borderRadius};
+        }
+
+        .layout-blog-layout {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .layout-blog-layout .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            padding: 2rem;
+        }
+
+        .layout-ecommerce-grid .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .layout-ecommerce-grid .content-section {
+            background: white;
+            border-radius: ${borderRadius};
+            overflow: hidden;
+            box-shadow: ${shadows};
+            transition: transform 0.2s ease;
+            border: 1px solid ${colors.accent}20;
+        }
+
+        .layout-ecommerce-grid .content-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
         @media (max-width: 768px) {
             .page-header h1 {
                 font-size: 2rem;
@@ -792,6 +907,41 @@ export default function WireframeDesigner() {
             
             .buttons-section {
                 flex-direction: column;
+            }
+
+            .layout-sidebar-layout {
+                flex-direction: column;
+            }
+            
+            .layout-sidebar-layout .page-header {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            
+            .layout-sidebar-layout .main-content {
+                margin-left: 0;
+            }
+            
+            .layout-dashboard-grid .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .layout-blog-layout .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .layout-ecommerce-grid .main-content {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .layout-hero-banner .page-header {
+                position: static;
+                background: ${colors.primary};
+            }
+
+            .layout-hero-banner .main-content {
+                padding: 2rem 1rem;
             }
         }
     `;
