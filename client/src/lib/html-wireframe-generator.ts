@@ -362,7 +362,7 @@ export class HTMLWireframeGenerator {
         <div class="workflow-steps">
           <h3>${content.lists[0]?.title}</h3>
           <ol class="steps-list">
-            ${content.lists[0]?.items.map((step, index) => `
+            ${content.lists[0]?.items.map((step: string, index: number) => `
               <li class="step-item ${index === 0 ? 'active' : ''}">${step}</li>
             `).join('')}
           </ol>
@@ -382,7 +382,7 @@ export class HTMLWireframeGenerator {
         </div>
         
         <form class="login-form">
-          ${content.forms[0]?.fields.map(field => `
+          ${content.forms[0]?.fields.map((field: string) => `
             <div class="form-group">
               <label for="${field.toLowerCase()}">${field}</label>
               <input type="${field.toLowerCase() === 'password' ? 'password' : 'email'}" id="${field.toLowerCase()}" name="${field.toLowerCase()}" placeholder="Enter your ${field.toLowerCase()}">
@@ -393,7 +393,7 @@ export class HTMLWireframeGenerator {
         </form>
         
         <div class="login-footer">
-          ${content.buttons.slice(1).map(btn => `<a href="#" class="link" data-action="${btn.action}">${btn.label}</a>`).join(' | ')}
+          ${content.buttons.slice(1).map((btn: any) => `<a href="#" class="link" data-action="${btn.action}">${btn.label}</a>`).join(' | ')}
         </div>
       </div>
     </div>`;
@@ -418,7 +418,7 @@ export class HTMLWireframeGenerator {
         <div class="profile-form">
           <h2>${content.forms[0]?.label}</h2>
           <form class="form-grid">
-            ${content.forms[0]?.fields.map(field => `
+            ${content.forms[0]?.fields.map((field: string) => `
               <div class="form-group">
                 <label for="${field.toLowerCase().replace(' ', '_')}">${field}</label>
                 <input type="text" id="${field.toLowerCase().replace(' ', '_')}" name="${field.toLowerCase().replace(' ', '_')}" value="Sample ${field}">
@@ -427,14 +427,14 @@ export class HTMLWireframeGenerator {
           </form>
           
           <div class="form-actions">
-            ${content.buttons.slice(0, 2).map(btn => `<button class="btn-${btn.action.includes('save') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
+            ${content.buttons.slice(0, 2).map((btn: any) => `<button class="btn-${btn.action.includes('save') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
           </div>
         </div>
         
         <aside class="profile-sidebar">
           <h3>${content.lists[0]?.title}</h3>
           <ul class="activity-list">
-            ${content.lists[0]?.items.map(item => `<li class="activity-item">${item}</li>`).join('')}
+            ${content.lists[0]?.items.map((item: string) => `<li class="activity-item">${item}</li>`).join('')}
           </ul>
         </aside>
       </main>
@@ -459,7 +459,7 @@ export class HTMLWireframeGenerator {
         <div class="settings-content">
           <div class="settings-section" data-section="notifications">
             <h2>${content.forms[0]?.label}</h2>
-            ${content.forms[0]?.fields.map(field => `
+            ${content.forms[0]?.fields.map((field: string) => `
               <div class="setting-item">
                 <label class="setting-label">${field}</label>
                 <input type="checkbox" class="toggle" checked>
@@ -469,7 +469,7 @@ export class HTMLWireframeGenerator {
           
           <div class="settings-section" data-section="display">
             <h2>${content.forms[1]?.label}</h2>
-            ${content.forms[1]?.fields.map(field => `
+            ${content.forms[1]?.fields.map((field: string) => `
               <div class="setting-item">
                 <label class="setting-label">${field}</label>
                 <select class="setting-select">
