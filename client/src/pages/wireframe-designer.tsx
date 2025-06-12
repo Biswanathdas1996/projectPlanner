@@ -1337,7 +1337,9 @@ export default function WireframeDesigner() {
                                       className="text-xs h-6"
                                     />
                                   ) : (
-                                    text.substring(0, 50) + (text.length > 50 ? '...' : '')
+                                    typeof text === 'string' 
+                                      ? text.substring(0, 50) + (text.length > 50 ? '...' : '')
+                                      : String(text).substring(0, 50) + (String(text).length > 50 ? '...' : '')
                                   )}
                                 </div>
                               ))}
@@ -1507,7 +1509,9 @@ export default function WireframeDesigner() {
                                       className="text-xs h-6"
                                     />
                                   ) : (
-                                    content.substring(0, 40) + (content.length > 40 ? '...' : '')
+                                    typeof content === 'string' 
+                                      ? content.substring(0, 40) + (content.length > 40 ? '...' : '')
+                                      : String(content).substring(0, 40) + (String(content).length > 40 ? '...' : '')
                                   )}
                                 </div>
                               ))}
