@@ -2701,7 +2701,7 @@ export default function WireframeDesigner() {
                 {generatedWireframes.map((wireframe, index) => (
                   <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
                     <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="absolute inset-0 bg-gray-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="flex justify-between items-center relative z-10">
                         <CardTitle className="text-sm font-semibold truncate flex items-center gap-2">
                           <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
