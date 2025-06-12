@@ -132,42 +132,63 @@ interface PageContentCard {
 const generateContentCardsFromFlows = async (stakeholderData: any, flowTypes: any, projectDescription: string): Promise<PageContentCard[]> => {
   const cards: PageContentCard[] = [];
   
-  // Extract page types from flow data
+  // Analyze the actual flow data structure
   let pageTypes = [];
   
-  if (Array.isArray(flowTypes)) {
-    pageTypes = flowTypes.map((flow: any) => ({
-      name: flow.name || flow.pageName,
-      type: flow.type || flow.pageType || 'dashboard',
-      stakeholders: flow.stakeholders || [],
-      description: flow.description || flow.purpose
-    }));
-  } else if (flowTypes && typeof flowTypes === 'object') {
-    // Handle object format - convert to array
-    pageTypes = Object.values(flowTypes).map((flow: any) => ({
-      name: flow.name || flow.pageName || flow.flowName,
-      type: flow.type || flow.pageType || flow.flowType || 'dashboard',
-      stakeholders: flow.stakeholders || flow.users || [],
-      description: flow.description || flow.purpose || flow.details
-    }));
-  } else {
-    // Fallback: create default pages from stakeholder data
+  if (flowTypes && typeof flowTypes === 'object' && !Array.isArray(flowTypes)) {
+    // Extract from stakeholder -> flow types structure
+    for (const [stakeholder, flows] of Object.entries(flowTypes)) {
+      if (Array.isArray(flows)) {
+        flows.forEach((flowName: string) => {
+          // Extract page type from flow name
+          const pageType = extractPageTypeFromFlowName(flowName);
+          const pageName = flowName.replace(' Flow', '').replace(' Management', '');
+          
+          pageTypes.push({
+            name: pageName,
+            type: pageType,
+            stakeholders: [stakeholder],
+            description: `${pageName} interface for ${stakeholder} role`,
+            flowName: flowName,
+            originalStakeholder: stakeholder
+          });
+        });
+      }
+    }
+  }
+  
+  // Also analyze stakeholder data for additional context
+  if (Array.isArray(stakeholderData)) {
+    stakeholderData.forEach((flow: any) => {
+      if (flow.flowType && flow.stakeholder) {
+        const existingPage = pageTypes.find(p => p.flowName === flow.flowType);
+        if (existingPage) {
+          // Add BPMN context to existing page
+          existingPage.bpmnXml = flow.bpmnXml;
+          existingPage.bpmnContext = extractBpmnContext(flow.bpmnXml);
+        }
+      }
+    });
+  }
+  
+  // If no pages found, create defaults
+  if (pageTypes.length === 0) {
     pageTypes = [
-      { name: 'Dashboard', type: 'dashboard', stakeholders: [], description: 'Main dashboard interface' },
-      { name: 'User Management', type: 'admin', stakeholders: [], description: 'User administration panel' },
-      { name: 'Reports', type: 'reports', stakeholders: [], description: 'Analytics and reporting interface' }
+      { name: 'Dashboard', type: 'dashboard', stakeholders: ['User'], description: 'Main dashboard interface' },
+      { name: 'Management Panel', type: 'admin', stakeholders: ['Admin'], description: 'Administrative interface' },
+      { name: 'Reports', type: 'reports', stakeholders: ['Manager'], description: 'Analytics and reporting' }
     ];
   }
 
   for (let i = 0; i < pageTypes.length; i++) {
     const pageType = pageTypes[i];
     
-    // Generate content based on page type and stakeholder needs
-    const headers = generateHeadersForPageType(pageType.type, pageType.name);
-    const buttons = generateButtonsForPageType(pageType.type, pageType.stakeholders);
-    const forms = generateFormsForPageType(pageType.type);
-    const lists = generateListsForPageType(pageType.type, pageType.stakeholders);
-    const navigation = generateNavigationForPageType(pageType.type);
+    // Generate content based on actual flow analysis
+    const headers = generateHeadersFromFlow(pageType);
+    const buttons = generateButtonsFromFlow(pageType);
+    const forms = generateFormsFromFlow(pageType);
+    const lists = generateListsFromFlow(pageType);
+    const navigation = generateNavigationFromFlow(pageType);
     
     cards.push({
       id: `card_${Date.now()}_${i}`,
@@ -186,6 +207,219 @@ const generateContentCardsFromFlows = async (stakeholderData: any, flowTypes: an
   }
 
   return cards;
+};
+
+// Extract page type from flow name
+const extractPageTypeFromFlowName = (flowName: string): string => {
+  const name = flowName.toLowerCase();
+  if (name.includes('approval') || name.includes('review')) return 'approval';
+  if (name.includes('budget') || name.includes('allocation')) return 'finance';
+  if (name.includes('user') || name.includes('management')) return 'admin';
+  if (name.includes('device') || name.includes('configuration')) return 'settings';
+  if (name.includes('security') || name.includes('alert')) return 'security';
+  if (name.includes('energy') || name.includes('data')) return 'reports';
+  if (name.includes('automation') || name.includes('rule')) return 'automation';
+  if (name.includes('interaction')) return 'interface';
+  return 'dashboard';
+};
+
+// Extract meaningful context from BPMN XML
+const extractBpmnContext = (bpmnXml: string): any => {
+  if (!bpmnXml) return {};
+  
+  const context = {
+    activities: [] as string[],
+    decisions: [] as string[],
+    events: [] as string[],
+    documentation: ''
+  };
+  
+  // Extract process documentation
+  const docMatch = bpmnXml.match(/<bpmn2:documentation>(.*?)<\/bpmn2:documentation>/);
+  if (docMatch) {
+    context.documentation = docMatch[1];
+  }
+  
+  // Extract task names using exec for better compatibility
+  const taskRegex = /name="([^"]*(?:Task|Activity|Review|Approval|Submit)[^"]*)"/g;
+  let taskMatch;
+  while ((taskMatch = taskRegex.exec(bpmnXml)) !== null) {
+    context.activities.push(taskMatch[1]);
+  }
+  
+  // Extract gateway/decision names
+  const gatewayRegex = /name="([^"]*(?:Gateway|Decision|Check|Validate)[^"]*)"/g;
+  let gatewayMatch;
+  while ((gatewayMatch = gatewayRegex.exec(bpmnXml)) !== null) {
+    context.decisions.push(gatewayMatch[1]);
+  }
+  
+  // Extract event names
+  const eventRegex = /name="([^"]*(?:Event|Start|End|Submit|Complete)[^"]*)"/g;
+  let eventMatch;
+  while ((eventMatch = eventRegex.exec(bpmnXml)) !== null) {
+    context.events.push(eventMatch[1]);
+  }
+  
+  return context;
+};
+
+// Generate content from actual flow analysis
+const generateHeadersFromFlow = (pageType: any): string[] => {
+  const headers = [pageType.name];
+  
+  if (pageType.bpmnContext?.documentation) {
+    const doc = pageType.bpmnContext.documentation;
+    if (doc.includes('approval')) headers.push('Approval Status', 'Pending Reviews');
+    if (doc.includes('management')) headers.push('Management Dashboard', 'System Overview');
+    if (doc.includes('security')) headers.push('Security Alerts', 'Access Control');
+    if (doc.includes('energy')) headers.push('Energy Consumption', 'Data Analytics');
+  }
+  
+  if (pageType.bpmnContext?.activities?.length > 0) {
+    headers.push('Recent Activities');
+    headers.push(...pageType.bpmnContext.activities.slice(0, 2));
+  }
+  
+  return headers.slice(0, 4);
+};
+
+const generateButtonsFromFlow = (pageType: any): { label: string; action: string; style: string }[] => {
+  const buttons = [];
+  
+  if (pageType.bpmnContext?.events?.length > 0) {
+    pageType.bpmnContext.events.forEach((event: string) => {
+      if (event.includes('Submit')) {
+        buttons.push({ label: 'Submit Request', action: 'submit', style: 'primary' });
+      }
+      if (event.includes('Approve')) {
+        buttons.push({ label: 'Approve', action: 'approve', style: 'primary' });
+      }
+      if (event.includes('Complete')) {
+        buttons.push({ label: 'Mark Complete', action: 'complete', style: 'secondary' });
+      }
+    });
+  }
+  
+  // Add type-specific buttons
+  switch (pageType.type) {
+    case 'approval':
+      buttons.push({ label: 'Review Documents', action: 'review', style: 'outline' });
+      break;
+    case 'admin':
+      buttons.push({ label: 'Add User', action: 'create', style: 'primary' });
+      buttons.push({ label: 'Export Data', action: 'export', style: 'outline' });
+      break;
+    case 'security':
+      buttons.push({ label: 'View Alerts', action: 'view', style: 'secondary' });
+      break;
+  }
+  
+  return buttons.slice(0, 4);
+};
+
+const generateFormsFromFlow = (pageType: any): { title: string; fields: string[]; submitAction: string }[] => {
+  const forms = [];
+  
+  if (pageType.bpmnContext?.activities?.length > 0) {
+    const activities = pageType.bpmnContext.activities;
+    
+    activities.forEach((activity: string) => {
+      if (activity.includes('Submit') || activity.includes('Create')) {
+        forms.push({
+          title: `${activity} Form`,
+          fields: generateFieldsForActivity(activity),
+          submitAction: 'submit'
+        });
+      }
+    });
+  }
+  
+  // Default forms based on page type
+  if (forms.length === 0) {
+    switch (pageType.type) {
+      case 'approval':
+        forms.push({
+          title: 'Approval Request',
+          fields: ['Request Title', 'Description', 'Priority', 'Due Date'],
+          submitAction: 'submitApproval'
+        });
+        break;
+      case 'admin':
+        forms.push({
+          title: 'User Management',
+          fields: ['Username', 'Email', 'Role', 'Department'],
+          submitAction: 'createUser'
+        });
+        break;
+    }
+  }
+  
+  return forms.slice(0, 2);
+};
+
+const generateListsFromFlow = (pageType: any): { title: string; items: string[]; type: string }[] => {
+  const lists = [];
+  
+  if (pageType.bpmnContext?.decisions?.length > 0) {
+    lists.push({
+      title: 'Decision Points',
+      items: pageType.bpmnContext.decisions,
+      type: 'decisions'
+    });
+  }
+  
+  if (pageType.bpmnContext?.activities?.length > 0) {
+    lists.push({
+      title: 'Process Activities',
+      items: pageType.bpmnContext.activities.slice(0, 5),
+      type: 'activities'
+    });
+  }
+  
+  // Add stakeholder-specific lists
+  if (pageType.stakeholders?.includes('CEO')) {
+    lists.push({
+      title: 'Executive Summary',
+      items: ['Budget Overview', 'Project Status', 'Risk Assessment'],
+      type: 'executive'
+    });
+  }
+  
+  return lists.slice(0, 3);
+};
+
+const generateNavigationFromFlow = (pageType: any): string[] => {
+  const navigation = ['Dashboard'];
+  
+  if (pageType.stakeholders?.includes('CEO')) {
+    navigation.push('Executive Overview', 'Strategic Planning');
+  }
+  if (pageType.stakeholders?.includes('Admin')) {
+    navigation.push('System Management', 'User Administration');
+  }
+  if (pageType.stakeholders?.includes('User')) {
+    navigation.push('My Tasks', 'Notifications');
+  }
+  
+  navigation.push('Reports', 'Settings');
+  return navigation;
+};
+
+const generateFieldsForActivity = (activity: string): string[] => {
+  const fields = [];
+  
+  if (activity.includes('Proposal')) {
+    fields.push('Project Title', 'Description', 'Budget', 'Timeline');
+  } else if (activity.includes('Review')) {
+    fields.push('Review Comments', 'Status', 'Reviewer');
+  } else if (activity.includes('Approval')) {
+    fields.push('Approval Decision', 'Comments', 'Next Steps');
+  } else {
+    fields.push('Title', 'Description', 'Priority');
+  }
+  
+  return fields;
 };
 
 // Helper functions for content generation
