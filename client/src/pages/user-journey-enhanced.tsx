@@ -52,7 +52,6 @@ import {
   Cog,
   Star,
   Target,
-  Layout,
 } from "lucide-react";
 
 interface StakeholderFlow {
