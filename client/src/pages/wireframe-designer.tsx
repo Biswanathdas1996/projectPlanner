@@ -2032,18 +2032,14 @@ export default function WireframeDesigner() {
                           <div dangerouslySetInnerHTML={{ __html: page.htmlContent }} />
                         </div>
                         <div className="absolute inset-0 bg-transparent hover:bg-black hover:bg-opacity-10 transition-colors cursor-pointer" 
-                             onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(`
-                               <!DOCTYPE html>
-                               <html>
-                               <head>
-                                 <title>${page.pageName}</title>
-                                 <meta charset="UTF-8">
-                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                 <style>${page.cssStyles}</style>
-                               </head>
-                               <body>${page.htmlContent}</body>
-                               </html>
-                             `)}`)}
+                             onClick={() => {
+                               setSelectedPageCode({
+                                 pageName: page.pageName,
+                                 htmlCode: page.htmlContent,
+                                 cssCode: page.cssStyles
+                               });
+                               setShowCodeModal(true);
+                             }}
                         />
                       </div>
                     </div>
@@ -2125,18 +2121,14 @@ export default function WireframeDesigner() {
                         <Button
                           size="sm"
                           className="text-xs flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
-                          onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(`
-                            <!DOCTYPE html>
-                            <html>
-                            <head>
-                              <title>${page.pageName}</title>
-                              <meta charset="UTF-8">
-                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                              <style>${page.cssStyles}</style>
-                            </head>
-                            <body>${page.htmlContent}</body>
-                            </html>
-                          `)}`)}
+                          onClick={() => {
+                            setSelectedPageCode({
+                              pageName: page.pageName,
+                              htmlCode: page.htmlContent,
+                              cssCode: page.cssStyles
+                            });
+                            setShowCodeModal(true);
+                          }}
                         >
                           <Eye className="h-3 w-3 mr-1" />
                           Preview
@@ -2451,11 +2443,47 @@ File: ${page.pageName.replace(/\s+/g, '_').toLowerCase()}.html
                         Download HTML
                       </Button>
                       <Button
-                        onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(selectedPageCode.htmlCode + (selectedPageCode.cssCode ? `\n<style>\n${selectedPageCode.cssCode}\n</style>` : ''))}`)}
+                        onClick={() => {
+                          // Create a larger modal preview
+                          const previewWindow = window.open('', '_blank', 'width=1200,height=800,scrollbars=yes,resizable=yes');
+                          if (previewWindow) {
+                            previewWindow.document.write(`
+                              <!DOCTYPE html>
+                              <html>
+                              <head>
+                                <title>${selectedPageCode.pageName} - Preview</title>
+                                <style>
+                                  body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+                                  .preview-header { 
+                                    background: #f8f9fa; 
+                                    padding: 10px 20px; 
+                                    border-bottom: 1px solid #dee2e6;
+                                    display: flex;
+                                    justify-content: between;
+                                    align-items: center;
+                                  }
+                                  .preview-content { padding: 0; }
+                                  ${selectedPageCode.cssCode || ''}
+                                </style>
+                              </head>
+                              <body>
+                                <div class="preview-header">
+                                  <h3 style="margin: 0;">${selectedPageCode.pageName} - Wireframe Preview</h3>
+                                  <button onclick="window.close()" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer;">Close</button>
+                                </div>
+                                <div class="preview-content">
+                                  ${selectedPageCode.htmlCode}
+                                </div>
+                              </body>
+                              </html>
+                            `);
+                            previewWindow.document.close();
+                          }
+                        }}
                         variant="outline"
                       >
                         <Eye className="h-4 w-4 mr-2" />
-                        Open in New Tab
+                        Full Screen Preview
                       </Button>
                     </div>
                   </TabsContent>
