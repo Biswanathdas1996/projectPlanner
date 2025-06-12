@@ -236,11 +236,11 @@ export default function WireframeDesigner() {
           currentPage: pageReq.pageName 
         });
         
-        const prompt = contentAgent.buildContentPrompt(pageReq, flowTypes, projectDescription);
-        const result = await contentAgent.model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        const content = contentAgent.parseContentResponse(text, pageReq);
+        const content = await contentAgent.generateSinglePageContent(pageReq, {
+          stakeholderFlows,
+          flowTypes,
+          projectDescription
+        });
         
         contentCards.push({
           id: `page-${i}`,
@@ -258,6 +258,428 @@ export default function WireframeDesigner() {
       setIsGeneratingContent(false);
       setContentGenerationProgress({ current: 0, total: 0, currentPage: "" });
     }
+  };
+
+  // Generate HTML wireframes from page content
+  const handleGenerateWireframes = async () => {
+    if (pageContentCards.length === 0) return;
+    
+    setIsGeneratingWireframes(true);
+    setError("");
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+    
+    try {
+      const wireframes: { pageName: string; htmlCode: string; cssCode: string }[] = [];
+      
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+        
+        const wireframe = await generatePageWireframe(card);
+        wireframes.push(wireframe);
+      }
+      
+      setGeneratedWireframes(wireframes);
+      
+    } catch (err) {
+      console.error("Error generating wireframes:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate wireframes");
+    } finally {
+      setIsGeneratingWireframes(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
+  const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string }> => {
+    const htmlCode = generateWireframeHTML(card);
+    const cssCode = generateWireframeCSS(card);
+    
+    return {
+      pageName: card.pageName,
+      htmlCode,
+      cssCode
+    };
+  };
+
+  const generateWireframeHTML = (card: PageContentCard): string => {
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${card.pageName}</title>
+    <style>
+        ${generateWireframeCSS(card)}
+    </style>
+</head>
+<body>
+    <div class="wireframe-container">
+        <!-- Header -->
+        <header class="page-header">
+            <h1>${card.headers[0] || card.pageName}</h1>
+            <nav class="navigation">
+                ${card.navigation.map(item => `<a href="#" class="nav-item">${item}</a>`).join('')}
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Headers -->
+            <div class="content-section">
+                ${card.headers.slice(1).map(header => `<h2 class="section-header">${header}</h2>`).join('')}
+            </div>
+
+            <!-- Text Content -->
+            <div class="content-section">
+                ${card.textContent.map(text => `<p class="content-text">${text}</p>`).join('')}
+            </div>
+
+            <!-- Forms -->
+            ${card.forms.map(form => `
+                <div class="form-section">
+                    <h3 class="form-title">${form.title}</h3>
+                    <form class="wireframe-form">
+                        ${form.fields.map(field => `
+                            <div class="form-field">
+                                <label class="field-label">${field}</label>
+                                <input type="text" class="field-input" placeholder="Enter ${field.toLowerCase()}" />
+                            </div>
+                        `).join('')}
+                        <button type="submit" class="form-button primary">${form.submitAction}</button>
+                    </form>
+                </div>
+            `).join('')}
+
+            <!-- Input Fields -->
+            <div class="inputs-section">
+                ${card.inputs.map(input => `
+                    <div class="input-group">
+                        <label class="input-label">${input.label}${input.required ? ' *' : ''}</label>
+                        <input type="${input.type}" class="input-field" placeholder="${input.placeholder}" ${input.required ? 'required' : ''} />
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- Buttons -->
+            <div class="buttons-section">
+                ${card.buttons.map(button => `
+                    <button class="wireframe-button ${button.style}" data-action="${button.action}">
+                        ${button.label}
+                    </button>
+                `).join('')}
+            </div>
+
+            <!-- Lists -->
+            ${card.lists.map(list => `
+                <div class="list-section">
+                    <h4 class="list-title">${list.title}</h4>
+                    <ul class="wireframe-list ${list.type}">
+                        ${list.items.map(item => `<li class="list-item">${item}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('')}
+
+            <!-- Images Placeholders -->
+            <div class="images-section">
+                ${card.images.map(image => `
+                    <div class="image-placeholder ${image.position}">
+                        <div class="image-box">
+                            <span class="image-text">${image.alt}</span>
+                            <small class="image-description">${image.description}</small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="page-footer">
+            ${card.additionalContent.map(content => `<p class="footer-text">${content}</p>`).join('')}
+        </footer>
+    </div>
+</body>
+</html>`;
+  };
+
+  const generateWireframeCSS = (card: PageContentCard): string => {
+    return `
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        .wireframe-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            padding: 2rem;
+        }
+
+        .content-section {
+            margin-bottom: 2rem;
+        }
+
+        .section-header {
+            color: #444;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #eee;
+        }
+
+        .content-text {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: #666;
+        }
+
+        .form-section {
+            background: #f9f9f9;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-title {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .wireframe-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .field-input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .inputs-section {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .input-field {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .buttons-section {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .wireframe-button {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .wireframe-button.primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .wireframe-button.secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .wireframe-button.outline {
+            background-color: transparent;
+            color: #667eea;
+            border: 1px solid #667eea;
+        }
+
+        .wireframe-button.ghost {
+            background-color: transparent;
+            color: #6c757d;
+        }
+
+        .wireframe-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .list-section {
+            margin-bottom: 2rem;
+        }
+
+        .list-title {
+            color: #444;
+            margin-bottom: 1rem;
+        }
+
+        .wireframe-list {
+            list-style: none;
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .list-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .images-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-placeholder {
+            background: #f0f0f0;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-box {
+            text-align: center;
+        }
+
+        .image-text {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-description {
+            color: #999;
+            font-size: 0.875rem;
+        }
+
+        .page-footer {
+            background: #333;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin-bottom: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .buttons-section {
+                flex-direction: column;
+            }
+        }
+    `;
   };
 
   // Generate wireframes from analysis
@@ -486,6 +908,31 @@ export default function WireframeDesigner() {
                       )}
                     </Button>
                   </div>
+                  
+                  {/* Content Generation Progress */}
+                  {isGeneratingContent && (
+                    <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-purple-700">
+                          Generating Page Content ({contentGenerationProgress.current}/{contentGenerationProgress.total})
+                        </span>
+                        <span className="text-xs text-purple-600">
+                          {Math.round((contentGenerationProgress.current / contentGenerationProgress.total) * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-purple-200 rounded-full h-2">
+                        <div 
+                          className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${(contentGenerationProgress.current / contentGenerationProgress.total) * 100}%` }}
+                        ></div>
+                      </div>
+                      {contentGenerationProgress.currentPage && (
+                        <p className="text-xs text-purple-600 mt-2">
+                          Currently generating: {contentGenerationProgress.currentPage}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>
@@ -754,7 +1201,48 @@ export default function WireframeDesigner() {
         {/* Page Content Cards Display */}
         {pageContentCards.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Generated Page Content</h2>
+              <Button 
+                onClick={handleGenerateWireframes}
+                disabled={isGeneratingWireframes}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isGeneratingWireframes ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Generating Wireframes...
+                  </>
+                ) : (
+                  'Generate wireframe of each pages'
+                )}
+              </Button>
+            </div>
+            
+            {/* Wireframe Generation Progress */}
+            {isGeneratingWireframes && (
+              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-green-700">
+                    Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+                  </span>
+                  <span className="text-xs text-green-600">
+                    {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+                  </span>
+                </div>
+                <div className="w-full bg-green-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                    style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+                  ></div>
+                </div>
+                {wireframeGenerationProgress.currentPage && (
+                  <p className="text-xs text-green-600 mt-2">
+                    Currently generating: {wireframeGenerationProgress.currentPage}
+                  </p>
+                )}
+              </div>
+            )}
             <div className="grid gap-6">
               {pageContentCards.map((card, index) => (
                 <Card key={card.id} className="border-2 border-gray-200">
@@ -1062,6 +1550,96 @@ export default function WireframeDesigner() {
                         </div>
                       </TabsContent>
                     </Tabs>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Generated Wireframes Display */}
+        {generatedWireframes.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-6">Generated Wireframes</h2>
+            <div className="grid gap-6">
+              {generatedWireframes.map((wireframe, index) => (
+                <Card key={index} className="border-2 border-gray-200">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+                    <div className="flex justify-between items-center">
+                      <CardTitle className="text-lg font-semibold text-green-700">
+                        {wireframe.pageName}
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPageCode({
+                              pageName: wireframe.pageName,
+                              htmlCode: wireframe.htmlCode,
+                              cssCode: wireframe.cssCode
+                            });
+                            setShowCodeModal(true);
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Code
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${wireframe.pageName.replace(/\s+/g, '_')}.html`;
+                            a.click();
+                            URL.revokeObjectURL(url);
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-1" />
+                          Download
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-6">
+                    <div className="border rounded-lg overflow-hidden bg-white">
+                      <div className="bg-gray-100 px-4 py-2 border-b">
+                        <div className="flex items-center gap-2">
+                          <div className="w-3 h-3 rounded-full bg-red-400"></div>
+                          <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                          <div className="w-3 h-3 rounded-full bg-green-400"></div>
+                          <span className="ml-4 text-sm text-gray-600">{wireframe.pageName}</span>
+                        </div>
+                      </div>
+                      <div className="h-96 overflow-auto">
+                        <iframe
+                          srcDoc={wireframe.htmlCode}
+                          className="w-full h-full border-0"
+                          title={`Preview of ${wireframe.pageName}`}
+                          sandbox="allow-same-origin"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4 flex justify-center">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          const newWindow = window.open('', '_blank');
+                          if (newWindow) {
+                            newWindow.document.write(wireframe.htmlCode);
+                            newWindow.document.close();
+                          }
+                        }}
+                      >
+                        <Frame className="h-4 w-4 mr-2" />
+                        Open in New Window
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
