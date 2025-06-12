@@ -1243,30 +1243,35 @@ export default function WireframeDesigner() {
                 )}
               </div>
             )}
-            <div className="grid gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {pageContentCards.map((card, index) => (
                 <Card key={card.id} className="border-2 border-gray-200">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 py-3">
                     <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-lg font-semibold text-purple-700">
+                      <div className="flex-1">
+                        <CardTitle className="text-base font-semibold text-purple-700">
                           {card.pageName}
                         </CardTitle>
-                        <p className="text-sm text-gray-600 mt-1">
-                          <span className="font-medium">Type:</span> {card.pageType} | 
-                          <span className="font-medium ml-2">Purpose:</span> {card.purpose}
+                        <p className="text-xs text-gray-600 mt-1">
+                          {card.pageType} • {card.purpose}
                         </p>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {card.stakeholders.map((stakeholder, idx) => (
-                            <Badge key={idx} variant="secondary" className="text-xs">
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {card.stakeholders.slice(0, 3).map((stakeholder, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
                               {stakeholder}
                             </Badge>
                           ))}
+                          {card.stakeholders.length > 3 && (
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                              +{card.stakeholders.length - 3}
+                            </Badge>
+                          )}
                         </div>
                       </div>
                       <Button
                         variant="outline"
                         size="sm"
+                        className="h-7 text-xs"
                         onClick={() => {
                           const updatedCards = [...pageContentCards];
                           updatedCards[index] = { ...card, isEdited: !card.isEdited };
@@ -1278,23 +1283,23 @@ export default function WireframeDesigner() {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
+                  <CardContent className="p-4">
                     <Tabs defaultValue="content" className="w-full">
-                      <TabsList className="grid w-full grid-cols-5">
-                        <TabsTrigger value="content">Content</TabsTrigger>
-                        <TabsTrigger value="forms">Forms</TabsTrigger>
-                        <TabsTrigger value="buttons">Buttons</TabsTrigger>
-                        <TabsTrigger value="media">Media</TabsTrigger>
-                        <TabsTrigger value="navigation">Navigation</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-5 h-8">
+                        <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
+                        <TabsTrigger value="forms" className="text-xs">Forms</TabsTrigger>
+                        <TabsTrigger value="buttons" className="text-xs">Buttons</TabsTrigger>
+                        <TabsTrigger value="media" className="text-xs">Media</TabsTrigger>
+                        <TabsTrigger value="navigation" className="text-xs">Nav</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="content" className="mt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <TabsContent value="content" className="mt-3">
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <h4 className="font-semibold mb-2">Headers</h4>
+                            <h4 className="font-medium mb-1 text-sm">Headers</h4>
                             <div className="space-y-1">
-                              {card.headers.map((header, idx) => (
-                                <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
+                              {card.headers.slice(0, 3).map((header, idx) => (
+                                <div key={idx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
                                       value={header}
@@ -1303,21 +1308,24 @@ export default function WireframeDesigner() {
                                         updatedCards[index].headers[idx] = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                      className="text-sm"
+                                      className="text-xs h-6"
                                     />
                                   ) : (
                                     header
                                   )}
                                 </div>
                               ))}
+                              {card.headers.length > 3 && (
+                                <div className="text-xs text-gray-500">+{card.headers.length - 3} more</div>
+                              )}
                             </div>
                           </div>
                           
                           <div>
-                            <h4 className="font-semibold mb-2">Text Content</h4>
+                            <h4 className="font-medium mb-1 text-sm">Text Content</h4>
                             <div className="space-y-1">
-                              {card.textContent.map((text, idx) => (
-                                <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
+                              {card.textContent.slice(0, 2).map((text, idx) => (
+                                <div key={idx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
                                       value={text}
@@ -1326,29 +1334,32 @@ export default function WireframeDesigner() {
                                         updatedCards[index].textContent[idx] = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                      className="text-sm"
+                                      className="text-xs h-6"
                                     />
                                   ) : (
-                                    text
+                                    text.substring(0, 50) + (text.length > 50 ? '...' : '')
                                   )}
                                 </div>
                               ))}
+                              {card.textContent.length > 2 && (
+                                <div className="text-xs text-gray-500">+{card.textContent.length - 2} more</div>
+                              )}
                             </div>
                           </div>
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="forms" className="mt-4">
-                        <div className="space-y-4">
-                          {card.forms.map((form, formIdx) => (
-                            <div key={formIdx} className="border rounded-lg p-4 bg-gray-50">
-                              <h4 className="font-semibold mb-2">{form.title}</h4>
-                              <div className="grid grid-cols-2 gap-4">
+                      <TabsContent value="forms" className="mt-3">
+                        <div className="space-y-2">
+                          {card.forms.slice(0, 2).map((form, formIdx) => (
+                            <div key={formIdx} className="border rounded p-2 bg-gray-50">
+                              <h4 className="font-medium text-sm mb-1">{form.title}</h4>
+                              <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <Label className="text-sm font-medium">Form Fields</Label>
-                                  <div className="space-y-1 mt-1">
-                                    {form.fields.map((field, fieldIdx) => (
-                                      <div key={fieldIdx} className="p-2 bg-white rounded text-sm">
+                                  <Label className="text-xs font-medium">Fields</Label>
+                                  <div className="space-y-1">
+                                    {form.fields.slice(0, 2).map((field, fieldIdx) => (
+                                      <div key={fieldIdx} className="p-1 bg-white rounded text-xs">
                                         {card.isEdited ? (
                                           <Input
                                             value={field}
@@ -1357,19 +1368,22 @@ export default function WireframeDesigner() {
                                               updatedCards[index].forms[formIdx].fields[fieldIdx] = e.target.value;
                                               setPageContentCards(updatedCards);
                                             }}
-                                            className="text-sm"
+                                            className="text-xs h-6"
                                           />
                                         ) : (
                                           field
                                         )}
                                       </div>
                                     ))}
+                                    {form.fields.length > 2 && (
+                                      <div className="text-xs text-gray-500">+{form.fields.length - 2} more</div>
+                                    )}
                                   </div>
                                 </div>
                                 
                                 <div>
-                                  <Label className="text-sm font-medium">Submit Action</Label>
-                                  <div className="p-2 bg-white rounded text-sm mt-1">
+                                  <Label className="text-xs font-medium">Action</Label>
+                                  <div className="p-1 bg-white rounded text-xs">
                                     {card.isEdited ? (
                                       <Input
                                         value={form.submitAction}
@@ -1378,7 +1392,7 @@ export default function WireframeDesigner() {
                                           updatedCards[index].forms[formIdx].submitAction = e.target.value;
                                           setPageContentCards(updatedCards);
                                         }}
-                                        className="text-sm"
+                                        className="text-xs h-6"
                                       />
                                     ) : (
                                       form.submitAction
@@ -1388,125 +1402,74 @@ export default function WireframeDesigner() {
                               </div>
                             </div>
                           ))}
+                          {card.forms.length > 2 && (
+                            <div className="text-xs text-gray-500">+{card.forms.length - 2} more forms</div>
+                          )}
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="buttons" className="mt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                          {card.buttons.map((button, btnIdx) => (
-                            <div key={btnIdx} className="border rounded-lg p-3 bg-gray-50">
-                              <div className="space-y-2">
-                                <div>
-                                  <Label className="text-xs">Label</Label>
-                                  {card.isEdited ? (
-                                    <Input
-                                      value={button.label}
-                                      onChange={(e) => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].buttons[btnIdx].label = e.target.value;
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                      className="text-sm mt-1"
-                                    />
-                                  ) : (
-                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.label}</div>
-                                  )}
-                                </div>
-                                <div>
-                                  <Label className="text-xs">Action</Label>
-                                  {card.isEdited ? (
-                                    <Input
-                                      value={button.action}
-                                      onChange={(e) => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].buttons[btnIdx].action = e.target.value;
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                      className="text-sm mt-1"
-                                    />
-                                  ) : (
-                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.action}</div>
-                                  )}
-                                </div>
-                                <div>
-                                  <Label className="text-xs">Style</Label>
-                                  {card.isEdited ? (
-                                    <Select
-                                      value={button.style}
-                                      onValueChange={(value) => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].buttons[btnIdx].style = value;
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                    >
-                                      <SelectTrigger className="text-sm mt-1">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        <SelectItem value="primary">Primary</SelectItem>
-                                        <SelectItem value="secondary">Secondary</SelectItem>
-                                        <SelectItem value="outline">Outline</SelectItem>
-                                        <SelectItem value="ghost">Ghost</SelectItem>
-                                        <SelectItem value="destructive">Destructive</SelectItem>
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <div className="p-1 bg-white rounded text-sm mt-1">{button.style}</div>
-                                  )}
+                      <TabsContent value="buttons" className="mt-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          {card.buttons.slice(0, 4).map((button, btnIdx) => (
+                            <div key={btnIdx} className="border rounded p-2 bg-gray-50">
+                              <div className="space-y-1">
+                                <div className="text-xs font-medium">{button.label}</div>
+                                <div className="text-xs text-gray-600">{button.action}</div>
+                                <div className="text-xs">
+                                  <span className="px-1 py-0.5 bg-blue-100 rounded">{button.style}</span>
                                 </div>
                               </div>
                             </div>
                           ))}
+                          {card.buttons.length > 4 && (
+                            <div className="col-span-2 text-xs text-gray-500 text-center">
+                              +{card.buttons.length - 4} more buttons
+                            </div>
+                          )}
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="media" className="mt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <TabsContent value="media" className="mt-3">
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <h4 className="font-semibold mb-2">Images</h4>
-                            <div className="space-y-2">
-                              {card.images.map((image, imgIdx) => (
-                                <div key={imgIdx} className="border rounded-lg p-3 bg-gray-50">
-                                  <div className="space-y-1">
-                                    <div className="text-sm font-medium">{image.alt}</div>
-                                    <div className="text-xs text-gray-600">{image.description}</div>
-                                    <div className="text-xs">
-                                      <span className="font-medium">Position:</span> {image.position}
-                                    </div>
-                                  </div>
+                            <h4 className="font-medium mb-1 text-sm">Images</h4>
+                            <div className="space-y-1">
+                              {card.images.slice(0, 2).map((image, imgIdx) => (
+                                <div key={imgIdx} className="border rounded p-2 bg-gray-50">
+                                  <div className="text-xs font-medium">{image.alt}</div>
+                                  <div className="text-xs text-gray-600">{image.position}</div>
                                 </div>
                               ))}
+                              {card.images.length > 2 && (
+                                <div className="text-xs text-gray-500">+{card.images.length - 2} more</div>
+                              )}
                             </div>
                           </div>
                           
                           <div>
-                            <h4 className="font-semibold mb-2">Lists</h4>
-                            <div className="space-y-2">
-                              {card.lists.map((list, listIdx) => (
-                                <div key={listIdx} className="border rounded-lg p-3 bg-gray-50">
-                                  <div className="font-medium text-sm mb-1">{list.title}</div>
-                                  <div className="text-xs text-gray-600 mb-2">Type: {list.type}</div>
-                                  <div className="space-y-1">
-                                    {list.items.map((item, itemIdx) => (
-                                      <div key={itemIdx} className="text-sm p-1 bg-white rounded">
-                                        • {item}
-                                      </div>
-                                    ))}
-                                  </div>
+                            <h4 className="font-medium mb-1 text-sm">Lists</h4>
+                            <div className="space-y-1">
+                              {card.lists.slice(0, 2).map((list, listIdx) => (
+                                <div key={listIdx} className="border rounded p-2 bg-gray-50">
+                                  <div className="font-medium text-xs">{list.title}</div>
+                                  <div className="text-xs text-gray-600">{list.type} • {list.items.length} items</div>
                                 </div>
                               ))}
+                              {card.lists.length > 2 && (
+                                <div className="text-xs text-gray-500">+{card.lists.length - 2} more</div>
+                              )}
                             </div>
                           </div>
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="navigation" className="mt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <TabsContent value="navigation" className="mt-3">
+                        <div className="grid grid-cols-2 gap-3">
                           <div>
-                            <h4 className="font-semibold mb-2">Navigation Items</h4>
+                            <h4 className="font-medium mb-1 text-sm">Navigation</h4>
                             <div className="space-y-1">
-                              {card.navigation.map((navItem, navIdx) => (
-                                <div key={navIdx} className="p-2 bg-gray-50 rounded text-sm">
+                              {card.navigation.slice(0, 3).map((navItem, navIdx) => (
+                                <div key={navIdx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
                                       value={navItem}
@@ -1515,21 +1478,24 @@ export default function WireframeDesigner() {
                                         updatedCards[index].navigation[navIdx] = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                      className="text-sm"
+                                      className="text-xs h-6"
                                     />
                                   ) : (
                                     navItem
                                   )}
                                 </div>
                               ))}
+                              {card.navigation.length > 3 && (
+                                <div className="text-xs text-gray-500">+{card.navigation.length - 3} more</div>
+                              )}
                             </div>
                           </div>
                           
                           <div>
-                            <h4 className="font-semibold mb-2">Additional Content</h4>
+                            <h4 className="font-medium mb-1 text-sm">Additional</h4>
                             <div className="space-y-1">
-                              {card.additionalContent.map((content, contentIdx) => (
-                                <div key={contentIdx} className="p-2 bg-gray-50 rounded text-sm">
+                              {card.additionalContent.slice(0, 2).map((content, contentIdx) => (
+                                <div key={contentIdx} className="p-1 bg-gray-50 rounded text-xs">
                                   {card.isEdited ? (
                                     <Input
                                       value={content}
@@ -1538,13 +1504,16 @@ export default function WireframeDesigner() {
                                         updatedCards[index].additionalContent[contentIdx] = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                      className="text-sm"
+                                      className="text-xs h-6"
                                     />
                                   ) : (
-                                    content
+                                    content.substring(0, 40) + (content.length > 40 ? '...' : '')
                                   )}
                                 </div>
                               ))}
+                              {card.additionalContent.length > 2 && (
+                                <div className="text-xs text-gray-500">+{card.additionalContent.length - 2} more</div>
+                              )}
                             </div>
                           </div>
                         </div>
