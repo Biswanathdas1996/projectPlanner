@@ -10,6 +10,7 @@ import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import UserStoryGenerator from "@/pages/user-story-generator";
 import CodeGenerator from "@/pages/code-generator";
 import MarketResearch from "@/pages/market-research";
+import WireframeDesigner from "@/pages/wireframe-designer";
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
@@ -30,6 +31,9 @@ function Router() {
       <Route path="/gherkin" component={UserStoryGenerator} />
       <Route path="/code-generator" component={CodeGenerator} />
       <Route path="/code" component={CodeGenerator} />
+      <Route path="/wireframes" component={WireframeDesigner} />
+      <Route path="/wireframe-designer" component={WireframeDesigner} />
+      <Route path="/design" component={WireframeDesigner} />
       <Route path="/market-research" component={MarketResearch} />
       <Route path="/research" component={MarketResearch} />
       <Route path="/competitors" component={MarketResearch} />

@@ -52,6 +52,7 @@ import {
   Cog,
   Star,
   Target,
+  Layout,
 } from "lucide-react";
 
 interface StakeholderFlow {
@@ -3300,9 +3301,15 @@ Data Objects: Request form, User profile`,
           </Card>
         )}
 
-        {/* Navigation Button at Bottom - Only show after flow details are generated */}
+        {/* Navigation Buttons at Bottom - Only show after flow details are generated */}
         {Object.values(flowDetails).length > 0 && (
-          <div className="mt-8 flex justify-center">
+          <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/wireframes">
+              <Button className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-8 py-3 text-lg">
+                <Workflow className="h-5 w-5 mr-3" />
+                Design Wireframes
+              </Button>
+            </Link>
             <Link href="/user-stories">
               <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 text-lg">
                 <BookOpen className="h-5 w-5 mr-3" />
