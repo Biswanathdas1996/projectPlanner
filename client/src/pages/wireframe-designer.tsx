@@ -1506,19 +1506,20 @@ export default function WireframeDesigner() {
         {/* Generated Wireframes Display */}
         {generatedWireframes.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Generated Wireframes</h2>
-            <div className="grid gap-6">
+            <h2 className="text-xl font-bold mb-4">Generated Wireframes</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {generatedWireframes.map((wireframe, index) => (
-                <Card key={index} className="border-2 border-gray-200">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50">
+                <Card key={index} className="border border-gray-200">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-blue-50 py-2">
                     <div className="flex justify-between items-center">
-                      <CardTitle className="text-lg font-semibold text-green-700">
+                      <CardTitle className="text-sm font-semibold text-green-700 truncate">
                         {wireframe.pageName}
                       </CardTitle>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-6 w-6 p-0"
                           onClick={() => {
                             setSelectedPageCode({
                               pageName: wireframe.pageName,
@@ -1528,12 +1529,12 @@ export default function WireframeDesigner() {
                             setShowCodeModal(true);
                           }}
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Code
+                          <Eye className="h-3 w-3" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-6 w-6 p-0"
                           onClick={() => {
                             const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
                             const url = URL.createObjectURL(blob);
@@ -1544,36 +1545,38 @@ export default function WireframeDesigner() {
                             URL.revokeObjectURL(url);
                           }}
                         >
-                          <Download className="h-4 w-4 mr-1" />
-                          Download
+                          <Download className="h-3 w-3" />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-6">
-                    <div className="border rounded-lg overflow-hidden bg-white">
-                      <div className="bg-gray-100 px-4 py-2 border-b">
-                        <div className="flex items-center gap-2">
-                          <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                          <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                          <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                          <span className="ml-4 text-sm text-gray-600">{wireframe.pageName}</span>
+                  <CardContent className="p-3">
+                    <div className="border rounded overflow-hidden bg-white">
+                      <div className="bg-gray-100 px-2 py-1 border-b">
+                        <div className="flex items-center gap-1">
+                          <div className="w-2 h-2 rounded-full bg-red-400"></div>
+                          <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+                          <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                          <span className="ml-2 text-xs text-gray-600 truncate">{wireframe.pageName}</span>
                         </div>
                       </div>
-                      <div className="h-96 overflow-auto">
+                      <div className="h-48 overflow-auto">
                         <iframe
                           srcDoc={wireframe.htmlCode}
-                          className="w-full h-full border-0"
+                          className="w-full h-full border-0 transform scale-75 origin-top-left"
+                          style={{ width: '133.33%', height: '133.33%' }}
                           title={`Preview of ${wireframe.pageName}`}
                           sandbox="allow-same-origin"
                         />
                       </div>
                     </div>
                     
-                    <div className="mt-4 flex justify-center">
+                    <div className="mt-2 flex justify-center">
                       <Button
                         variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => {
                           const newWindow = window.open('', '_blank');
                           if (newWindow) {
@@ -1582,8 +1585,8 @@ export default function WireframeDesigner() {
                           }
                         }}
                       >
-                        <Frame className="h-4 w-4 mr-2" />
-                        Open in New Window
+                        <Frame className="h-3 w-3 mr-1" />
+                        Open
                       </Button>
                     </div>
                   </CardContent>
