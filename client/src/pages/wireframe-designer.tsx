@@ -1002,7 +1002,7 @@ export default function WireframeDesigner() {
       const contentCards: PageContentCard[] = [];
 
       for (const page of identifiedPages) {
-        const prompt = `Generate detailed, natural language content for a web page based on stakeholder flow analysis.
+        const prompt = `Generate comprehensive, detailed natural language content for a web page interface based on stakeholder flow analysis. Create structured text content that would appear on an actual business application page.
 
 **Page Information:**
 - Page Name: ${page.pageName}
@@ -1013,38 +1013,60 @@ export default function WireframeDesigner() {
 
 **BPMN Context:** ${page.bpmnContext || 'Standard business process flow'}
 
-**Generate the following content in natural language:**
+**Generate comprehensive structured text content in natural language:**
 
-1. **Headers** (3-5 descriptive headings for this page)
-2. **Buttons** (4-6 action buttons with clear labels and purposes)
-3. **Forms** (1-3 forms if applicable with field descriptions)
-4. **Lists** (2-4 content lists or data displays)
-5. **Navigation** (relevant navigation items)
+1. **Headers** (4-6 detailed headings with descriptive, business-appropriate text)
+   - Main page title that clearly describes the page's purpose
+   - Section headers that guide user workflow
+   - Status indicators and informational headers
+   - Call-to-action headers
 
-**Requirements:**
-- Use natural, professional language
-- Be specific to the business context
-- Consider the stakeholder roles
-- Make content actionable and user-focused
-- Ensure content flows logically
+2. **Button Labels** (6-8 action buttons with clear, specific labels)
+   - Primary actions (Create, Submit, Approve, etc.)
+   - Secondary actions (Edit, Review, Export, etc.)
+   - Navigation actions (Back, Next, Cancel, etc.)
+   - Contextual actions specific to the business process
+
+3. **Form Content** (2-4 forms with detailed field labels and descriptions)
+   - Form titles that explain the data being collected
+   - Field labels that are clear and professional
+   - Helper text and validation messages
+   - Submit button text that indicates the action
+
+4. **Additional Content** (3-5 descriptive text blocks)
+   - Welcome messages or instructions
+   - Status descriptions and notifications
+   - Help text and guidance
+   - Business context explanations
+
+5. **Navigation Items** (5-7 relevant navigation elements)
+   - Main navigation menu items
+   - Breadcrumb navigation
+   - Quick access links
+   - Related page links
+
+**Content Requirements:**
+- Write in natural, professional business language
+- Be specific to the industry and business context
+- Consider the stakeholder's role and responsibilities
+- Make all text actionable and user-focused
+- Use complete sentences and proper business terminology
+- Ensure content flows logically through the user journey
+- Include realistic business scenarios and use cases
 
 **Response Format:**
 Provide a JSON object with this structure:
 {
-  "headers": ["Main Page Title", "Section Header 1", "Section Header 2"],
+  "headers": ["Comprehensive Page Title with Business Context", "Detailed Section Header Explaining Purpose", "Status Indicator with Clear Meaning", "Action-Oriented Call to Action Header"],
   "buttons": [
-    {"label": "Action Name", "action": "description", "style": "primary|secondary|outline"},
-    ...
+    {"label": "Detailed Action Button Text", "action": "comprehensive description of what happens", "style": "primary"},
+    {"label": "Secondary Action with Clear Purpose", "action": "detailed explanation", "style": "secondary"}
   ],
   "forms": [
-    {"title": "Form Name", "fields": ["Field 1", "Field 2"], "submitAction": "Submit Action"},
-    ...
+    {"title": "Comprehensive Form Title Explaining Data Collection", "fields": ["Detailed Field Label 1", "Comprehensive Field Description 2"], "submitAction": "Specific Submit Action Description"}
   ],
-  "lists": [
-    {"title": "List Name", "items": ["Item 1", "Item 2"], "type": "data|navigation|content"},
-    ...
-  ],
-  "navigation": ["Nav Item 1", "Nav Item 2", "Nav Item 3"]
+  "additionalContent": ["Detailed welcome message explaining the page purpose and user benefits", "Comprehensive instructions for completing the workflow", "Status explanation with business context"],
+  "navigation": ["Main Dashboard Overview", "Detailed Section Name", "Related Process Area", "User Account Management", "System Settings"]
 }`;
 
         const result = await model.generateContent(prompt);
@@ -1068,7 +1090,7 @@ Provide a JSON object with this structure:
               forms: contentData.forms || [],
               lists: contentData.lists || [],
               navigation: contentData.navigation || [],
-              additionalContent: [],
+              additionalContent: contentData.additionalContent || [],
               isEdited: false
             });
           }
@@ -1080,21 +1102,44 @@ Provide a JSON object with this structure:
             pageType: page.pageType,
             purpose: page.purpose,
             stakeholders: page.stakeholders,
-            headers: [page.pageName, `${page.pageName} Overview`, `Manage ${page.pageName}`],
+            headers: [
+              `${page.pageName} Management Dashboard`,
+              `Current ${page.pageName} Status Overview`,
+              `${page.pageName} Actions and Controls`,
+              `Recent ${page.pageName} Activity`
+            ],
             buttons: [
-              { label: 'Create New', action: 'create', style: 'primary' },
-              { label: 'Edit', action: 'edit', style: 'secondary' },
-              { label: 'Delete', action: 'delete', style: 'outline' },
-              { label: 'Export', action: 'export', style: 'outline' }
+              { label: `Create New ${page.pageName} Entry`, action: 'create new record', style: 'primary' },
+              { label: `Review and Edit ${page.pageName}`, action: 'edit existing data', style: 'secondary' },
+              { label: `Export ${page.pageName} Data`, action: 'download report', style: 'outline' },
+              { label: `Archive Completed ${page.pageName}`, action: 'archive records', style: 'outline' }
             ],
             forms: [
-              { title: `${page.pageName} Form`, fields: ['Name', 'Description', 'Status'], submitAction: 'Save' }
+              { 
+                title: `${page.pageName} Information Collection Form`, 
+                fields: [
+                  `${page.pageName} Identification Details`,
+                  `${page.pageName} Description and Purpose`,
+                  `${page.pageName} Status and Priority Level`
+                ], 
+                submitAction: `Submit ${page.pageName} Information for Processing` 
+              }
             ],
             lists: [
-              { title: `${page.pageName} List`, items: ['Item 1', 'Item 2', 'Item 3'], type: 'data' }
+              { title: `Active ${page.pageName} Records`, items: ['Recently Created Items', 'Pending Review Items', 'Approved Items'], type: 'data' }
             ],
-            navigation: ['Dashboard', page.pageName, 'Settings'],
-            additionalContent: [],
+            navigation: [
+              'Main Dashboard Overview',
+              `${page.pageName} Management`,
+              'System Administration',
+              'User Account Settings',
+              'Help and Documentation'
+            ],
+            additionalContent: [
+              `Welcome to the ${page.pageName} management interface. This dashboard provides comprehensive tools for managing all aspects of your ${page.pageName.toLowerCase()} processes.`,
+              `Use the controls below to create, review, and manage ${page.pageName.toLowerCase()} entries. All actions are tracked and auditable for compliance purposes.`,
+              `For assistance with ${page.pageName.toLowerCase()} procedures, refer to the help documentation or contact your system administrator.`
+            ],
             isEdited: false
           });
         }
@@ -2098,6 +2143,33 @@ Provide a JSON object with this structure:
                         )}
                       </Button>
                     </div>
+
+                    {/* Content Generation Progress */}
+                    {isGeneratingContent && (
+                      <Card className="mb-4 border-green-200 bg-gradient-to-r from-green-50 to-blue-50">
+                        <CardContent className="pt-6">
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center">
+                                <Loader2 className="h-4 w-4 text-white animate-spin" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold text-gray-800">Generating Natural Language Content</h3>
+                                <p className="text-sm text-gray-600">Creating comprehensive structured text content for each page...</p>
+                              </div>
+                            </div>
+                            
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-green-500 to-blue-600 h-2 rounded-full transition-all duration-300 animate-pulse"
+                                style={{ width: '60%' }}
+                              />
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {identifiedPages.map((page, index) => (
                         <div key={index} className="bg-white rounded-lg p-3 border border-blue-200">
@@ -2128,8 +2200,8 @@ Provide a JSON object with this structure:
               </CardContent>
             </Card>
 
-            {/* Natural Language Content Generation */}
-            {editableContentCards.length > 0 && (
+            {/* Natural Language Content Generation - Only show after content is generated */}
+            {editableContentCards.length > 0 && !isGeneratingContent && (
               <Card className="border-2 border-green-200 bg-green-50">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-green-900">
@@ -2137,13 +2209,13 @@ Provide a JSON object with this structure:
                     2. Review & Edit Page Content
                   </CardTitle>
                   <p className="text-sm text-green-700">
-                    Natural language content generated from your stakeholder flow analysis. Edit as needed.
+                    Comprehensive natural language content generated from your stakeholder flow analysis. Review and edit the structured text content below.
                   </p>
                 </CardHeader>
               </Card>
             )}
 
-            {editableContentCards.length > 0 && (
+            {editableContentCards.length > 0 && !isGeneratingContent && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {editableContentCards.map((card, index) => (
                 <Card key={card.id} className="overflow-hidden">
@@ -2361,8 +2433,8 @@ Provide a JSON object with this structure:
               </div>
             )}
 
-            {/* Generate All Button */}
-            {editableContentCards.length > 0 && (
+            {/* Generate All Button - Only show after content generation is complete */}
+            {editableContentCards.length > 0 && !isGeneratingContent && (
               <div className="text-center">
                 <Button
                   onClick={() => generateAllWireframes()}
