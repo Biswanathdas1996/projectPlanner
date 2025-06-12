@@ -1463,158 +1463,157 @@ export default function WireframeDesigner() {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="p-4">
+                  <CardContent className="p-3">
                     <Tabs defaultValue="content" className="w-full">
-                      <TabsList className="grid w-full grid-cols-5 h-8">
-                        <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
-                        <TabsTrigger value="forms" className="text-xs">Forms</TabsTrigger>
-                        <TabsTrigger value="buttons" className="text-xs">Buttons</TabsTrigger>
-                        <TabsTrigger value="media" className="text-xs">Media</TabsTrigger>
-                        <TabsTrigger value="navigation" className="text-xs">Nav</TabsTrigger>
+                      <TabsList className="grid w-full grid-cols-5 h-7 bg-gray-50">
+                        <TabsTrigger value="content" className="text-xs py-1">📝 Content</TabsTrigger>
+                        <TabsTrigger value="forms" className="text-xs py-1">📋 Forms</TabsTrigger>
+                        <TabsTrigger value="buttons" className="text-xs py-1">🔘 Buttons</TabsTrigger>
+                        <TabsTrigger value="media" className="text-xs py-1">🖼️ Media</TabsTrigger>
+                        <TabsTrigger value="navigation" className="text-xs py-1">🧭 Nav</TabsTrigger>
                       </TabsList>
                       
-                      <TabsContent value="content" className="mt-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Headers</h4>
-                              {card.isEdited && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    const updatedCards = [...pageContentCards];
-                                    updatedCards[index].headers.push("New Header");
-                                    setPageContentCards(updatedCards);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              {card.headers.map((header, idx) => (
-                                <div key={idx} className="group flex items-center gap-1">
-                                  <div className="flex-1 p-1 bg-gray-50 rounded text-xs">
-                                    {card.isEdited ? (
-                                      <Input
-                                        value={header}
-                                        onChange={(e) => {
-                                          const updatedCards = [...pageContentCards];
-                                          updatedCards[index].headers[idx] = e.target.value;
-                                          setPageContentCards(updatedCards);
-                                        }}
-                                        className="text-xs h-6"
-                                      />
-                                    ) : (
-                                      header
-                                    )}
-                                  </div>
-                                  {card.isEdited && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                      onClick={() => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].headers.splice(idx, 1);
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                    >
-                                      <Trash2 className="h-3 w-3 text-red-600" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Text Content</h4>
-                              {card.isEdited && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    const updatedCards = [...pageContentCards];
-                                    updatedCards[index].textContent.push("New text content");
-                                    setPageContentCards(updatedCards);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              {card.textContent.map((text, idx) => (
-                                <div key={idx} className="group flex items-center gap-1">
-                                  <div className="flex-1 p-1 bg-gray-50 rounded text-xs">
-                                    {card.isEdited ? (
-                                      <Textarea
-                                        value={text}
-                                        onChange={(e) => {
-                                          const updatedCards = [...pageContentCards];
-                                          updatedCards[index].textContent[idx] = e.target.value;
-                                          setPageContentCards(updatedCards);
-                                        }}
-                                        className="text-xs min-h-[60px] resize-none"
-                                        placeholder="Enter text content"
-                                      />
-                                    ) : (
-                                      typeof text === 'string' ? text : String(text)
-                                    )}
-                                  </div>
-                                  {card.isEdited && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                      onClick={() => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].textContent.splice(idx, 1);
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                    >
-                                      <Trash2 className="h-3 w-3 text-red-600" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="forms" className="mt-3">
+                      <TabsContent value="content" className="mt-2 space-y-3">
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm">Forms</h4>
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📰 Headers
                             {card.isEdited && (
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                className="h-6 w-6 p-0 hover:bg-blue-100"
+                                className="h-5 w-5 p-0 hover:bg-blue-50"
                                 onClick={() => {
                                   const updatedCards = [...pageContentCards];
-                                  updatedCards[index].forms.push({
-                                    title: "New Form",
-                                    fields: ["Field 1"],
-                                    submitAction: "Submit"
-                                  });
+                                  updatedCards[index].headers.push("New Header");
                                   setPageContentCards(updatedCards);
                                 }}
                               >
-                                <Plus className="h-3 w-3 text-blue-600" />
+                                <Plus className="h-3 w-3 text-blue-500" />
                               </Button>
                             )}
                           </div>
+                          <div className="space-y-1 max-h-24 overflow-y-auto">
+                            {card.headers.map((header, idx) => (
+                              <div key={idx} className="group flex items-center gap-1">
+                                <div className="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={header}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].headers[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-5 border-0 bg-transparent p-0"
+                                      placeholder="Header text"
+                                    />
+                                  ) : (
+                                    header
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].headers.splice(idx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📝 Text Content
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-green-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].textContent.push("New text content");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-green-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {card.textContent.map((text, idx) => (
+                              <div key={idx} className="group flex gap-1">
+                                <div className="flex-1 px-2 py-1 bg-green-50 border border-green-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Textarea
+                                      value={text}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].textContent[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs min-h-[40px] border-0 bg-transparent p-0 resize-none"
+                                      placeholder="Enter text content"
+                                    />
+                                  ) : (
+                                    <span className="break-words">{typeof text === 'string' ? text : String(text)}</span>
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50 self-start mt-1"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].textContent.splice(idx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="forms" className="mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                          📋 Forms
+                          {card.isEdited && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 hover:bg-purple-50"
+                              onClick={() => {
+                                const updatedCards = [...pageContentCards];
+                                updatedCards[index].forms.push({
+                                  title: "New Form",
+                                  fields: ["Field 1"],
+                                  submitAction: "Submit"
+                                });
+                                setPageContentCards(updatedCards);
+                              }}
+                            >
+                              <Plus className="h-3 w-3 text-purple-500" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-2 max-h-40 overflow-y-auto">
                           {card.forms.map((form, formIdx) => (
-                            <div key={formIdx} className="group border rounded p-2 bg-gray-50 relative">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="font-medium text-sm">
+                            <div key={formIdx} className="group border border-purple-100 rounded p-2 bg-purple-50 relative">
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex-1">
                                   {card.isEdited ? (
                                     <Input
                                       value={form.title}
@@ -1623,50 +1622,51 @@ export default function WireframeDesigner() {
                                         updatedCards[index].forms[formIdx].title = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                      className="text-xs h-6 font-medium"
+                                      className="text-xs h-5 border-0 bg-transparent p-0 font-medium"
+                                      placeholder="Form title"
                                     />
                                   ) : (
-                                    form.title
+                                    <span className="text-xs font-medium">{form.title}</span>
                                   )}
-                                </h4>
+                                </div>
                                 {card.isEdited && (
                                   <Button
                                     variant="ghost"
                                     size="sm"
-                                    className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
                                     onClick={() => {
                                       const updatedCards = [...pageContentCards];
                                       updatedCards[index].forms.splice(formIdx, 1);
                                       setPageContentCards(updatedCards);
                                     }}
                                   >
-                                    <Trash2 className="h-3 w-3 text-red-600" />
+                                    <Trash2 className="h-2 w-2 text-red-500" />
                                   </Button>
                                 )}
                               </div>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <div className="flex items-center justify-between mb-1">
-                                    <Label className="text-xs font-medium">Fields</Label>
+                              <div className="flex gap-2 text-xs">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <span className="text-gray-600">Fields:</span>
                                     {card.isEdited && (
                                       <Button
                                         variant="ghost"
                                         size="sm"
-                                        className="h-5 w-5 p-0 hover:bg-blue-100"
+                                        className="h-3 w-3 p-0 hover:bg-blue-50"
                                         onClick={() => {
                                           const updatedCards = [...pageContentCards];
                                           updatedCards[index].forms[formIdx].fields.push("New Field");
                                           setPageContentCards(updatedCards);
                                         }}
                                       >
-                                        <Plus className="h-2 w-2 text-blue-600" />
+                                        <Plus className="h-2 w-2 text-blue-400" />
                                       </Button>
                                     )}
                                   </div>
-                                  <div className="space-y-1">
+                                  <div className="space-y-0.5">
                                     {form.fields.map((field, fieldIdx) => (
-                                      <div key={fieldIdx} className="group-field flex items-center gap-1">
-                                        <div className="flex-1 p-1 bg-white rounded text-xs">
+                                      <div key={fieldIdx} className="flex items-center gap-1">
+                                        <div className="flex-1 px-1 py-0.5 bg-white border border-purple-200 rounded text-xs">
                                           {card.isEdited ? (
                                             <Input
                                               value={field}
@@ -1675,7 +1675,8 @@ export default function WireframeDesigner() {
                                                 updatedCards[index].forms[formIdx].fields[fieldIdx] = e.target.value;
                                                 setPageContentCards(updatedCards);
                                               }}
-                                              className="text-xs h-6"
+                                              className="text-xs h-4 border-0 bg-transparent p-0"
+                                              placeholder="Field name"
                                             />
                                           ) : (
                                             field
@@ -1685,24 +1686,23 @@ export default function WireframeDesigner() {
                                           <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-5 w-5 p-0 opacity-0 group-field-hover:opacity-100 hover:bg-red-100"
+                                            className="h-3 w-3 p-0 hover:bg-red-50"
                                             onClick={() => {
                                               const updatedCards = [...pageContentCards];
                                               updatedCards[index].forms[formIdx].fields.splice(fieldIdx, 1);
                                               setPageContentCards(updatedCards);
                                             }}
                                           >
-                                            <Trash2 className="h-2 w-2 text-red-600" />
+                                            <Trash2 className="h-1.5 w-1.5 text-red-400" />
                                           </Button>
                                         )}
                                       </div>
                                     ))}
                                   </div>
                                 </div>
-                                
-                                <div>
-                                  <Label className="text-xs font-medium mb-1 block">Action</Label>
-                                  <div className="p-1 bg-white rounded text-xs">
+                                <div className="w-20">
+                                  <div className="text-gray-600 mb-1">Action:</div>
+                                  <div className="px-1 py-0.5 bg-white border border-purple-200 rounded text-xs">
                                     {card.isEdited ? (
                                       <Input
                                         value={form.submitAction}
@@ -1711,7 +1711,8 @@ export default function WireframeDesigner() {
                                           updatedCards[index].forms[formIdx].submitAction = e.target.value;
                                           setPageContentCards(updatedCards);
                                         }}
-                                        className="text-xs h-6"
+                                        className="text-xs h-4 border-0 bg-transparent p-0"
+                                        placeholder="Submit"
                                       />
                                     ) : (
                                       form.submitAction
@@ -1724,48 +1725,34 @@ export default function WireframeDesigner() {
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="buttons" className="mt-3">
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-medium text-sm">Buttons</h4>
-                            {card.isEdited && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 hover:bg-blue-100"
-                                onClick={() => {
-                                  const updatedCards = [...pageContentCards];
-                                  updatedCards[index].buttons.push({
-                                    label: "New Button",
-                                    action: "Click action",
-                                    style: "primary"
-                                  });
-                                  setPageContentCards(updatedCards);
-                                }}
-                              >
-                                <Plus className="h-3 w-3 text-blue-600" />
-                              </Button>
-                            )}
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            {card.buttons.map((button, btnIdx) => (
-                              <div key={btnIdx} className="group border rounded p-2 bg-gray-50 relative">
-                                {card.isEdited && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                    onClick={() => {
-                                      const updatedCards = [...pageContentCards];
-                                      updatedCards[index].buttons.splice(btnIdx, 1);
-                                      setPageContentCards(updatedCards);
-                                    }}
-                                  >
-                                    <Trash2 className="h-2 w-2 text-red-600" />
-                                  </Button>
-                                )}
-                                <div className="space-y-1">
-                                  <div className="text-xs font-medium">
+                      <TabsContent value="buttons" className="mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                          🔘 Buttons
+                          {card.isEdited && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 hover:bg-orange-50"
+                              onClick={() => {
+                                const updatedCards = [...pageContentCards];
+                                updatedCards[index].buttons.push({
+                                  label: "New Button",
+                                  action: "Click action",
+                                  style: "primary"
+                                });
+                                setPageContentCards(updatedCards);
+                              }}
+                            >
+                              <Plus className="h-3 w-3 text-orange-500" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                          {card.buttons.map((button, btnIdx) => (
+                            <div key={btnIdx} className="group flex items-center gap-2 p-2 border border-orange-100 rounded bg-orange-50">
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1">
                                     {card.isEdited ? (
                                       <Input
                                         value={button.label}
@@ -1774,30 +1761,14 @@ export default function WireframeDesigner() {
                                           updatedCards[index].buttons[btnIdx].label = e.target.value;
                                           setPageContentCards(updatedCards);
                                         }}
-                                        className="text-xs h-6 font-medium"
+                                        className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
                                         placeholder="Button label"
                                       />
                                     ) : (
-                                      button.label
+                                      <span className="text-xs font-medium">{button.label}</span>
                                     )}
                                   </div>
-                                  <div className="text-xs text-gray-600">
-                                    {card.isEdited ? (
-                                      <Input
-                                        value={button.action}
-                                        onChange={(e) => {
-                                          const updatedCards = [...pageContentCards];
-                                          updatedCards[index].buttons[btnIdx].action = e.target.value;
-                                          setPageContentCards(updatedCards);
-                                        }}
-                                        className="text-xs h-6"
-                                        placeholder="Button action"
-                                      />
-                                    ) : (
-                                      button.action
-                                    )}
-                                  </div>
-                                  <div className="text-xs">
+                                  <div className="w-16">
                                     {card.isEdited ? (
                                       <Select 
                                         value={button.style} 
@@ -1807,7 +1778,7 @@ export default function WireframeDesigner() {
                                           setPageContentCards(updatedCards);
                                         }}
                                       >
-                                        <SelectTrigger className="h-6 text-xs">
+                                        <SelectTrigger className="h-5 text-xs border-orange-200">
                                           <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -1818,59 +1789,75 @@ export default function WireframeDesigner() {
                                         </SelectContent>
                                       </Select>
                                     ) : (
-                                      <span className="px-1 py-0.5 bg-blue-100 rounded">{button.style}</span>
+                                      <span className="text-xs px-1 py-0.5 bg-orange-200 rounded">{button.style}</span>
                                     )}
                                   </div>
                                 </div>
+                                <div className="text-xs text-gray-600">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={button.action}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].buttons[btnIdx].action = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-4 border-0 bg-transparent p-0"
+                                      placeholder="Button action"
+                                    />
+                                  ) : (
+                                    button.action
+                                  )}
+                                </div>
                               </div>
-                            ))}
-                          </div>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="media" className="mt-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Images</h4>
                               {card.isEdited && (
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
+                                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
                                   onClick={() => {
                                     const updatedCards = [...pageContentCards];
-                                    updatedCards[index].images.push({
-                                      alt: "New Image",
-                                      description: "Image description",
-                                      position: "center"
-                                    });
+                                    updatedCards[index].buttons.splice(btnIdx, 1);
                                     setPageContentCards(updatedCards);
                                   }}
                                 >
-                                  <Plus className="h-3 w-3 text-blue-600" />
+                                  <Trash2 className="h-2 w-2 text-red-500" />
                                 </Button>
                               )}
                             </div>
-                            <div className="space-y-1">
-                              {card.images.map((image, imgIdx) => (
-                                <div key={imgIdx} className="group border rounded p-2 bg-gray-50 relative">
-                                  {card.isEdited && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                      onClick={() => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].images.splice(imgIdx, 1);
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                    >
-                                      <Trash2 className="h-2 w-2 text-red-600" />
-                                    </Button>
-                                  )}
-                                  <div className="space-y-1">
-                                    <div className="text-xs font-medium">
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="media" className="mt-2 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            🖼️ Images
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-indigo-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].images.push({
+                                    alt: "New Image",
+                                    description: "Image description",
+                                    position: "center"
+                                  });
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-indigo-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1 max-h-28 overflow-y-auto">
+                            {card.images.map((image, imgIdx) => (
+                              <div key={imgIdx} className="group flex gap-2 p-2 border border-indigo-100 rounded bg-indigo-50">
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex items-center gap-1">
+                                    <div className="flex-1">
                                       {card.isEdited ? (
                                         <Input
                                           value={image.alt}
@@ -1879,30 +1866,14 @@ export default function WireframeDesigner() {
                                             updatedCards[index].images[imgIdx].alt = e.target.value;
                                             setPageContentCards(updatedCards);
                                           }}
-                                          className="text-xs h-6"
+                                          className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
                                           placeholder="Alt text"
                                         />
                                       ) : (
-                                        image.alt
+                                        <span className="text-xs font-medium">{image.alt}</span>
                                       )}
                                     </div>
-                                    <div className="text-xs text-gray-600">
-                                      {card.isEdited ? (
-                                        <Input
-                                          value={image.description}
-                                          onChange={(e) => {
-                                            const updatedCards = [...pageContentCards];
-                                            updatedCards[index].images[imgIdx].description = e.target.value;
-                                            setPageContentCards(updatedCards);
-                                          }}
-                                          className="text-xs h-6"
-                                          placeholder="Description"
-                                        />
-                                      ) : (
-                                        image.description
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
+                                    <div className="w-16">
                                       {card.isEdited ? (
                                         <Select 
                                           value={image.position} 
@@ -1912,7 +1883,7 @@ export default function WireframeDesigner() {
                                             setPageContentCards(updatedCards);
                                           }}
                                         >
-                                          <SelectTrigger className="h-6 text-xs">
+                                          <SelectTrigger className="h-5 text-xs border-indigo-200">
                                             <SelectValue />
                                           </SelectTrigger>
                                           <SelectContent>
@@ -1924,264 +1895,294 @@ export default function WireframeDesigner() {
                                           </SelectContent>
                                         </Select>
                                       ) : (
-                                        `Position: ${image.position}`
+                                        <span className="text-xs px-1 py-0.5 bg-indigo-200 rounded">{image.position}</span>
                                       )}
                                     </div>
                                   </div>
+                                  <div className="text-xs text-gray-600">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={image.description}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].images[imgIdx].description = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0"
+                                        placeholder="Description"
+                                      />
+                                    ) : (
+                                      image.description
+                                    )}
+                                  </div>
                                 </div>
-                              ))}
-                            </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].images.splice(imgIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2 w-2 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
                           </div>
-                          
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Lists</h4>
-                              {card.isEdited && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    const updatedCards = [...pageContentCards];
-                                    updatedCards[index].lists.push({
-                                      title: "New List",
-                                      type: "unordered",
-                                      items: ["Item 1"]
-                                    });
-                                    setPageContentCards(updatedCards);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              {card.lists.map((list, listIdx) => (
-                                <div key={listIdx} className="group border rounded p-2 bg-gray-50 relative">
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📋 Lists
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-teal-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].lists.push({
+                                    title: "New List",
+                                    type: "unordered",
+                                    items: ["Item 1"]
+                                  });
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-teal-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                            {card.lists.map((list, listIdx) => (
+                              <div key={listIdx} className="group border border-teal-100 rounded p-2 bg-teal-50">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex-1">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={list.title}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].lists[listIdx].title = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
+                                        placeholder="List title"
+                                      />
+                                    ) : (
+                                      <span className="text-xs font-medium">{list.title}</span>
+                                    )}
+                                  </div>
                                   {card.isEdited && (
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      className="absolute top-1 right-1 h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
+                                      className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
                                       onClick={() => {
                                         const updatedCards = [...pageContentCards];
                                         updatedCards[index].lists.splice(listIdx, 1);
                                         setPageContentCards(updatedCards);
                                       }}
                                     >
-                                      <Trash2 className="h-2 w-2 text-red-600" />
+                                      <Trash2 className="h-2 w-2 text-red-500" />
                                     </Button>
                                   )}
-                                  <div className="space-y-1">
-                                    <div className="font-medium text-xs">
-                                      {card.isEdited ? (
-                                        <Input
-                                          value={list.title}
-                                          onChange={(e) => {
+                                </div>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <div className="flex-1">
+                                    {card.isEdited ? (
+                                      <Select 
+                                        value={list.type} 
+                                        onValueChange={(value) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].lists[listIdx].type = value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-5 text-xs border-teal-200">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="ordered">Ordered</SelectItem>
+                                          <SelectItem value="unordered">Unordered</SelectItem>
+                                          <SelectItem value="checklist">Checklist</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <span className="text-xs text-gray-600">{list.type} • {list.items.length} items</span>
+                                    )}
+                                  </div>
+                                  {card.isEdited && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 hover:bg-blue-50"
+                                      onClick={() => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].lists[listIdx].items.push("New item");
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                    >
+                                      <Plus className="h-2 w-2 text-blue-400" />
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="space-y-0.5">
+                                  {list.items.map((item, itemIdx) => (
+                                    <div key={itemIdx} className="flex items-center gap-1">
+                                      <div className="flex-1 px-1 py-0.5 bg-white border border-teal-200 rounded text-xs">
+                                        {card.isEdited ? (
+                                          <Input
+                                            value={item}
+                                            onChange={(e) => {
+                                              const updatedCards = [...pageContentCards];
+                                              updatedCards[index].lists[listIdx].items[itemIdx] = e.target.value;
+                                              setPageContentCards(updatedCards);
+                                            }}
+                                            className="text-xs h-4 border-0 bg-transparent p-0"
+                                            placeholder="List item"
+                                          />
+                                        ) : (
+                                          `• ${item}`
+                                        )}
+                                      </div>
+                                      {card.isEdited && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-4 w-4 p-0 hover:bg-red-50"
+                                          onClick={() => {
                                             const updatedCards = [...pageContentCards];
-                                            updatedCards[index].lists[listIdx].title = e.target.value;
+                                            updatedCards[index].lists[listIdx].items.splice(itemIdx, 1);
                                             setPageContentCards(updatedCards);
                                           }}
-                                          className="text-xs h-6 font-medium"
-                                          placeholder="List title"
-                                        />
-                                      ) : (
-                                        list.title
+                                        >
+                                          <Trash2 className="h-1.5 w-1.5 text-red-400" />
+                                        </Button>
                                       )}
                                     </div>
-                                    <div className="text-xs text-gray-600">
-                                      {card.isEdited ? (
-                                        <div className="flex items-center gap-1">
-                                          <Select 
-                                            value={list.type} 
-                                            onValueChange={(value) => {
-                                              const updatedCards = [...pageContentCards];
-                                              updatedCards[index].lists[listIdx].type = value;
-                                              setPageContentCards(updatedCards);
-                                            }}
-                                          >
-                                            <SelectTrigger className="h-6 text-xs flex-1">
-                                              <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                              <SelectItem value="ordered">Ordered</SelectItem>
-                                              <SelectItem value="unordered">Unordered</SelectItem>
-                                              <SelectItem value="checklist">Checklist</SelectItem>
-                                            </SelectContent>
-                                          </Select>
-                                          <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="h-6 w-6 p-0 hover:bg-blue-100"
-                                            onClick={() => {
-                                              const updatedCards = [...pageContentCards];
-                                              updatedCards[index].lists[listIdx].items.push("New item");
-                                              setPageContentCards(updatedCards);
-                                            }}
-                                          >
-                                            <Plus className="h-2 w-2 text-blue-600" />
-                                          </Button>
-                                        </div>
-                                      ) : (
-                                        `${list.type} • ${list.items.length} items`
-                                      )}
-                                    </div>
-                                    <div className="space-y-0.5 mt-1">
-                                      {list.items.map((item, itemIdx) => (
-                                        <div key={itemIdx} className="group-item flex items-center gap-1">
-                                          <div className="flex-1 text-xs bg-white p-1 rounded">
-                                            {card.isEdited ? (
-                                              <Input
-                                                value={item}
-                                                onChange={(e) => {
-                                                  const updatedCards = [...pageContentCards];
-                                                  updatedCards[index].lists[listIdx].items[itemIdx] = e.target.value;
-                                                  setPageContentCards(updatedCards);
-                                                }}
-                                                className="text-xs h-5 border-0 p-0 bg-transparent"
-                                                placeholder="List item"
-                                              />
-                                            ) : (
-                                              `• ${item}`
-                                            )}
-                                          </div>
-                                          {card.isEdited && (
-                                            <Button
-                                              variant="ghost"
-                                              size="sm"
-                                              className="h-5 w-5 p-0 opacity-0 group-item-hover:opacity-100 hover:bg-red-100"
-                                              onClick={() => {
-                                                const updatedCards = [...pageContentCards];
-                                                updatedCards[index].lists[listIdx].items.splice(itemIdx, 1);
-                                                setPageContentCards(updatedCards);
-                                              }}
-                                            >
-                                              <Trash2 className="h-2 w-2 text-red-600" />
-                                            </Button>
-                                          )}
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
+                                  ))}
                                 </div>
-                              ))}
-                            </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </TabsContent>
                       
-                      <TabsContent value="navigation" className="mt-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Navigation</h4>
-                              {card.isEdited && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    const updatedCards = [...pageContentCards];
-                                    updatedCards[index].navigation.push("New Nav Item");
-                                    setPageContentCards(updatedCards);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              {card.navigation.map((navItem, navIdx) => (
-                                <div key={navIdx} className="group flex items-center gap-1">
-                                  <div className="flex-1 p-1 bg-gray-50 rounded text-xs">
-                                    {card.isEdited ? (
-                                      <Input
-                                        value={navItem}
-                                        onChange={(e) => {
-                                          const updatedCards = [...pageContentCards];
-                                          updatedCards[index].navigation[navIdx] = e.target.value;
-                                          setPageContentCards(updatedCards);
-                                        }}
-                                        className="text-xs h-6"
-                                        placeholder="Navigation item"
-                                      />
-                                    ) : (
-                                      navItem
-                                    )}
-                                  </div>
-                                  {card.isEdited && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                      onClick={() => {
-                                        const updatedCards = [...pageContentCards];
-                                        updatedCards[index].navigation.splice(navIdx, 1);
-                                        setPageContentCards(updatedCards);
-                                      }}
-                                    >
-                                      <Trash2 className="h-3 w-3 text-red-600" />
-                                    </Button>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
+                      <TabsContent value="navigation" className="mt-2 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            🧭 Navigation
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-cyan-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].navigation.push("New Nav Item");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-cyan-500" />
+                              </Button>
+                            )}
                           </div>
-                          
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <h4 className="font-medium text-sm">Additional Content</h4>
-                              {card.isEdited && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-6 w-6 p-0 hover:bg-blue-100"
-                                  onClick={() => {
-                                    const updatedCards = [...pageContentCards];
-                                    updatedCards[index].additionalContent.push("New content");
-                                    setPageContentCards(updatedCards);
-                                  }}
-                                >
-                                  <Plus className="h-3 w-3 text-blue-600" />
-                                </Button>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              {card.additionalContent.map((content, contentIdx) => (
-                                <div key={contentIdx} className="group flex items-center gap-1">
-                                  <div className="flex-1 p-1 bg-gray-50 rounded text-xs">
-                                    {card.isEdited ? (
-                                      <Input
-                                        value={content}
-                                        onChange={(e) => {
-                                          const updatedCards = [...pageContentCards];
-                                          updatedCards[index].additionalContent[contentIdx] = e.target.value;
-                                          setPageContentCards(updatedCards);
-                                        }}
-                                        className="text-xs h-6"
-                                        placeholder="Additional content"
-                                      />
-                                    ) : (
-                                      typeof content === 'string' ? content : String(content)
-                                    )}
-                                  </div>
-                                  {card.isEdited && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-100"
-                                      onClick={() => {
+                          <div className="space-y-1 max-h-24 overflow-y-auto">
+                            {card.navigation.map((navItem, navIdx) => (
+                              <div key={navIdx} className="group flex items-center gap-1">
+                                <div className="flex-1 px-2 py-1 bg-cyan-50 border border-cyan-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={navItem}
+                                      onChange={(e) => {
                                         const updatedCards = [...pageContentCards];
-                                        updatedCards[index].additionalContent.splice(contentIdx, 1);
+                                        updatedCards[index].navigation[navIdx] = e.target.value;
                                         setPageContentCards(updatedCards);
                                       }}
-                                    >
-                                      <Trash2 className="h-3 w-3 text-red-600" />
-                                    </Button>
+                                      className="text-xs h-5 border-0 bg-transparent p-0"
+                                      placeholder="Navigation item"
+                                    />
+                                  ) : (
+                                    navItem
                                   )}
                                 </div>
-                              ))}
-                            </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].navigation.splice(navIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            ➕ Additional Content
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-pink-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].additionalContent.push("New content");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-pink-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1 max-h-28 overflow-y-auto">
+                            {card.additionalContent.map((content, contentIdx) => (
+                              <div key={contentIdx} className="group flex gap-1">
+                                <div className="flex-1 px-2 py-1 bg-pink-50 border border-pink-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Textarea
+                                      value={content}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].additionalContent[contentIdx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs min-h-[40px] border-0 bg-transparent p-0 resize-none"
+                                      placeholder="Additional content"
+                                    />
+                                  ) : (
+                                    <span className="break-words">{typeof content === 'string' ? content : String(content)}</span>
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50 self-start mt-1"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].additionalContent.splice(contentIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
                           </div>
                         </div>
                       </TabsContent>
