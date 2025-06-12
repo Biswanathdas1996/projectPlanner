@@ -50,7 +50,6 @@ import {
   Plus,
   Trash2,
   Edit3,
-  Trash2,
   Save,
   RefreshCw,
   Upload,
