@@ -12,6 +12,7 @@ import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
 import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
+import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
   Palette,
@@ -167,6 +168,7 @@ export default function WireframeDesigner() {
   const [selectedWireframe, setSelectedWireframe] = useState<WireframeData | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [currentStep, setCurrentStep] = useState<"input" | "generating" | "results">("input");
+  const { toast } = useToast();
   const [error, setError] = useState("");
   const [designPrompt, setDesignPrompt] = useState<DesignPrompt>({
     projectType: "",
@@ -190,7 +192,7 @@ export default function WireframeDesigner() {
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
   const [contentGenerationProgress, setContentGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
-  const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
+
   const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   
@@ -2300,7 +2302,61 @@ export default function WireframeDesigner() {
                 </div>
               </div>
 
-              
+              {/* Generate Wireframes Button */}
+              <div className="flex justify-center pt-4 border-t border-gray-200">
+                <Button
+                  onClick={async () => {
+                    if (pageContentCards.length === 0) {
+                      toast({
+                        title: "No Content Available",
+                        description: "Please generate page content first before creating wireframes.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    setIsGeneratingWireframes(true);
+                    try {
+                      const newWireframes = [];
+                      
+                      for (const card of pageContentCards) {
+                        const wireframe = await generatePageWireframe(card);
+                        newWireframes.push(wireframe);
+                      }
+                      
+                      setGeneratedWireframes(newWireframes);
+                      
+                      toast({
+                        title: "Wireframes Generated",
+                        description: `Successfully created ${newWireframes.length} wireframe(s).`,
+                      });
+                    } catch (error) {
+                      console.error('Error generating wireframes:', error);
+                      toast({
+                        title: "Generation Failed",
+                        description: "Failed to generate wireframes. Please try again.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsGeneratingWireframes(false);
+                    }
+                  }}
+                  disabled={isGeneratingWireframes || pageContentCards.length === 0}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                >
+                  {isGeneratingWireframes ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                      Generating Wireframes...
+                    </>
+                  ) : (
+                    <>
+                      <Frame className="h-5 w-5 mr-2" />
+                      Generate Wireframes ({pageContentCards.length})
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
