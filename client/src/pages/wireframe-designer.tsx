@@ -115,6 +115,53 @@ interface DesignPrompt {
   screenTypes: string[];
 }
 
+// Comprehensive utility function to safely render any content and prevent React object rendering errors
+const safeRenderContent = (content: any): string => {
+  if (typeof content === 'string') {
+    return content;
+  } else if (typeof content === 'number' || typeof content === 'boolean') {
+    return String(content);
+  } else if (content === null || content === undefined) {
+    return '';
+  } else if (typeof content === 'object') {
+    // Handle various object structures that might be present
+    if (content.label && content.url) {
+      return `${content.label} (${content.url})`;
+    } else if (content.label && content.href) {
+      return `${content.label} (${content.href})`;
+    } else if (content.text && content.link) {
+      return `${content.text} (${content.link})`;
+    } else if (content.name && content.url) {
+      return `${content.name} (${content.url})`;
+    } else if (content.title && content.link) {
+      return `${content.title} (${content.link})`;
+    } else if (content.text) {
+      return String(content.text);
+    } else if (content.label) {
+      return String(content.label);
+    } else if (content.name) {
+      return String(content.name);
+    } else if (content.title) {
+      return String(content.title);
+    } else if (content.value) {
+      return String(content.value);
+    } else if (content.content) {
+      return String(content.content);
+    } else if (Array.isArray(content)) {
+      return content.map(item => safeRenderContent(item)).join(', ');
+    } else {
+      // Fallback: convert object to readable string
+      try {
+        return Object.entries(content).map(([key, value]) => `${key}: ${safeRenderContent(value)}`).join(', ');
+      } catch {
+        return JSON.stringify(content);
+      }
+    }
+  } else {
+    return String(content);
+  }
+};
+
 export default function WireframeDesigner() {
   const [wireframes, setWireframes] = useState<WireframeData[]>([]);
   const [selectedWireframe, setSelectedWireframe] = useState<WireframeData | null>(null);
@@ -1222,7 +1269,7 @@ export default function WireframeDesigner() {
                             <div><strong>Headers:</strong> {page.contentDetails.headers.slice(0, 2).join(', ')}</div>
                           )}
                           {page.contentDetails.buttons.length > 0 && (
-                            <div><strong>Actions:</strong> {page.contentDetails.buttons.slice(0, 3).map(b => b.label).join(', ')}</div>
+                            <div><strong>Actions:</strong> {page.contentDetails.buttons.slice(0, 3).map(b => safeRenderContent(b.label || b)).join(', ')}</div>
                           )}
                           {page.contentDetails.forms.length > 0 && (
                             <div><strong>Forms:</strong> {page.contentDetails.forms.length} form(s)</div>
@@ -1508,7 +1555,7 @@ export default function WireframeDesigner() {
                                       placeholder="Header text"
                                     />
                                   ) : (
-                                    header
+                                    safeRenderContent(header)
                                   )}
                                 </div>
                                 {card.isEdited && (
@@ -1564,7 +1611,7 @@ export default function WireframeDesigner() {
                                       placeholder="Enter text content"
                                     />
                                   ) : (
-                                    <span className="break-words">{typeof text === 'string' ? text : typeof text === 'object' && text !== null ? JSON.stringify(text) : String(text)}</span>
+                                    <span className="break-words">{safeRenderContent(text)}</span>
                                   )}
                                 </div>
                                 {card.isEdited && (
@@ -2108,7 +2155,7 @@ export default function WireframeDesigner() {
                                       placeholder="Navigation item"
                                     />
                                   ) : (
-                                    navItem
+                                    safeRenderContent(navItem)
                                   )}
                                 </div>
                                 {card.isEdited && (
@@ -2164,7 +2211,7 @@ export default function WireframeDesigner() {
                                       placeholder="Additional content"
                                     />
                                   ) : (
-                                    <span className="break-words">{typeof content === 'string' ? content : typeof content === 'object' && content !== null ? JSON.stringify(content) : String(content)}</span>
+                                    <span className="break-words">{safeRenderContent(content)}</span>
                                   )}
                                 </div>
                                 {card.isEdited && (
