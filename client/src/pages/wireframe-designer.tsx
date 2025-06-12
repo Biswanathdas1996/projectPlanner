@@ -199,15 +199,15 @@ export default function WireframeDesigner() {
           status: `Generating ${pageReq.pageName}...` 
         });
 
-        const result = await generator.generateWireframe({
-          pageName: pageReq.pageName,
-          pageType: pageReq.pageType,
-          purpose: pageReq.purpose,
-          stakeholders: pageReq.stakeholders,
-          contentElements: pageReq.contentElements,
-          designStyle: designPrompt.designStyle || 'modern',
-          deviceType: designPrompt.deviceType || 'desktop'
-        });
+        const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
+        const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
+        const projectDescription = localStorage.getItem('project_description') || '';
+        
+        const result = await generator.generateDetailedWireframes(
+          stakeholderFlows,
+          flowTypes,
+          projectDescription
+        );
 
         newWireframes.push(result);
       }
