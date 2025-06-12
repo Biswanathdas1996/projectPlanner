@@ -27,7 +27,7 @@ export interface PageContentGenerationRequest {
 }
 
 export class PageContentAgent {
-  private model: any;
+  public model: any;
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
@@ -50,13 +50,11 @@ export class PageContentAgent {
         
         console.log(`Generating content for page: ${pageReq.pageName}`);
         
-        const prompt = this.buildContentPrompt(pageReq, flowTypes, projectDescription);
-        
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-        
-        const pageContent = this.parseContentResponse(text, pageReq);
+        const pageContent = await this.generateSinglePageContent(pageReq, {
+          stakeholderFlows,
+          flowTypes,
+          projectDescription
+        });
         
         contentCards.push({
           id: `page-${i}`,
@@ -74,7 +72,21 @@ export class PageContentAgent {
     }
   }
 
-  private buildContentPrompt(pageReq: any, flowTypes: any, projectDescription: string): string {
+  async generateSinglePageContent(pageReq: any, context: {
+    stakeholderFlows: any[];
+    flowTypes: any;
+    projectDescription: string;
+  }): Promise<Omit<PageContentCard, 'id' | 'isEdited'>> {
+    const prompt = this.buildContentPrompt(pageReq, context.flowTypes, context.projectDescription);
+    
+    const result = await this.model.generateContent(prompt);
+    const response = await result.response;
+    const text = response.text();
+    
+    return this.parseContentResponse(text, pageReq);
+  }
+
+  buildContentPrompt(pageReq: any, flowTypes: any, projectDescription: string): string {
     return `
 You are an expert UX content strategist. Generate detailed page content for a web application page.
 
