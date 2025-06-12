@@ -30,12 +30,7 @@ export async function generateWireframeHTML(req: Request, res: Response) {
       return res.status(400).json({ error: 'Invalid page content data' });
     }
 
-    const apiKey = process.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      return res.status(500).json({ error: 'Gemini API key not configured' });
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = buildWireframePrompt(pageContent, designStyle, deviceType);
