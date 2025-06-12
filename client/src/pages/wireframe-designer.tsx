@@ -1679,11 +1679,11 @@ export default function WireframeDesigner() {
                         </div>
                         
                         {/* Page Layout Selector with Visual Previews */}
-                        <div className="mt-3 pt-2 border-t border-gray-200">
+                        <div className="mt-3 pt-2 border-t border-gray-200 w-full">
                           <Accordion type="single" collapsible className="w-full">
-                            <AccordionItem value="layout" className="border-0">
-                              <AccordionTrigger className="text-xs font-medium text-gray-700 py-2 hover:no-underline">
-                                <div className="flex items-center gap-2">
+                            <AccordionItem value="layout" className="border-0 w-full">
+                              <AccordionTrigger className="text-xs font-medium text-gray-700 py-2 hover:no-underline w-full">
+                                <div className="flex items-center gap-2 w-full">
                                   🎨 Page Layout: {(() => {
                                     const layoutNames = {
                                       'standard-header': 'Standard Header',
@@ -1699,8 +1699,8 @@ export default function WireframeDesigner() {
                                   })()}
                                 </div>
                               </AccordionTrigger>
-                              <AccordionContent className="pt-2">
-                                <div className="grid grid-cols-2 gap-2">
+                              <AccordionContent className="pt-2 w-full">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
                                   {[
                                     {
                                       id: 'standard-header',
