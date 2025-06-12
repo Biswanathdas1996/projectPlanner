@@ -141,12 +141,24 @@ export default function WireframeDesigner() {
   } | null>(null);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
+  const [contentGenerationProgress, setContentGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
+  const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
+  const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string }[]>([]);
+  const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
 
   // Load saved data
   useEffect(() => {
     const savedWireframes = localStorage.getItem('wireframe_designs');
+    const savedPageContent = localStorage.getItem('page_content_cards');
+    const savedGeneratedWireframes = localStorage.getItem('generated_wireframes');
     if (savedWireframes) {
       setWireframes(JSON.parse(savedWireframes));
+    }
+    if (savedPageContent) {
+      setPageContentCards(JSON.parse(savedPageContent));
+    }
+    if (savedGeneratedWireframes) {
+      setGeneratedWireframes(JSON.parse(savedGeneratedWireframes));
     }
   }, []);
 
@@ -156,6 +168,20 @@ export default function WireframeDesigner() {
       localStorage.setItem('wireframe_designs', JSON.stringify(wireframes));
     }
   }, [wireframes]);
+
+  // Save page content cards to localStorage
+  useEffect(() => {
+    if (pageContentCards.length > 0) {
+      localStorage.setItem('page_content_cards', JSON.stringify(pageContentCards));
+    }
+  }, [pageContentCards]);
+
+  // Save generated wireframes to localStorage
+  useEffect(() => {
+    if (generatedWireframes.length > 0) {
+      localStorage.setItem('generated_wireframes', JSON.stringify(generatedWireframes));
+    }
+  }, [generatedWireframes]);
 
   // Analyze stakeholder flows using AI
   const analyzeStakeholderFlows = async () => {
@@ -187,6 +213,7 @@ export default function WireframeDesigner() {
     
     setIsGeneratingContent(true);
     setError("");
+    setContentGenerationProgress({ current: 0, total: analysisResult.pageRequirements.length, currentPage: "" });
     
     try {
       // Get flow data from localStorage
@@ -197,13 +224,30 @@ export default function WireframeDesigner() {
       // Create content generation agent
       const contentAgent = createPageContentAgent();
       
-      // Generate content for each page
-      const contentCards = await contentAgent.generatePageContent({
-        analysisResult,
-        stakeholderFlows,
-        flowTypes,
-        projectDescription
-      });
+      const contentCards: PageContentCard[] = [];
+      
+      // Generate content for each page with progress tracking
+      for (let i = 0; i < analysisResult.pageRequirements.length; i++) {
+        const pageReq = analysisResult.pageRequirements[i];
+        
+        setContentGenerationProgress({ 
+          current: i + 1, 
+          total: analysisResult.pageRequirements.length, 
+          currentPage: pageReq.pageName 
+        });
+        
+        const prompt = contentAgent.buildContentPrompt(pageReq, flowTypes, projectDescription);
+        const result = await contentAgent.model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+        const content = contentAgent.parseContentResponse(text, pageReq);
+        
+        contentCards.push({
+          id: `page-${i}`,
+          ...content,
+          isEdited: false
+        });
+      }
       
       setPageContentCards(contentCards);
       
@@ -212,6 +256,7 @@ export default function WireframeDesigner() {
       setError(err instanceof Error ? err.message : "Failed to generate page content");
     } finally {
       setIsGeneratingContent(false);
+      setContentGenerationProgress({ current: 0, total: 0, currentPage: "" });
     }
   };
 
