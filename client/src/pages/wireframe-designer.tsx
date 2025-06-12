@@ -1564,7 +1564,7 @@ export default function WireframeDesigner() {
                                       placeholder="Enter text content"
                                     />
                                   ) : (
-                                    <span className="break-words">{typeof text === 'string' ? text : String(text)}</span>
+                                    <span className="break-words">{typeof text === 'string' ? text : typeof text === 'object' && text !== null ? JSON.stringify(text) : String(text)}</span>
                                   )}
                                 </div>
                                 {card.isEdited && (
@@ -2164,7 +2164,7 @@ export default function WireframeDesigner() {
                                       placeholder="Additional content"
                                     />
                                   ) : (
-                                    <span className="break-words">{typeof content === 'string' ? content : String(content)}</span>
+                                    <span className="break-words">{typeof content === 'string' ? content : typeof content === 'object' && content !== null ? JSON.stringify(content) : String(content)}</span>
                                   )}
                                 </div>
                                 {card.isEdited && (
