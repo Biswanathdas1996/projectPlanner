@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
@@ -165,11 +165,7 @@ export default function WireframeDesigner() {
       const projectDescription = localStorage.getItem('project_description') || '';
 
       const analysisAgent = createWireframeAnalysisAgent();
-      const result = await analysisAgent.analyzeStakeholderFlows({
-        stakeholderFlows,
-        flowTypes,
-        projectDescription
-      });
+      const result = await analysisAgent.analyzeStakeholderFlows();
 
       setAnalysisResult(result);
       setCurrentStep("input");
@@ -369,11 +365,11 @@ export default function WireframeDesigner() {
                         <strong>Identified Stakeholders:</strong>
                       </p>
                       <div className="flex flex-wrap gap-1">
-                        {analysisResult.stakeholders.map((stakeholder, idx) => (
+                        {analysisResult.stakeholders?.map((stakeholder, idx) => (
                           <Badge key={idx} variant="secondary" className="text-xs">
                             {stakeholder}
                           </Badge>
-                        ))}
+                        )) || <span className="text-xs text-gray-500">No stakeholders identified</span>}
                       </div>
                     </div>
                   </div>

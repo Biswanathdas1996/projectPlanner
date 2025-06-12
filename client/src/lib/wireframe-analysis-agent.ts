@@ -39,6 +39,7 @@ export interface WireframeAnalysisResult {
   projectContext: string;
   totalPages: number;
   pageRequirements: PageRequirement[];
+  stakeholders: string[];
   commonElements: ContentElement[];
   userFlowConnections: { from: string; to: string; trigger: string }[];
   dataFlowMap: { source: string; destination: string; dataType: string }[];
@@ -277,6 +278,7 @@ export class WireframeAnalysisAgent {
         projectDescription || "Business process management system",
       totalPages: pageRequirements.length,
       pageRequirements,
+      stakeholders: stakeholders,
       commonElements: [
         {
           type: "navigation",
