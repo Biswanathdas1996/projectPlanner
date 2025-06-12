@@ -1679,7 +1679,7 @@ export default function WireframeDesigner() {
                         </div>
                         
                         {/* Page Layout Selector with Visual Previews */}
-                        <div className="mt-3 pt-2 border-t border-gray-200 w-full">
+                        <div className="pt-2 border-t border-gray-200 w-full mt-[16px] mb-[16px] text-justify ml-[20px] mr-[20px] pl-[0px] pr-[0px]">
                           <Accordion type="single" collapsible className="w-full">
                             <AccordionItem value="layout" className="border-0 w-full">
                               <AccordionTrigger className="text-xs font-medium text-gray-700 py-2 hover:no-underline w-full">
