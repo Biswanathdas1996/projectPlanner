@@ -154,11 +154,11 @@ Generate realistic, relevant content that matches the page purpose and stakehold
         stakeholders: parsed.stakeholders || pageReq.stakeholders || [],
         headers: Array.isArray(parsed.headers) ? parsed.headers : this.generateFallbackHeaders(pageReq),
         textContent: Array.isArray(parsed.textContent) ? parsed.textContent : this.generateFallbackTextContent(pageReq),
-        buttons: Array.isArray(parsed.buttons) ? parsed.buttons : this.generateFallbackButtons(pageReq),
-        forms: Array.isArray(parsed.forms) ? parsed.forms : this.generateFallbackForms(pageReq),
-        inputs: Array.isArray(parsed.inputs) ? parsed.inputs : this.generateFallbackInputs(pageReq),
-        lists: Array.isArray(parsed.lists) ? parsed.lists : this.generateFallbackLists(pageReq),
-        images: Array.isArray(parsed.images) ? parsed.images : this.generateFallbackImages(pageReq),
+        buttons: Array.isArray(parsed.buttons) ? this.validateButtons(parsed.buttons) : this.generateFallbackButtons(pageReq),
+        forms: Array.isArray(parsed.forms) ? this.validateForms(parsed.forms) : this.generateFallbackForms(pageReq),
+        inputs: Array.isArray(parsed.inputs) ? this.validateInputs(parsed.inputs) : this.generateFallbackInputs(pageReq),
+        lists: Array.isArray(parsed.lists) ? this.validateLists(parsed.lists) : this.generateFallbackLists(pageReq),
+        images: Array.isArray(parsed.images) ? this.validateImages(parsed.images) : this.generateFallbackImages(pageReq),
         navigation: Array.isArray(parsed.navigation) ? parsed.navigation : this.generateFallbackNavigation(pageReq),
         additionalContent: Array.isArray(parsed.additionalContent) ? parsed.additionalContent : this.generateFallbackAdditionalContent(pageReq)
       };
@@ -301,6 +301,55 @@ Generate realistic, relevant content that matches the page purpose and stakehold
       "Terms and conditions apply",
       "© 2024 Application Name"
     ];
+  }
+
+  private validateButtons(buttons: any[]): { label: string; action: string; style: string }[] {
+    return buttons.map(btn => ({
+      label: String(btn.label || btn.text || btn.name || "Button"),
+      action: String(btn.action || btn.onClick || btn.handler || "click"),
+      style: String(btn.style || btn.variant || btn.type || "primary")
+    }));
+  }
+
+  private validateForms(forms: any[]): { title: string; fields: string[]; submitAction: string }[] {
+    return forms.map(form => ({
+      title: String(form.title || form.name || "Form"),
+      fields: Array.isArray(form.fields) 
+        ? form.fields.map((field: any) => 
+            typeof field === 'string' ? field : String(field.label || field.name || field.placeholder || "Field")
+          )
+        : ["Field 1", "Field 2"],
+      submitAction: String(form.submitAction || form.action || form.onSubmit || "submit")
+    }));
+  }
+
+  private validateInputs(inputs: any[]): { label: string; type: string; placeholder: string; required: boolean }[] {
+    return inputs.map(input => ({
+      label: String(input.label || input.name || "Input"),
+      type: String(input.type || "text"),
+      placeholder: String(input.placeholder || input.hint || "Enter value"),
+      required: Boolean(input.required || input.mandatory || false)
+    }));
+  }
+
+  private validateLists(lists: any[]): { title: string; items: string[]; type: string }[] {
+    return lists.map(list => ({
+      title: String(list.title || list.name || "List"),
+      items: Array.isArray(list.items) 
+        ? list.items.map((item: any) => 
+            typeof item === 'string' ? item : String(item.text || item.label || item.name || "Item")
+          )
+        : ["Item 1", "Item 2"],
+      type: String(list.type || "unordered")
+    }));
+  }
+
+  private validateImages(images: any[]): { alt: string; description: string; position: string }[] {
+    return images.map(image => ({
+      alt: String(image.alt || image.title || "Image"),
+      description: String(image.description || image.caption || "Image description"),
+      position: String(image.position || image.location || "center")
+    }));
   }
 }
 
