@@ -201,6 +201,7 @@ export default function WireframeDesigner() {
   const [selectedDeviceType, setSelectedDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
   const [selectedColorScheme, setSelectedColorScheme] = useState<string>('modern-blue');
   const [selectedDesignType, setSelectedDesignType] = useState<string>('modern');
+  const [selectedLayout, setSelectedLayout] = useState<string>('standard-header');
 
   // Load saved data
   useEffect(() => {
@@ -381,8 +382,8 @@ export default function WireframeDesigner() {
   };
 
   const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string }> => {
-    const htmlCode = generateWireframeHTML(card, selectedDeviceType, selectedColorScheme, selectedDesignType);
-    const cssCode = generateWireframeCSS(card, selectedDeviceType, selectedColorScheme, selectedDesignType);
+    const htmlCode = generateWireframeHTML(card, selectedDeviceType, selectedColorScheme, selectedDesignType, selectedLayout);
+    const cssCode = generateWireframeCSS(card, selectedDeviceType, selectedColorScheme, selectedDesignType, selectedLayout);
     
     return {
       pageName: card.pageName,
@@ -391,7 +392,7 @@ export default function WireframeDesigner() {
     };
   };
 
-  const generateWireframeHTML = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string): string => {
+  const generateWireframeHTML = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string, layout: string = 'standard-header'): string => {
     const viewportWidth = deviceType === 'mobile' ? '375' : deviceType === 'tablet' ? '768' : '1200';
     
     return `
@@ -402,7 +403,7 @@ export default function WireframeDesigner() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${card.pageName}</title>
     <style>
-        ${generateWireframeCSS(card, deviceType, colorScheme, designType)}
+        ${generateWireframeCSS(card, deviceType, colorScheme, designType, layout)}
     </style>
 </head>
 <body>
@@ -494,7 +495,7 @@ export default function WireframeDesigner() {
 </html>`;
   };
 
-  const generateWireframeCSS = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string): string => {
+  const generateWireframeCSS = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string, layout: string = 'standard-header'): string => {
     // Color scheme definitions
     const colorSchemes = {
       'modern-blue': { primary: '#3B82F6', secondary: '#1E40AF', accent: '#60A5FA', bg: '#F8FAFC', text: '#1F2937' },
@@ -2317,6 +2318,162 @@ export default function WireframeDesigner() {
                       <SelectItem value="classic">Classic & Traditional</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              {/* Page Layout Selection */}
+              <div className="mt-6 border-t border-gray-200 pt-6">
+                <Label className="text-sm font-medium mb-4 block">Page Layout Templates</Label>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {[
+                    {
+                      id: 'standard-header',
+                      name: 'Standard Header',
+                      description: 'Traditional header with navigation',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-3 bg-blue-500"></div>
+                          <div className="p-2 space-y-1">
+                            <div className="h-1 bg-gray-300 rounded w-1/2"></div>
+                            <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                            <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'hero-banner',
+                      name: 'Hero Banner',
+                      description: 'Large hero section with CTA',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-2 bg-purple-500"></div>
+                          <div className="h-8 bg-gradient-to-r from-purple-100 to-blue-100"></div>
+                          <div className="p-2 space-y-1">
+                            <div className="h-1 bg-gray-200 rounded w-1/3"></div>
+                            <div className="h-1 bg-gray-300 rounded w-1/4"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'sidebar-layout',
+                      name: 'Sidebar Layout',
+                      description: 'Side navigation with content',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden flex">
+                          <div className="w-1/4 bg-gray-600"></div>
+                          <div className="flex-1 p-2 space-y-1">
+                            <div className="h-1 bg-gray-300 rounded"></div>
+                            <div className="h-1 bg-gray-200 rounded w-3/4"></div>
+                            <div className="h-1 bg-gray-200 rounded w-2/3"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'dashboard-grid',
+                      name: 'Dashboard Grid',
+                      description: 'Card-based dashboard layout',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-2 bg-green-500"></div>
+                          <div className="p-1 grid grid-cols-2 gap-1">
+                            <div className="h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                            <div className="h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                            <div className="h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                            <div className="h-3 bg-gray-100 border border-gray-200 rounded"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'centered-content',
+                      name: 'Centered Content',
+                      description: 'Clean centered layout',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-2 bg-indigo-500"></div>
+                          <div className="p-3 flex justify-center">
+                            <div className="w-3/4 space-y-1">
+                              <div className="h-1 bg-gray-300 rounded"></div>
+                              <div className="h-1 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                              <div className="h-1 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'landing-page',
+                      name: 'Landing Page',
+                      description: 'Marketing landing page',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-1 bg-orange-500"></div>
+                          <div className="h-6 bg-gradient-to-b from-orange-50 to-yellow-50"></div>
+                          <div className="p-2 space-y-1">
+                            <div className="h-1 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                            <div className="h-1 bg-orange-300 rounded w-1/4 mx-auto"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'blog-layout',
+                      name: 'Blog Layout',
+                      description: 'Article-focused layout',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-2 bg-teal-500"></div>
+                          <div className="p-2 space-y-1">
+                            <div className="h-1 bg-gray-400 rounded w-3/4"></div>
+                            <div className="h-1 bg-gray-200 rounded"></div>
+                            <div className="h-1 bg-gray-200 rounded"></div>
+                            <div className="h-1 bg-gray-200 rounded w-5/6"></div>
+                          </div>
+                        </div>
+                      )
+                    },
+                    {
+                      id: 'ecommerce-grid',
+                      name: 'E-commerce Grid',
+                      description: 'Product showcase layout',
+                      preview: (
+                        <div className="w-full h-20 bg-white border border-gray-200 rounded-md overflow-hidden">
+                          <div className="h-2 bg-pink-500"></div>
+                          <div className="p-1 grid grid-cols-3 gap-1">
+                            <div className="h-4 bg-gray-100 border border-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-100 border border-gray-200 rounded"></div>
+                            <div className="h-4 bg-gray-100 border border-gray-200 rounded"></div>
+                          </div>
+                        </div>
+                      )
+                    }
+                  ].map((layout) => (
+                    <div
+                      key={layout.id}
+                      className={`cursor-pointer border-2 rounded-lg p-3 transition-all duration-200 hover:shadow-lg ${
+                        selectedLayout === layout.id
+                          ? 'border-blue-500 bg-blue-50 shadow-md'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                      onClick={() => setSelectedLayout(layout.id)}
+                    >
+                      <div className="mb-2">
+                        {layout.preview}
+                      </div>
+                      <div className="text-center">
+                        <h4 className="text-xs font-medium text-gray-800 mb-1">{layout.name}</h4>
+                        <p className="text-xs text-gray-500">{layout.description}</p>
+                      </div>
+                      {selectedLayout === layout.id && (
+                        <div className="mt-2 flex justify-center">
+                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
