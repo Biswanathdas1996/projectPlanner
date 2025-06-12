@@ -628,20 +628,21 @@ export default function WireframeDesigner() {
         }
 
         .list-title {
-            color: #444;
+            color: ${colors.secondary};
             margin-bottom: 1rem;
         }
 
         .wireframe-list {
             list-style: none;
-            background: #f9f9f9;
-            border-radius: 8px;
+            background: ${colors.bg};
+            border-radius: ${borderRadius};
             padding: 1rem;
+            border: 1px solid ${colors.accent};
         }
 
         .list-item {
             padding: 0.5rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid ${colors.accent};
         }
 
         .list-item:last-child {
@@ -656,12 +657,12 @@ export default function WireframeDesigner() {
         }
 
         .image-placeholder {
-            background: #f0f0f0;
-            border: 2px dashed #ccc;
-            border-radius: 8px;
-            padding: 2rem;
+            background: ${colors.bg};
+            border: 2px dashed ${colors.accent};
+            border-radius: ${borderRadius};
+            padding: ${padding};
             text-align: center;
-            min-height: 200px;
+            min-height: ${deviceType === 'mobile' ? '150px' : '200px'};
             display: flex;
             align-items: center;
             justify-content: center;

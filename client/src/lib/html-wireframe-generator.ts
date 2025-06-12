@@ -318,14 +318,14 @@ export class HTMLWireframeGenerator {
           <div class="card">
             <h3>${content.lists[0]?.title}</h3>
             <ul class="task-list">
-              ${content.lists[0]?.items.map(item => `<li class="task-item">${item}</li>`).join('')}
+              ${content.lists[0]?.items.map((item: string) => `<li class="task-item">${item}</li>`).join('')}
             </ul>
           </div>
           
           <div class="card">
             <h3>Quick Actions</h3>
             <div class="action-buttons">
-              ${content.buttons.map(btn => `<button class="btn-primary" data-action="${btn.action}">${btn.label}</button>`).join('')}
+              ${content.buttons.map((btn: any) => `<button class="btn-primary" data-action="${btn.action}">${btn.label}</button>`).join('')}
             </div>
           </div>
         </section>
@@ -346,7 +346,7 @@ export class HTMLWireframeGenerator {
         <div class="workflow-form">
           <form class="form-card">
             <h2>${content.forms[0]?.label}</h2>
-            ${content.forms[0]?.fields.map(field => `
+            ${content.forms[0]?.fields.map((field: string) => `
               <div class="form-group">
                 <label for="${field.toLowerCase().replace(' ', '_')}">${field}</label>
                 <input type="text" id="${field.toLowerCase().replace(' ', '_')}" name="${field.toLowerCase().replace(' ', '_')}" placeholder="Enter ${field.toLowerCase()}">
@@ -354,7 +354,7 @@ export class HTMLWireframeGenerator {
             `).join('')}
             
             <div class="form-actions">
-              ${content.buttons.map(btn => `<button type="button" class="btn-${btn.action.includes('submit') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
+              ${content.buttons.map((btn: any) => `<button type="button" class="btn-${btn.action.includes('submit') ? 'primary' : 'secondary'}" data-action="${btn.action}">${btn.label}</button>`).join('')}
             </div>
           </form>
         </div>
