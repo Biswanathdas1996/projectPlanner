@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface PageRequirement {
   pageName: string;
@@ -8,14 +8,29 @@ export interface PageRequirement {
   contentElements: ContentElement[];
   userInteractions: string[];
   dataRequirements: string[];
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  priority: "critical" | "high" | "medium" | "low";
 }
 
 export interface ContentElement {
-  type: 'header' | 'form' | 'button' | 'text' | 'image' | 'list' | 'table' | 'chart' | 'input' | 'dropdown' | 'modal' | 'navigation' | 'api-display' | 'upload' | 'search';
+  type:
+    | "header"
+    | "form"
+    | "button"
+    | "text"
+    | "image"
+    | "list"
+    | "table"
+    | "chart"
+    | "input"
+    | "dropdown"
+    | "modal"
+    | "navigation"
+    | "api-display"
+    | "upload"
+    | "search";
   label: string;
   content: string;
-  position: 'top' | 'center' | 'bottom' | 'left' | 'right' | 'sidebar';
+  position: "top" | "center" | "bottom" | "left" | "right" | "sidebar";
   required: boolean;
   interactions: string[];
 }
@@ -33,40 +48,50 @@ export class WireframeAnalysisAgent {
   private model: any;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
-    this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E",
+    );
+    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
   async analyzeStakeholderFlows(): Promise<WireframeAnalysisResult> {
     try {
-      console.log('Starting stakeholder flow analysis...');
-      
-      // Get stakeholder flow data from local storage - try multiple possible keys
-      const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data') || 
-                                  localStorage.getItem('bpmn-stakeholder-flows') ||
-                                  localStorage.getItem('bpmn-user-journey-flows');
-      const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
-      const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan') || '';
-      const extractedStakeholders = localStorage.getItem('bpmn-extracted-stakeholders');
-      const personaBpmnFlows = localStorage.getItem('bpmn-persona-flows');
+      console.log("Starting stakeholder flow analysis...");
 
-      console.log('Retrieved data:', {
+      // Get stakeholder flow data from local storage - try multiple possible keys
+      const stakeholderFlowData =
+        localStorage.getItem("bpmn-stakeholder-flow-data") ||
+        localStorage.getItem("bpmn-stakeholder-flows") ||
+        localStorage.getItem("bpmn-user-journey-flows");
+      const personaFlowTypes = localStorage.getItem("bpmn-persona-flow-types");
+      const projectDescription =
+        localStorage.getItem("bpmn-project-description") ||
+        localStorage.getItem("bpmn-project-plan") ||
+        "";
+      const extractedStakeholders = localStorage.getItem(
+        "bpmn-extracted-stakeholders",
+      );
+      const personaBpmnFlows = localStorage.getItem("bpmn-persona-flows");
+
+      console.log("Retrieved data:", {
         hasStakeholderFlowData: !!stakeholderFlowData,
         hasPersonaFlowTypes: !!personaFlowTypes,
         hasProjectDescription: !!projectDescription,
         hasExtractedStakeholders: !!extractedStakeholders,
-        hasPersonaBpmnFlows: !!personaBpmnFlows
+        hasPersonaBpmnFlows: !!personaBpmnFlows,
       });
 
       // Check if we have any flow-related data
       if (!personaFlowTypes && !stakeholderFlowData && !personaBpmnFlows) {
-        throw new Error('No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page and generating flow details.');
+        throw new Error(
+          "No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page and generating flow details.",
+        );
       }
 
       let flowData = {};
       let flowTypes = {};
       let stakeholders = [];
-      
+
       try {
         // Parse available data
         if (stakeholderFlowData) {
@@ -78,20 +103,23 @@ export class WireframeAnalysisAgent {
         if (extractedStakeholders) {
           stakeholders = JSON.parse(extractedStakeholders);
         }
-        
+
         // If we have persona flows but no flow data, use persona flows as flow data
-        if (personaBpmnFlows && (!flowData || Object.keys(flowData).length === 0)) {
+        if (
+          personaBpmnFlows &&
+          (!flowData || Object.keys(flowData).length === 0)
+        ) {
           const personaFlows = JSON.parse(personaBpmnFlows);
           flowData = personaFlows;
         }
-        
-        console.log('Parsed data successfully:', {
+
+        console.log("Parsed data successfully:", {
           flowDataKeys: Object.keys(flowData || {}),
           flowTypesKeys: Object.keys(flowTypes || {}),
-          stakeholdersCount: stakeholders.length
+          stakeholdersCount: stakeholders.length,
         });
       } catch (parseError) {
-        console.error('Error parsing stored data:', parseError);
+        console.error("Error parsing stored data:", parseError);
         // Continue with empty objects rather than failing
         flowData = {};
         flowTypes = {};
@@ -100,154 +128,196 @@ export class WireframeAnalysisAgent {
 
       // If we have flow types but no detailed flow data, we can still analyze
       if (Object.keys(flowTypes).length > 0) {
-        console.log('Using flow types for analysis');
-      } else if (Object.keys(flowData).length === 0 && Object.keys(flowTypes).length === 0) {
-        console.log('No valid flow data found, generating basic analysis from stakeholders');
-        return this.generateBasicAnalysisFromStakeholders(stakeholders, projectDescription);
+        console.log("Using flow types for analysis");
+      } else if (
+        Object.keys(flowData).length === 0 &&
+        Object.keys(flowTypes).length === 0
+      ) {
+        console.log(
+          "No valid flow data found, generating basic analysis from stakeholders",
+        );
+        return this.generateBasicAnalysisFromStakeholders(
+          stakeholders,
+          projectDescription,
+        );
       }
 
-      const analysisPrompt = this.buildAnalysisPrompt(flowData, flowTypes, projectDescription, stakeholders);
-      console.log('Generated analysis prompt, calling Gemini API...');
-      
+      const analysisPrompt = this.buildAnalysisPrompt(
+        flowData,
+        flowTypes,
+        projectDescription,
+        stakeholders,
+      );
+      console.log("Generated analysis prompt, calling Gemini API...");
+
       const result = await this.model.generateContent(analysisPrompt);
       const response = await result.response;
       const analysisText = response.text();
 
-      console.log('Received Gemini response, parsing results...');
+      console.log("Received Gemini response, parsing results...");
       return this.parseAnalysisResult(analysisText, flowData, flowTypes);
     } catch (error) {
-      console.error('Error analyzing stakeholder flows:', error);
-      
+      console.error("Error analyzing stakeholder flows:", error);
+
       // Provide more specific error messages
       if (error instanceof Error) {
-        if (error.message.includes('API key')) {
-          throw new Error('API key issue. Please check your Gemini API configuration.');
-        } else if (error.message.includes('quota') || error.message.includes('limit')) {
-          throw new Error('API quota exceeded. Please try again later.');
-        } else if (error.message.includes('network') || error.message.includes('fetch')) {
-          throw new Error('Network error. Please check your internet connection.');
-        } else if (error.message.includes('stakeholder flow data')) {
+        if (error.message.includes("API key")) {
+          throw new Error(
+            "API key issue. Please check your Gemini API configuration.",
+          );
+        } else if (
+          error.message.includes("quota") ||
+          error.message.includes("limit")
+        ) {
+          throw new Error("API quota exceeded. Please try again later.");
+        } else if (
+          error.message.includes("network") ||
+          error.message.includes("fetch")
+        ) {
+          throw new Error(
+            "Network error. Please check your internet connection.",
+          );
+        } else if (error.message.includes("stakeholder flow data")) {
           throw error; // Pass through our custom error messages
         }
       }
-      
-      throw new Error(`Analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+
+      throw new Error(
+        `Analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
-  private generateBasicAnalysisFromStakeholders(stakeholders: string[], projectDescription: string): WireframeAnalysisResult {
-    console.log('Generating basic analysis from stakeholders:', stakeholders);
-    
+  private generateBasicAnalysisFromStakeholders(
+    stakeholders: string[],
+    projectDescription: string,
+  ): WireframeAnalysisResult {
+    console.log("Generating basic analysis from stakeholders:", stakeholders);
+
     const pageRequirements: PageRequirement[] = [];
-    
+
     // Create basic pages for each stakeholder
     stakeholders.forEach((stakeholder, index) => {
       pageRequirements.push({
         pageName: `${stakeholder} Dashboard`,
-        pageType: 'dashboard',
+        pageType: "dashboard",
         purpose: `Main interface for ${stakeholder} to manage their tasks and view relevant information`,
         stakeholders: [stakeholder],
         contentElements: [
           {
-            type: 'header',
+            type: "header",
             label: `${stakeholder} Dashboard`,
             content: `Welcome ${stakeholder}`,
-            position: 'top',
+            position: "top",
             required: true,
-            interactions: ['navigate']
+            interactions: ["navigate"],
           },
           {
-            type: 'navigation',
-            label: 'Main Navigation',
-            content: 'Navigation menu',
-            position: 'top',
+            type: "navigation",
+            label: "Main Navigation",
+            content: "Navigation menu",
+            position: "top",
             required: true,
-            interactions: ['navigate']
+            interactions: ["navigate"],
           },
           {
-            type: 'list',
-            label: 'Tasks & Activities',
+            type: "list",
+            label: "Tasks & Activities",
             content: `${stakeholder} specific tasks and activities`,
-            position: 'center',
+            position: "center",
             required: true,
-            interactions: ['view', 'edit', 'complete']
+            interactions: ["view", "edit", "complete"],
           },
           {
-            type: 'button',
-            label: 'Action Buttons',
-            content: 'Primary actions',
-            position: 'bottom',
+            type: "button",
+            label: "Action Buttons",
+            content: "Primary actions",
+            position: "bottom",
             required: true,
-            interactions: ['click', 'submit']
-          }
+            interactions: ["click", "submit"],
+          },
         ],
-        userInteractions: ['View tasks', 'Complete actions', 'Navigate'],
-        dataRequirements: ['User data', 'Task data', 'Status information'],
-        priority: 'high'
+        userInteractions: ["View tasks", "Complete actions", "Navigate"],
+        dataRequirements: ["User data", "Task data", "Status information"],
+        priority: "high",
       });
     });
 
     // Add common pages
     pageRequirements.push({
-      pageName: 'Login Page',
-      pageType: 'form',
-      purpose: 'User authentication and system access',
+      pageName: "Login Page",
+      pageType: "form",
+      purpose: "User authentication and system access",
       stakeholders: stakeholders,
       contentElements: [
         {
-          type: 'form',
-          label: 'Login Form',
-          content: 'Username and password fields',
-          position: 'center',
+          type: "form",
+          label: "Login Form",
+          content: "Username and password fields",
+          position: "center",
           required: true,
-          interactions: ['input', 'submit']
+          interactions: ["input", "submit"],
         },
         {
-          type: 'button',
-          label: 'Login Button',
-          content: 'Submit credentials',
-          position: 'center',
+          type: "button",
+          label: "Login Button",
+          content: "Submit credentials",
+          position: "center",
           required: true,
-          interactions: ['click']
-        }
+          interactions: ["click"],
+        },
       ],
-      userInteractions: ['Enter credentials', 'Submit form'],
-      dataRequirements: ['User credentials'],
-      priority: 'critical'
+      userInteractions: ["Enter credentials", "Submit form"],
+      dataRequirements: ["User credentials"],
+      priority: "critical",
     });
 
     return {
-      projectContext: projectDescription || 'Business process management system',
+      projectContext:
+        projectDescription || "Business process management system",
       totalPages: pageRequirements.length,
       pageRequirements,
       commonElements: [
         {
-          type: 'navigation',
-          label: 'Main Navigation',
-          content: 'Site navigation',
-          position: 'top',
+          type: "navigation",
+          label: "Main Navigation",
+          content: "Site navigation",
+          position: "top",
           required: true,
-          interactions: ['navigate']
-        }
+          interactions: ["navigate"],
+        },
       ],
       userFlowConnections: [
-        { from: 'Login Page', to: `${stakeholders[0]} Dashboard`, trigger: 'successful login' }
+        {
+          from: "Login Page",
+          to: `${stakeholders[0]} Dashboard`,
+          trigger: "successful login",
+        },
       ],
       dataFlowMap: [
-        { source: 'Login Page', destination: 'User Dashboard', dataType: 'authentication data' }
-      ]
+        {
+          source: "Login Page",
+          destination: "User Dashboard",
+          dataType: "authentication data",
+        },
+      ],
     };
   }
 
-  private buildAnalysisPrompt(flowData: any, flowTypes: any, projectDescription: string, stakeholders: string[]): string {
+  private buildAnalysisPrompt(
+    flowData: any,
+    flowTypes: any,
+    projectDescription: string,
+    stakeholders: string[],
+  ): string {
     return `
 You are an expert UX/UI analyst and wireframe designer. Analyze the following stakeholder flow data and determine what pages/screens are needed for a comprehensive digital solution.
 
 **Project Context:**
-${projectDescription || 'Not provided'}
+${projectDescription || "Not provided"}
 
 **Stakeholders:**
-${stakeholders.join(', ')}
+${stakeholders.join(", ")}
 
 **Flow Data:**
 ${JSON.stringify(flowData, null, 2)}
@@ -318,138 +388,188 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
 `;
   }
 
-  private parseAnalysisResult(analysisText: string, flowData: any, flowTypes: any): WireframeAnalysisResult {
+  private parseAnalysisResult(
+    analysisText: string,
+    flowData: any,
+    flowTypes: any,
+  ): WireframeAnalysisResult {
     try {
       // Extract JSON from the response
       const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in analysis result');
+        throw new Error("No valid JSON found in analysis result");
       }
 
       const analysisResult = JSON.parse(jsonMatch[0]);
-      
+
       // Validate and enhance the result
       return {
-        projectContext: analysisResult.projectContext || 'Project analysis based on stakeholder flows',
-        totalPages: analysisResult.totalPages || analysisResult.pageRequirements?.length || 0,
-        pageRequirements: this.validatePageRequirements(analysisResult.pageRequirements || []),
+        projectContext:
+          analysisResult.projectContext ||
+          "Project analysis based on stakeholder flows",
+        totalPages:
+          analysisResult.totalPages ||
+          analysisResult.pageRequirements?.length ||
+          0,
+        pageRequirements: this.validatePageRequirements(
+          analysisResult.pageRequirements || [],
+        ),
         commonElements: analysisResult.commonElements || [],
         userFlowConnections: analysisResult.userFlowConnections || [],
-        dataFlowMap: analysisResult.dataFlowMap || []
+        dataFlowMap: analysisResult.dataFlowMap || [],
       };
     } catch (error) {
-      console.error('Error parsing analysis result:', error);
-      
+      console.error("Error parsing analysis result:", error);
+
       // Fallback analysis based on available data
       return this.generateFallbackAnalysis(flowData, flowTypes);
     }
   }
 
   private validatePageRequirements(requirements: any[]): PageRequirement[] {
-    return requirements.map(req => ({
-      pageName: req.pageName || 'Unnamed Page',
-      pageType: req.pageType || 'form',
-      purpose: req.purpose || 'General purpose page',
+    return requirements.map((req) => ({
+      pageName: req.pageName || "Unnamed Page",
+      pageType: req.pageType || "form",
+      purpose: req.purpose || "General purpose page",
       stakeholders: Array.isArray(req.stakeholders) ? req.stakeholders : [],
       contentElements: this.validateContentElements(req.contentElements || []),
-      userInteractions: Array.isArray(req.userInteractions) ? req.userInteractions : [],
-      dataRequirements: Array.isArray(req.dataRequirements) ? req.dataRequirements : [],
-      priority: ['critical', 'high', 'medium', 'low'].includes(req.priority) ? req.priority : 'medium'
+      userInteractions: Array.isArray(req.userInteractions)
+        ? req.userInteractions
+        : [],
+      dataRequirements: Array.isArray(req.dataRequirements)
+        ? req.dataRequirements
+        : [],
+      priority: ["critical", "high", "medium", "low"].includes(req.priority)
+        ? req.priority
+        : "medium",
     }));
   }
 
   private validateContentElements(elements: any[]): ContentElement[] {
-    const validTypes = ['header', 'form', 'button', 'text', 'image', 'list', 'table', 'chart', 'input', 'dropdown', 'modal', 'navigation', 'api-display', 'upload', 'search'];
-    const validPositions = ['top', 'center', 'bottom', 'left', 'right', 'sidebar'];
+    const validTypes = [
+      "header",
+      "form",
+      "button",
+      "text",
+      "image",
+      "list",
+      "table",
+      "chart",
+      "input",
+      "dropdown",
+      "modal",
+      "navigation",
+      "api-display",
+      "upload",
+      "search",
+    ];
+    const validPositions = [
+      "top",
+      "center",
+      "bottom",
+      "left",
+      "right",
+      "sidebar",
+    ];
 
-    return elements.map(element => ({
-      type: validTypes.includes(element.type) ? element.type : 'text',
-      label: element.label || 'Content Element',
-      content: element.content || 'Content placeholder',
-      position: validPositions.includes(element.position) ? element.position : 'center',
+    return elements.map((element) => ({
+      type: validTypes.includes(element.type) ? element.type : "text",
+      label: element.label || "Content Element",
+      content: element.content || "Content placeholder",
+      position: validPositions.includes(element.position)
+        ? element.position
+        : "center",
       required: Boolean(element.required),
-      interactions: Array.isArray(element.interactions) ? element.interactions : []
+      interactions: Array.isArray(element.interactions)
+        ? element.interactions
+        : [],
     }));
   }
 
-  private generateFallbackAnalysis(flowData: any, flowTypes: any): WireframeAnalysisResult {
+  private generateFallbackAnalysis(
+    flowData: any,
+    flowTypes: any,
+  ): WireframeAnalysisResult {
     const pageRequirements: PageRequirement[] = [];
     const stakeholders = Object.keys(flowTypes);
-    
+
     // Generate basic pages from flow types
     Object.entries(flowTypes).forEach(([stakeholder, flows]: [string, any]) => {
       if (Array.isArray(flows)) {
-        flows.forEach(flow => {
+        flows.forEach((flow) => {
           pageRequirements.push({
             pageName: `${flow} Page`,
             pageType: this.inferPageType(flow),
             purpose: `Handle ${flow} process for ${stakeholder}`,
             stakeholders: [stakeholder],
             contentElements: this.generateBasicContentElements(flow),
-            userInteractions: ['View', 'Submit', 'Navigate'],
-            dataRequirements: ['User data', 'Process data'],
-            priority: 'medium'
+            userInteractions: ["View", "Submit", "Navigate"],
+            dataRequirements: ["User data", "Process data"],
+            priority: "medium",
           });
         });
       }
     });
 
     return {
-      projectContext: 'Generated from stakeholder flow analysis',
+      projectContext: "Generated from stakeholder flow analysis",
       totalPages: pageRequirements.length,
       pageRequirements,
       commonElements: [
         {
-          type: 'navigation',
-          label: 'Main Navigation',
-          content: 'Site navigation menu',
-          position: 'top',
+          type: "navigation",
+          label: "Main Navigation",
+          content: "Site navigation menu",
+          position: "top",
           required: true,
-          interactions: ['Navigate']
-        }
+          interactions: ["Navigate"],
+        },
       ],
       userFlowConnections: [],
-      dataFlowMap: []
+      dataFlowMap: [],
     };
   }
 
   private inferPageType(flowName: string): string {
     const flow = flowName.toLowerCase();
-    if (flow.includes('dashboard') || flow.includes('overview')) return 'dashboard';
-    if (flow.includes('approval') || flow.includes('review')) return 'approval';
-    if (flow.includes('management') || flow.includes('admin')) return 'management';
-    if (flow.includes('report') || flow.includes('analytics')) return 'reporting';
-    if (flow.includes('form') || flow.includes('submit')) return 'form';
-    if (flow.includes('list') || flow.includes('browse')) return 'list';
-    return 'detail';
+    if (flow.includes("dashboard") || flow.includes("overview"))
+      return "dashboard";
+    if (flow.includes("approval") || flow.includes("review")) return "approval";
+    if (flow.includes("management") || flow.includes("admin"))
+      return "management";
+    if (flow.includes("report") || flow.includes("analytics"))
+      return "reporting";
+    if (flow.includes("form") || flow.includes("submit")) return "form";
+    if (flow.includes("list") || flow.includes("browse")) return "list";
+    return "detail";
   }
 
   private generateBasicContentElements(flowName: string): ContentElement[] {
     return [
       {
-        type: 'header',
+        type: "header",
         label: `${flowName} Header`,
         content: `${flowName} Management`,
-        position: 'top',
+        position: "top",
         required: true,
-        interactions: []
+        interactions: [],
       },
       {
-        type: 'form',
-        label: 'Main Form',
+        type: "form",
+        label: "Main Form",
         content: `${flowName} input form`,
-        position: 'center',
+        position: "center",
         required: true,
-        interactions: ['Submit', 'Reset']
+        interactions: ["Submit", "Reset"],
       },
       {
-        type: 'button',
-        label: 'Submit Button',
-        content: 'Submit',
-        position: 'bottom',
+        type: "button",
+        label: "Submit Button",
+        content: "Submit",
+        position: "bottom",
         required: true,
-        interactions: ['Click']
-      }
+        interactions: ["Click"],
+      },
     ];
   }
 }

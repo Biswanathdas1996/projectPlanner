@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
+import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
 import { Link } from "wouter";
 import {
   Palette,
@@ -131,6 +132,7 @@ export default function WireframeDesigner() {
   const [generationProgress, setGenerationProgress] = useState({ current: 0, total: 0, status: "" });
   const [analysisResult, setAnalysisResult] = useState<WireframeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [detailedWireframes, setDetailedWireframes] = useState<DetailedPageContent[]>([]);
 
   // Load saved data and stakeholder flows
   useEffect(() => {
@@ -222,10 +224,42 @@ export default function WireframeDesigner() {
     setGenerationProgress({ current: 0, total: 1, status: "Analyzing stakeholder flows..." });
 
     try {
-      const analysisAgent = createWireframeAnalysisAgent();
-      const result = await analysisAgent.analyzeStakeholderFlows();
+      // Get stakeholder data from local storage
+      const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
+      const stakeholderFlowData = localStorage.getItem('bpmn-user-journey-flows') || localStorage.getItem('bpmn-stakeholder-flows');
+      const projectDescription = localStorage.getItem('bpmn-project-description') || localStorage.getItem('bpmn-project-plan') || '';
+      const extractedStakeholders = localStorage.getItem('bpmn-extracted-stakeholders');
+
+      if (!personaFlowTypes) {
+        throw new Error('No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page.');
+      }
+
+      const flowTypes = JSON.parse(personaFlowTypes);
+      const stakeholderData = stakeholderFlowData ? JSON.parse(stakeholderFlowData) : {};
       
-      setAnalysisResult(result);
+      // Generate detailed HTML wireframes
+      const htmlGenerator = createHTMLWireframeGenerator();
+      const detailedPages = await htmlGenerator.generateDetailedWireframes(stakeholderData, flowTypes, projectDescription);
+      
+      setDetailedWireframes(detailedPages);
+      setAnalysisResult({
+        projectContext: projectDescription || 'Business Process Management System',
+        totalPages: detailedPages.length,
+        pageRequirements: detailedPages.map(page => ({
+          pageName: page.pageName,
+          pageType: page.pageType,
+          purpose: page.purpose,
+          stakeholders: page.stakeholders,
+          contentElements: [],
+          userInteractions: [],
+          dataRequirements: [],
+          priority: 'high' as const
+        })),
+        commonElements: [],
+        userFlowConnections: [],
+        dataFlowMap: []
+      });
+      
       setCurrentStep("input");
       setGenerationProgress({ current: 0, total: 0, status: "" });
     } catch (err) {
@@ -237,7 +271,7 @@ export default function WireframeDesigner() {
   };
 
   const generateWireframesFromAnalysis = async () => {
-    if (!analysisResult) {
+    if (!detailedWireframes.length) {
       setError("Please analyze stakeholder flows first");
       return;
     }
@@ -247,30 +281,26 @@ export default function WireframeDesigner() {
     setCurrentStep("generating");
     setGenerationProgress({ 
       current: 0, 
-      total: analysisResult.pageRequirements.length, 
-      status: "Generating wireframes from analysis..." 
+      total: detailedWireframes.length, 
+      status: "Generating detailed HTML wireframes..." 
     });
 
     try {
-      const newWireframes: WireframeData[] = [];
-
-      for (let i = 0; i < analysisResult.pageRequirements.length; i++) {
-        const pageReq = analysisResult.pageRequirements[i];
+      // The detailed wireframes are already generated, just show progress
+      for (let i = 0; i < detailedWireframes.length; i++) {
+        const page = detailedWireframes[i];
         setGenerationProgress({ 
           current: i + 1, 
-          total: analysisResult.pageRequirements.length, 
-          status: `Generating ${pageReq.pageName} wireframe...` 
+          total: detailedWireframes.length, 
+          status: `Rendering ${page.pageName}...` 
         });
 
-        // Simulate AI generation with realistic delay
-        await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 1800));
-
-        const wireframe = generateWireframeFromPageRequirement(pageReq, i);
-        newWireframes.push(wireframe);
+        // Simulate rendering time
+        await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 1200));
       }
 
-      setWireframes(prev => [...prev, ...newWireframes]);
-      localStorage.setItem('wireframe_designs', JSON.stringify([...wireframes, ...newWireframes]));
+      // Save the detailed wireframes
+      localStorage.setItem('detailed_wireframe_designs', JSON.stringify(detailedWireframes));
       setCurrentStep("results");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate wireframes");
@@ -1079,7 +1109,207 @@ export default function WireframeDesigner() {
           </Card>
         )}
 
-        {/* Generated Wireframes */}
+        {/* Detailed HTML Wireframes Results */}
+        {currentStep === "results" && detailedWireframes.length > 0 && (
+          <div className="space-y-6 mb-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI-Generated Wireframes</h2>
+              <p className="text-gray-600">
+                {detailedWireframes.length} detailed wireframes with real content based on your stakeholder flows
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {detailedWireframes.map((page, index) => (
+                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{page.pageName}</CardTitle>
+                      <Badge variant="outline" className="text-xs">
+                        {page.pageType}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">{page.purpose}</p>
+                  </CardHeader>
+                  
+                  <CardContent className="p-0">
+                    {/* HTML Preview */}
+                    <div className="border-t bg-gray-50 p-4">
+                      <div className="bg-white rounded border shadow-sm overflow-hidden relative">
+                        <div 
+                          className="h-48 w-full overflow-hidden relative"
+                          style={{ 
+                            transform: 'scale(0.25)', 
+                            transformOrigin: 'top left', 
+                            width: '400%', 
+                            height: '400%' 
+                          }}
+                        >
+                          <style dangerouslySetInnerHTML={{ __html: page.cssStyles }} />
+                          <div dangerouslySetInnerHTML={{ __html: page.htmlContent }} />
+                        </div>
+                        <div className="absolute inset-0 bg-transparent hover:bg-black hover:bg-opacity-10 transition-colors cursor-pointer" 
+                             onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(`
+                               <!DOCTYPE html>
+                               <html>
+                               <head>
+                                 <title>${page.pageName}</title>
+                                 <meta charset="UTF-8">
+                                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                 <style>${page.cssStyles}</style>
+                               </head>
+                               <body>${page.htmlContent}</body>
+                               </html>
+                             `)}`)}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Content Summary */}
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-800 mb-2">Content Elements</h4>
+                        <div className="space-y-1 text-xs text-gray-600">
+                          {page.contentDetails.headers.length > 0 && (
+                            <div><strong>Headers:</strong> {page.contentDetails.headers.slice(0, 2).join(', ')}</div>
+                          )}
+                          {page.contentDetails.buttons.length > 0 && (
+                            <div><strong>Actions:</strong> {page.contentDetails.buttons.slice(0, 3).map(b => b.label).join(', ')}</div>
+                          )}
+                          {page.contentDetails.forms.length > 0 && (
+                            <div><strong>Forms:</strong> {page.contentDetails.forms.length} form(s) with {page.contentDetails.forms.reduce((sum, f) => sum + f.fields.length, 0)} fields</div>
+                          )}
+                          {page.contentDetails.lists.length > 0 && (
+                            <div><strong>Lists:</strong> {page.contentDetails.lists.length} list(s)</div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {page.stakeholders.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-800 mb-1">Target Users</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {page.stakeholders.map((stakeholder, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {stakeholder}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${page.pageName}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>${page.cssStyles}</style>
+</head>
+<body>${page.htmlContent}</body>
+</html>`;
+                            const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+                            const url = URL.createObjectURL(htmlBlob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${page.pageName.replace(/\s+/g, '_').toLowerCase()}.html`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                        >
+                          <Download className="h-3 w-3 mr-1" />
+                          Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`<!-- ${page.pageName} -->\n${page.htmlContent}\n\n/* CSS for ${page.pageName} */\n${page.cssStyles}`);
+                          }}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="text-xs flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                          onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(`
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                              <title>${page.pageName}</title>
+                              <meta charset="UTF-8">
+                              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                              <style>${page.cssStyles}</style>
+                            </head>
+                            <body>${page.htmlContent}</body>
+                            </html>
+                          `)}`)}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          Preview
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            {/* Export All Button */}
+            <div className="text-center">
+              <Button
+                onClick={() => {
+                  // Create a zip-like structure with all wireframes
+                  let allContent = '';
+                  detailedWireframes.forEach((page, index) => {
+                    allContent += `
+=== ${page.pageName} ===
+File: ${page.pageName.replace(/\s+/g, '_').toLowerCase()}.html
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>${page.pageName}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>${page.cssStyles}</style>
+</head>
+<body>${page.htmlContent}</body>
+</html>
+
+`;
+                  });
+                  
+                  const blob = new Blob([allContent], { type: 'text/plain' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'all_wireframes.txt';
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-6 py-2"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export All Wireframes
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Traditional Generated Wireframes */}
         {wireframes.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
