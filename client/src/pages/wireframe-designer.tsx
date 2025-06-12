@@ -1492,7 +1492,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-24 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.headers.map((header, idx) => (
                               <div key={idx} className="group flex items-center gap-1">
                                 <div className="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-xs">
@@ -1548,7 +1548,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.textContent.map((text, idx) => (
                               <div key={idx} className="group flex gap-1">
                                 <div className="flex-1 px-2 py-1 bg-green-50 border border-green-100 rounded text-xs">
@@ -1609,7 +1609,7 @@ export default function WireframeDesigner() {
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-2 max-h-40 overflow-y-auto">
+                        <div className="space-y-2">
                           {card.forms.map((form, formIdx) => (
                             <div key={formIdx} className="group border border-purple-100 rounded p-2 bg-purple-50 relative">
                               <div className="flex items-center justify-between mb-1">
@@ -1747,7 +1747,7 @@ export default function WireframeDesigner() {
                             </Button>
                           )}
                         </div>
-                        <div className="space-y-1 max-h-32 overflow-y-auto">
+                        <div className="space-y-1">
                           {card.buttons.map((button, btnIdx) => (
                             <div key={btnIdx} className="group flex items-center gap-2 p-2 border border-orange-100 rounded bg-orange-50">
                               <div className="flex-1 space-y-1">
@@ -1852,7 +1852,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-28 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.images.map((image, imgIdx) => (
                               <div key={imgIdx} className="group flex gap-2 p-2 border border-indigo-100 rounded bg-indigo-50">
                                 <div className="flex-1 space-y-1">
@@ -1957,7 +1957,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-32 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.lists.map((list, listIdx) => (
                               <div key={listIdx} className="group border border-teal-100 rounded p-2 bg-teal-50">
                                 <div className="flex items-center justify-between mb-1">
@@ -2092,7 +2092,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-24 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.navigation.map((navItem, navIdx) => (
                               <div key={navIdx} className="group flex items-center gap-1">
                                 <div className="flex-1 px-2 py-1 bg-cyan-50 border border-cyan-100 rounded text-xs">
@@ -2148,7 +2148,7 @@ export default function WireframeDesigner() {
                               </Button>
                             )}
                           </div>
-                          <div className="space-y-1 max-h-28 overflow-y-auto">
+                          <div className="space-y-1">
                             {card.additionalContent.map((content, contentIdx) => (
                               <div key={contentIdx} className="group flex gap-1">
                                 <div className="flex-1 px-2 py-1 bg-pink-50 border border-pink-100 rounded text-xs">
