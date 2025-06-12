@@ -2700,18 +2700,18 @@ export default function WireframeDesigner() {
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {generatedWireframes.map((wireframe, index) => (
                   <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-                    <CardHeader className="bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 relative overflow-hidden">
+                    <CardHeader className="bg-gray-200 text-gray-700 py-3 relative overflow-hidden">
                       <div className="absolute inset-0 bg-gray-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       <div className="flex justify-between items-center relative z-10">
                         <CardTitle className="text-sm font-semibold truncate flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                          <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></div>
                           {wireframe.pageName}
                         </CardTitle>
                         <div className="flex gap-2">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 hover:bg-white/20 text-white"
+                            className="h-7 w-7 p-0 hover:bg-gray-300/50 text-gray-600"
                             onClick={() => {
                               setSelectedPageCode({
                                 pageName: wireframe.pageName,
@@ -2726,7 +2726,7 @@ export default function WireframeDesigner() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 w-7 p-0 hover:bg-white/20 text-white"
+                            className="h-7 w-7 p-0 hover:bg-gray-300/50 text-gray-600"
                             onClick={() => {
                               const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
                               const url = URL.createObjectURL(blob);
