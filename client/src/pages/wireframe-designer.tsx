@@ -558,10 +558,11 @@ export default function WireframeDesigner() {
           cssStyles: result.cssCode,
           contentDetails: {
             headers: card.headers,
-            buttons: card.buttons,
-            forms: card.forms,
+            texts: [],
+            buttons: card.buttons.map(btn => ({ label: btn.label, action: btn.action })),
+            forms: card.forms.map(form => ({ label: form.title, fields: form.fields })),
             lists: card.lists,
-            navigation: card.navigation
+            images: []
           }
         };
 
@@ -1615,7 +1616,7 @@ export default function WireframeDesigner() {
                           </>
                         ) : (
                           <>
-                            <Code className="h-3 w-3 mr-2" />
+                            <Grid className="h-3 w-3 mr-2" />
                             Generate HTML Wireframe
                           </>
                         )}
@@ -2049,6 +2050,112 @@ File: ${page.pageName.replace(/\s+/g, '_').toLowerCase()}.html
                     </Button>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Code Modal */}
+        {showCodeModal && selectedPageCode && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+              <div className="flex items-center justify-between p-6 border-b">
+                <h2 className="text-xl font-semibold">{selectedPageCode.pageName} - Generated Code</h2>
+                <Button
+                  onClick={() => {
+                    setShowCodeModal(false);
+                    setSelectedPageCode(null);
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="flex-1 overflow-hidden">
+                <Tabs defaultValue="preview" className="h-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="preview">Live Preview</TabsTrigger>
+                    <TabsTrigger value="html">HTML Code</TabsTrigger>
+                    <TabsTrigger value="css">CSS Code</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="preview" className="h-full overflow-auto p-6">
+                    <div className="border rounded-lg overflow-hidden bg-white">
+                      <iframe
+                        srcDoc={`${selectedPageCode.htmlCode}${selectedPageCode.cssCode ? `<style>${selectedPageCode.cssCode}</style>` : ''}`}
+                        className="w-full h-96 border-0"
+                        title="Wireframe Preview"
+                      />
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        onClick={() => {
+                          const fullHtml = `${selectedPageCode.htmlCode}${selectedPageCode.cssCode ? `\n<style>\n${selectedPageCode.cssCode}\n</style>` : ''}`;
+                          const blob = new Blob([fullHtml], { type: 'text/html' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `${selectedPageCode.pageName.replace(/\s+/g, '_').toLowerCase()}.html`;
+                          document.body.appendChild(a);
+                          a.click();
+                          document.body.removeChild(a);
+                          URL.revokeObjectURL(url);
+                        }}
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download HTML
+                      </Button>
+                      <Button
+                        onClick={() => window.open(`data:text/html;charset=utf-8,${encodeURIComponent(selectedPageCode.htmlCode + (selectedPageCode.cssCode ? `\n<style>\n${selectedPageCode.cssCode}\n</style>` : ''))}`)}
+                        variant="outline"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        Open in New Tab
+                      </Button>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="html" className="h-full overflow-auto p-6">
+                    <div className="bg-gray-50 rounded-lg p-4 border">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-medium text-gray-800">HTML Code</h3>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigator.clipboard.writeText(selectedPageCode.htmlCode)}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
+                      <pre className="text-sm overflow-auto bg-white p-4 rounded border max-h-80">
+                        <code>{selectedPageCode.htmlCode}</code>
+                      </pre>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="css" className="h-full overflow-auto p-6">
+                    <div className="bg-gray-50 rounded-lg p-4 border">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-medium text-gray-800">CSS Code</h3>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => navigator.clipboard.writeText(selectedPageCode.cssCode)}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
+                      <pre className="text-sm overflow-auto bg-white p-4 rounded border max-h-80">
+                        <code>{selectedPageCode.cssCode || '/* No additional CSS */'}</code>
+                      </pre>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </div>
             </div>
           </div>
