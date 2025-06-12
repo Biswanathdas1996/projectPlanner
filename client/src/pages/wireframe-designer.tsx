@@ -2081,7 +2081,7 @@ Provide a JSON object with this structure:
                       </span>
                       <Button
                         onClick={generatePageContent}
-                        disabled={isGeneratingContent || editableContentCards.length > 0}
+                        disabled={isGeneratingContent}
                         className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white"
                         size="sm"
                       >
