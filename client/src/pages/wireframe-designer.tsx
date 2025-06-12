@@ -685,6 +685,9 @@ export default function WireframeDesigner() {
     htmlCode: string;
     cssCode: string;
   } | null>(null);
+  const [identifiedPages, setIdentifiedPages] = useState<any[]>([]);
+  const [isIdentifyingPages, setIsIdentifyingPages] = useState(false);
+  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
 
   // Load saved data and stakeholder flows
   useEffect(() => {
@@ -856,6 +859,218 @@ export default function WireframeDesigner() {
       setError(err instanceof Error ? err.message : "Failed to generate wireframe");
     } finally {
       setCurrentGeneratingIndex(-1);
+    }
+  };
+
+  // Identify pages from stakeholder flows
+  const identifyPagesFromFlows = async () => {
+    setIsIdentifyingPages(true);
+    setError("");
+
+    try {
+      const stakeholderFlowData = localStorage.getItem('bpmn-stakeholder-flow-data');
+      const personaFlowTypes = localStorage.getItem('bpmn-persona-flow-types');
+      
+      if (!stakeholderFlowData || !personaFlowTypes) {
+        setError("No stakeholder flow data found. Please complete the stakeholder flow analysis first.");
+        return;
+      }
+
+      const flowData = JSON.parse(stakeholderFlowData);
+      const flowTypes = JSON.parse(personaFlowTypes);
+      
+      console.log("Flow Types Data:", flowTypes);
+      console.log("Stakeholder Data:", flowData);
+
+      const pages: any[] = [];
+      
+      // Process flow types to identify unique pages
+      Object.entries(flowTypes).forEach(([stakeholder, flows]: [string, any]) => {
+        if (Array.isArray(flows)) {
+          flows.forEach((flowName: string) => {
+            // Extract page information from flow name
+            const pageName = flowName.replace(' Flow', '').replace(' Management', '');
+            const pageType = extractPageTypeFromFlowName(flowName);
+            
+            // Check if page already exists
+            const existingPage = pages.find(p => p.pageName === pageName);
+            if (existingPage) {
+              // Add stakeholder to existing page
+              if (!existingPage.stakeholders.includes(stakeholder)) {
+                existingPage.stakeholders.push(stakeholder);
+              }
+            } else {
+              // Create new page
+              pages.push({
+                pageName,
+                pageType,
+                purpose: `${pageName} interface for managing ${flowName.toLowerCase()}`,
+                stakeholders: [stakeholder],
+                flowName,
+                bpmnData: flowData.find((f: any) => f.flowType === flowName && f.stakeholder === stakeholder)
+              });
+            }
+          });
+        }
+      });
+
+      // Add context from BPMN analysis
+      pages.forEach(page => {
+        if (page.bpmnData?.bpmnXml) {
+          page.bpmnContext = extractBpmnContext(page.bpmnData.bpmnXml);
+        }
+      });
+
+      setIdentifiedPages(pages);
+      console.log("Identified Pages:", pages);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to identify pages from flows");
+    } finally {
+      setIsIdentifyingPages(false);
+    }
+  };
+
+  // Generate natural language content for identified pages
+  const generatePageContent = async () => {
+    setIsGeneratingContent(true);
+    setError("");
+
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const contentCards: PageContentCard[] = [];
+
+      for (const page of identifiedPages) {
+        const prompt = `Generate detailed, natural language content for a web page based on stakeholder flow analysis.
+
+**Page Information:**
+- Page Name: ${page.pageName}
+- Page Type: ${page.pageType}
+- Purpose: ${page.purpose}
+- Stakeholders: ${page.stakeholders.join(', ')}
+- Flow Context: ${page.flowName}
+
+**BPMN Context:** ${page.bpmnContext || 'Standard business process flow'}
+
+**Generate the following content in natural language:**
+
+1. **Headers** (3-5 descriptive headings for this page)
+2. **Buttons** (4-6 action buttons with clear labels and purposes)
+3. **Forms** (1-3 forms if applicable with field descriptions)
+4. **Lists** (2-4 content lists or data displays)
+5. **Navigation** (relevant navigation items)
+
+**Requirements:**
+- Use natural, professional language
+- Be specific to the business context
+- Consider the stakeholder roles
+- Make content actionable and user-focused
+- Ensure content flows logically
+
+**Response Format:**
+Provide a JSON object with this structure:
+{
+  "headers": ["Main Page Title", "Section Header 1", "Section Header 2"],
+  "buttons": [
+    {"label": "Action Name", "action": "description", "style": "primary|secondary|outline"},
+    ...
+  ],
+  "forms": [
+    {"title": "Form Name", "fields": ["Field 1", "Field 2"], "submitAction": "Submit Action"},
+    ...
+  ],
+  "lists": [
+    {"title": "List Name", "items": ["Item 1", "Item 2"], "type": "data|navigation|content"},
+    ...
+  ],
+  "navigation": ["Nav Item 1", "Nav Item 2", "Nav Item 3"]
+}`;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        try {
+          // Extract JSON from response
+          const jsonMatch = text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const contentData = JSON.parse(jsonMatch[0]);
+            
+            contentCards.push({
+              id: `generated_${Date.now()}_${contentCards.length}`,
+              pageName: page.pageName,
+              pageType: page.pageType,
+              purpose: page.purpose,
+              stakeholders: page.stakeholders,
+              headers: contentData.headers || [page.pageName],
+              buttons: contentData.buttons || [],
+              forms: contentData.forms || [],
+              lists: contentData.lists || [],
+              navigation: contentData.navigation || [],
+              additionalContent: [],
+              isEdited: false
+            });
+          }
+        } catch (parseError) {
+          // Fallback if JSON parsing fails
+          contentCards.push({
+            id: `fallback_${Date.now()}_${contentCards.length}`,
+            pageName: page.pageName,
+            pageType: page.pageType,
+            purpose: page.purpose,
+            stakeholders: page.stakeholders,
+            headers: [page.pageName, `${page.pageName} Overview`, `Manage ${page.pageName}`],
+            buttons: [
+              { label: 'Create New', action: 'create', style: 'primary' },
+              { label: 'Edit', action: 'edit', style: 'secondary' },
+              { label: 'Delete', action: 'delete', style: 'outline' },
+              { label: 'Export', action: 'export', style: 'outline' }
+            ],
+            forms: [
+              { title: `${page.pageName} Form`, fields: ['Name', 'Description', 'Status'], submitAction: 'Save' }
+            ],
+            lists: [
+              { title: `${page.pageName} List`, items: ['Item 1', 'Item 2', 'Item 3'], type: 'data' }
+            ],
+            navigation: ['Dashboard', page.pageName, 'Settings'],
+            additionalContent: [],
+            isEdited: false
+          });
+        }
+
+        // Small delay between requests
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+
+      setEditableContentCards(contentCards);
+      localStorage.setItem('editable_content_cards', JSON.stringify(contentCards));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to generate page content");
+    } finally {
+      setIsGeneratingContent(false);
+    }
+  };
+
+  // Helper function to extract BPMN context
+  const extractBpmnContext = (bpmnXml: string): string => {
+    try {
+      // Extract process documentation
+      const docMatch = bpmnXml.match(/<bpmn2:documentation>(.*?)<\/bpmn2:documentation>/);
+      if (docMatch) {
+        return docMatch[1];
+      }
+      
+      // Extract process name
+      const nameMatch = bpmnXml.match(/name="([^"]+)"/);
+      if (nameMatch) {
+        return `Business process: ${nameMatch[1]}`;
+      }
+      
+      return "Standard business process workflow";
+    } catch {
+      return "Business process context";
     }
   };
 
@@ -1765,17 +1980,113 @@ export default function WireframeDesigner() {
         )}
 
         {/* Content Review Section */}
-        {currentStep === "content-review" && editableContentCards.length > 0 && (
+        {currentStep === "content-review" && (
           <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Review & Edit Page Content</h2>
-              <p className="text-gray-600">
-                Review the generated content for each page. Edit any elements as needed before generating wireframes.
-              </p>
-            </div>
+            {/* Page Identification Section */}
+            <Card className="border-2 border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-900">
+                  <Target className="h-5 w-5" />
+                  1. Exact Page Identification
+                </CardTitle>
+                <p className="text-sm text-blue-700">
+                  Pages identified from your stakeholder flow analysis
+                </p>
+              </CardHeader>
+              <CardContent>
+                {identifiedPages.length === 0 ? (
+                  <div className="flex flex-col items-center gap-4 py-8">
+                    <Button
+                      onClick={identifyPagesFromFlows}
+                      disabled={isIdentifyingPages}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                    >
+                      {isIdentifyingPages ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Analyzing Flow Data...
+                        </>
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Identify Pages from Stakeholder Flows
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium text-blue-900">
+                        Identified {identifiedPages.length} unique pages
+                      </span>
+                      <Button
+                        onClick={generatePageContent}
+                        disabled={isGeneratingContent || editableContentCards.length > 0}
+                        className="bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white"
+                        size="sm"
+                      >
+                        {isGeneratingContent ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Generating Content...
+                          </>
+                        ) : (
+                          <>
+                            <Lightbulb className="h-4 w-4 mr-2" />
+                            Generate Natural Language Content
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {identifiedPages.map((page, index) => (
+                        <div key={index} className="bg-white rounded-lg p-3 border border-blue-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-sm text-gray-900">{page.pageName}</span>
+                            <Badge variant="outline" className="text-xs text-blue-700 bg-blue-100">
+                              {page.pageType}
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-gray-600 mb-2">{page.purpose}</p>
+                          <div className="flex flex-wrap gap-1">
+                            {page.stakeholders.slice(0, 2).map((stakeholder, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                                {stakeholder}
+                              </Badge>
+                            ))}
+                            {page.stakeholders.length > 2 && (
+                              <Badge variant="secondary" className="text-xs px-1 py-0">
+                                +{page.stakeholders.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {editableContentCards.map((card, index) => (
+            {/* Natural Language Content Generation */}
+            {editableContentCards.length > 0 && (
+              <Card className="border-2 border-green-200 bg-green-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-900">
+                    <Edit3 className="h-5 w-5" />
+                    2. Review & Edit Page Content
+                  </CardTitle>
+                  <p className="text-sm text-green-700">
+                    Natural language content generated from your stakeholder flow analysis. Edit as needed.
+                  </p>
+                </CardHeader>
+              </Card>
+            )}
+
+            {editableContentCards.length > 0 && (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {editableContentCards.map((card, index) => (
                 <Card key={card.id} className="overflow-hidden">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
@@ -1966,8 +2277,9 @@ export default function WireframeDesigner() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Generate All Button */}
             <div className="text-center">
