@@ -145,6 +145,11 @@ export default function WireframeDesigner() {
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
+  
+  // Wireframe customization options
+  const [selectedDeviceType, setSelectedDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
+  const [selectedColorScheme, setSelectedColorScheme] = useState<string>('modern-blue');
+  const [selectedDesignType, setSelectedDesignType] = useState<string>('modern');
 
   // Load saved data
   useEffect(() => {
@@ -296,8 +301,8 @@ export default function WireframeDesigner() {
   };
 
   const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string }> => {
-    const htmlCode = generateWireframeHTML(card);
-    const cssCode = generateWireframeCSS(card);
+    const htmlCode = generateWireframeHTML(card, selectedDeviceType, selectedColorScheme, selectedDesignType);
+    const cssCode = generateWireframeCSS(card, selectedDeviceType, selectedColorScheme, selectedDesignType);
     
     return {
       pageName: card.pageName,
@@ -306,7 +311,9 @@ export default function WireframeDesigner() {
     };
   };
 
-  const generateWireframeHTML = (card: PageContentCard): string => {
+  const generateWireframeHTML = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string): string => {
+    const viewportWidth = deviceType === 'mobile' ? '375' : deviceType === 'tablet' ? '768' : '1200';
+    
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -315,7 +322,7 @@ export default function WireframeDesigner() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${card.pageName}</title>
     <style>
-        ${generateWireframeCSS(card)}
+        ${generateWireframeCSS(card, deviceType, colorScheme, designType)}
     </style>
 </head>
 <body>
@@ -407,7 +414,30 @@ export default function WireframeDesigner() {
 </html>`;
   };
 
-  const generateWireframeCSS = (card: PageContentCard): string => {
+  const generateWireframeCSS = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string): string => {
+    // Color scheme definitions
+    const colorSchemes = {
+      'modern-blue': { primary: '#3B82F6', secondary: '#1E40AF', accent: '#60A5FA', bg: '#F8FAFC', text: '#1F2937' },
+      'professional-gray': { primary: '#6B7280', secondary: '#374151', accent: '#9CA3AF', bg: '#F9FAFB', text: '#111827' },
+      'vibrant-green': { primary: '#10B981', secondary: '#047857', accent: '#34D399', bg: '#F0FDF4', text: '#1F2937' },
+      'elegant-purple': { primary: '#8B5CF6', secondary: '#6D28D9', accent: '#A78BFA', bg: '#FAF5FF', text: '#1F2937' },
+      'warm-orange': { primary: '#F59E0B', secondary: '#D97706', accent: '#FBBF24', bg: '#FFFBEB', text: '#1F2937' },
+      'corporate-navy': { primary: '#1E3A8A', secondary: '#1E40AF', accent: '#3B82F6', bg: '#F8FAFC', text: '#1F2937' },
+      'minimalist-black': { primary: '#1F2937', secondary: '#111827', accent: '#6B7280', bg: '#FFFFFF', text: '#1F2937' },
+      'fresh-teal': { primary: '#0D9488', secondary: '#0F766E', accent: '#2DD4BF', bg: '#F0FDFA', text: '#1F2937' }
+    };
+
+    const colors = colorSchemes[colorScheme as keyof typeof colorSchemes] || colorSchemes['modern-blue'];
+    
+    // Device-specific styling
+    const maxWidth = deviceType === 'mobile' ? '375px' : deviceType === 'tablet' ? '768px' : '1200px';
+    const padding = deviceType === 'mobile' ? '1rem' : deviceType === 'tablet' ? '1.5rem' : '2rem';
+    const fontSize = deviceType === 'mobile' ? '14px' : '16px';
+    
+    // Design type specific styling
+    const borderRadius = designType === 'minimal' ? '0' : designType === 'modern' ? '12px' : designType === 'classic' ? '4px' : '8px';
+    const shadows = designType === 'minimal' ? 'none' : designType === 'bold' ? '0 8px 32px rgba(0,0,0,0.12)' : '0 4px 16px rgba(0,0,0,0.08)';
+    
     return `
         * {
             margin: 0;
@@ -416,29 +446,32 @@ export default function WireframeDesigner() {
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: ${designType === 'classic' ? 'Georgia, serif' : designType === 'modern' ? "'Inter', sans-serif" : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"};
             line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
+            color: ${colors.text};
+            background-color: ${colors.bg};
+            font-size: ${fontSize};
         }
 
         .wireframe-container {
-            max-width: 1200px;
+            max-width: ${maxWidth};
             margin: 0 auto;
             background: white;
             min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            box-shadow: ${shadows};
+            border-radius: ${borderRadius};
+            overflow: hidden;
         }
 
         .page-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%);
             color: white;
-            padding: 2rem;
+            padding: ${padding};
             text-align: center;
         }
 
         .page-header h1 {
-            font-size: 2.5rem;
+            font-size: ${deviceType === 'mobile' ? '1.8rem' : deviceType === 'tablet' ? '2.2rem' : '2.5rem'};
             margin-bottom: 1rem;
         }
 
@@ -462,32 +495,32 @@ export default function WireframeDesigner() {
         }
 
         .main-content {
-            padding: 2rem;
+            padding: ${padding};
         }
 
         .content-section {
-            margin-bottom: 2rem;
+            margin-bottom: ${deviceType === 'mobile' ? '1rem' : '2rem'};
         }
 
         .section-header {
-            color: #444;
+            color: ${colors.secondary};
             margin-bottom: 1rem;
             padding-bottom: 0.5rem;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid ${colors.accent};
         }
 
         .content-text {
             margin-bottom: 1rem;
             line-height: 1.8;
-            color: #666;
+            color: ${colors.text};
         }
 
         .form-section {
-            background: #f9f9f9;
-            padding: 2rem;
-            border-radius: 8px;
-            margin-bottom: 2rem;
-            border: 1px solid #e0e0e0;
+            background: ${colors.bg};
+            padding: ${padding};
+            border-radius: ${borderRadius};
+            margin-bottom: ${deviceType === 'mobile' ? '1rem' : '2rem'};
+            border: 1px solid ${colors.accent};
         }
 
         .form-title {
@@ -556,33 +589,33 @@ export default function WireframeDesigner() {
         }
 
         .wireframe-button {
-            padding: 0.75rem 1.5rem;
+            padding: ${deviceType === 'mobile' ? '0.5rem 1rem' : '0.75rem 1.5rem'};
             border: none;
-            border-radius: 4px;
-            font-size: 1rem;
+            border-radius: ${borderRadius};
+            font-size: ${deviceType === 'mobile' ? '0.875rem' : '1rem'};
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .wireframe-button.primary {
-            background-color: #667eea;
+            background-color: ${colors.primary};
             color: white;
         }
 
         .wireframe-button.secondary {
-            background-color: #6c757d;
+            background-color: ${colors.secondary};
             color: white;
         }
 
         .wireframe-button.outline {
             background-color: transparent;
-            color: #667eea;
-            border: 1px solid #667eea;
+            color: ${colors.primary};
+            border: 1px solid ${colors.primary};
         }
 
         .wireframe-button.ghost {
             background-color: transparent;
-            color: #6c757d;
+            color: ${colors.accent};
         }
 
         .wireframe-button:hover {
@@ -1201,23 +1234,7 @@ export default function WireframeDesigner() {
         {/* Page Content Cards Display */}
         {pageContentCards.length > 0 && (
           <div className="mt-8">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold">Generated Page Content</h2>
-              <Button 
-                onClick={handleGenerateWireframes}
-                disabled={isGeneratingWireframes}
-                className="bg-green-600 hover:bg-green-700 text-white"
-              >
-                {isGeneratingWireframes ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Generating Wireframes...
-                  </>
-                ) : (
-                  'Generate wireframe of each pages'
-                )}
-              </Button>
-            </div>
+            <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
             
             {/* Wireframe Generation Progress */}
             {isGeneratingWireframes && (
@@ -1499,6 +1516,86 @@ export default function WireframeDesigner() {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+            
+            {/* Wireframe Generation Options */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+              <h3 className="text-lg font-semibold mb-4">Wireframe Generation Options</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {/* Device Type Selection */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Device Type</Label>
+                  <Select value={selectedDeviceType} onValueChange={(value: 'mobile' | 'tablet' | 'desktop') => setSelectedDeviceType(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mobile">Mobile (375px)</SelectItem>
+                      <SelectItem value="tablet">Tablet (768px)</SelectItem>
+                      <SelectItem value="desktop">Desktop (1200px)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Color Scheme Selection */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Color Scheme</Label>
+                  <Select value={selectedColorScheme} onValueChange={setSelectedColorScheme}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="modern-blue">Modern Blue</SelectItem>
+                      <SelectItem value="professional-gray">Professional Gray</SelectItem>
+                      <SelectItem value="vibrant-green">Vibrant Green</SelectItem>
+                      <SelectItem value="elegant-purple">Elegant Purple</SelectItem>
+                      <SelectItem value="warm-orange">Warm Orange</SelectItem>
+                      <SelectItem value="corporate-navy">Corporate Navy</SelectItem>
+                      <SelectItem value="minimalist-black">Minimalist Black</SelectItem>
+                      <SelectItem value="fresh-teal">Fresh Teal</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Design Type Selection */}
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">Design Type</Label>
+                  <Select value={selectedDesignType} onValueChange={setSelectedDesignType}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="simple">Simple & Clean</SelectItem>
+                      <SelectItem value="modern">Modern & Trendy</SelectItem>
+                      <SelectItem value="corporate">Corporate & Formal</SelectItem>
+                      <SelectItem value="professional">Professional & Polished</SelectItem>
+                      <SelectItem value="creative">Creative & Artistic</SelectItem>
+                      <SelectItem value="minimal">Minimal & Elegant</SelectItem>
+                      <SelectItem value="bold">Bold & Dynamic</SelectItem>
+                      <SelectItem value="classic">Classic & Traditional</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Generate Wireframes Button */}
+              <div className="flex justify-center">
+                <Button 
+                  onClick={handleGenerateWireframes}
+                  disabled={isGeneratingWireframes}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-2"
+                >
+                  {isGeneratingWireframes ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Generating Wireframes...
+                    </>
+                  ) : (
+                    'Generate wireframe of each pages'
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
