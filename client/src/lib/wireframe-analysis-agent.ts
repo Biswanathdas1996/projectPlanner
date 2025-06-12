@@ -9,6 +9,7 @@ export interface PageRequirement {
   userInteractions: string[];
   dataRequirements: string[];
   priority: "critical" | "high" | "medium" | "low";
+  isEditing?: boolean;
 }
 
 export interface ContentElement {
