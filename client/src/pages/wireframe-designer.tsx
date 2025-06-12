@@ -1283,7 +1283,7 @@ export default function WireframeDesigner() {
                           <div className="flex flex-wrap gap-1">
                             {page.stakeholders.map((stakeholder, i) => (
                               <Badge key={i} variant="secondary" className="text-xs">
-                                {stakeholder}
+                                {safeRenderContent(stakeholder)}
                               </Badge>
                             ))}
                           </div>
@@ -1485,7 +1485,7 @@ export default function WireframeDesigner() {
                         <div className="flex flex-wrap gap-1 mt-1">
                           {card.stakeholders.slice(0, 3).map((stakeholder, idx) => (
                             <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
-                              {stakeholder}
+                              {safeRenderContent(stakeholder)}
                             </Badge>
                           ))}
                           {card.stakeholders.length > 3 && (
