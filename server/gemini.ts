@@ -7,9 +7,9 @@ export async function generateProjectPlan(req: Request, res: Response) {
   try {
     const { projectDescription, description } = req.body;
     const content = projectDescription || description;
-    
-    if (!content || typeof content !== 'string') {
-      return res.status(400).json({ error: 'Project description is required' });
+
+    if (!content || typeof content !== "string") {
+      return res.status(400).json({ error: "Project description is required" });
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -32,16 +32,15 @@ Format your response as a clear, structured plan that can be converted into a bu
     const response = await result.response;
     const text = response.text();
 
-    res.json({ 
-      success: true, 
-      projectPlan: text 
+    res.json({
+      success: true,
+      projectPlan: text,
     });
-
   } catch (error) {
-    console.error('Error generating project plan:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate project plan',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error("Error generating project plan:", error);
+    res.status(500).json({
+      error: "Failed to generate project plan",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
@@ -49,9 +48,9 @@ Format your response as a clear, structured plan that can be converted into a bu
 export async function generateBpmnJson(req: Request, res: Response) {
   try {
     const { projectPlan } = req.body;
-    
-    if (!projectPlan || typeof projectPlan !== 'string') {
-      return res.status(400).json({ error: 'Project plan is required' });
+
+    if (!projectPlan || typeof projectPlan !== "string") {
+      return res.status(400).json({ error: "Project plan is required" });
     }
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -114,27 +113,29 @@ Rules:
     let text = response.text();
 
     // Clean up the response to extract just the JSON
-    text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
-    
+    text = text
+      .replace(/```json\n?/g, "")
+      .replace(/```\n?/g, "")
+      .trim();
+
     try {
       const bpmnJson = JSON.parse(text);
-      res.json({ 
-        success: true, 
-        bpmnJson 
+      res.json({
+        success: true,
+        bpmnJson,
       });
     } catch (parseError) {
-      console.error('Failed to parse generated JSON:', text);
-      res.status(500).json({ 
-        error: 'Failed to parse generated BPMN structure',
-        rawResponse: text
+      console.error("Failed to parse generated JSON:", text);
+      res.status(500).json({
+        error: "Failed to parse generated BPMN structure",
+        rawResponse: text,
       });
     }
-
   } catch (error) {
-    console.error('Error generating BPMN JSON:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate BPMN structure',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error("Error generating BPMN JSON:", error);
+    res.status(500).json({
+      error: "Failed to generate BPMN structure",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }

@@ -33,7 +33,9 @@ export class PreciseElementEnhancer {
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
-  async enhanceElement(request: PreciseElementRequest): Promise<PreciseEnhancementResponse> {
+  async enhanceElement(
+    request: PreciseElementRequest
+  ): Promise<PreciseEnhancementResponse> {
     const prompt = this.buildPrecisePrompt(request);
 
     try {
@@ -52,14 +54,14 @@ export class PreciseElementEnhancer {
 
   private buildPrecisePrompt(request: PreciseElementRequest): string {
     const targetSelector = this.generateElementSelector(request.elementData);
-    
+
     return `
 You are a comprehensive web element enhancer. Your job is to enhance a selected element AND all its child elements for a cohesive design.
 
 TARGET ELEMENT AND CHILDREN:
 - Main Element: ${request.elementData.tagName}
-- Classes: ${request.elementData.className || 'none'}
-- ID: ${request.elementData.id || 'none'}
+- Classes: ${request.elementData.className || "none"}
+- ID: ${request.elementData.id || "none"}
 - Content Preview: "${request.elementData.textContent.substring(0, 50)}..."
 - CSS Selector: ${targetSelector}
 
@@ -102,22 +104,27 @@ Return ONLY this JSON format:
     if (elementData.id) {
       return `#${elementData.id}`;
     }
-    
+
     if (elementData.className) {
-      const firstClass = elementData.className.split(' ')[0];
+      const firstClass = elementData.className.split(" ")[0];
       return `.${firstClass}`;
     }
-    
+
     return elementData.tagName;
   }
 
-  private parsePreciseResponse(response: string, request: PreciseElementRequest): PreciseEnhancementResponse {
+  private parsePreciseResponse(
+    response: string,
+    request: PreciseElementRequest
+  ): PreciseEnhancementResponse {
     try {
       // Multiple JSON extraction attempts
-      let jsonStr = '';
-      
+      let jsonStr = "";
+
       // Try to find JSON block wrapped in code blocks
-      const codeBlockMatch = response.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      const codeBlockMatch = response.match(
+        /```(?:json)?\s*(\{[\s\S]*?\})\s*```/
+      );
       if (codeBlockMatch) {
         jsonStr = codeBlockMatch[1];
       } else {
@@ -132,18 +139,21 @@ Return ONLY this JSON format:
 
       // Clean the JSON string
       jsonStr = jsonStr.trim();
-      
+
       // Remove any trailing text after the last }
-      const lastBraceIndex = jsonStr.lastIndexOf('}');
+      const lastBraceIndex = jsonStr.lastIndexOf("}");
       if (lastBraceIndex !== -1) {
         jsonStr = jsonStr.substring(0, lastBraceIndex + 1);
       }
 
       const parsed = JSON.parse(jsonStr);
-      
+
       // Validate that the response contains required fields
       if (!parsed.html || !parsed.css) {
-        console.warn("Missing required fields in response:", { hasHtml: !!parsed.html, hasCss: !!parsed.css });
+        console.warn("Missing required fields in response:", {
+          hasHtml: !!parsed.html,
+          hasCss: !!parsed.css,
+        });
         throw new Error("Invalid response format");
       }
 
@@ -152,69 +162,80 @@ Return ONLY this JSON format:
         css: parsed.css,
         js: parsed.js || "",
         explanation: parsed.explanation || "Element enhanced successfully",
-        changedElement: parsed.changedElement || request.elementData.displayName
+        changedElement:
+          parsed.changedElement || request.elementData.displayName,
       };
     } catch (error) {
       console.error("Error parsing precise response:", error);
       console.log("Response content:", response.substring(0, 500) + "...");
-      
+
       // Fallback: return original code with minimal targeted enhancement
       return this.createFallbackEnhancement(request);
     }
   }
 
-  private createFallbackEnhancement(request: PreciseElementRequest): PreciseEnhancementResponse {
+  private createFallbackEnhancement(
+    request: PreciseElementRequest
+  ): PreciseEnhancementResponse {
     // Create a simple CSS enhancement for the target element
     const targetSelector = this.generateElementSelector(request.elementData);
-    const enhancementCSS = this.generateBasicEnhancement(request.enhancementPrompt, targetSelector);
-    
+    const enhancementCSS = this.generateBasicEnhancement(
+      request.enhancementPrompt,
+      targetSelector
+    );
+
     return {
       html: request.htmlCode, // Keep HTML unchanged
       css: request.cssCode + "\n\n/* Element Enhancement */\n" + enhancementCSS,
       js: "",
       explanation: `Applied enhancement to ${request.elementData.displayName}`,
-      changedElement: request.elementData.displayName
+      changedElement: request.elementData.displayName,
     };
   }
 
   private generateBasicEnhancement(prompt: string, selector: string): string {
     const lowerPrompt = prompt.toLowerCase();
     let enhancement = `/* Comprehensive Enhancement for ${selector} and children */\n`;
-    
+
     // Main element styling
     enhancement += `${selector} {\n`;
 
     if (lowerPrompt.includes("modern")) {
       enhancement += "  border-radius: 12px;\n";
-      enhancement += "  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n";
+      enhancement +=
+        "  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);\n";
       enhancement += "  transition: all 0.3s ease;\n";
-      enhancement += "  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);\n";
+      enhancement +=
+        "  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);\n";
       enhancement += "  border: 1px solid #e2e8f0;\n";
       enhancement += "  padding: 1.5rem;\n";
     }
 
     if (lowerPrompt.includes("color") || lowerPrompt.includes("colours")) {
-      enhancement += "  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);\n";
+      enhancement +=
+        "  background: linear-gradient(135deg, #3B82F6 0%, #1E40AF 100%);\n";
       enhancement += "  color: white;\n";
       enhancement += "  border: none;\n";
     }
 
     if (lowerPrompt.includes("typography")) {
-      enhancement += "  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;\n";
+      enhancement +=
+        "  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;\n";
       enhancement += "  font-weight: 500;\n";
       enhancement += "  letter-spacing: 0.025em;\n";
       enhancement += "  line-height: 1.6;\n";
     }
 
     if (lowerPrompt.includes("shadow")) {
-      enhancement += "  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n";
+      enhancement +=
+        "  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);\n";
     }
 
     enhancement += "}\n\n";
 
     // Child element styling
     enhancement += `/* Child elements styling */\n`;
-    
+
     // Buttons within the selected element
     enhancement += `${selector} button, ${selector} .form-button {\n`;
     enhancement += "  border-radius: 8px;\n";
@@ -285,7 +306,7 @@ Return ONLY this JSON format:
       enhancement += `${selector} > * {\n`;
       enhancement += "  animation: fadeInUp 0.6s ease-out;\n";
       enhancement += "}\n\n";
-      
+
       enhancement += `@keyframes fadeInUp {\n`;
       enhancement += "  from {\n";
       enhancement += "    opacity: 0;\n";

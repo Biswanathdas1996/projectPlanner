@@ -13,21 +13,19 @@ console.error = (...args) => {
   }
 };
 
-export async function generateCustomizedBpmnFromStructuredData(
-  structuredData: {
-    processName: string;
-    processDescription: string;
-    participants: string[];
-    trigger: string;
-    activities: string[];
-    decisionPoints: string[];
-    endEvent: string;
-    additionalElements: string[];
-  }
-): Promise<string> {
+export async function generateCustomizedBpmnFromStructuredData(structuredData: {
+  processName: string;
+  processDescription: string;
+  participants: string[];
+  trigger: string;
+  activities: string[];
+  decisionPoints: string[];
+  endEvent: string;
+  additionalElements: string[];
+}): Promise<string> {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 0.2,
         topK: 40,
@@ -41,19 +39,23 @@ export async function generateCustomizedBpmnFromStructuredData(
 ✅ 1. Process & Description: ${structuredData.processName}
 ${structuredData.processDescription}
 
-✅ 2. Participants (Swimlanes): ${structuredData.participants.join(', ')}
+✅ 2. Participants (Swimlanes): ${structuredData.participants.join(", ")}
 
 ✅ 3. Trigger (Start Event): ${structuredData.trigger}
 
 ✅ 4. Activities (Tasks): 
-${structuredData.activities.map((activity, i) => `${i + 1}. ${activity}`).join('\n')}
+${structuredData.activities
+  .map((activity, i) => `${i + 1}. ${activity}`)
+  .join("\n")}
 
 ✅ 5. Decision Points (Gateways):
-${structuredData.decisionPoints.map((decision, i) => `${i + 1}. ${decision}`).join('\n')}
+${structuredData.decisionPoints
+  .map((decision, i) => `${i + 1}. ${decision}`)
+  .join("\n")}
 
 ✅ 6. End Event: ${structuredData.endEvent}
 
-✅ 7. Additional Elements: ${structuredData.additionalElements.join(', ')}
+✅ 7. Additional Elements: ${structuredData.additionalElements.join(", ")}
 
 REQUIREMENTS:
 - Generate complete BPMN 2.0 XML with proper namespaces (bpmn2, bpmndi, dc, di, xsi)
@@ -70,25 +72,33 @@ REQUIREMENTS:
 
 Generate the BPMN 2.0 XML:`;
 
-    console.log("Generating AI-customized BPMN from 7-element structured data...");
+    console.log(
+      "Generating AI-customized BPMN from 7-element structured data..."
+    );
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let bpmnXml = response.text();
 
     // Clean up the response
-    bpmnXml = bpmnXml.replace(/```xml\n?/g, '').replace(/```\n?/g, '');
+    bpmnXml = bpmnXml.replace(/```xml\n?/g, "").replace(/```\n?/g, "");
     bpmnXml = bpmnXml.trim();
 
     // Ensure XML declaration
-    if (!bpmnXml.startsWith('<?xml')) {
+    if (!bpmnXml.startsWith("<?xml")) {
       bpmnXml = '<?xml version="1.0" encoding="UTF-8"?>\n' + bpmnXml;
     }
 
-    console.log('AI Generated BPMN 2.0 XML:', bpmnXml.substring(0, 200) + '...');
-    
+    console.log(
+      "AI Generated BPMN 2.0 XML:",
+      bpmnXml.substring(0, 200) + "..."
+    );
+
     return bpmnXml;
   } catch (error) {
-    console.error("Error generating customized BPMN from structured data:", error);
+    console.error(
+      "Error generating customized BPMN from structured data:",
+      error
+    );
     throw error;
   }
 }
@@ -102,7 +112,7 @@ export async function generateFlowAnalysis(prompt: string): Promise<string> {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-2.0-flash",
+      model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 0.3,
         topK: 40,
@@ -130,14 +140,14 @@ export async function generateFlowAnalysis(prompt: string): Promise<string> {
 }
 
 export async function generateCustomSuggestions(
-  projectDescription: string,
+  projectDescription: string
 ): Promise<string[]> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.8,
       topK: 40,
@@ -234,7 +244,7 @@ Example format: ["Implement multi-factor authentication (MFA) and biometric logi
           !line.includes("JSON") &&
           !line.startsWith("Here") &&
           !line.startsWith("Based") &&
-          line.length > 20,
+          line.length > 20
       )
       .map((line) => line.replace(/^[\d\.\-\*\+]\s*/, "")) // Remove list markers
       .filter((line) => line.length > 30); // Filter out short lines
@@ -244,14 +254,14 @@ Example format: ["Implement multi-factor authentication (MFA) and biometric logi
 }
 
 export async function generateProjectPlan(
-  projectDescription: string,
+  projectDescription: string
 ): Promise<string> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
@@ -645,12 +655,12 @@ Return ONLY the complete HTML document with embedded CSS. The document must be p
   ];
 
   const missingSections = requiredSections.filter(
-    (section) => !text.includes(section),
+    (section) => !text.includes(section)
   );
 
   if (missingSections.length > 0) {
     console.warn(
-      `Retrying generation - missing sections: ${missingSections.join(", ")}`,
+      `Retrying generation - missing sections: ${missingSections.join(", ")}`
     );
 
     // First retry with enhanced specificity
@@ -685,12 +695,12 @@ The document must be complete HTML with embedded CSS styling. Do not skip or mer
 
     // Validate retry attempt
     const stillMissing = requiredSections.filter(
-      (section) => !retryText.includes(section),
+      (section) => !retryText.includes(section)
     );
 
     if (stillMissing.length > 0) {
       console.warn(
-        `Second validation failed - still missing: ${stillMissing.join(", ")}`,
+        `Second validation failed - still missing: ${stillMissing.join(", ")}`
       );
 
       // Final attempt with ultra-specific prompt
@@ -724,13 +734,13 @@ Include visual elements: tables, flow diagrams, tree structures, timelines in ea
 }
 
 export async function generateUserJourneyFlows(
-  projectPlan: string,
+  projectPlan: string
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Generate comprehensive user journey flow diagrams for different personas based on this project plan: "${projectPlan}"
 
@@ -768,13 +778,13 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
 
 export async function generatePersonaBpmnFlow(
   projectPlan: string,
-  personaType: "guest" | "loggedin" | "admin" | "power" | "mobile",
+  personaType: "guest" | "loggedin" | "admin" | "power" | "mobile"
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const personaPrompts = {
     guest: {
@@ -831,7 +841,9 @@ export async function generatePersonaBpmnFlow(
 
   const persona = personaPrompts[personaType];
 
-  const prompt = `Generate a BPMN 2.0 XML diagram specifically for ${persona.title} based on this project plan: "${projectPlan}"
+  const prompt = `Generate a BPMN 2.0 XML diagram specifically for ${
+    persona.title
+  } based on this project plan: "${projectPlan}"
 
 **Focus on ${persona.description}**
 
@@ -844,10 +856,34 @@ export async function generatePersonaBpmnFlow(
 - Add proper BPMNDiagram with visual positioning coordinates
 
 **${persona.title} Specific Elements:**
-- **Start Events**: ${personaType === "guest" ? "Landing page visit, search discovery" : personaType === "admin" ? "Admin login, dashboard access" : "User login, app launch"}
-- **User Tasks**: ${personaType === "guest" ? "Browse content, view features, register" : personaType === "admin" ? "Manage users, configure settings, review reports" : "Use core features, update profile"}
-- **Service Tasks**: ${personaType === "guest" ? "Show public content, track analytics" : personaType === "admin" ? "Generate reports, sync data, send notifications" : "Process requests, save data"}
-- **Decision Points**: ${personaType === "guest" ? "Register vs browse, feature access" : personaType === "admin" ? "Permission checks, approval workflows" : "Feature availability, data validation"}
+- **Start Events**: ${
+    personaType === "guest"
+      ? "Landing page visit, search discovery"
+      : personaType === "admin"
+      ? "Admin login, dashboard access"
+      : "User login, app launch"
+  }
+- **User Tasks**: ${
+    personaType === "guest"
+      ? "Browse content, view features, register"
+      : personaType === "admin"
+      ? "Manage users, configure settings, review reports"
+      : "Use core features, update profile"
+  }
+- **Service Tasks**: ${
+    personaType === "guest"
+      ? "Show public content, track analytics"
+      : personaType === "admin"
+      ? "Generate reports, sync data, send notifications"
+      : "Process requests, save data"
+  }
+- **Decision Points**: ${
+    personaType === "guest"
+      ? "Register vs browse, feature access"
+      : personaType === "admin"
+      ? "Permission checks, approval workflows"
+      : "Feature availability, data validation"
+  }
 - **End Events**: Successful completion, error handling, session timeout
 
 **Flow Patterns for ${persona.title}:**
@@ -861,9 +897,13 @@ export async function generatePersonaBpmnFlow(
 - Proper Process definition with flowNodeRef elements
 - Collaboration element with ${persona.swimlanes.length} participants
 - Complete BPMNDiagram with realistic coordinates
-- Process ID: "Process_${personaType.charAt(0).toUpperCase() + personaType.slice(1)}_Journey"
+- Process ID: "Process_${
+    personaType.charAt(0).toUpperCase() + personaType.slice(1)
+  }_Journey"
 
-Generate a complete, valid BPMN 2.0 XML document focused specifically on the ${persona.title} workflow.
+Generate a complete, valid BPMN 2.0 XML document focused specifically on the ${
+    persona.title
+  } workflow.
 
 Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 
@@ -877,7 +917,7 @@ export async function generateSitemapXml(projectPlan: string): Promise<string> {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Generate a comprehensive XML sitemap based on this project plan: "${projectPlan}"
 
@@ -919,13 +959,13 @@ Return ONLY the complete XML sitemap - no explanations or markdown.`;
 }
 
 export async function extractStakeholdersFromProject(
-  projectPlan: string,
+  projectPlan: string
 ): Promise<{ stakeholders: string[]; flowTypes: Record<string, string[]> }> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Analyze this project plan and extract all stakeholders/user personas and their potential workflow types: "${projectPlan}"
 
@@ -1012,13 +1052,13 @@ export async function generatePersonaBpmnFlowWithType(
   projectPlan: string,
   stakeholder: string,
   flowType: string,
-  customPrompt?: string,
+  customPrompt?: string
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const enhancedProjectPlan = customPrompt
     ? `${projectPlan}\n\nAdditional Requirements: ${customPrompt}`
@@ -1057,7 +1097,10 @@ export async function generatePersonaBpmnFlowWithType(
 
 **XML Structure Requirements:**
 - Valid XML declaration and BPMN namespace
-- Process ID: "Process_${stakeholder.replace(/\s+/g, "_")}_${flowType.replace(/\s+/g, "_")}"
+- Process ID: "Process_${stakeholder.replace(/\s+/g, "_")}_${flowType.replace(
+    /\s+/g,
+    "_"
+  )}"
 - Collaboration with appropriate participants
 - Complete BPMNDiagram with realistic coordinates
 
@@ -1083,26 +1126,46 @@ Return ONLY the complete BPMN 2.0 XML - no explanations or markdown.`;
 
 export async function generateBpmnXml(flowContent: string): Promise<string> {
   // Check if we have structured 7-element format for enhanced AI generation
-  const isStructuredFormat = flowContent.includes('✅ 1. Process & Description') && 
-                             flowContent.includes('✅ 2. Participants') &&
-                             flowContent.includes('✅ 3. Trigger') &&
-                             flowContent.includes('✅ 4. Activities') &&
-                             flowContent.includes('✅ 5. Decision Points') &&
-                             flowContent.includes('✅ 6. End Event') &&
-                             flowContent.includes('✅ 7. Additional Elements');
+  const isStructuredFormat =
+    flowContent.includes("✅ 1. Process & Description") &&
+    flowContent.includes("✅ 2. Participants") &&
+    flowContent.includes("✅ 3. Trigger") &&
+    flowContent.includes("✅ 4. Activities") &&
+    flowContent.includes("✅ 5. Decision Points") &&
+    flowContent.includes("✅ 6. End Event") &&
+    flowContent.includes("✅ 7. Additional Elements");
 
   if (isStructuredFormat) {
-    console.log("🎯 Using structured 7-element format for enhanced AI generation");
-    
+    console.log(
+      "🎯 Using structured 7-element format for enhanced AI generation"
+    );
+
     // Parse structured content for better AI understanding
     const sections = {
-      process: flowContent.match(/✅ 1\. Process & Description\n([^✅]*)/)?.[1]?.trim() || '',
-      participants: flowContent.match(/✅ 2\. Participants.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
-      trigger: flowContent.match(/✅ 3\. Trigger.*?\n([^✅]*)/)?.[1]?.trim() || '',
-      activities: flowContent.match(/✅ 4\. Activities.*?\n((?:\d+\. .*\n?)*)/)?.[1]?.trim() || '',
-      decisions: flowContent.match(/✅ 5\. Decision Points.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || '',
-      endEvent: flowContent.match(/✅ 6\. End Event\n([^✅]*)/)?.[1]?.trim() || '',
-      additional: flowContent.match(/✅ 7\. Additional Elements.*?\n((?:- .*\n?)*)/)?.[1]?.trim() || ''
+      process:
+        flowContent
+          .match(/✅ 1\. Process & Description\n([^✅]*)/)?.[1]
+          ?.trim() || "",
+      participants:
+        flowContent
+          .match(/✅ 2\. Participants.*?\n((?:- .*\n?)*)/)?.[1]
+          ?.trim() || "",
+      trigger:
+        flowContent.match(/✅ 3\. Trigger.*?\n([^✅]*)/)?.[1]?.trim() || "",
+      activities:
+        flowContent
+          .match(/✅ 4\. Activities.*?\n((?:\d+\. .*\n?)*)/)?.[1]
+          ?.trim() || "",
+      decisions:
+        flowContent
+          .match(/✅ 5\. Decision Points.*?\n((?:- .*\n?)*)/)?.[1]
+          ?.trim() || "",
+      endEvent:
+        flowContent.match(/✅ 6\. End Event\n([^✅]*)/)?.[1]?.trim() || "",
+      additional:
+        flowContent
+          .match(/✅ 7\. Additional Elements.*?\n((?:- .*\n?)*)/)?.[1]
+          ?.trim() || "",
     };
 
     // Enhanced prompt for structured data with specific BPMN requirements
@@ -1143,10 +1206,12 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
 
   // Direct client-side BPMN generation using browser Gemini API
   if (!import.meta.env.VITE_GEMINI_API_KEY) {
-    throw new Error('Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your environment.');
+    throw new Error(
+      "Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your environment."
+    );
   }
 
-  const { GoogleGenerativeAI } = await import('@google/generative-ai');
+  const { GoogleGenerativeAI } = await import("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1155,26 +1220,29 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
   let text = response.text();
 
   // Clean up response to extract XML
-  text = text.replace(/```xml\n?/g, '').replace(/```\n?/g, '').trim();
-  
+  text = text
+    .replace(/```xml\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+
   // Validate it starts with XML declaration or BPMN element
-  if (!text.startsWith('<?xml') && !text.startsWith('<bpmn')) {
-    console.error('Invalid BPMN XML response from AI');
-    throw new Error('AI did not generate valid BPMN XML');
+  if (!text.startsWith("<?xml") && !text.startsWith("<bpmn")) {
+    console.error("Invalid BPMN XML response from AI");
+    throw new Error("AI did not generate valid BPMN XML");
   }
 
   return text;
 }
 
 export async function generateBpmnXmlClient(
-  flowContent: string,
+  flowContent: string
 ): Promise<string> {
   if (!flowContent.trim()) {
     throw new Error("Flow content is required");
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.2,
       topK: 30,
@@ -1294,7 +1362,7 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
     "bpmn2:endEvent",
   ];
   const missingElements = requiredElements.filter(
-    (element) => !cleanedText.includes(element),
+    (element) => !cleanedText.includes(element)
   );
 
   if (missingElements.length > 0) {
@@ -1311,10 +1379,10 @@ export async function generateSwimlaneXml(
     description: string;
     participants: string[];
     activities: string[];
-  },
+  }
 ): Promise<string> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-2.0-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
@@ -1340,10 +1408,14 @@ FLOW TYPE: ${flowType}
 DESCRIPTION: ${details.description}
 
 PARTICIPANTS:
-${details.participants.map((participant, idx) => `${idx + 1}. ${participant}`).join("\n")}
+${details.participants
+  .map((participant, idx) => `${idx + 1}. ${participant}`)
+  .join("\n")}
 
 ACTIVITIES:
-${details.activities.map((activity, idx) => `${idx + 1}. ${activity}`).join("\n")}
+${details.activities
+  .map((activity, idx) => `${idx + 1}. ${activity}`)
+  .join("\n")}
 
 Create a BPMN 2.0 XML with proper swimlane structure including:
 - Participant pools for different actors/systems involved in this flow
