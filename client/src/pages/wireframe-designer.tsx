@@ -197,7 +197,7 @@ export default function WireframeDesigner() {
   const [contentGenerationProgress, setContentGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
 
-  const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string }[]>([]);
+  const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string; jsCode: string }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -360,7 +360,7 @@ export default function WireframeDesigner() {
     setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
     
     try {
-      const wireframes: { pageName: string; htmlCode: string; cssCode: string }[] = [];
+      const wireframes: { pageName: string; htmlCode: string; cssCode: string; jsCode: string }[] = [];
       
       for (let i = 0; i < pageContentCards.length; i++) {
         const card = pageContentCards[i];
@@ -374,6 +374,17 @@ export default function WireframeDesigner() {
         const wireframe = await generatePageWireframe(card);
         wireframes.push(wireframe);
       }
+      
+      // Save wireframes to localStorage with complete data
+      const wireframeData = wireframes.map(w => ({
+        ...w,
+        deviceType: selectedDeviceType,
+        colorScheme: selectedColorScheme,
+        designType: selectedDesignType,
+        timestamp: new Date().toISOString(),
+        isEnhanced: false
+      }));
+      localStorage.setItem('wireframeData', JSON.stringify(wireframeData));
       
       setGeneratedWireframes(wireframes);
       
@@ -473,6 +484,8 @@ export default function WireframeDesigner() {
     }
   };
 
+
+
   const generateWireframeJS = (card: PageContentCard, deviceType: string, designType: string, layout: string = 'standard-header'): string => {
     const interactiveElements = [];
     
@@ -506,40 +519,6 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(() => this.style.transform = 'scale(1)', 150);
     });
   });
-});`);
-    }
-
-    // Add mobile menu toggle for responsive designs
-    if (deviceType === 'mobile' || layout === 'sidebar-layout') {
-      interactiveElements.push(`
-// Mobile menu toggle
-document.addEventListener('DOMContentLoaded', function() {
-  const menuToggle = document.querySelector('.menu-toggle');
-  const nav = document.querySelector('nav');
-  
-  if (menuToggle && nav) {
-    menuToggle.addEventListener('click', function() {
-      nav.classList.toggle('mobile-open');
-    });
-  }
-});`);
-    }
-
-    // Add scroll effects for landing pages
-    if (layout === 'landing-page' || layout === 'hero-banner') {
-      interactiveElements.push(`
-// Scroll animations
-document.addEventListener('DOMContentLoaded', function() {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
-      }
-    });
-  });
-  
-  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
 });`);
     }
 
