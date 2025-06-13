@@ -2204,7 +2204,7 @@ ${selectedPageCode.jsCode}
         {pageContentCards.length > 0 && (
           <div className="mt-8">
             {generatedWireframes.length > 0 ? (
-              <Accordion type="single" collapsible className="w-full space-y-4">
+              <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="page-content" className="border border-gray-200 rounded-lg">
                   <AccordionTrigger className="text-xl font-bold px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2">
@@ -2213,32 +2213,32 @@ ${selectedPageCode.jsCode}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-            
-            {/* Wireframe Generation Progress */}
-            {isGeneratingWireframes && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-green-700">
-                    Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
-                  </span>
-                  <span className="text-xs text-green-600">
-                    {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
-                  </span>
-                </div>
-                <div className="w-full bg-green-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
-                  ></div>
-                </div>
-                {wireframeGenerationProgress.currentPage && (
-                  <p className="text-xs text-green-600 mt-2">
-                    Currently generating: {wireframeGenerationProgress.currentPage}
-                  </p>
-                )}
-              </div>
-            )}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div>
+                    {/* Wireframe Generation Progress */}
+                    {isGeneratingWireframes && (
+                      <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-green-700">
+                            Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+                          </span>
+                          <span className="text-xs text-green-600">
+                            {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-green-200 rounded-full h-2">
+                          <div 
+                            className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        {wireframeGenerationProgress.currentPage && (
+                          <p className="text-xs text-green-600 mt-2">
+                            Currently generating: {wireframeGenerationProgress.currentPage}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {pageContentCards.map((card, index) => (
                 <Card key={card.id} className="border-2 border-gray-200">
                   <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 py-3">
@@ -3274,7 +3274,7 @@ ${selectedPageCode.jsCode}
                 </AccordionItem>
               </Accordion>
             ) : (
-              <>
+              <div>
                 <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
                 {/* Wireframe Generation Progress */}
                 {isGeneratingWireframes && (
@@ -3303,7 +3303,53 @@ ${selectedPageCode.jsCode}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   {pageContentCards.map((card, index) => (
                     <Card key={card.id} className="border-2 border-gray-200">
-                      {/* Page content card content here - keeping existing structure */}
+                      <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 py-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-lg font-bold text-gray-800">{card.pageName}</CardTitle>
+                            <p className="text-sm text-gray-600 mt-1">{card.pageType}</p>
+                          </div>
+                          <Badge variant="outline" className="bg-purple-100 text-purple-700">
+                            {card.stakeholders.length} stakeholders
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="p-4">
+                        <div className="space-y-3">
+                          <div>
+                            <p className="text-sm font-medium text-gray-700 mb-1">Purpose:</p>
+                            <p className="text-xs text-gray-600">{card.purpose}</p>
+                          </div>
+                          
+                          {card.headers.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 mb-1">Headers:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {card.headers.slice(0, 3).map((header, idx) => (
+                                  <Badge key={idx} variant="secondary" className="text-xs">{header}</Badge>
+                                ))}
+                                {card.headers.length > 3 && (
+                                  <Badge variant="secondary" className="text-xs">+{card.headers.length - 3} more</Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {card.buttons.length > 0 && (
+                            <div>
+                              <p className="text-sm font-medium text-gray-700 mb-1">Buttons:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {card.buttons.slice(0, 2).map((button, idx) => (
+                                  <Badge key={idx} variant="outline" className="text-xs">{button.label}</Badge>
+                                ))}
+                                {card.buttons.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">+{card.buttons.length - 2} more</Badge>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
                     </Card>
                   ))}
                 </div>
@@ -3327,7 +3373,7 @@ ${selectedPageCode.jsCode}
                     )}
                   </Button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         )}
