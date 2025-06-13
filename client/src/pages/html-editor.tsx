@@ -681,26 +681,48 @@ export default function HTMLEditor() {
   // Extract page data from localStorage or URL parameters
   const getInitialData = (): HTMLEditorData | undefined => {
     // Check if there's a page name in the URL
-    const pageName = params.pageName || new URLSearchParams(location.split('?')[1] || '').get('page');
+    let pageName = params.pageName || new URLSearchParams(location.split('?')[1] || '').get('page');
+    
+    // Decode the page name if it's URL encoded
+    if (pageName) {
+      pageName = decodeURIComponent(pageName);
+    }
+    
+    console.log('HTML Editor - Looking for page:', pageName);
+    console.log('HTML Editor - Current URL:', location);
     
     if (pageName) {
       // Try to load from localStorage first
       const savedData = localStorage.getItem(`html_editor_${pageName}`);
       if (savedData) {
+        console.log('HTML Editor - Found saved editor data for:', pageName);
         return JSON.parse(savedData);
       }
       
       // Try to load from generated wireframes
       const wireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      console.log('HTML Editor - Checking', wireframes.length, 'wireframes for:', pageName);
+      
       const wireframe = wireframes.find((w: any) => w.pageName === pageName);
       if (wireframe) {
+        console.log('HTML Editor - Found wireframe data:', {
+          pageName: wireframe.pageName,
+          htmlLength: wireframe.htmlCode?.length,
+          cssLength: wireframe.cssCode?.length,
+          isEnhanced: wireframe.isEnhanced
+        });
         return {
           pageName: wireframe.pageName,
           htmlCode: wireframe.htmlCode,
           cssCode: wireframe.cssCode,
           jsCode: wireframe.jsCode || ''
         };
+      } else {
+        console.log('HTML Editor - No wireframe found with name:', pageName);
+        console.log('HTML Editor - Available wireframes:', wireframes.map((w: any) => w.pageName));
       }
+    } else {
+      console.log('HTML Editor - No page name found in URL');
     }
     
     return undefined;
