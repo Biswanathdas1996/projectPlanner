@@ -1612,7 +1612,7 @@ export default function WireframeDesigner() {
         {/* Code Modal */}
         {showCodeModal && selectedPageCode && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="bg-white rounded-lg w-[90vw] h-[90vh] overflow-hidden">
               <div className="flex justify-between items-center p-4 border-b">
                 <h3 className="text-lg font-semibold">{selectedPageCode.pageName} - Code</h3>
                 <Button
@@ -1627,7 +1627,7 @@ export default function WireframeDesigner() {
                 </Button>
               </div>
               
-              <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+              <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
                 {/* AI Enhancement Section - Always Visible */}
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <h4 className="font-semibold text-blue-800 mb-2">🤖 AI Code Enhancement</h4>
