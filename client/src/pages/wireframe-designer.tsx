@@ -1632,8 +1632,8 @@ export default function WireframeDesigner() {
                   <TabsList>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
-                    <TabsTrigger value="preview">Preview</TabsTrigger>
                     <TabsTrigger value="enhance">🤖 AI Enhance</TabsTrigger>
+                    <TabsTrigger value="preview">Preview</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="html">
