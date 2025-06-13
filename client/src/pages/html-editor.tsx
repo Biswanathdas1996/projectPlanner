@@ -527,7 +527,7 @@ ${jsCode}
         )}
 
         {/* Main Layout - Compact Design */}
-        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-160px)]">
           {/* Sidebar - Tools & Code */}
           <div className="col-span-4 space-y-4 overflow-y-auto">
             {/* Compact AI Enhancement Panel */}
@@ -646,7 +646,7 @@ ${jsCode}
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="h-[calc(100%-80px)]">
+              <CardContent className="h-[calc(100%-70px)]">
                 <Tabs defaultValue="html" className="h-full">
                   <TabsList className="grid w-full grid-cols-3 mb-3">
                     <TabsTrigger value="html" className="text-xs">HTML</TabsTrigger>
