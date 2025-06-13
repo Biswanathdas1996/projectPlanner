@@ -3683,7 +3683,7 @@ ${selectedPageCode.jsCode}
                       </div>
                     </CardHeader>
                     
-                    <CardContent className="p-4">
+                    <CardContent className="p-4 bg-[#eff6ff]">
                       <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden border border-gray-200 group-hover:border-blue-200 transition-colors duration-300">
                         <div className="bg-gradient-to-r from-gray-200 to-gray-300 px-3 py-2 border-b border-gray-300">
                           <div className="flex items-center gap-2">
