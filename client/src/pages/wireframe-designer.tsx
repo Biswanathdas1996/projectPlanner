@@ -215,6 +215,7 @@ export default function WireframeDesigner() {
     lastUpdated?: string;
     lastEnhancedElement?: string;
     enhancementExplanation?: string;
+    lastEditorSync?: string;
   }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
@@ -590,10 +591,26 @@ export default function WireframeDesigner() {
     setError("");
 
     try {
+      // First, check for HTML editor data to get the latest code
+      const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+      let latestHtmlCode = selectedPageCode.htmlCode;
+      let latestCssCode = selectedPageCode.cssCode;
+      let latestJsCode = selectedPageCode.jsCode;
+      
+      if (wireframe?.id) {
+        const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+        if (editorData && editorData.lastSaved) {
+          console.log('Using latest HTML editor data for enhancement');
+          latestHtmlCode = editorData.htmlCode || selectedPageCode.htmlCode;
+          latestCssCode = editorData.cssCode || selectedPageCode.cssCode;
+          latestJsCode = editorData.jsCode || selectedPageCode.jsCode;
+        }
+      }
+
       const enhancer = createAICodeEnhancer();
       const request: CodeEnhancementRequest = {
-        htmlCode: selectedPageCode.htmlCode,
-        cssCode: selectedPageCode.cssCode,
+        htmlCode: latestHtmlCode,
+        cssCode: latestCssCode,
         prompt: enhancementPrompt,
         pageName: selectedPageCode.pageName
       };
@@ -674,6 +691,68 @@ export default function WireframeDesigner() {
     } finally {
       setIsEnhancing(false);
     }
+  };
+
+  // Save HTML Editor data to wireframes
+  const handleSaveEditorData = () => {
+    if (!selectedPageCode) return;
+
+    const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+    if (!wireframe?.id) {
+      toast({
+        title: "Error",
+        description: "Could not find wireframe ID for this page.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get latest HTML editor data
+    const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+    if (!editorData) {
+      toast({
+        title: "No Changes Found",
+        description: "No HTML editor data found for this wireframe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Saving HTML editor data to wireframes:', editorData);
+
+    // Update the wireframes with HTML editor data
+    const updatedWireframes = generatedWireframes.map(w => {
+      if (w.id === wireframe.id) {
+        return {
+          ...w,
+          htmlCode: editorData.htmlCode || w.htmlCode,
+          cssCode: editorData.cssCode || w.cssCode,
+          jsCode: editorData.jsCode || w.jsCode,
+          isEnhanced: true,
+          lastUpdated: editorData.lastSaved || new Date().toISOString(),
+          lastEnhancedElement: 'HTML Editor',
+          lastEditorSync: editorData.lastSaved
+        };
+      }
+      return w;
+    });
+
+    // Update storage and state
+    storage.setItem('generated_wireframes', updatedWireframes);
+    setGeneratedWireframes(updatedWireframes);
+
+    // Update selected page code for immediate preview
+    setSelectedPageCode({
+      pageName: selectedPageCode.pageName,
+      htmlCode: editorData.htmlCode || selectedPageCode.htmlCode,
+      cssCode: editorData.cssCode || selectedPageCode.cssCode,
+      jsCode: editorData.jsCode || selectedPageCode.jsCode
+    });
+
+    toast({
+      title: "Code Saved Successfully",
+      description: "HTML editor changes have been saved to the wireframe.",
+    });
   };
 
   // Handle element selection for targeted enhancement
@@ -2113,23 +2192,33 @@ document.addEventListener('DOMContentLoaded', function() {
                       />
                     </div>
                     
-                    <Button
-                      onClick={handleEnhanceCode}
-                      disabled={isEnhancing || !enhancementPrompt.trim()}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                    >
-                      {isEnhancing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Enhancing Code...
-                        </>
-                      ) : (
-                        <>
-                          <span className="mr-2">🚀</span>
-                          Enhance Code
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveEditorData}
+                        variant="outline"
+                        className="flex-1 bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save HTML Editor Changes
+                      </Button>
+                      <Button
+                        onClick={handleEnhanceCode}
+                        disabled={isEnhancing || !enhancementPrompt.trim()}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        {isEnhancing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Enhancing Code...
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2">🚀</span>
+                            Enhance Code
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
