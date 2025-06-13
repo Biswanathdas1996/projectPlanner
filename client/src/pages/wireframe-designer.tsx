@@ -201,7 +201,7 @@ export default function WireframeDesigner() {
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
-  const [enhancedCode, setEnhancedCode] = useState<{ html: string; css: string; js: string } | null>(null);
+  const [enhancedCode, setEnhancedCode] = useState<{ html: string; css: string; js: string; explanation: string; improvements: string[] } | null>(null);
   
   // Wireframe customization options
   const [selectedDeviceType, setSelectedDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
@@ -428,10 +428,18 @@ export default function WireframeDesigner() {
       });
     } catch (err) {
       console.error("Error enhancing code:", err);
+      // Set fallback enhanced code with original content
+      setEnhancedCode({
+        html: selectedPageCode.htmlCode,
+        css: selectedPageCode.cssCode,
+        js: '// Enhancement failed - showing original code\n// Please check API configuration and try again',
+        explanation: 'Enhancement failed. Showing original code instead.',
+        improvements: ['Original HTML preserved', 'Original CSS preserved', 'Please try again with a different prompt']
+      });
       setError(err instanceof Error ? err.message : "Failed to enhance code");
       toast({
         title: "Enhancement Failed",
-        description: "Failed to enhance code. Please try again.",
+        description: "Showing original code. Please check your prompt and try again.",
         variant: "destructive",
       });
     } finally {
@@ -1711,11 +1719,11 @@ export default function WireframeDesigner() {
                         <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                           <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
                           <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
-                          {enhancedCode.improvements.length > 0 && (
+                          {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
                             <div>
                               <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
                               <ul className="text-sm text-green-700 space-y-1">
-                                {enhancedCode.improvements.map((improvement, idx) => (
+                                {enhancedCode.improvements.map((improvement: string, idx: number) => (
                                   <li key={idx} className="flex items-start gap-2">
                                     <span className="text-green-500 mt-0.5">•</span>
                                     {improvement}
