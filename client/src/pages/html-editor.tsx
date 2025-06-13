@@ -30,9 +30,7 @@ import {
   Play,
   Monitor,
   Smartphone,
-  Tablet,
-  Image,
-  Trash2
+  Tablet
 } from "lucide-react";
 
 interface HTMLEditorData {
@@ -76,13 +74,8 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [autoSave, setAutoSave] = useState(true);
   const [enhancedCode, setEnhancedCode] = useState<EnhancedCodeResponse | null>(null);
-  const [uploadedImages, setUploadedImages] = useState<{[key: string]: string}>({});
-  const [isUploadingImage, setIsUploadingImage] = useState(false);
-  const [imageInsertMode, setImageInsertMode] = useState(false);
-  const [selectedImageToInsert, setSelectedImageToInsert] = useState<{name: string, data: string} | null>(null);
   
   const previewRef = useRef<HTMLIFrameElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   // Auto-save functionality
@@ -493,184 +486,6 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     }
   };
 
-  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-
-    setIsUploadingImage(true);
-    
-    try {
-      const newImages: {[key: string]: string} = {};
-      
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-          toast({
-            title: "Invalid File",
-            description: `${file.name} is not an image file`,
-            variant: "destructive"
-          });
-          continue;
-        }
-        
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
-          toast({
-            title: "File Too Large",
-            description: `${file.name} is larger than 5MB`,
-            variant: "destructive"
-          });
-          continue;
-        }
-        
-        // Convert to base64
-        const reader = new FileReader();
-        const base64Promise = new Promise<string>((resolve, reject) => {
-          reader.onload = () => {
-            if (typeof reader.result === 'string') {
-              resolve(reader.result);
-            } else {
-              reject(new Error('Failed to read file'));
-            }
-          };
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        
-        const base64 = await base64Promise;
-        const fileName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension
-        const safeFileName = fileName.replace(/[^a-zA-Z0-9_-]/g, '_');
-        
-        newImages[safeFileName] = base64;
-      }
-      
-      // Update uploaded images state
-      setUploadedImages(prev => ({ ...prev, ...newImages }));
-      
-      // Show success message
-      const imageCount = Object.keys(newImages).length;
-      if (imageCount > 0) {
-        toast({
-          title: "Images Uploaded",
-          description: `Successfully uploaded ${imageCount} image${imageCount > 1 ? 's' : ''}`,
-        });
-      }
-      
-    } catch (error) {
-      console.error('Error uploading images:', error);
-      toast({
-        title: "Upload Failed",
-        description: "Failed to upload images. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsUploadingImage(false);
-      // Reset input
-      if (event.target) {
-        event.target.value = '';
-      }
-    }
-  };
-
-  const insertImageIntoHTML = (imageName: string, imageData: string, targetElement?: any) => {
-    const imageTag = `<img src="${imageData}" alt="${imageName}" style="max-width: 100%; height: auto;" class="uploaded-image">`;
-    
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlCode, 'text/html');
-    
-    // Create a container for the image
-    const imageContainer = doc.createElement('div');
-    imageContainer.className = 'image-container';
-    imageContainer.style.cssText = 'margin: 20px 0; text-align: center;';
-    imageContainer.innerHTML = imageTag;
-    
-    let insertionSuccess = false;
-    
-    // If we have a target element from selection mode, insert there
-    if (targetElement) {
-      let targetInDoc = null;
-      
-      // Find the target element in the parsed document
-      if (targetElement.id) {
-        targetInDoc = doc.getElementById(targetElement.id);
-      } else if (targetElement.className) {
-        const elements = doc.getElementsByClassName(targetElement.className.split(' ')[0]);
-        if (elements.length > 0) {
-          // Find the element with matching text content
-          for (let i = 0; i < elements.length; i++) {
-            if (elements[i].textContent?.trim().includes(targetElement.textContent.trim().substring(0, 50))) {
-              targetInDoc = elements[i];
-              break;
-            }
-          }
-          if (!targetInDoc) targetInDoc = elements[0];
-        }
-      } else {
-        // Search by tag name and text content
-        const elements = doc.getElementsByTagName(targetElement.tagName);
-        for (let i = 0; i < elements.length; i++) {
-          if (elements[i].textContent?.trim().includes(targetElement.textContent.trim().substring(0, 50))) {
-            targetInDoc = elements[i];
-            break;
-          }
-        }
-      }
-      
-      if (targetInDoc) {
-        // Insert image as the last child of the target element
-        targetInDoc.appendChild(imageContainer);
-        insertionSuccess = true;
-      }
-    }
-    
-    // Fallback: Insert at the end of the body
-    if (!insertionSuccess && doc.body) {
-      doc.body.appendChild(imageContainer);
-      insertionSuccess = true;
-    }
-    
-    if (insertionSuccess) {
-      // Update HTML code
-      const updatedHTML = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${pageName}</title>\n    <style>\n        ${cssCode}\n        .image-container { margin: 20px 0; text-align: center; }\n        .uploaded-image { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n    </style>\n</head>\n<body>\n    ${doc.body.innerHTML}\n</body>\n</html>`;
-      
-      setHtmlCode(updatedHTML);
-      
-      // Clear image insert mode if it was active
-      if (imageInsertMode) {
-        setImageInsertMode(false);
-        setSelectedImageToInsert(null);
-        setSelectedElement(null);
-      }
-      
-      toast({
-        title: "Image Added",
-        description: targetElement ? 
-          `${imageName} added to selected ${targetElement.tagName} element` :
-          `${imageName} added to your page`,
-      });
-    } else {
-      toast({
-        title: "Insert Failed",
-        description: "Could not insert image. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const startImageInsertMode = (imageName: string, imageData: string) => {
-    setSelectedImageToInsert({ name: imageName, data: imageData });
-    setImageInsertMode(true);
-    setSelectionMode(true);
-    setSelectedElement(null);
-    
-    toast({
-      title: "Select Target Element",
-      description: "Click on an element in the preview to insert the image there",
-    });
-  };
-
   const downloadPage = () => {
     const combinedHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -806,78 +621,6 @@ ${jsCode}
                       <Zap className="h-3 w-3" />
                     )}
                   </Button>
-                </div>
-
-                {/* Image Upload Section */}
-                <div className="border-t pt-3">
-                  <Label className="text-sm mb-2 block">Add Images</Label>
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploadingImage}
-                        className="flex-1"
-                      >
-                        {isUploadingImage ? (
-                          <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                        ) : (
-                          <Upload className="h-3 w-3 mr-1" />
-                        )}
-                        Upload Images
-                      </Button>
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleImageUpload}
-                        className="hidden"
-                      />
-                    </div>
-                    
-                    {/* Uploaded Images List */}
-                    {Object.keys(uploadedImages).length > 0 && (
-                      <div className="space-y-1">
-                        <Label className="text-xs text-gray-600">Uploaded Images:</Label>
-                        <div className="max-h-24 overflow-y-auto space-y-1">
-                          {Object.entries(uploadedImages).map(([name, data]) => (
-                            <div key={name} className="flex items-center justify-between p-1 bg-gray-50 rounded text-xs">
-                              <div className="flex items-center gap-1 flex-1 min-w-0">
-                                <Image className="h-3 w-3 text-gray-500" />
-                                <span className="truncate">{name}</span>
-                              </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-blue-100"
-                                  onClick={() => insertImageIntoHTML(name, data)}
-                                  title="Add to page"
-                                >
-                                  <Upload className="h-2.5 w-2.5 text-blue-600" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-5 w-5 p-0 hover:bg-red-100"
-                                  onClick={() => {
-                                    const newImages = { ...uploadedImages };
-                                    delete newImages[name];
-                                    setUploadedImages(newImages);
-                                  }}
-                                  title="Remove image"
-                                >
-                                  <Trash2 className="h-2.5 w-2.5 text-red-600" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
                 </div>
 
                 {/* Element Enhancement */}
