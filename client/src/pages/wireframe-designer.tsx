@@ -3337,49 +3337,18 @@ ${selectedPageCode.jsCode}
                         
                         <div className="relative h-80 bg-white">
                           <iframe
-                            srcDoc={(() => {
-                              // Extract body content only, removing HTML structure tags
-                              const bodyContent = wireframe.htmlCode
-                                .replace(/<!DOCTYPE[^>]*>/gi, '')
-                                .replace(/<\/?html[^>]*>/gi, '')
-                                .replace(/<head[\s\S]*?<\/head>/gi, '')
-                                .replace(/<\/?body[^>]*>/gi, '')
-                                .replace(/<link[^>]*>/gi, '')
-                                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-                                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                                .trim();
-
-                              const fullDocument = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${wireframe.pageName}</title>
-    <style>
-        ${wireframe.cssCode || ''}
-    </style>
-</head>
-<body>
-    ${bodyContent}
-    <script>
-        try {
-            ${wireframe.jsCode || ''}
-        } catch (error) {
-            console.log('Script execution error:', error);
-        }
-    </script>
-</body>
-</html>`;
-                              
-                              console.log('Generated iframe content for', wireframe.pageName, {
-                                hasCSS: !!wireframe.cssCode,
-                                hasJS: !!wireframe.jsCode,
-                                cssLength: wireframe.cssCode?.length || 0,
-                                jsLength: wireframe.jsCode?.length || 0
-                              });
-                              
-                              return fullDocument;
-                            })()}
+                            srcDoc={`
+                              <!DOCTYPE html>
+                              <html>
+                              <head>
+                                <style>${wireframe.cssCode}</style>
+                              </head>
+                              <body>
+                                ${wireframe.htmlCode.replace(/<\/?html[^>]*>|<\/?head[^>]*>|<\/?body[^>]*>|<link[^>]*>/gi, '')}
+                                <script>${wireframe.jsCode || ''}</script>
+                              </body>
+                              </html>
+                            `}
                             className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
                               width: '250%', 
@@ -3387,7 +3356,7 @@ ${selectedPageCode.jsCode}
                               overflow: 'hidden'
                             }}
                             title={`Preview of ${wireframe.pageName}`}
-                            sandbox="allow-scripts allow-same-origin allow-forms"
+                            sandbox="allow-scripts allow-same-origin"
                             scrolling="no"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none"></div>
