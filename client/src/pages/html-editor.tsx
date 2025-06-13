@@ -318,7 +318,6 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
         console.log('Element selection received:', element);
         
         setSelectedElement(element);
-        setSelectionMode(false);
         
         const displayName = `${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}${element.id ? '#' + element.id : ''}`;
         
