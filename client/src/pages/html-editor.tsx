@@ -168,127 +168,49 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
         ${jsCode ? `<script>${jsCode}</script>` : ''}
         
         <script>
-          // Element selection functionality
-          let hoveredElement = null;
-          let selectedElement = null;
-          let selectionModeActive = ${selectionMode};
-          
-          // Add CSS for hover and selection styles
-          const style = document.createElement('style');
-          style.textContent = \`
-            .element-hover {
-              outline: 2px dashed #10B981 !important;
-              outline-offset: 2px !important;
-              background-color: rgba(16, 185, 129, 0.05) !important;
-              cursor: pointer !important;
-            }
-            .element-selected {
-              outline: 3px solid #10B981 !important;
-              outline-offset: 2px !important;
-              background-color: rgba(16, 185, 129, 0.1) !important;
-              position: relative !important;
-            }
-            .element-selected::after {
-              content: "✓ Selected";
-              position: absolute;
-              top: -25px;
-              left: 0;
-              background: #10B981;
-              color: white;
-              padding: 2px 8px;
-              font-size: 11px;
-              border-radius: 4px;
-              z-index: 10000;
-              pointer-events: none;
-            }
-          \`;
-          document.head.appendChild(style);
-          
-          if (window.parent && window.parent.postMessage) {
-            // Hover highlighting (only when selection mode is active)
+          // Simplified element selection
+          if (window.parent && ${selectionMode}) {
+            const style = document.createElement('style');
+            style.textContent = \`
+              .hover-highlight { outline: 2px dashed #3B82F6 !important; cursor: pointer !important; }
+              .selected-highlight { outline: 3px solid #10B981 !important; background: rgba(16,185,129,0.1) !important; }
+            \`;
+            document.head.appendChild(style);
+            
+            let currentHover = null;
+            
             document.addEventListener('mouseover', function(e) {
-              if (!selectionModeActive || e.target === document.body || e.target === document.documentElement) return;
-              
-              // Remove previous hover
-              if (hoveredElement && hoveredElement !== selectedElement) {
-                hoveredElement.classList.remove('element-hover');
-              }
-              
-              hoveredElement = e.target;
-              if (hoveredElement !== selectedElement) {
-                hoveredElement.classList.add('element-hover');
-              }
+              if (e.target.tagName === 'BODY' || e.target.tagName === 'HTML') return;
+              if (currentHover) currentHover.classList.remove('hover-highlight');
+              currentHover = e.target;
+              e.target.classList.add('hover-highlight');
             });
             
             document.addEventListener('mouseout', function(e) {
-              if (!selectionModeActive || !hoveredElement || hoveredElement === selectedElement) return;
-              hoveredElement.classList.remove('element-hover');
+              if (currentHover) currentHover.classList.remove('hover-highlight');
             });
             
-            // Click selection (only when selection mode is active)
             document.addEventListener('click', function(e) {
-              if (!selectionModeActive) return;
-              
               e.preventDefault();
               e.stopPropagation();
               
-              // Remove previous selection
-              if (selectedElement) {
-                selectedElement.classList.remove('element-selected', 'element-hover');
-              }
+              // Clear previous selections
+              document.querySelectorAll('.selected-highlight').forEach(el => 
+                el.classList.remove('selected-highlight')
+              );
               
-              selectedElement = e.target;
-              selectedElement.classList.add('element-selected');
-              selectedElement.classList.remove('element-hover');
-              
-              const elementInfo = {
-                tagName: selectedElement.tagName.toLowerCase(),
-                className: selectedElement.className.replace(/element-(hover|selected)/g, '').trim(),
-                id: selectedElement.id,
-                textContent: selectedElement.textContent?.substring(0, 50) || '',
-                outerHTML: selectedElement.outerHTML?.substring(0, 200) || '',
-                selector: generateSelector(selectedElement)
-              };
+              e.target.classList.add('selected-highlight');
               
               window.parent.postMessage({
                 type: 'elementSelected',
-                element: elementInfo
+                element: {
+                  tagName: e.target.tagName.toLowerCase(),
+                  className: e.target.className.replace(/hover-highlight|selected-highlight/g, '').trim(),
+                  id: e.target.id || '',
+                  textContent: e.target.textContent?.substring(0, 100) || ''
+                }
               }, '*');
             });
-            
-            // Listen for selection mode changes from parent
-            window.addEventListener('message', function(e) {
-              if (e.data.type === 'setSelectionMode') {
-                selectionModeActive = e.data.enabled;
-                
-                // Clear all hover states when disabling selection mode
-                if (!selectionModeActive) {
-                  document.querySelectorAll('.element-hover').forEach(el => {
-                    el.classList.remove('element-hover');
-                  });
-                }
-              }
-            });
-            
-            // Generate CSS selector for element
-            function generateSelector(element) {
-              if (element.id) {
-                return '#' + element.id;
-              }
-              
-              let selector = element.tagName.toLowerCase();
-              
-              if (element.className) {
-                const classes = element.className.split(' ')
-                  .filter(cls => cls && !cls.startsWith('element-'))
-                  .join('.');
-                if (classes) {
-                  selector += '.' + classes;
-                }
-              }
-              
-              return selector;
-            }
           }
         </script>
       </body>
@@ -300,16 +222,6 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       doc.open();
       doc.write(combinedHtml);
       doc.close();
-      
-      // Re-establish selection mode state after iframe content is rewritten
-      setTimeout(() => {
-        if (previewRef.current?.contentWindow) {
-          previewRef.current.contentWindow.postMessage({
-            type: 'setSelectionMode',
-            enabled: selectionMode
-          }, '*');
-        }
-      }, 100);
     }
   };
 
@@ -330,15 +242,11 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'elementSelected') {
         const element = event.data.element;
-        console.log('Element selection received:', element);
-        
         setSelectedElement(element);
-        
-        const displayName = `${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}${element.id ? '#' + element.id : ''}`;
         
         toast({
           title: "Element Selected",
-          description: `Selected: ${displayName}`,
+          description: `Selected: ${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}`,
         });
       }
     };
@@ -346,29 +254,6 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, [toast]);
-
-  // Send selection mode changes to iframe
-  useEffect(() => {
-    const sendSelectionMode = () => {
-      if (previewRef.current?.contentWindow) {
-        try {
-          previewRef.current.contentWindow.postMessage({
-            type: 'setSelectionMode',
-            enabled: selectionMode
-          }, '*');
-        } catch (error) {
-          // Iframe might not be ready yet, try again shortly
-          setTimeout(sendSelectionMode, 50);
-        }
-      }
-    };
-    
-    // Send immediately and also with a delay to ensure iframe is ready
-    sendSelectionMode();
-    const timer = setTimeout(sendSelectionMode, 200);
-    
-    return () => clearTimeout(timer);
-  }, [selectionMode]);
 
   const handleFullPageEnhancement = async () => {
     if (!enhancementPrompt.trim()) {
@@ -617,118 +502,88 @@ ${jsCode}
 
                 {/* Element-Specific Enhancement */}
                 <div>
-                  <Label>Element-Specific Enhancement</Label>
-                  <div className="space-y-3 mt-2">
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded">
-                      <Button
-                        variant={selectionMode ? "default" : "outline"}
-                        onClick={() => setSelectionMode(!selectionMode)}
-                        size="sm"
-                        className="shrink-0"
-                      >
-                        <MousePointer className="h-4 w-4 mr-2" />
-                        {selectionMode ? "Disable Selection" : "Enable Selection"}
-                      </Button>
-                      
-                      <div className="text-sm text-gray-600">
-                        {selectionMode ? (
-                          <span className="text-green-700 font-medium">Selection mode active - hover and click elements to select them</span>
-                        ) : (
-                          <span>Click "Enable Selection" to start selecting elements for enhancement</span>
-                        )}
+                  <div className="flex items-center justify-between mb-3">
+                    <Label>Element Enhancement</Label>
+                    <Button
+                      variant={selectionMode ? "destructive" : "default"}
+                      onClick={() => {
+                        setSelectionMode(!selectionMode);
+                        if (!selectionMode) {
+                          setSelectedElement(null);
+                        }
+                      }}
+                      size="sm"
+                    >
+                      <MousePointer className="h-4 w-4 mr-1" />
+                      {selectionMode ? "Exit" : "Select"}
+                    </Button>
+                  </div>
+                  
+                  {selectionMode ? (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm font-medium text-blue-800">Selection Mode Active</span>
                       </div>
-                    </div>
-                    
-                    {selectedElement ? (
-                      <div className="space-y-3">
-                        <div className="p-3 bg-green-50 border border-green-200 rounded">
+                      <p className="text-sm text-blue-700 mb-3">
+                        Click any element in the preview to select it for enhancement.
+                      </p>
+                      
+                      {selectedElement && (
+                        <div className="p-3 bg-white border border-blue-200 rounded mb-3">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium text-green-800">Selected Element</span>
-                          </div>
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div>
-                              <span className="text-gray-600">Tag:</span>
-                              <code className="ml-1 bg-white px-1 py-0.5 rounded">{selectedElement.tagName}</code>
-                            </div>
+                            <span className="text-sm font-medium">Selected: {selectedElement.tagName}</span>
                             {selectedElement.className && (
-                              <div>
-                                <span className="text-gray-600">Class:</span>
-                                <code className="ml-1 bg-white px-1 py-0.5 rounded text-xs">{selectedElement.className}</code>
-                              </div>
+                              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">.{selectedElement.className.split(' ')[0]}</code>
                             )}
                             {selectedElement.id && (
-                              <div>
-                                <span className="text-gray-600">ID:</span>
-                                <code className="ml-1 bg-white px-1 py-0.5 rounded">#{selectedElement.id}</code>
-                              </div>
-                            )}
-                            {selectedElement.textContent && (
-                              <div className="col-span-2">
-                                <span className="text-gray-600">Content:</span>
-                                <span className="ml-1 text-gray-800">"{selectedElement.textContent}"</span>
-                              </div>
+                              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">#{selectedElement.id}</code>
                             )}
                           </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-2 gap-2">
-                          {[
-                            "Make it more modern",
-                            "Add hover effects", 
-                            "Improve colors",
-                            "Better typography",
-                            "Add subtle animations",
-                            "Enhanced styling"
-                          ].map((option) => (
-                            <Button
-                              key={option}
-                              variant="outline"
+                          
+                          <div className="grid grid-cols-3 gap-1 mb-3">
+                            {["Modern style", "Add animations", "Better colors", "Hover effects", "Typography", "Shadows"].map((preset) => (
+                              <Button
+                                key={preset}
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => setSelectedElementPrompt(preset)}
+                              >
+                                {preset}
+                              </Button>
+                            ))}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Input
+                              value={selectedElementPrompt}
+                              onChange={(e) => setSelectedElementPrompt(e.target.value)}
+                              placeholder="Enhancement instructions..."
+                              className="flex-1 text-sm"
+                            />
+                            <Button 
+                              onClick={handleElementEnhancement}
+                              disabled={isElementEnhancing || !selectedElementPrompt.trim()}
                               size="sm"
-                              className="h-8 px-2 text-xs justify-start"
-                              onClick={() => setSelectedElementPrompt(option)}
                             >
-                              {option}
+                              {isElementEnhancing ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                "Enhance"
+                              )}
                             </Button>
-                          ))}
+                          </div>
                         </div>
-                        
-                        <div className="flex gap-2">
-                          <Input
-                            value={selectedElementPrompt}
-                            onChange={(e) => setSelectedElementPrompt(e.target.value)}
-                            placeholder="Describe how to enhance this element..."
-                            className="flex-1"
-                          />
-                          <Button 
-                            onClick={handleElementEnhancement}
-                            disabled={isElementEnhancing || !selectedElementPrompt.trim()}
-                            size="sm"
-                          >
-                            {isElementEnhancing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Sparkles className="h-4 w-4" />
-                            )}
-                          </Button>
-                        </div>
-                        
-                        <Button
-                          onClick={() => setSelectedElement(null)}
-                          variant="ghost"
-                          size="sm"
-                          className="w-full"
-                        >
-                          Clear Selection
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 text-gray-500">
-                        <MousePointer className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm">Click on any element in the preview to select it for enhancement</p>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
+                      <MousePointer className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm">Click "Select" to choose specific elements for enhancement</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
