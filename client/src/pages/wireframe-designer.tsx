@@ -423,11 +423,30 @@ export default function WireframeDesigner() {
       setEnhancedCode(enhanced);
 
       // Update the selected page code with enhanced versions
-      setSelectedPageCode({
+      const updatedPageCode = {
         pageName: selectedPageCode.pageName,
         htmlCode: enhanced.html,
-        cssCode: enhanced.css
+        cssCode: enhanced.css,
+        jsCode: enhanced.js
+      };
+      setSelectedPageCode(updatedPageCode);
+
+      // Update localStorage with enhanced wireframe data
+      const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString()
+          };
+        }
+        return wireframe;
       });
+      localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
 
       toast({
         title: "Code Enhanced Successfully",
@@ -454,15 +473,90 @@ export default function WireframeDesigner() {
     }
   };
 
-  const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string }> => {
+  const generateWireframeJS = (card: PageContentCard, deviceType: string, designType: string, layout: string = 'standard-header'): string => {
+    const interactiveElements = [];
+    
+    // Add form validation
+    if (card.forms && card.forms.length > 0) {
+      interactiveElements.push(`
+// Form validation and submission
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      console.log('Form submitted:', Object.fromEntries(formData));
+      alert('Form submitted successfully!');
+    });
+  });
+});`);
+    }
+
+    // Add button click handlers
+    if (card.buttons && card.buttons.length > 0) {
+      interactiveElements.push(`
+// Button click handlers
+document.addEventListener('DOMContentLoaded', function() {
+  const buttons = document.querySelectorAll('button:not([type="submit"])');
+  buttons.forEach(button => {
+    button.addEventListener('click', function() {
+      console.log('Button clicked:', this.textContent);
+      this.style.transform = 'scale(0.98)';
+      setTimeout(() => this.style.transform = 'scale(1)', 150);
+    });
+  });
+});`);
+    }
+
+    // Add mobile menu toggle for responsive designs
+    if (deviceType === 'mobile' || layout === 'sidebar-layout') {
+      interactiveElements.push(`
+// Mobile menu toggle
+document.addEventListener('DOMContentLoaded', function() {
+  const menuToggle = document.querySelector('.menu-toggle');
+  const nav = document.querySelector('nav');
+  
+  if (menuToggle && nav) {
+    menuToggle.addEventListener('click', function() {
+      nav.classList.toggle('mobile-open');
+    });
+  }
+});`);
+    }
+
+    // Add scroll effects for landing pages
+    if (layout === 'landing-page' || layout === 'hero-banner') {
+      interactiveElements.push(`
+// Scroll animations
+document.addEventListener('DOMContentLoaded', function() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.style.opacity = '1';
+        entry.target.style.transform = 'translateY(0)';
+      }
+    });
+  });
+  
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+});`);
+    }
+
+    return interactiveElements.join('\n\n');
+  };
+
+  const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string; jsCode: string }> => {
     const pageLayout = pageLayouts[card.id] || 'standard-header';
     const htmlCode = generateWireframeHTML(card, selectedDeviceType, selectedColorScheme, selectedDesignType, pageLayout);
     const cssCode = generateWireframeCSS(card, selectedDeviceType, selectedColorScheme, selectedDesignType, pageLayout);
+    const jsCode = generateWireframeJS(card, selectedDeviceType, selectedDesignType, pageLayout);
     
     return {
       pageName: card.pageName,
       htmlCode,
-      cssCode
+      cssCode,
+      jsCode
     };
   };
 
