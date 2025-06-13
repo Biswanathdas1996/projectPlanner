@@ -1698,12 +1698,12 @@ export default function WireframeDesigner() {
                   </div>
                 )}
 
-                <Tabs defaultValue="html" className="space-y-4">
+                <Tabs defaultValue="preview" className="space-y-4">
                   <TabsList className={enhancedCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
+                    <TabsTrigger value="preview">Preview</TabsTrigger>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
                     {enhancedCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
-                    <TabsTrigger value="preview">Preview</TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="html">
