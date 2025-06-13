@@ -97,12 +97,35 @@ export default function MarketResearch() {
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
+    } else {
+      // Prefill with a comprehensive default project idea
+      const defaultProjectIdea = `Create a comprehensive personal finance management platform that helps users track expenses, manage budgets, monitor investments, and receive AI-powered financial advice.
+
+Key Features:
+- Real-time expense tracking with automatic bank account integration
+- Smart budget planning with predictive analytics
+- Investment portfolio management and performance tracking
+- AI-driven financial recommendations and insights
+- Bill reminder system with automated payment options
+- Credit score monitoring and improvement suggestions
+- Financial goal setting and progress tracking
+- Multi-currency support for international users
+
+Target Audience:
+- Young professionals (25-40 years old) looking to improve their financial health
+- Small business owners managing personal and business finances
+- Families planning for major expenses and long-term financial goals
+- Investment beginners seeking guidance and portfolio management
+
+The platform will use machine learning to analyze spending patterns, provide personalized recommendations, and help users make informed financial decisions. It will integrate with major banks and financial institutions to provide real-time data synchronization.`;
+      
+      setProjectInput(defaultProjectIdea);
     }
 
     if (savedResearchData) {
       setResearchData(savedResearchData);
       setCurrentStep("results");
-    } else if (savedProjectDescription) {
+    } else {
       setCurrentStep("input");
     }
   }, []);
