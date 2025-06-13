@@ -3578,6 +3578,12 @@ ${selectedPageCode.jsCode}
                             <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 truncate font-mono">
                               {wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html
                             </div>
+                            {isRefreshing && (
+                              <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
