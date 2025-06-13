@@ -342,7 +342,7 @@ export default function WireframeDesigner() {
     // Listen for storage events (cross-tab communication)
     window.addEventListener('storage', handleStorageChange);
     
-    // Set up polling to check for updates every 2 seconds
+    // Set up polling to check for updates every 500ms for immediate sync
     const pollInterval = setInterval(() => {
       const currentWireframes = storage.getItem('generated_wireframes');
       if (currentWireframes && Array.isArray(currentWireframes)) {
@@ -352,16 +352,44 @@ export default function WireframeDesigner() {
           return existing && wireframe.lastUpdated && existing.lastUpdated !== wireframe.lastUpdated;
         });
         
-        if (hasUpdates) {
+        // Also check for HTML editor specific updates
+        const hasEditorUpdates = currentWireframes.some((wireframe: any) => {
+          const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+          if (editorData) {
+            const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+            return existing && editorData.lastSaved && 
+                   (!existing.lastEditorSync || editorData.lastSaved > existing.lastEditorSync);
+          }
+          return false;
+        });
+        
+        if (hasUpdates || hasEditorUpdates) {
           console.log('Detected wireframe updates, refreshing preview...');
           setIsRefreshing(true);
-          setGeneratedWireframes(currentWireframes);
+          
+          // Merge HTML editor data with wireframes
+          const syncedWireframes = currentWireframes.map((wireframe: any) => {
+            const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+            if (editorData && editorData.lastSaved) {
+              return {
+                ...wireframe,
+                htmlCode: editorData.htmlCode || wireframe.htmlCode,
+                cssCode: editorData.cssCode || wireframe.cssCode,
+                jsCode: editorData.jsCode || wireframe.jsCode,
+                lastUpdated: editorData.lastSaved,
+                lastEditorSync: editorData.lastSaved
+              };
+            }
+            return wireframe;
+          });
+          
+          setGeneratedWireframes(syncedWireframes);
           
           // Reset refresh indicator after a short delay
-          setTimeout(() => setIsRefreshing(false), 1000);
+          setTimeout(() => setIsRefreshing(false), 500);
         }
       }
-    }, 2000);
+    }, 500);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
