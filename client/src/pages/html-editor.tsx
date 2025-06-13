@@ -590,14 +590,14 @@ ${jsCode}
                         <span className="text-sm font-medium text-blue-800">Selection Mode Active</span>
                       </div>
                       <p className="text-sm text-blue-700 mb-3">
-                        Click any element in the preview to select it for enhancement.
+                        Click any element in the preview to select it and all its child elements for comprehensive enhancement.
                       </p>
                       
                       {selectedElement && (
                         <div className="p-3 bg-white border border-blue-200 rounded mb-3">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium">Selected: {selectedElement.tagName}</span>
+                            <span className="text-sm font-medium">Selected: {selectedElement.tagName} + children</span>
                             {selectedElement.className && (
                               <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">.{selectedElement.className.split(' ')[0]}</code>
                             )}
