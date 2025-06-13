@@ -560,13 +560,21 @@ export default function WireframeDesigner() {
     }));
     setSelectionMode(false);
     
-    // Quick visual confirmation
+    // Persistent visual selection with green border
+    // Clear any previous selections
+    const previousSelected = document.querySelector('[data-selected-for-enhancement="true"]');
+    if (previousSelected) {
+      previousSelected.removeAttribute('data-selected-for-enhancement');
+      if (previousSelected instanceof HTMLElement) {
+        previousSelected.style.outline = '';
+        previousSelected.style.outlineOffset = '';
+      }
+    }
+    
+    // Mark current element as selected
+    target.setAttribute('data-selected-for-enhancement', 'true');
     target.style.outline = '3px solid #10B981';
     target.style.outlineOffset = '2px';
-    setTimeout(() => {
-      target.style.outline = '';
-      target.style.outlineOffset = '';
-    }, 1500);
     
     toast({
       title: "Element Selected",
@@ -640,6 +648,14 @@ export default function WireframeDesigner() {
       }));
 
       // Clear selection after enhancement
+      const selectedElementDOM = document.querySelector('[data-selected-for-enhancement="true"]');
+      if (selectedElementDOM) {
+        selectedElementDOM.removeAttribute('data-selected-for-enhancement');
+        if (selectedElementDOM instanceof HTMLElement) {
+          selectedElementDOM.style.outline = '';
+          selectedElementDOM.style.outlineOffset = '';
+        }
+      }
       setSelectedElement(null);
       setSelectedElementPrompt('');
 
@@ -2156,6 +2172,15 @@ ${selectedPageCode.jsCode}
                             </Button>
                             <Button
                               onClick={() => {
+                                // Clear visual selection
+                                const selectedElementDOM = document.querySelector('[data-selected-for-enhancement="true"]');
+                                if (selectedElementDOM) {
+                                  selectedElementDOM.removeAttribute('data-selected-for-enhancement');
+                                  if (selectedElementDOM instanceof HTMLElement) {
+                                    selectedElementDOM.style.outline = '';
+                                    selectedElementDOM.style.outlineOffset = '';
+                                  }
+                                }
                                 setSelectedElement(null);
                                 setSelectedElementPrompt('');
                               }}
@@ -2170,19 +2195,41 @@ ${selectedPageCode.jsCode}
 
                       <div className="border rounded-lg overflow-hidden">
                         <style dangerouslySetInnerHTML={{ 
-                          __html: selectedPageCode.cssCode + (selectionMode ? `
+                          __html: selectedPageCode.cssCode + `
+                            /* Selected Element Styling */
+                            [data-selected-for-enhancement="true"] {
+                              outline: 3px solid #10B981 !important;
+                              outline-offset: 2px !important;
+                              position: relative !important;
+                            }
+                            [data-selected-for-enhancement="true"]::before {
+                              content: "Selected for Enhancement" !important;
+                              position: absolute !important;
+                              top: -30px !important;
+                              left: 0 !important;
+                              background: #10B981 !important;
+                              color: white !important;
+                              padding: 2px 8px !important;
+                              border-radius: 4px !important;
+                              font-size: 11px !important;
+                              font-weight: 500 !important;
+                              white-space: nowrap !important;
+                              z-index: 1000 !important;
+                              pointer-events: none !important;
+                            }
+                          ` + (selectionMode ? `
                             /* Precise Element Selection Mode */
                             .wireframe-container * {
                               cursor: pointer !important;
                               transition: all 0.2s ease !important;
                               position: relative !important;
                             }
-                            .wireframe-container *:hover {
+                            .wireframe-container *:hover:not([data-selected-for-enhancement="true"]) {
                               outline: 2px dashed #3B82F6 !important;
                               outline-offset: 2px !important;
                               background-color: rgba(59, 130, 246, 0.05) !important;
                             }
-                            .wireframe-container *:hover::after {
+                            .wireframe-container *:hover:not([data-selected-for-enhancement="true"])::after {
                               content: "Click to enhance this element" !important;
                               position: absolute !important;
                               top: -25px !important;
@@ -2197,23 +2244,14 @@ ${selectedPageCode.jsCode}
                               pointer-events: none !important;
                             }
                             /* Enhanced targeting for interactive elements */
-                            .wireframe-container button:hover,
-                            .wireframe-container input:hover,
-                            .wireframe-container textarea:hover,
-                            .wireframe-container h1:hover,
-                            .wireframe-container h2:hover,
-                            .wireframe-container h3:hover {
+                            .wireframe-container button:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container input:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container textarea:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h1:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h2:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h3:hover:not([data-selected-for-enhancement="true"]) {
                               outline: 3px solid #10B981 !important;
                               background-color: rgba(16, 185, 129, 0.1) !important;
-                            }
-                            .wireframe-container button:hover::after,
-                            .wireframe-container input:hover::after,
-                            .wireframe-container textarea:hover::after,
-                            .wireframe-container h1:hover::after,
-                            .wireframe-container h2:hover::after,
-                            .wireframe-container h3:hover::after {
-                              background: #10B981 !important;
-                              content: "Click to enhance this " attr(data-element-type) !important;
                             }
                           ` : '')
                         }} />
