@@ -68,7 +68,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [selectionMode, setSelectionMode] = useState(false);
-  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = useState<any>(null);
   const [selectedElementPrompt, setSelectedElementPrompt] = useState('');
   const [isElementEnhancing, setIsElementEnhancing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -169,27 +169,110 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
         
         <script>
           // Element selection functionality
+          let hoveredElement = null;
+          let selectedElement = null;
+          
+          // Add CSS for hover and selection styles
+          const style = document.createElement('style');
+          style.textContent = \`
+            .element-hover {
+              outline: 2px dashed #10B981 !important;
+              outline-offset: 2px !important;
+              background-color: rgba(16, 185, 129, 0.05) !important;
+              cursor: pointer !important;
+            }
+            .element-selected {
+              outline: 3px solid #10B981 !important;
+              outline-offset: 2px !important;
+              background-color: rgba(16, 185, 129, 0.1) !important;
+              position: relative !important;
+            }
+            .element-selected::after {
+              content: "✓ Selected";
+              position: absolute;
+              top: -25px;
+              left: 0;
+              background: #10B981;
+              color: white;
+              padding: 2px 8px;
+              font-size: 11px;
+              border-radius: 4px;
+              z-index: 10000;
+              pointer-events: none;
+            }
+          \`;
+          document.head.appendChild(style);
+          
           if (window.parent && window.parent.postMessage) {
-            document.addEventListener('click', function(e) {
-              if (e.ctrlKey || e.metaKey) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const element = e.target;
-                const elementInfo = {
-                  tagName: element.tagName.toLowerCase(),
-                  className: element.className,
-                  id: element.id,
-                  textContent: element.textContent?.substring(0, 50) || '',
-                  outerHTML: element.outerHTML
-                };
-                
-                window.parent.postMessage({
-                  type: 'elementSelected',
-                  element: elementInfo
-                }, '*');
+            // Hover highlighting
+            document.addEventListener('mouseover', function(e) {
+              if (e.target === document.body || e.target === document.documentElement) return;
+              
+              // Remove previous hover
+              if (hoveredElement && hoveredElement !== selectedElement) {
+                hoveredElement.classList.remove('element-hover');
+              }
+              
+              hoveredElement = e.target;
+              if (hoveredElement !== selectedElement) {
+                hoveredElement.classList.add('element-hover');
               }
             });
+            
+            document.addEventListener('mouseout', function(e) {
+              if (hoveredElement && hoveredElement !== selectedElement) {
+                hoveredElement.classList.remove('element-hover');
+              }
+            });
+            
+            // Click selection
+            document.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              // Remove previous selection
+              if (selectedElement) {
+                selectedElement.classList.remove('element-selected', 'element-hover');
+              }
+              
+              selectedElement = e.target;
+              selectedElement.classList.add('element-selected');
+              selectedElement.classList.remove('element-hover');
+              
+              const elementInfo = {
+                tagName: selectedElement.tagName.toLowerCase(),
+                className: selectedElement.className.replace(/element-(hover|selected)/g, '').trim(),
+                id: selectedElement.id,
+                textContent: selectedElement.textContent?.substring(0, 50) || '',
+                outerHTML: selectedElement.outerHTML?.substring(0, 200) || '',
+                selector: generateSelector(selectedElement)
+              };
+              
+              window.parent.postMessage({
+                type: 'elementSelected',
+                element: elementInfo
+              }, '*');
+            });
+            
+            // Generate CSS selector for element
+            function generateSelector(element) {
+              if (element.id) {
+                return '#' + element.id;
+              }
+              
+              let selector = element.tagName.toLowerCase();
+              
+              if (element.className) {
+                const classes = element.className.split(' ')
+                  .filter(cls => cls && !cls.startsWith('element-'))
+                  .join('.');
+                if (classes) {
+                  selector += '.' + classes;
+                }
+              }
+              
+              return selector;
+            }
           }
         </script>
       </body>
@@ -216,9 +299,12 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     const handleMessage = (event: MessageEvent) => {
       if (event.data.type === 'elementSelected') {
         const element = event.data.element;
-        const displayName = `${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}${element.id ? '#' + element.id : ''}`;
-        setSelectedElement(displayName);
+        console.log('Element selection received:', element);
+        
+        setSelectedElement(element);
         setSelectionMode(false);
+        
+        const displayName = `${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}${element.id ? '#' + element.id : ''}`;
         
         toast({
           title: "Element Selected",
@@ -471,49 +557,106 @@ ${jsCode}
                 {/* Element-Specific Enhancement */}
                 <div>
                   <Label>Element-Specific Enhancement</Label>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex gap-2">
-                      <Button
-                        variant={selectionMode ? "default" : "outline"}
-                        onClick={() => setSelectionMode(!selectionMode)}
-                        size="sm"
-                      >
-                        <MousePointer className="h-4 w-4 mr-2" />
-                        {selectionMode ? "Exit Selection" : "Select Element"}
-                      </Button>
-                      
-                      {selectedElement && (
-                        <div className="flex-1 px-3 py-2 bg-green-50 border border-green-200 rounded text-sm">
-                          Selected: <span className="font-mono">{selectedElement}</span>
-                        </div>
-                      )}
+                  <div className="space-y-3 mt-2">
+                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
+                      <div className="flex items-center gap-2 mb-1">
+                        <MousePointer className="h-4 w-4" />
+                        <span className="font-medium">How to select elements:</span>
+                      </div>
+                      <div className="ml-6">
+                        • Hover over elements in the preview to highlight them
+                        • Click any element to select it for enhancement
+                        • Selected elements will show a green border and checkmark
+                      </div>
                     </div>
                     
-                    {selectionMode && (
-                      <div className="text-sm text-blue-600 bg-blue-50 p-2 rounded">
-                        Hold Ctrl/Cmd and click on any element in the preview to select it
-                      </div>
-                    )}
-                    
-                    {selectedElement && (
-                      <div className="flex gap-2">
-                        <Input
-                          value={selectedElementPrompt}
-                          onChange={(e) => setSelectedElementPrompt(e.target.value)}
-                          placeholder="How should this element be enhanced?"
-                          className="flex-1"
-                        />
-                        <Button 
-                          onClick={handleElementEnhancement}
-                          disabled={isElementEnhancing || !selectedElementPrompt.trim()}
+                    {selectedElement ? (
+                      <div className="space-y-3">
+                        <div className="p-3 bg-green-50 border border-green-200 rounded">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-green-800">Selected Element</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                              <span className="text-gray-600">Tag:</span>
+                              <code className="ml-1 bg-white px-1 py-0.5 rounded">{selectedElement.tagName}</code>
+                            </div>
+                            {selectedElement.className && (
+                              <div>
+                                <span className="text-gray-600">Class:</span>
+                                <code className="ml-1 bg-white px-1 py-0.5 rounded text-xs">{selectedElement.className}</code>
+                              </div>
+                            )}
+                            {selectedElement.id && (
+                              <div>
+                                <span className="text-gray-600">ID:</span>
+                                <code className="ml-1 bg-white px-1 py-0.5 rounded">#{selectedElement.id}</code>
+                              </div>
+                            )}
+                            {selectedElement.textContent && (
+                              <div className="col-span-2">
+                                <span className="text-gray-600">Content:</span>
+                                <span className="ml-1 text-gray-800">"{selectedElement.textContent}"</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2">
+                          {[
+                            "Make it more modern",
+                            "Add hover effects", 
+                            "Improve colors",
+                            "Better typography",
+                            "Add subtle animations",
+                            "Enhanced styling"
+                          ].map((option) => (
+                            <Button
+                              key={option}
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-2 text-xs justify-start"
+                              onClick={() => setSelectedElementPrompt(option)}
+                            >
+                              {option}
+                            </Button>
+                          ))}
+                        </div>
+                        
+                        <div className="flex gap-2">
+                          <Input
+                            value={selectedElementPrompt}
+                            onChange={(e) => setSelectedElementPrompt(e.target.value)}
+                            placeholder="Describe how to enhance this element..."
+                            className="flex-1"
+                          />
+                          <Button 
+                            onClick={handleElementEnhancement}
+                            disabled={isElementEnhancing || !selectedElementPrompt.trim()}
+                            size="sm"
+                          >
+                            {isElementEnhancing ? (
+                              <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                              <Sparkles className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
+                        
+                        <Button
+                          onClick={() => setSelectedElement(null)}
+                          variant="ghost"
                           size="sm"
+                          className="w-full"
                         >
-                          {isElementEnhancing ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Sparkles className="h-4 w-4" />
-                          )}
+                          Clear Selection
                         </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 text-gray-500">
+                        <MousePointer className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">Click on any element in the preview to select it for enhancement</p>
                       </div>
                     )}
                   </div>
