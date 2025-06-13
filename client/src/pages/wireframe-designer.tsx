@@ -1906,8 +1906,39 @@ ${selectedPageCode.jsCode}
                         </div>
                       )}
                       <div className="border rounded-lg overflow-hidden">
-                        <style dangerouslySetInnerHTML={{ __html: selectedPageCode.cssCode }} />
-                        <div dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }} />
+                        <iframe
+                          srcDoc={(() => {
+                            // Check if HTML already includes DOCTYPE/html tags (enhanced code)
+                            const htmlContent = selectedPageCode.htmlCode;
+                            if (htmlContent.includes('<!DOCTYPE') || htmlContent.includes('<html')) {
+                              // Enhanced HTML - use as is but inject additional JS if available
+                              const jsInjection = selectedPageCode?.jsCode ? 
+                                htmlContent.replace('</body>', `<script>${selectedPageCode.jsCode}</script></body>`) : 
+                                htmlContent;
+                              return jsInjection;
+                            } else {
+                              // Original wireframe HTML - wrap in complete document
+                              return `
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                  <meta charset="UTF-8">
+                                  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                  <style>
+                                    ${selectedPageCode.cssCode}
+                                  </style>
+                                </head>
+                                <body>
+                                  ${htmlContent}
+                                  ${selectedPageCode?.jsCode ? `<script>${selectedPageCode.jsCode}</script>` : ''}
+                                </body>
+                                </html>
+                              `;
+                            }
+                          })()}
+                          className="w-full h-96 border-0"
+                          title="Wireframe Preview"
+                        />
                       </div>
                     </div>
                   </TabsContent>
