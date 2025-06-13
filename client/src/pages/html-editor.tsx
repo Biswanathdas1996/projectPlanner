@@ -31,7 +31,8 @@ import {
   Play,
   Monitor,
   Smartphone,
-  Tablet
+  Tablet,
+  X
 } from "lucide-react";
 
 interface HTMLEditorData {
