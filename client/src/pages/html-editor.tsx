@@ -171,6 +171,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
           // Element selection functionality
           let hoveredElement = null;
           let selectedElement = null;
+          let selectionModeActive = ${selectionMode};
           
           // Add CSS for hover and selection styles
           const style = document.createElement('style');
@@ -204,9 +205,9 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
           document.head.appendChild(style);
           
           if (window.parent && window.parent.postMessage) {
-            // Hover highlighting
+            // Hover highlighting (only when selection mode is active)
             document.addEventListener('mouseover', function(e) {
-              if (e.target === document.body || e.target === document.documentElement) return;
+              if (!selectionModeActive || e.target === document.body || e.target === document.documentElement) return;
               
               // Remove previous hover
               if (hoveredElement && hoveredElement !== selectedElement) {
@@ -220,13 +221,14 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
             });
             
             document.addEventListener('mouseout', function(e) {
-              if (hoveredElement && hoveredElement !== selectedElement) {
-                hoveredElement.classList.remove('element-hover');
-              }
+              if (!selectionModeActive || !hoveredElement || hoveredElement === selectedElement) return;
+              hoveredElement.classList.remove('element-hover');
             });
             
-            // Click selection
+            // Click selection (only when selection mode is active)
             document.addEventListener('click', function(e) {
+              if (!selectionModeActive) return;
+              
               e.preventDefault();
               e.stopPropagation();
               
@@ -252,6 +254,20 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
                 type: 'elementSelected',
                 element: elementInfo
               }, '*');
+            });
+            
+            // Listen for selection mode changes from parent
+            window.addEventListener('message', function(e) {
+              if (e.data.type === 'setSelectionMode') {
+                selectionModeActive = e.data.enabled;
+                
+                // Clear all hover states when disabling selection mode
+                if (!selectionModeActive) {
+                  document.querySelectorAll('.element-hover').forEach(el => {
+                    el.classList.remove('element-hover');
+                  });
+                }
+              }
             });
             
             // Generate CSS selector for element
@@ -316,6 +332,16 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
   }, [toast]);
+
+  // Send selection mode changes to iframe
+  useEffect(() => {
+    if (previewRef.current?.contentWindow) {
+      previewRef.current.contentWindow.postMessage({
+        type: 'setSelectionMode',
+        enabled: selectionMode
+      }, '*');
+    }
+  }, [selectionMode]);
 
   const handleFullPageEnhancement = async () => {
     if (!enhancementPrompt.trim()) {
@@ -389,8 +415,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
           className: selectedElement.className || '',
           id: selectedElement.id || '',
           uniqueId: `element_${Date.now()}`,
-          textContent: selectedElement.textContent || '',
-          selector: selectedElement.selector || selectedElement.tagName
+          textContent: selectedElement.textContent || ''
         },
         enhancementPrompt: selectedElementPrompt,
         pageName
@@ -567,15 +592,23 @@ ${jsCode}
                 <div>
                   <Label>Element-Specific Enhancement</Label>
                   <div className="space-y-3 mt-2">
-                    <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded">
-                      <div className="flex items-center gap-2 mb-1">
-                        <MousePointer className="h-4 w-4" />
-                        <span className="font-medium">How to select elements:</span>
-                      </div>
-                      <div className="ml-6">
-                        • Hover over elements in the preview to highlight them
-                        • Click any element to select it for enhancement
-                        • Selected elements will show a green border and checkmark
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded">
+                      <Button
+                        variant={selectionMode ? "default" : "outline"}
+                        onClick={() => setSelectionMode(!selectionMode)}
+                        size="sm"
+                        className="shrink-0"
+                      >
+                        <MousePointer className="h-4 w-4 mr-2" />
+                        {selectionMode ? "Disable Selection" : "Enable Selection"}
+                      </Button>
+                      
+                      <div className="text-sm text-gray-600">
+                        {selectionMode ? (
+                          <span className="text-green-700 font-medium">Selection mode active - hover and click elements to select them</span>
+                        ) : (
+                          <span>Click "Enable Selection" to start selecting elements for enhancement</span>
+                        )}
                       </div>
                     </div>
                     
