@@ -42,7 +42,7 @@ function Router() {
       <Route path="/bpmn-editor" component={BpmnEditor} />
       <Route path="/diagram" component={BpmnEditor} />
       <Route path="/html-editor" component={HTMLEditor} />
-      <Route path="/html-editor/:pageName" component={HTMLEditor} />
+      <Route path="/html-editor/:wireframeId" component={HTMLEditor} />
       <Route component={NotFound} />
     </Switch>
   );

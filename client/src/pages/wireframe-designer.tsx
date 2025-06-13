@@ -1944,8 +1944,10 @@ document.addEventListener('DOMContentLoaded', function() {
                           size="sm"
                           className="text-xs flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
                           onClick={() => {
-                            const pageNameEncoded = encodeURIComponent(page.pageName);
-                            window.open(`/html-editor?page=${pageNameEncoded}`, '_blank');
+                            // Find wireframe ID for this page
+                            const wireframe = generatedWireframes.find(w => w.pageName === page.pageName);
+                            const wireframeId = wireframe?.id || encodeURIComponent(page.pageName);
+                            window.location.href = `/html-editor?id=${wireframeId}`;
                           }}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />
@@ -3548,8 +3550,7 @@ ${selectedPageCode.jsCode}
                           size="sm"
                           className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
                           onClick={() => {
-                            const pageNameEncoded = encodeURIComponent(wireframe.pageName);
-                            window.open(`/html-editor?page=${pageNameEncoded}`, '_blank');
+                            window.location.href = `/html-editor?id=${wireframe.id}`;
                           }}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />

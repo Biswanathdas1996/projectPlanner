@@ -34,6 +34,7 @@ import {
 } from "lucide-react";
 
 interface HTMLEditorData {
+  id: string;
   pageName: string;
   htmlCode: string;
   cssCode: string;
@@ -53,6 +54,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   const [cssCode, setCssCode] = useState(initialData?.cssCode || '');
   const [jsCode, setJsCode] = useState(initialData?.jsCode || '');
   const [pageName, setPageName] = useState(initialData?.pageName || 'Untitled Page');
+  const [wireframeId, setWireframeId] = useState(initialData?.id || '');
   const [previewMode, setPreviewMode] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [isPreviewLive, setIsPreviewLive] = useState(true);
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
@@ -70,20 +72,20 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
 
   // Auto-save functionality
   useEffect(() => {
-    if (!autoSave) return;
+    if (!autoSave || !wireframeId) return;
     
     const saveTimer = setTimeout(() => {
       saveToLocalStorage();
     }, 2000);
 
     return () => clearTimeout(saveTimer);
-  }, [htmlCode, cssCode, jsCode, pageName, autoSave]);
+  }, [htmlCode, cssCode, jsCode, pageName, wireframeId, autoSave]);
 
   // Load data from localStorage on mount
   useEffect(() => {
-    if (!initialData?.pageName) return;
+    if (!initialData?.id) return;
     
-    const savedData = localStorage.getItem(`html_editor_${initialData.pageName}`);
+    const savedData = localStorage.getItem(`html_editor_${initialData.id}`);
     if (savedData) {
       const parsed = JSON.parse(savedData);
       setHtmlCode(parsed.htmlCode || initialData.htmlCode);
@@ -94,9 +96,10 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   }, [initialData]);
 
   const saveToLocalStorage = () => {
-    if (!pageName) return;
+    if (!wireframeId) return;
     
     const editorData = {
+      id: wireframeId,
       pageName,
       htmlCode,
       cssCode,
@@ -104,12 +107,12 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       lastSaved: new Date().toISOString()
     };
     
-    localStorage.setItem(`html_editor_${pageName}`, JSON.stringify(editorData));
+    localStorage.setItem(`html_editor_${wireframeId}`, JSON.stringify(editorData));
     
-    // Also update the main wireframes data
+    // Also update the main wireframes data using ID
     const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
     const updatedWireframes = existingWireframes.map((wireframe: any) => {
-      if (wireframe.pageName === pageName) {
+      if (wireframe.id === wireframeId) {
         return {
           ...wireframe,
           htmlCode,
@@ -126,7 +129,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
     setLastSaved(new Date());
     
-    console.log('Auto-saved HTML editor data for:', pageName);
+    console.log('Auto-saved HTML editor data for wireframe ID:', wireframeId);
   };
 
   const updatePreview = () => {
@@ -678,51 +681,48 @@ export default function HTMLEditor() {
   const params = useParams();
   const [location] = useLocation();
   
-  // Extract page data from localStorage or URL parameters
+  // Extract wireframe data from localStorage using ID-based filtering
   const getInitialData = (): HTMLEditorData | undefined => {
-    // Check if there's a page name in the URL
-    let pageName = params.pageName || new URLSearchParams(location.split('?')[1] || '').get('page');
+    // Check for wireframe ID in URL parameters
+    const wireframeId = params.wireframeId || new URLSearchParams(location.split('?')[1] || '').get('id');
     
-    // Decode the page name if it's URL encoded
-    if (pageName) {
-      pageName = decodeURIComponent(pageName);
-    }
-    
-    console.log('HTML Editor - Looking for page:', pageName);
+    console.log('HTML Editor - Looking for wireframe ID:', wireframeId);
     console.log('HTML Editor - Current URL:', location);
     
-    if (pageName) {
-      // Try to load from localStorage first
-      const savedData = localStorage.getItem(`html_editor_${pageName}`);
+    if (wireframeId) {
+      // Try to load from localStorage first (saved editor data)
+      const savedData = localStorage.getItem(`html_editor_${wireframeId}`);
       if (savedData) {
-        console.log('HTML Editor - Found saved editor data for:', pageName);
+        console.log('HTML Editor - Found saved editor data for ID:', wireframeId);
         return JSON.parse(savedData);
       }
       
-      // Try to load from generated wireframes
+      // Try to load from generated wireframes using ID
       const wireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
-      console.log('HTML Editor - Checking', wireframes.length, 'wireframes for:', pageName);
+      console.log('HTML Editor - Checking', wireframes.length, 'wireframes for ID:', wireframeId);
       
-      const wireframe = wireframes.find((w: any) => w.pageName === pageName);
+      const wireframe = wireframes.find((w: any) => w.id === wireframeId);
       if (wireframe) {
         console.log('HTML Editor - Found wireframe data:', {
+          id: wireframe.id,
           pageName: wireframe.pageName,
           htmlLength: wireframe.htmlCode?.length,
           cssLength: wireframe.cssCode?.length,
           isEnhanced: wireframe.isEnhanced
         });
         return {
+          id: wireframe.id,
           pageName: wireframe.pageName,
           htmlCode: wireframe.htmlCode,
           cssCode: wireframe.cssCode,
           jsCode: wireframe.jsCode || ''
         };
       } else {
-        console.log('HTML Editor - No wireframe found with name:', pageName);
-        console.log('HTML Editor - Available wireframes:', wireframes.map((w: any) => w.pageName));
+        console.log('HTML Editor - No wireframe found with ID:', wireframeId);
+        console.log('HTML Editor - Available wireframe IDs:', wireframes.map((w: any) => `${w.id} (${w.pageName})`));
       }
     } else {
-      console.log('HTML Editor - No page name found in URL');
+      console.log('HTML Editor - No wireframe ID found in URL');
     }
     
     return undefined;
