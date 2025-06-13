@@ -206,6 +206,25 @@ export default function WireframeDesigner() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [selectedElementPrompt, setSelectedElementPrompt] = useState('');
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  
+  // Execute JavaScript in preview when selectedPageCode changes
+  useEffect(() => {
+    if (selectedPageCode && selectedPageCode.jsCode && showPreviewModal) {
+      try {
+        const script = document.createElement('script');
+        script.innerHTML = selectedPageCode.jsCode;
+        document.body.appendChild(script);
+        
+        // Clean up the script after execution
+        setTimeout(() => {
+          document.body.removeChild(script);
+        }, 100);
+      } catch (error) {
+        console.log('JavaScript execution error:', error);
+      }
+    }
+  }, [selectedPageCode, showPreviewModal]);
   
   // Wireframe customization options
   const [selectedDeviceType, setSelectedDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
@@ -2167,6 +2186,11 @@ ${selectedPageCode.jsCode}
                           className={selectionMode ? "cursor-pointer relative" : ""}
                           onClick={selectionMode ? handleElementSelection : undefined}
                         />
+                        <script 
+                          dangerouslySetInnerHTML={{ __html: selectedPageCode.jsCode || '' }}
+                          key={selectedPageCode.pageName + '-script'}
+                        />
+
                       </div>
                     </div>
                   </TabsContent>
@@ -3334,11 +3358,13 @@ ${selectedPageCode.jsCode}
                           size="sm"
                           className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
                           onClick={() => {
-                            const newWindow = window.open('', '_blank');
-                            if (newWindow) {
-                              newWindow.document.write(wireframe.htmlCode);
-                              newWindow.document.close();
-                            }
+                            setSelectedPageCode({
+                              pageName: wireframe.pageName,
+                              htmlCode: wireframe.htmlCode,
+                              cssCode: wireframe.cssCode,
+                              jsCode: wireframe.jsCode
+                            });
+                            setShowPreviewModal(true);
                           }}
                         >
                           <Frame className="h-3 w-3 mr-1" />
