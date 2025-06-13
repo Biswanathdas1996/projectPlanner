@@ -50,6 +50,14 @@ interface EnhancedCodeResponse {
 }
 
 function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) {
+  console.log('HTMLEditorComponent initialized with data:', {
+    hasInitialData: !!initialData,
+    id: initialData?.id,
+    pageName: initialData?.pageName,
+    htmlLength: initialData?.htmlCode?.length,
+    cssLength: initialData?.cssCode?.length
+  });
+
   const [htmlCode, setHtmlCode] = useState(initialData?.htmlCode || '');
   const [cssCode, setCssCode] = useState(initialData?.cssCode || '');
   const [jsCode, setJsCode] = useState(initialData?.jsCode || '');
@@ -684,10 +692,13 @@ export default function HTMLEditor() {
   // Extract wireframe data from localStorage using ID-based filtering
   const getInitialData = (): HTMLEditorData | undefined => {
     // Check for wireframe ID in URL parameters
-    const wireframeId = params.wireframeId || new URLSearchParams(location.split('?')[1] || '').get('id');
+    const urlParams = new URLSearchParams(window.location.search);
+    const wireframeId = params.wireframeId || urlParams.get('id');
     
     console.log('HTML Editor - Looking for wireframe ID:', wireframeId);
     console.log('HTML Editor - Current URL:', location);
+    console.log('HTML Editor - URL search params:', window.location.search);
+    console.log('HTML Editor - Extracted ID from params:', urlParams.get('id'));
     
     if (wireframeId) {
       // Try to load from localStorage first (saved editor data)
