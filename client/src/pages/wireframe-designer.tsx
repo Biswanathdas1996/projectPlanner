@@ -3538,6 +3538,18 @@ ${selectedPageCode.jsCode}
                           <Frame className="h-3 w-3 mr-1" />
                           Preview
                         </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
+                          onClick={() => {
+                            const pageNameEncoded = encodeURIComponent(wireframe.pageName);
+                            window.open(`/html-editor?page=${pageNameEncoded}`, '_blank');
+                          }}
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
