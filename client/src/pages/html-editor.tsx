@@ -165,54 +165,107 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       <body>
         ${htmlCode}
         
-        ${jsCode ? `<script>${jsCode}</script>` : ''}
-        
+        ${selectionMode ? `
+        <style id="element-selector-styles">
+          .element-selector-hover { 
+            outline: 2px dashed #3B82F6 !important; 
+            cursor: pointer !important;
+            background-color: rgba(59, 130, 246, 0.05) !important;
+          }
+          .element-selector-selected { 
+            outline: 3px solid #10B981 !important; 
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            position: relative !important;
+          }
+          .element-selector-selected::after {
+            content: "✓ Selected";
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: #10B981;
+            color: white;
+            padding: 2px 6px;
+            font-size: 11px;
+            border-radius: 3px;
+            z-index: 10000;
+            pointer-events: none;
+          }
+        </style>
         <script>
-          // Simplified element selection
-          if (window.parent && ${selectionMode}) {
-            const style = document.createElement('style');
-            style.textContent = \`
-              .hover-highlight { outline: 2px dashed #3B82F6 !important; cursor: pointer !important; }
-              .selected-highlight { outline: 3px solid #10B981 !important; background: rgba(16,185,129,0.1) !important; }
-            \`;
-            document.head.appendChild(style);
-            
+          (function() {
             let currentHover = null;
+            let isSelectionMode = true;
             
-            document.addEventListener('mouseover', function(e) {
-              if (e.target.tagName === 'BODY' || e.target.tagName === 'HTML') return;
-              if (currentHover) currentHover.classList.remove('hover-highlight');
+            function setupElementSelection() {
+              document.addEventListener('mouseover', handleMouseOver);
+              document.addEventListener('mouseout', handleMouseOut);
+              document.addEventListener('click', handleClick);
+            }
+            
+            function handleMouseOver(e) {
+              if (!isSelectionMode || e.target.tagName === 'BODY' || e.target.tagName === 'HTML') return;
+              
+              if (currentHover && !currentHover.classList.contains('element-selector-selected')) {
+                currentHover.classList.remove('element-selector-hover');
+              }
+              
               currentHover = e.target;
-              e.target.classList.add('hover-highlight');
-            });
+              if (!e.target.classList.contains('element-selector-selected')) {
+                e.target.classList.add('element-selector-hover');
+              }
+            }
             
-            document.addEventListener('mouseout', function(e) {
-              if (currentHover) currentHover.classList.remove('hover-highlight');
-            });
+            function handleMouseOut(e) {
+              if (currentHover && !currentHover.classList.contains('element-selector-selected')) {
+                currentHover.classList.remove('element-selector-hover');
+              }
+            }
             
-            document.addEventListener('click', function(e) {
+            function handleClick(e) {
+              if (!isSelectionMode) return;
+              
               e.preventDefault();
               e.stopPropagation();
               
               // Clear previous selections
-              document.querySelectorAll('.selected-highlight').forEach(el => 
-                el.classList.remove('selected-highlight')
-              );
+              document.querySelectorAll('.element-selector-selected').forEach(el => {
+                el.classList.remove('element-selector-selected');
+              });
               
-              e.target.classList.add('selected-highlight');
+              // Remove hover state
+              e.target.classList.remove('element-selector-hover');
               
-              window.parent.postMessage({
-                type: 'elementSelected',
-                element: {
-                  tagName: e.target.tagName.toLowerCase(),
-                  className: e.target.className.replace(/hover-highlight|selected-highlight/g, '').trim(),
-                  id: e.target.id || '',
-                  textContent: e.target.textContent?.substring(0, 100) || ''
-                }
-              }, '*');
-            });
-          }
+              // Add selected state
+              e.target.classList.add('element-selector-selected');
+              
+              // Get element info
+              const elementInfo = {
+                tagName: e.target.tagName.toLowerCase(),
+                className: e.target.className.replace(/element-selector-(hover|selected)/g, '').trim(),
+                id: e.target.id || '',
+                textContent: e.target.textContent?.substring(0, 100) || ''
+              };
+              
+              // Post message to parent
+              if (window.parent) {
+                window.parent.postMessage({
+                  type: 'elementSelected',
+                  element: elementInfo
+                }, '*');
+              }
+            }
+            
+            // Initialize when DOM is ready
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', setupElementSelection);
+            } else {
+              setupElementSelection();
+            }
+          })();
         </script>
+        ` : ''}
+        
+        ${jsCode ? `<script>${jsCode}</script>` : ''}
       </body>
       </html>
     `;
@@ -232,6 +285,11 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     }
   }, [htmlCode, cssCode, jsCode, previewMode, isPreviewLive]);
 
+  // Update preview when selection mode changes
+  useEffect(() => {
+    updatePreview();
+  }, [selectionMode]);
+
   // Initial preview load
   useEffect(() => {
     updatePreview();
@@ -240,13 +298,19 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   // Listen for element selection from preview
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'elementSelected') {
+      if (event.data.type === 'elementSelected' && event.origin === window.location.origin) {
         const element = event.data.element;
+        console.log('Element selected:', element);
+        
         setSelectedElement(element);
+        
+        const displayName = element.tagName + 
+          (element.className ? '.' + element.className.split(' ')[0] : '') +
+          (element.id ? '#' + element.id : '');
         
         toast({
           title: "Element Selected",
-          description: `Selected: ${element.tagName}${element.className ? '.' + element.className.split(' ')[0] : ''}`,
+          description: `Selected: ${displayName}`,
         });
       }
     };
