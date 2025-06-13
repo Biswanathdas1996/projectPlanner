@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface CodeEnhancementRequest {
   htmlCode: string;
@@ -22,32 +22,43 @@ export class AICodeEnhancer {
   constructor() {
     const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
-  async enhanceCode(request: CodeEnhancementRequest): Promise<EnhancedCodeResponse> {
+  async enhanceCode(
+    request: CodeEnhancementRequest,
+  ): Promise<EnhancedCodeResponse> {
     const prompt = this.buildEnhancementPrompt(request);
-    
+
     try {
-      console.log('Sending enhancement request to Gemini...');
+      console.log("Sending enhancement request to Gemini...");
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-      
-      console.log('Received response from Gemini, parsing...');
+
+      console.log("Received response from Gemini, parsing...");
       return this.parseEnhancedResponse(text);
-    } catch (error) {
-      console.error('Error enhancing code:', error);
-      if (error.message?.includes('API_KEY_INVALID')) {
-        throw new Error('Invalid API key. Please check your Gemini API configuration.');
+    } catch (error: any) {
+      console.error("Error enhancing code:", error);
+      if (error?.message?.includes("API_KEY_INVALID")) {
+        throw new Error(
+          "Invalid API key. Please check your Gemini API configuration.",
+        );
       }
-      if (error.message?.includes('SAFETY')) {
-        throw new Error('Content filtered by safety settings. Please try a different enhancement request.');
+      if (error?.message?.includes("SAFETY")) {
+        throw new Error(
+          "Content filtered by safety settings. Please try a different enhancement request.",
+        );
       }
-      if (error.message?.includes('QUOTA_EXCEEDED')) {
-        throw new Error('API quota exceeded. Please try again later.');
+      if (error?.message?.includes("QUOTA_EXCEEDED")) {
+        throw new Error("API quota exceeded. Please try again later.");
       }
-      throw new Error(`Enhancement failed: ${error.message || 'Unknown error occurred'}`);
+      if (error?.status === 404) {
+        throw new Error("API endpoint not found. Please check your API configuration.");
+      }
+      throw new Error(
+        `Enhancement failed: ${error?.message || "Unknown error occurred"}`,
+      );
     }
   }
 
@@ -108,7 +119,7 @@ Make this webpage shine with professional quality and excellent user experience 
       // Extract JSON from response
       const jsonMatch = response.match(/```json\s*([\s\S]*?)\s*```/);
       if (!jsonMatch) {
-        throw new Error('No JSON response found');
+        throw new Error("No JSON response found");
       }
 
       const jsonString = jsonMatch[1];
@@ -116,19 +127,19 @@ Make this webpage shine with professional quality and excellent user experience 
 
       // Validate required fields
       if (!parsed.html || !parsed.css || !parsed.js) {
-        throw new Error('Missing required code fields in response');
+        throw new Error("Missing required code fields in response");
       }
 
       return {
         html: parsed.html,
         css: parsed.css,
         js: parsed.js,
-        explanation: parsed.explanation || 'Code enhanced successfully',
-        improvements: parsed.improvements || []
+        explanation: parsed.explanation || "Code enhanced successfully",
+        improvements: parsed.improvements || [],
       };
     } catch (error) {
-      console.error('Error parsing enhanced response:', error);
-      
+      console.error("Error parsing enhanced response:", error);
+
       // Fallback parsing attempt
       return this.fallbackParse(response);
     }
@@ -141,11 +152,15 @@ Make this webpage shine with professional quality and excellent user experience 
     const jsMatch = response.match(/```(?:javascript|js)\s*([\s\S]*?)\s*```/);
 
     return {
-      html: htmlMatch ? htmlMatch[1] : '',
-      css: cssMatch ? cssMatch[1] : '',
-      js: jsMatch ? jsMatch[1] : '// No JavaScript enhancements added',
-      explanation: 'Code enhanced with improved structure and styling',
-      improvements: ['Enhanced visual design', 'Improved responsiveness', 'Added interactivity']
+      html: htmlMatch ? htmlMatch[1] : "",
+      css: cssMatch ? cssMatch[1] : "",
+      js: jsMatch ? jsMatch[1] : "// No JavaScript enhancements added",
+      explanation: "Code enhanced with improved structure and styling",
+      improvements: [
+        "Enhanced visual design",
+        "Improved responsiveness",
+        "Added interactivity",
+      ],
     };
   }
 }
