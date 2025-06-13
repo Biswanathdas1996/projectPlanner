@@ -423,6 +423,69 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     }
   };
 
+  const handleDeleteElement = () => {
+    if (!selectedElement) return;
+    
+    // Remove the element from HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlCode, 'text/html');
+    
+    // Find and remove the element
+    let elementToRemove = null;
+    
+    if (selectedElement.id) {
+      elementToRemove = doc.getElementById(selectedElement.id);
+    } else if (selectedElement.className) {
+      const elements = doc.getElementsByClassName(selectedElement.className.split(' ')[0]);
+      if (elements.length > 0) {
+        // Find the element with matching text content
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].textContent?.trim().includes(selectedElement.textContent.trim().substring(0, 50))) {
+            elementToRemove = elements[i];
+            break;
+          }
+        }
+        if (!elementToRemove) elementToRemove = elements[0];
+      }
+    } else {
+      // Search by tag name and text content
+      const elements = doc.getElementsByTagName(selectedElement.tagName);
+      for (let i = 0; i < elements.length; i++) {
+        if (elements[i].textContent?.trim().includes(selectedElement.textContent.trim().substring(0, 50))) {
+          elementToRemove = elements[i];
+          break;
+        }
+      }
+    }
+    
+    if (elementToRemove) {
+      elementToRemove.remove();
+      
+      // Update the HTML code
+      const updatedHtml = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${pageName}</title>\n    <style>\n        ${cssCode}\n    </style>\n</head>\n<body>\n    ${doc.body.innerHTML}\n</body>\n</html>`;
+      
+      setHtmlCode(updatedHtml);
+      
+      // Clear selection
+      setSelectedElement(null);
+      setSelectedElementPrompt('');
+      
+      toast({
+        title: "Element Deleted",
+        description: `Successfully removed ${selectedElement.tagName} element`,
+      });
+      
+      console.log('Element deleted successfully');
+    } else {
+      toast({
+        title: "Delete Failed",
+        description: "Could not locate the element to delete",
+        variant: "destructive"
+      });
+      console.warn('Could not find element to delete');
+    }
+  };
+
   const downloadPage = () => {
     const combinedHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -601,6 +664,17 @@ ${jsCode}
                             {preset}
                           </Button>
                         ))}
+                      </div>
+                      
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={handleDeleteElement}
+                        >
+                          Delete Element
+                        </Button>
                       </div>
                       
                       <div className="flex gap-1">
