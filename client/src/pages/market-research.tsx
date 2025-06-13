@@ -16,6 +16,7 @@ import {
   saveMarketResearchData,
   clearMarketResearchData,
   getProjectDescription,
+  saveProjectDescription,
 } from "@/lib/storage-utils";
 import { Link } from "wouter";
 import {
@@ -92,7 +93,7 @@ export default function MarketResearch() {
 
   // Load project input and existing research from localStorage
   useEffect(() => {
-    const savedProjectDescription = getProjectDescription();
+    const savedProjectDescription = localStorage.getItem('bpmn-project-description') || getProjectDescription();
     const savedResearchData = getMarketResearchData();
 
     if (savedProjectDescription) {
@@ -129,6 +130,13 @@ The platform will use machine learning to analyze spending patterns, provide per
       setCurrentStep("input");
     }
   }, []);
+
+  const handleProjectInputChange = (value: string) => {
+    setProjectInput(value);
+    // Save to both storage systems for consistency
+    localStorage.setItem('bpmn-project-description', value);
+    saveProjectDescription(value);
+  };
 
   const performMarketResearch = async () => {
     if (!projectInput.trim()) return;
@@ -314,7 +322,7 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                     id="project-description"
                     placeholder="Describe your project idea... (e.g., Create a project management tool for remote teams with time tracking and collaboration features)"
                     value={projectInput}
-                    onChange={(e) => setProjectInput(e.target.value)}
+                    onChange={(e) => handleProjectInputChange(e.target.value)}
                     className="min-h-32 text-sm"
                     disabled={isResearching}
                   />
