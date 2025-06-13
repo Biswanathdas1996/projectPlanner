@@ -2157,7 +2157,7 @@ ${selectedPageCode.jsCode}
                         </div>
                       )}
 
-                      <div className="w-full overflow-hidden">
+                      <div className="border rounded-lg overflow-hidden">
                         <style dangerouslySetInnerHTML={{ 
                           __html: selectedPageCode.cssCode + (selectionMode ? `
                             /* Simplified Selection Mode */
@@ -2183,7 +2183,7 @@ ${selectedPageCode.jsCode}
                         }} />
                         <div 
                           dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }}
-                          className={`w-full ${selectionMode ? "cursor-pointer relative" : ""}`}
+                          className={selectionMode ? "cursor-pointer relative" : ""}
                           onClick={selectionMode ? handleElementSelection : undefined}
                         />
                         <script 
