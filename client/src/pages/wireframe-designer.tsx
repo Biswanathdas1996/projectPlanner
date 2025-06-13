@@ -522,34 +522,43 @@ export default function WireframeDesigner() {
     
     const target = event.target as HTMLElement;
     
-    // Create a more descriptive selector
+    // Create user-friendly element description
     let elementInfo = '';
-    if (target.tagName) {
-      elementInfo = target.tagName.toLowerCase();
-      if (target.className) {
-        elementInfo += `.${target.className.split(' ').join('.')}`;
-      }
-      if (target.id) {
-        elementInfo += `#${target.id}`;
-      }
-      
-      // Add content preview for better context
-      const textContent = target.textContent?.trim().substring(0, 50);
-      if (textContent) {
-        elementInfo += ` ("${textContent}${textContent.length > 50 ? '...' : ''}")`;
-      }
+    const tagName = target.tagName.toLowerCase();
+    const textContent = target.textContent?.trim().substring(0, 30) || '';
+    
+    // Simplify element identification
+    if (tagName === 'button') {
+      elementInfo = `Button: "${textContent}"`;
+    } else if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
+      elementInfo = `Header: "${textContent}"`;
+    } else if (tagName === 'form') {
+      elementInfo = 'Form section';
+    } else if (tagName === 'input') {
+      elementInfo = `Input field: ${target.getAttribute('placeholder') || 'text input'}`;
+    } else if (tagName === 'nav') {
+      elementInfo = 'Navigation menu';
+    } else if (target.className.includes('button')) {
+      elementInfo = `Button: "${textContent}"`;
+    } else {
+      elementInfo = textContent ? `${tagName}: "${textContent}"` : tagName;
     }
     
     setSelectedElement(elementInfo);
     setSelectionMode(false);
     
-    // Add visual feedback
-    target.style.outline = '2px solid #3B82F6';
+    // Quick visual confirmation
+    target.style.outline = '3px solid #10B981';
     target.style.outlineOffset = '2px';
     setTimeout(() => {
       target.style.outline = '';
       target.style.outlineOffset = '';
-    }, 2000);
+    }, 1500);
+    
+    toast({
+      title: "Element Selected",
+      description: `Selected: ${elementInfo}`,
+    });
   };
 
   // Handle selective element enhancement
@@ -2036,67 +2045,95 @@ ${selectedPageCode.jsCode}
                         </div>
                       )}
                       
-                      {/* Selective Enhancement Mode Toggle */}
-                      <div className="flex items-center gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <Button
-                          onClick={() => {
-                            setSelectionMode(!selectionMode);
-                            setSelectedElement(null);
-                          }}
-                          variant={selectionMode ? "default" : "outline"}
-                          size="sm"
-                          className={selectionMode ? "bg-amber-600 hover:bg-amber-700" : ""}
-                        >
-                          {selectionMode ? "Exit Selection Mode" : "Select Element to Enhance"}
-                        </Button>
-                        {selectionMode && (
-                          <p className="text-sm text-amber-700">
-                            Click on any element in the preview to enhance it specifically
+                      {/* Simplified Element Selection */}
+                      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-blue-800">Enhance Specific Elements</h4>
+                          <Button
+                            onClick={() => {
+                              setSelectionMode(!selectionMode);
+                              setSelectedElement(null);
+                              setSelectedElementPrompt('');
+                            }}
+                            variant={selectionMode ? "destructive" : "default"}
+                            size="sm"
+                          >
+                            {selectionMode ? "Cancel" : "Start Selecting"}
+                          </Button>
+                        </div>
+                        {selectionMode ? (
+                          <p className="text-sm text-blue-700">
+                            <span className="font-medium">Click any element below</span> to enhance it (buttons, forms, headers, etc.)
+                          </p>
+                        ) : (
+                          <p className="text-sm text-blue-600">
+                            Target specific page elements for AI enhancement instead of the entire page
                           </p>
                         )}
                       </div>
 
                       {/* Selected Element Enhancement */}
                       {selectedElement && (
-                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                          <h4 className="font-semibold text-blue-800 mb-2">Enhance Selected Element</h4>
-                          <p className="text-sm text-blue-700 mb-3">
-                            Selected: <code className="bg-blue-100 px-1 rounded">{selectedElement}</code>
-                          </p>
-                          <div className="space-y-3">
+                        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-green-800">Selected Element</span>
+                            <code className="bg-green-100 px-2 py-1 rounded text-xs text-green-700">{selectedElement}</code>
+                          </div>
+                          <div className="mb-3">
+                            <div className="flex flex-wrap gap-2 mb-2">
+                              <span className="text-xs text-gray-600">Quick options:</span>
+                              {[
+                                "Make it more modern",
+                                "Add hover effects", 
+                                "Improve colors",
+                                "Better typography",
+                                "Add animations"
+                              ].map((option) => (
+                                <Button
+                                  key={option}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-6 px-2 text-xs"
+                                  onClick={() => setSelectedElementPrompt(option)}
+                                >
+                                  {option}
+                                </Button>
+                              ))}
+                            </div>
                             <Textarea
                               value={selectedElementPrompt}
                               onChange={(e) => setSelectedElementPrompt(e.target.value)}
-                              placeholder="Describe how you want to enhance this specific element (e.g., 'Make this button more modern with hover effects' or 'Add form validation styling')"
-                              className="text-sm min-h-[80px]"
+                              placeholder="Describe enhancement or use quick options above"
+                              className="text-sm min-h-[50px]"
                             />
-                            <div className="flex gap-2">
-                              <Button
-                                onClick={handleEnhanceSelectedElement}
-                                disabled={isEnhancing || !selectedElementPrompt.trim()}
-                                size="sm"
-                                className="bg-blue-600 hover:bg-blue-700"
-                              >
-                                {isEnhancing ? (
-                                  <>
-                                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                                    Enhancing...
-                                  </>
-                                ) : (
-                                  "Enhance Selected Element"
-                                )}
-                              </Button>
-                              <Button
-                                onClick={() => {
-                                  setSelectedElement(null);
-                                  setSelectedElementPrompt('');
-                                }}
-                                variant="outline"
-                                size="sm"
-                              >
-                                Cancel
-                              </Button>
-                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleEnhanceSelectedElement}
+                              disabled={isEnhancing || !selectedElementPrompt.trim()}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {isEnhancing ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                  Enhancing...
+                                </>
+                              ) : (
+                                "Enhance This Element"
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                setSelectedElement(null);
+                                setSelectedElementPrompt('');
+                              }}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Clear Selection
+                            </Button>
                           </div>
                         </div>
                       )}
@@ -2104,26 +2141,24 @@ ${selectedPageCode.jsCode}
                       <div className="border rounded-lg overflow-hidden">
                         <style dangerouslySetInnerHTML={{ 
                           __html: selectedPageCode.cssCode + (selectionMode ? `
-                            /* Selection mode styles */
-                            * {
-                              transition: all 0.2s ease !important;
+                            /* Simplified Selection Mode */
+                            .wireframe-container * {
+                              cursor: pointer !important;
+                              transition: outline 0.2s ease !important;
                             }
-                            *:hover {
-                              outline: 2px dashed #F59E0B !important;
+                            .wireframe-container *:hover {
+                              outline: 2px solid #3B82F6 !important;
+                              outline-offset: 1px !important;
+                            }
+                            .wireframe-container h1:hover,
+                            .wireframe-container h2:hover,
+                            .wireframe-container h3:hover,
+                            .wireframe-container button:hover,
+                            .wireframe-container form:hover,
+                            .wireframe-container input:hover,
+                            .wireframe-container textarea:hover {
+                              outline: 3px solid #10B981 !important;
                               outline-offset: 2px !important;
-                              background-color: rgba(245, 158, 11, 0.1) !important;
-                            }
-                            *:hover::before {
-                              content: "Click to enhance this element" !important;
-                              position: absolute !important;
-                              background: #F59E0B !important;
-                              color: white !important;
-                              padding: 2px 6px !important;
-                              border-radius: 4px !important;
-                              font-size: 10px !important;
-                              z-index: 1000 !important;
-                              transform: translateY(-100%) !important;
-                              white-space: nowrap !important;
                             }
                           ` : '')
                         }} />
