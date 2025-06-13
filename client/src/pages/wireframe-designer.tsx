@@ -19,17 +19,6 @@ import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import {
   Palette,
   Smartphone,
   Monitor,
@@ -1605,23 +1594,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const clearAllWireframes = () => {
     setWireframes([]);
     localStorage.removeItem('wireframe_designs');
-  };
-
-  const deleteWireframe = (wireframeId: string) => {
-    // Remove from generated wireframes
-    const updatedWireframes = generatedWireframes.filter(w => w.id !== wireframeId);
-    setGeneratedWireframes(updatedWireframes);
-    
-    // Update localStorage
-    storage.setItem('generated_wireframes', updatedWireframes);
-    
-    // Also remove HTML editor data for this wireframe
-    localStorage.removeItem(`html_editor_${wireframeId}`);
-    
-    toast({
-      title: "Wireframe Deleted",
-      description: "The wireframe has been successfully removed.",
-    });
   };
 
   const commonFeatures = [
@@ -3707,36 +3679,6 @@ ${selectedPageCode.jsCode}
                           >
                             <Download className="h-3 w-3" />
                           </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 w-7 p-0 hover:bg-red-100 text-red-600"
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Wireframe</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete the wireframe for "{wireframe.pageName}"? 
-                                  This action cannot be undone and will remove all associated data including 
-                                  HTML editor changes.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-red-600 hover:bg-red-700"
-                                  onClick={() => deleteWireframe(wireframe.id)}
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
                         </div>
                       </div>
                     </CardHeader>
@@ -3781,6 +3723,21 @@ ${selectedPageCode.jsCode}
                       </div>
                       
                       <div className="mt-4 flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                          onClick={() => {
+                            const newWindow = window.open('', '_blank');
+                            if (newWindow) {
+                              newWindow.document.write(wireframe.htmlCode);
+                              newWindow.document.close();
+                            }
+                          }}
+                        >
+                          <Frame className="h-3 w-3 mr-1" />
+                          Preview
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
