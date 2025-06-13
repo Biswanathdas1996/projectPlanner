@@ -187,6 +187,7 @@ export default function WireframeDesigner() {
   const [analysisResult, setAnalysisResult] = useState<WireframeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detailedWireframes, setDetailedWireframes] = useState<DetailedPageContent[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [selectedPageCode, setSelectedPageCode] = useState<{
     pageName: string;
@@ -328,6 +329,45 @@ export default function WireframeDesigner() {
       setPageLayouts(savedPageLayouts);
     }
   }, [detailedWireframes]);
+
+  // Listen for changes in HTML editor data and update wireframes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedWireframes = storage.getItem('generated_wireframes');
+      if (updatedWireframes && Array.isArray(updatedWireframes)) {
+        setGeneratedWireframes(updatedWireframes);
+      }
+    };
+
+    // Listen for storage events (cross-tab communication)
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Set up polling to check for updates every 2 seconds
+    const pollInterval = setInterval(() => {
+      const currentWireframes = storage.getItem('generated_wireframes');
+      if (currentWireframes && Array.isArray(currentWireframes)) {
+        // Check if any wireframe has been updated since last check
+        const hasUpdates = currentWireframes.some((wireframe: any) => {
+          const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+          return existing && wireframe.lastUpdated && existing.lastUpdated !== wireframe.lastUpdated;
+        });
+        
+        if (hasUpdates) {
+          console.log('Detected wireframe updates, refreshing preview...');
+          setIsRefreshing(true);
+          setGeneratedWireframes(currentWireframes);
+          
+          // Reset refresh indicator after a short delay
+          setTimeout(() => setIsRefreshing(false), 1000);
+        }
+      }
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
+  }, [generatedWireframes]);
 
   // Save wireframes to storage
   useEffect(() => {
@@ -3543,6 +3583,7 @@ ${selectedPageCode.jsCode}
                         
                         <div className="relative h-80 bg-white">
                           <iframe
+                            key={`${wireframe.id}-${wireframe.lastUpdated || Date.now()}`}
                             srcDoc={wireframe.htmlCode}
                             className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
