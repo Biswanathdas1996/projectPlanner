@@ -113,28 +113,50 @@ Return ONLY this JSON format:
 
   private parsePreciseResponse(response: string, request: PreciseElementRequest): PreciseEnhancementResponse {
     try {
-      // Extract JSON from response
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No JSON found in response");
+      // Multiple JSON extraction attempts
+      let jsonStr = '';
+      
+      // Try to find JSON block wrapped in code blocks
+      const codeBlockMatch = response.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+      if (codeBlockMatch) {
+        jsonStr = codeBlockMatch[1];
+      } else {
+        // Try to find JSON object
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          jsonStr = jsonMatch[0];
+        } else {
+          throw new Error("No JSON found in response");
+        }
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      // Clean the JSON string
+      jsonStr = jsonStr.trim();
+      
+      // Remove any trailing text after the last }
+      const lastBraceIndex = jsonStr.lastIndexOf('}');
+      if (lastBraceIndex !== -1) {
+        jsonStr = jsonStr.substring(0, lastBraceIndex + 1);
+      }
+
+      const parsed = JSON.parse(jsonStr);
       
       // Validate that the response contains required fields
       if (!parsed.html || !parsed.css) {
+        console.warn("Missing required fields in response:", { hasHtml: !!parsed.html, hasCss: !!parsed.css });
         throw new Error("Invalid response format");
       }
 
       return {
         html: parsed.html,
         css: parsed.css,
-        js: parsed.js || "// No JavaScript changes needed",
+        js: parsed.js || "",
         explanation: parsed.explanation || "Element enhanced successfully",
-        changedElement: request.elementData.displayName
+        changedElement: parsed.changedElement || request.elementData.displayName
       };
     } catch (error) {
       console.error("Error parsing precise response:", error);
+      console.log("Response content:", response.substring(0, 500) + "...");
       
       // Fallback: return original code with minimal targeted enhancement
       return this.createFallbackEnhancement(request);

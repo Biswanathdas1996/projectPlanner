@@ -526,48 +526,44 @@ ${jsCode}
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Code Editor Panel */}
-          <div className="space-y-6">
-            {/* AI Enhancement Panel */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  AI Enhancement
+        {/* Main Layout - Compact Design */}
+        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-200px)]">
+          {/* Sidebar - Tools & Code */}
+          <div className="col-span-4 space-y-4 overflow-y-auto">
+            {/* Compact AI Enhancement Panel */}
+            <Card className="h-fit">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Sparkles className="h-4 w-4" />
+                  AI Tools
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Full Page Enhancement */}
-                <div>
-                  <Label htmlFor="enhancement-prompt">Full Page Enhancement</Label>
-                  <div className="flex gap-2 mt-2">
-                    <Input
-                      id="enhancement-prompt"
-                      value={enhancementPrompt}
-                      onChange={(e) => setEnhancementPrompt(e.target.value)}
-                      placeholder="Describe how you want to enhance the page..."
-                      className="flex-1"
-                    />
-                    <Button 
-                      onClick={handleFullPageEnhancement}
-                      disabled={isEnhancing || !enhancementPrompt.trim()}
-                    >
-                      {isEnhancing ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <Zap className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
+              <CardContent className="space-y-3">
+                {/* Page Enhancement Row */}
+                <div className="flex gap-2">
+                  <Input
+                    value={enhancementPrompt}
+                    onChange={(e) => setEnhancementPrompt(e.target.value)}
+                    placeholder="Enhance page..."
+                    className="flex-1 text-sm"
+                  />
+                  <Button 
+                    onClick={handleFullPageEnhancement}
+                    disabled={isEnhancing || !enhancementPrompt.trim()}
+                    size="sm"
+                  >
+                    {isEnhancing ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Zap className="h-3 w-3" />
+                    )}
+                  </Button>
                 </div>
 
-                <Separator />
-
-                {/* Element-Specific Enhancement */}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <Label>Element Enhancement</Label>
+                {/* Element Enhancement */}
+                <div className="border-t pt-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label className="text-sm">Element Tools</Label>
                     <Button
                       variant={selectionMode ? "destructive" : "default"}
                       onClick={() => {
@@ -578,155 +574,148 @@ ${jsCode}
                       }}
                       size="sm"
                     >
-                      <MousePointer className="h-4 w-4 mr-1" />
+                      <MousePointer className="h-3 w-3 mr-1" />
                       {selectionMode ? "Exit" : "Select"}
                     </Button>
                   </div>
                   
-                  {selectionMode ? (
-                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium text-blue-800">Selection Mode Active</span>
+                  {selectionMode && selectedElement && (
+                    <div className="space-y-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                      <div className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                        <span className="font-medium">{selectedElement.tagName} + children</span>
+                        {selectedElement.className && (
+                          <code className="bg-gray-100 px-1 py-0.5 rounded text-xs">.{selectedElement.className.split(' ')[0]}</code>
+                        )}
                       </div>
-                      <p className="text-sm text-blue-700 mb-3">
-                        Click any element in the preview to select it and all its child elements for comprehensive enhancement.
-                      </p>
                       
-                      {selectedElement && (
-                        <div className="p-3 bg-white border border-blue-200 rounded mb-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium">Selected: {selectedElement.tagName} + children</span>
-                            {selectedElement.className && (
-                              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">.{selectedElement.className.split(' ')[0]}</code>
-                            )}
-                            {selectedElement.id && (
-                              <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">#{selectedElement.id}</code>
-                            )}
-                          </div>
-                          
-                          <div className="grid grid-cols-3 gap-1 mb-3">
-                            {["Modern style", "Add animations", "Better colors", "Hover effects", "Typography", "Shadows"].map((preset) => (
-                              <Button
-                                key={preset}
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs"
-                                onClick={() => setSelectedElementPrompt(preset)}
-                              >
-                                {preset}
-                              </Button>
-                            ))}
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            <Input
-                              value={selectedElementPrompt}
-                              onChange={(e) => setSelectedElementPrompt(e.target.value)}
-                              placeholder="Enhancement instructions..."
-                              className="flex-1 text-sm"
-                            />
-                            <Button 
-                              onClick={handleElementEnhancement}
-                              disabled={isElementEnhancing || !selectedElementPrompt.trim()}
-                              size="sm"
-                            >
-                              {isElementEnhancing ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                "Enhance"
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
+                      <div className="grid grid-cols-2 gap-1">
+                        {["Modern", "Animate", "Colors", "Hover", "Type", "Shadow"].map((preset) => (
+                          <Button
+                            key={preset}
+                            variant="outline"
+                            size="sm"
+                            className="h-6 text-xs"
+                            onClick={() => setSelectedElementPrompt(preset + " style")}
+                          >
+                            {preset}
+                          </Button>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-1">
+                        <Input
+                          value={selectedElementPrompt}
+                          onChange={(e) => setSelectedElementPrompt(e.target.value)}
+                          placeholder="Custom enhancement..."
+                          className="flex-1 text-xs h-7"
+                        />
+                        <Button 
+                          onClick={handleElementEnhancement}
+                          disabled={isElementEnhancing || !selectedElementPrompt.trim()}
+                          size="sm"
+                          className="h-7"
+                        >
+                          {isElementEnhancing ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            "Go"
+                          )}
+                        </Button>
+                      </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
-                      <MousePointer className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm">Click "Select" to choose specific elements for enhancement</p>
+                  )}
+                  
+                  {selectionMode && !selectedElement && (
+                    <div className="text-center py-4 text-gray-500 border border-dashed border-gray-200 rounded text-xs">
+                      <MousePointer className="h-4 w-4 mx-auto mb-1 opacity-50" />
+                      <p>Click elements in preview</p>
                     </div>
                   )}
                 </div>
               </CardContent>
             </Card>
 
-            {/* Code Tabs */}
+            {/* Compact Code Editor */}
             <Card className="flex-1">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Code className="h-5 w-5" />
-                  Code Editor
-                </CardTitle>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Code className="h-4 w-4" />
+                    Code
+                  </CardTitle>
+                </div>
               </CardHeader>
-              <CardContent>
-                <Tabs defaultValue="html" className="space-y-4">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="html">HTML</TabsTrigger>
-                    <TabsTrigger value="css">CSS</TabsTrigger>
-                    <TabsTrigger value="js">JavaScript</TabsTrigger>
+              <CardContent className="h-[calc(100%-80px)]">
+                <Tabs defaultValue="html" className="h-full">
+                  <TabsList className="grid w-full grid-cols-3 mb-3">
+                    <TabsTrigger value="html" className="text-xs">HTML</TabsTrigger>
+                    <TabsTrigger value="css" className="text-xs">CSS</TabsTrigger>
+                    <TabsTrigger value="js" className="text-xs">JS</TabsTrigger>
                   </TabsList>
                   
-                  <TabsContent value="html">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>HTML Content</Label>
+                  <TabsContent value="html" className="h-[calc(100%-50px)]">
+                    <div className="h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs">HTML</Label>
                         <Button
                           onClick={() => navigator.clipboard.writeText(htmlCode)}
                           variant="ghost"
                           size="sm"
+                          className="h-6 w-6 p-0"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-3 w-3" />
                         </Button>
                       </div>
                       <Textarea
                         value={htmlCode}
                         onChange={(e) => setHtmlCode(e.target.value)}
-                        className="font-mono text-sm min-h-[400px] resize-none"
-                        placeholder="Enter your HTML code here..."
+                        className="font-mono text-xs flex-1 resize-none"
+                        placeholder="HTML code..."
                       />
                     </div>
                   </TabsContent>
                   
-                  <TabsContent value="css">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>CSS Styles</Label>
+                  <TabsContent value="css" className="h-[calc(100%-50px)]">
+                    <div className="h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs">CSS</Label>
                         <Button
                           onClick={() => navigator.clipboard.writeText(cssCode)}
                           variant="ghost"
                           size="sm"
+                          className="h-6 w-6 p-0"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-3 w-3" />
                         </Button>
                       </div>
                       <Textarea
                         value={cssCode}
                         onChange={(e) => setCssCode(e.target.value)}
-                        className="font-mono text-sm min-h-[400px] resize-none"
-                        placeholder="Enter your CSS code here..."
+                        className="font-mono text-xs flex-1 resize-none"
+                        placeholder="CSS styles..."
                       />
                     </div>
                   </TabsContent>
                   
-                  <TabsContent value="js">
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label>JavaScript Code</Label>
+                  <TabsContent value="js" className="h-[calc(100%-50px)]">
+                    <div className="h-full flex flex-col">
+                      <div className="flex items-center justify-between mb-2">
+                        <Label className="text-xs">JavaScript</Label>
                         <Button
                           onClick={() => navigator.clipboard.writeText(jsCode)}
                           variant="ghost"
                           size="sm"
+                          className="h-6 w-6 p-0"
                         >
-                          <Copy className="h-4 w-4" />
+                          <Copy className="h-3 w-3" />
                         </Button>
                       </div>
                       <Textarea
                         value={jsCode}
                         onChange={(e) => setJsCode(e.target.value)}
-                        className="font-mono text-sm min-h-[400px] resize-none"
-                        placeholder="Enter your JavaScript code here..."
+                        className="font-mono text-xs flex-1 resize-none"
+                        placeholder="JavaScript code..."
                       />
                     </div>
                   </TabsContent>
@@ -735,13 +724,13 @@ ${jsCode}
             </Card>
           </div>
 
-          {/* Preview Panel */}
-          <div className="space-y-6">
-            <Card className="flex-1">
-              <CardHeader>
+          {/* Large Preview Panel */}
+          <div className="col-span-8">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5" />
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Eye className="h-4 w-4" />
                     Live Preview
                   </CardTitle>
                   
@@ -751,22 +740,25 @@ ${jsCode}
                         variant={previewMode === 'desktop' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => setPreviewMode('desktop')}
+                        className="h-7 w-7 p-0"
                       >
-                        <Monitor className="h-4 w-4" />
+                        <Monitor className="h-3 w-3" />
                       </Button>
                       <Button
                         variant={previewMode === 'tablet' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => setPreviewMode('tablet')}
+                        className="h-7 w-7 p-0"
                       >
-                        <Tablet className="h-4 w-4" />
+                        <Tablet className="h-3 w-3" />
                       </Button>
                       <Button
                         variant={previewMode === 'mobile' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => setPreviewMode('mobile')}
+                        className="h-7 w-7 p-0"
                       >
-                        <Smartphone className="h-4 w-4" />
+                        <Smartphone className="h-3 w-3" />
                       </Button>
                     </div>
                     
@@ -776,33 +768,33 @@ ${jsCode}
                         onCheckedChange={setIsPreviewLive}
                         id="live-preview"
                       />
-                      <Label htmlFor="live-preview" className="text-sm">Live</Label>
+                      <Label htmlFor="live-preview" className="text-xs">Live</Label>
                     </div>
                     
                     {!isPreviewLive && (
-                      <Button onClick={updatePreview} variant="outline" size="sm">
-                        <RefreshCw className="h-4 w-4" />
+                      <Button onClick={updatePreview} variant="outline" size="sm" className="h-7">
+                        <RefreshCw className="h-3 w-3" />
                       </Button>
                     )}
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg overflow-hidden bg-white" 
+              <CardContent className="h-[calc(100%-80px)]">
+                <div className="h-full border rounded-lg overflow-hidden bg-white" 
                      style={{ width: getPreviewWidth(), margin: '0 auto' }}>
                   <iframe
                     ref={previewRef}
-                    className="w-full h-[600px] border-0"
+                    className="w-full h-full border-0"
                     title="Preview"
                     sandbox="allow-scripts allow-same-origin"
                   />
                 </div>
                 
                 {selectionMode && (
-                  <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800 font-medium">Element Selection Mode Active</p>
-                    <p className="text-sm text-blue-600 mt-1">
-                      Hold Ctrl/Cmd and click on any element in the preview above to select it for enhancement.
+                  <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-xs text-blue-800 font-medium">Element Selection Active</p>
+                    <p className="text-xs text-blue-600">
+                      Click any element above to select it for enhancement.
                     </p>
                   </div>
                 )}
