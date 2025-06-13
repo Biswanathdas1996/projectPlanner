@@ -929,15 +929,16 @@ export default function HTMLEditor() {
     console.log('HTML Editor - Extracted ID from params:', urlParams.get('id'));
     
     if (wireframeId) {
-      // Try to load from localStorage first (saved editor data)
-      const savedData = localStorage.getItem(`html_editor_${wireframeId}`);
+      // Try to load from storage first (saved editor data)
+      const savedData = storage.getItem(`html_editor_${wireframeId}`);
       if (savedData) {
         console.log('HTML Editor - Found saved editor data for ID:', wireframeId);
-        return JSON.parse(savedData);
+        return savedData;
       }
       
       // Try to load from generated wireframes using ID
-      const wireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const wireframesData = storage.getItem('generated_wireframes');
+      const wireframes = Array.isArray(wireframesData) ? wireframesData : [];
       console.log('HTML Editor - Checking', wireframes.length, 'wireframes for ID:', wireframeId);
       
       const wireframe = wireframes.find((w: any) => w.id === wireframeId);
