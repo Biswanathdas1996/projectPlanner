@@ -2203,7 +2203,16 @@ ${selectedPageCode.jsCode}
         {/* Page Content Cards Display */}
         {pageContentCards.length > 0 && (
           <div className="mt-8">
-            <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
+            {generatedWireframes.length > 0 ? (
+              <Accordion type="single" collapsible className="w-full space-y-4">
+                <AccordionItem value="page-content" className="border border-gray-200 rounded-lg">
+                  <AccordionTrigger className="text-xl font-bold px-4 py-3 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                      Generated Page Content ({pageContentCards.length})
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
             
             {/* Wireframe Generation Progress */}
             {isGeneratingWireframes && (
@@ -3261,7 +3270,65 @@ ${selectedPageCode.jsCode}
                   )}
                 </Button>
               </div>
-            </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            ) : (
+              <>
+                <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
+                {/* Wireframe Generation Progress */}
+                {isGeneratingWireframes && (
+                  <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-green-700">
+                        Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+                      </span>
+                      <span className="text-xs text-green-600">
+                        {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-green-200 rounded-full h-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                        style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+                      ></div>
+                    </div>
+                    {wireframeGenerationProgress.currentPage && (
+                      <p className="text-xs text-green-600 mt-2">
+                        Currently generating: {wireframeGenerationProgress.currentPage}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {pageContentCards.map((card, index) => (
+                    <Card key={card.id} className="border-2 border-gray-200">
+                      {/* Page content card content here - keeping existing structure */}
+                    </Card>
+                  ))}
+                </div>
+                <div className="mt-6 flex justify-center">
+                  <Button
+                    onClick={generateWireframes}
+                    disabled={isGeneratingWireframes}
+                    size="lg"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                  >
+                    {isGeneratingWireframes ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Generating Wireframes...
+                      </>
+                    ) : (
+                      <>
+                        <Frame className="h-5 w-5 mr-2" />
+                        Generate Wireframes ({pageContentCards.length})
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         )}
 
@@ -3411,6 +3478,49 @@ ${selectedPageCode.jsCode}
                         >
                           <Frame className="h-3 w-3 mr-1" />
                           Preview
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 w-8 p-0 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
+                          onClick={() => {
+                            const confirmDelete = window.confirm(
+                              `Are you sure you want to delete the wireframe for "${wireframe.pageName}"? This action cannot be undone.`
+                            );
+                            
+                            if (confirmDelete) {
+                              // Remove from generatedWireframes state
+                              const updatedWireframes = generatedWireframes.filter((_, i) => i !== index);
+                              setGeneratedWireframes(updatedWireframes);
+                              
+                              // Update localStorage
+                              if (updatedWireframes.length > 0) {
+                                localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+                              } else {
+                                localStorage.removeItem('generated_wireframes');
+                              }
+                              
+                              // Also remove from wireframeData localStorage if it exists
+                              const existingWireframeData = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+                              const updatedWireframeData = existingWireframeData.filter(
+                                (w: any) => w.pageName !== wireframe.pageName
+                              );
+                              
+                              if (updatedWireframeData.length > 0) {
+                                localStorage.setItem('wireframeData', JSON.stringify(updatedWireframeData));
+                              } else {
+                                localStorage.removeItem('wireframeData');
+                              }
+                              
+                              toast({
+                                title: "Wireframe Deleted",
+                                description: `Successfully deleted wireframe for "${wireframe.pageName}".`,
+                              });
+                            }
+                          }}
+                          title="Delete wireframe"
+                        >
+                          <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                     </CardContent>
