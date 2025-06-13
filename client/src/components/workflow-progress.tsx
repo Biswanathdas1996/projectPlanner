@@ -44,64 +44,71 @@ export function WorkflowProgress({
   // Determine step status based on current route and passed props
   const getStepStatus = (step: string) => {
     if (completedSteps.includes(step)) return "completed";
-    if (currentStep === step) return "active";
-
+    
     // Check for completed steps based on available data
     const hasResearchData = hasMarketResearchData();
 
-    // Route-based determination
+    // Route-based determination - explicit handling for each route
     switch (location) {
       case "/start-over":
         if (step === "input") return "active";
-        break;
+        return "pending";
       case "/market-research":
         if (step === "input") return "completed";
         if (step === "research") return "active";
-        break;
+        return "pending";
       case "/plan":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
         if (step === "plan") return "active";
-        break;
+        return "pending";
       case "/user-journey":
       case "/user-journey-enhanced":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        if (["plan"].includes(step)) return "completed";
+        if (step === "plan") return "completed";
         if (step === "diagram") return "active";
-        break;
+        return "pending";
       case "/wireframes":
       case "/wireframe-designer":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        if (["plan", "diagram"].includes(step)) return "completed";
+        if (step === "plan") return "completed";
+        if (step === "diagram") return "completed";
         if (step === "wireframes") return "active";
-        break;
+        return "pending";
       case "/user-stories":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        if (["plan", "diagram", "wireframes"].includes(step)) return "completed";
+        if (step === "plan") return "completed";
+        if (step === "diagram") return "completed";
+        if (step === "wireframes") return "completed";
         if (step === "stories") return "active";
-        break;
+        return "pending";
       case "/code":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        if (["plan", "diagram", "wireframes", "stories"].includes(step)) return "completed";
+        if (step === "plan") return "completed";
+        if (step === "diagram") return "completed";
+        if (step === "wireframes") return "completed";
+        if (step === "stories") return "completed";
         if (step === "code") return "active";
-        break;
+        return "pending";
       default:
+        // Handle currentStep prop if provided
+        if (currentStep === step) return "active";
+        
+        // Default logic for home page or other routes
         if (step === "input") return "active";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        break;
+        return "pending";
     }
-
-    return "pending";
   };
 
   return (

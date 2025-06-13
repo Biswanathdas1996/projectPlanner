@@ -12,6 +12,7 @@ import { NavigationBar } from "@/components/navigation-bar";
 import { useToast } from "@/hooks/use-toast";
 import { createAICodeEnhancer } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer } from "@/lib/precise-element-enhancer";
+import { storage } from "@/lib/storage-utils";
 import {
   ArrowLeft,
   Save,
@@ -30,7 +31,8 @@ import {
   Play,
   Monitor,
   Smartphone,
-  Tablet
+  Tablet,
+  X
 } from "lucide-react";
 
 interface HTMLEditorData {
@@ -74,36 +76,147 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [autoSave, setAutoSave] = useState(true);
   const [enhancedCode, setEnhancedCode] = useState<EnhancedCodeResponse | null>(null);
+  const [selectedElementProperties, setSelectedElementProperties] = useState<{[key: string]: string}>({});
+  const [showPropertiesPanel, setShowPropertiesPanel] = useState(false);
   
   const previewRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
+
+  // Extract CSS properties from selected element
+  const extractElementProperties = (element: any) => {
+    if (!element) return {};
+    
+    const properties: {[key: string]: string} = {};
+    const elementClasses = element.className ? element.className.split(' ') : [];
+    
+    // Parse CSS to find rules for this element
+    const cssRules = cssCode.split('}').map(rule => rule.trim() + '}').filter(rule => rule.length > 1);
+    
+    for (const rule of cssRules) {
+      const selectorMatch = rule.match(/^([^{]+)\s*{/);
+      if (!selectorMatch) continue;
+      
+      const selector = selectorMatch[1].trim();
+      let matches = false;
+      
+      // Check if selector matches the element
+      if (selector === element.tagName.toLowerCase()) matches = true;
+      if (selector.includes('#') && selector.includes(element.id)) matches = true;
+      if (selector.includes('.') && elementClasses.some((cls: string) => selector.includes('.' + cls))) matches = true;
+      
+      if (matches) {
+        const cssContent = rule.match(/{([^}]*)}/)?.[1] || '';
+        const declarations = cssContent.split(';').filter(decl => decl.trim());
+        
+        for (const declaration of declarations) {
+          const [property, value] = declaration.split(':').map(s => s.trim());
+          if (property && value) {
+            properties[property] = value;
+          }
+        }
+      }
+    }
+    
+    return properties;
+  };
+
+  // Update CSS with new property values
+  const updateElementProperty = (property: string, value: string) => {
+    if (!selectedElement) return;
+    
+    const elementClasses = selectedElement.className ? selectedElement.className.split(' ') : [];
+    const targetSelector = elementClasses.length > 0 ? '.' + elementClasses[0] : selectedElement.tagName.toLowerCase();
+    
+    // Find or create CSS rule for the element
+    let updatedCss = cssCode;
+    const ruleRegex = new RegExp(`(${targetSelector.replace('.', '\\.')}\\s*{[^}]*})`, 'g');
+    const existingRule = updatedCss.match(ruleRegex)?.[0];
+    
+    if (existingRule) {
+      // Update existing rule
+      const newRule = existingRule.replace(/}$/, '').trim();
+      const propertyRegex = new RegExp(`${property}\\s*:[^;]*;?`, 'g');
+      
+      if (newRule.includes(property + ':')) {
+        // Update existing property
+        const updatedRule = newRule.replace(propertyRegex, `${property}: ${value};`) + '}';
+        updatedCss = updatedCss.replace(existingRule, updatedRule);
+      } else {
+        // Add new property
+        const updatedRule = newRule + `\n  ${property}: ${value};\n}`;
+        updatedCss = updatedCss.replace(existingRule, updatedRule);
+      }
+    } else {
+      // Create new rule
+      const newRule = `\n${targetSelector} {\n  ${property}: ${value};\n}`;
+      updatedCss += newRule;
+    }
+    
+    setCssCode(updatedCss);
+    
+    // Update local properties state
+    setSelectedElementProperties(prev => ({
+      ...prev,
+      [property]: value
+    }));
+  };
 
   // Auto-save functionality
   useEffect(() => {
     if (!autoSave || !wireframeId) return;
     
     const saveTimer = setTimeout(() => {
-      saveToLocalStorage();
+      if (!wireframeId) return;
+      
+      const editorData = {
+        id: wireframeId,
+        pageName,
+        htmlCode,
+        cssCode,
+        jsCode,
+        lastSaved: new Date().toISOString()
+      };
+      
+      storage.setItem(`html_editor_${wireframeId}`, editorData);
+      
+      // Also update the main wireframes data using ID
+      const existingWireframes = storage.getItem('generated_wireframes') || [];
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.id === wireframeId) {
+          return {
+            ...wireframe,
+            htmlCode,
+            cssCode,
+            jsCode,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString(),
+            lastEnhancedElement: 'HTML Editor'
+          };
+        }
+        return wireframe;
+      });
+      
+      storage.setItem('generated_wireframes', updatedWireframes);
+      setLastSaved(new Date());
     }, 2000);
 
     return () => clearTimeout(saveTimer);
   }, [htmlCode, cssCode, jsCode, pageName, wireframeId, autoSave]);
 
-  // Load data from localStorage on mount
+  // Load data from storage on mount
   useEffect(() => {
     if (!initialData?.id) return;
     
-    const savedData = localStorage.getItem(`html_editor_${initialData.id}`);
+    const savedData = storage.getItem(`html_editor_${initialData.id}`);
     if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setHtmlCode(parsed.htmlCode || initialData.htmlCode);
-      setCssCode(parsed.cssCode || initialData.cssCode);
-      setJsCode(parsed.jsCode || initialData.jsCode || '');
-      setLastSaved(new Date(parsed.lastSaved));
+      setHtmlCode(savedData.htmlCode || initialData.htmlCode);
+      setCssCode(savedData.cssCode || initialData.cssCode);
+      setJsCode(savedData.jsCode || initialData.jsCode || '');
+      setLastSaved(new Date(savedData.lastSaved));
     }
   }, [initialData]);
 
-  const saveToLocalStorage = () => {
+  const saveToStorage = () => {
     if (!wireframeId) return;
     
     const editorData = {
@@ -115,10 +228,10 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       lastSaved: new Date().toISOString()
     };
     
-    localStorage.setItem(`html_editor_${wireframeId}`, JSON.stringify(editorData));
+    storage.setItem(`html_editor_${wireframeId}`, editorData);
     
     // Also update the main wireframes data using ID
-    const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+    const existingWireframes = storage.getItem('generated_wireframes') || [];
     const updatedWireframes = existingWireframes.map((wireframe: any) => {
       if (wireframe.id === wireframeId) {
         return {
@@ -134,7 +247,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       return wireframe;
     });
     
-    localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+    storage.setItem('generated_wireframes', updatedWireframes);
     setLastSaved(new Date());
     
     console.log('Auto-saved HTML editor data for wireframe ID:', wireframeId);
@@ -304,6 +417,11 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
         
         setSelectedElement(element);
         
+        // Extract CSS properties for the selected element
+        const properties = extractElementProperties(element);
+        setSelectedElementProperties(properties);
+        setShowPropertiesPanel(true);
+        
         const displayName = element.tagName + 
           (element.className ? '.' + element.className.split(' ')[0] : '') +
           (element.id ? '#' + element.id : '');
@@ -317,7 +435,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, [toast]);
+  }, [toast, cssCode]);
 
   const handleFullPageEnhancement = async () => {
     if (!enhancementPrompt.trim()) {
@@ -423,6 +541,69 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     }
   };
 
+  const handleDeleteElement = () => {
+    if (!selectedElement) return;
+    
+    // Remove the element from HTML
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlCode, 'text/html');
+    
+    // Find and remove the element
+    let elementToRemove = null;
+    
+    if (selectedElement.id) {
+      elementToRemove = doc.getElementById(selectedElement.id);
+    } else if (selectedElement.className) {
+      const elements = doc.getElementsByClassName(selectedElement.className.split(' ')[0]);
+      if (elements.length > 0) {
+        // Find the element with matching text content
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].textContent?.trim().includes(selectedElement.textContent.trim().substring(0, 50))) {
+            elementToRemove = elements[i];
+            break;
+          }
+        }
+        if (!elementToRemove) elementToRemove = elements[0];
+      }
+    } else {
+      // Search by tag name and text content
+      const elements = doc.getElementsByTagName(selectedElement.tagName);
+      for (let i = 0; i < elements.length; i++) {
+        if (elements[i].textContent?.trim().includes(selectedElement.textContent.trim().substring(0, 50))) {
+          elementToRemove = elements[i];
+          break;
+        }
+      }
+    }
+    
+    if (elementToRemove) {
+      elementToRemove.remove();
+      
+      // Update the HTML code
+      const updatedHtml = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${pageName}</title>\n    <style>\n        ${cssCode}\n    </style>\n</head>\n<body>\n    ${doc.body.innerHTML}\n</body>\n</html>`;
+      
+      setHtmlCode(updatedHtml);
+      
+      // Clear selection
+      setSelectedElement(null);
+      setSelectedElementPrompt('');
+      
+      toast({
+        title: "Element Deleted",
+        description: `Successfully removed ${selectedElement.tagName} element`,
+      });
+      
+      console.log('Element deleted successfully');
+    } else {
+      toast({
+        title: "Delete Failed",
+        description: "Could not locate the element to delete",
+        variant: "destructive"
+      });
+      console.warn('Could not find element to delete');
+    }
+  };
+
   const downloadPage = () => {
     const combinedHtml = `<!DOCTYPE html>
 <html lang="en">
@@ -493,7 +674,7 @@ ${jsCode}
               <Label htmlFor="auto-save" className="text-sm">Auto-save</Label>
             </div>
             
-            <Button onClick={saveToLocalStorage} variant="outline" size="sm">
+            <Button onClick={saveToStorage} variant="outline" size="sm">
               <Save className="h-4 w-4 mr-2" />
               Save
             </Button>
@@ -527,9 +708,9 @@ ${jsCode}
         )}
 
         {/* Main Layout - Compact Design */}
-        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-200px)]">
+        <div className="grid grid-cols-12 gap-4 h-[calc(100vh-160px)]">
           {/* Sidebar - Tools & Code */}
-          <div className="col-span-4 space-y-4 overflow-y-auto">
+          <div className="col-span-3 space-y-4 overflow-y-auto">
             {/* Compact AI Enhancement Panel */}
             <Card className="h-fit">
               <CardHeader className="pb-3">
@@ -603,6 +784,17 @@ ${jsCode}
                         ))}
                       </div>
                       
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={handleDeleteElement}
+                        >
+                          Delete Element
+                        </Button>
+                      </div>
+                      
                       <div className="flex gap-1">
                         <Input
                           value={selectedElementPrompt}
@@ -646,7 +838,7 @@ ${jsCode}
                   </CardTitle>
                 </div>
               </CardHeader>
-              <CardContent className="h-[calc(100%-80px)]">
+              <CardContent className="h-[calc(100%-70px)]">
                 <Tabs defaultValue="html" className="h-full">
                   <TabsList className="grid w-full grid-cols-3 mb-3">
                     <TabsTrigger value="html" className="text-xs">HTML</TabsTrigger>
@@ -724,8 +916,86 @@ ${jsCode}
             </Card>
           </div>
 
-          {/* Large Preview Panel */}
-          <div className="col-span-8">
+          {/* Properties Panel */}
+          {showPropertiesPanel && selectedElement && (
+            <div className="col-span-3 space-y-4 overflow-y-auto">
+              <Card className="h-fit">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Properties
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPropertiesPanel(false)}
+                      className="h-6 w-6 p-0"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">
+                    {selectedElement.tagName}
+                    {selectedElement.className && (
+                      <span className="text-blue-600">.{selectedElement.className.split(' ')[0]}</span>
+                    )}
+                    {selectedElement.id && (
+                      <span className="text-green-600">#{selectedElement.id}</span>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3 max-h-96 overflow-y-auto">
+                  {Object.keys(selectedElementProperties).length > 0 ? (
+                    Object.entries(selectedElementProperties).map(([property, value]) => (
+                      <div key={property} className="space-y-1">
+                        <Label className="text-xs font-medium capitalize">
+                          {property.replace(/-/g, ' ')}
+                        </Label>
+                        <Input
+                          value={value}
+                          onChange={(e) => updateElementProperty(property, e.target.value)}
+                          className="text-xs h-8"
+                          placeholder={`Enter ${property} value...`}
+                        />
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-sm text-gray-500 text-center py-4">
+                      No CSS properties found for this element.
+                      <br />
+                      You can add new properties below.
+                    </div>
+                  )}
+                  
+                  {/* Add New Property Section */}
+                  <div className="border-t pt-3 mt-3">
+                    <Label className="text-xs font-medium mb-2 block">Add New Property</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {['color', 'background-color', 'font-size', 'margin', 'padding', 'border', 'width', 'height'].map((prop) => (
+                        <Button
+                          key={prop}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-7"
+                          onClick={() => {
+                            if (!selectedElementProperties[prop]) {
+                              updateElementProperty(prop, '');
+                            }
+                          }}
+                        >
+                          {prop}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Preview Panel */}
+          <div className={showPropertiesPanel && selectedElement ? "col-span-6" : "col-span-9"}>
             <Card className="h-full">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
@@ -824,15 +1094,16 @@ export default function HTMLEditor() {
     console.log('HTML Editor - Extracted ID from params:', urlParams.get('id'));
     
     if (wireframeId) {
-      // Try to load from localStorage first (saved editor data)
-      const savedData = localStorage.getItem(`html_editor_${wireframeId}`);
+      // Try to load from storage first (saved editor data)
+      const savedData = storage.getItem(`html_editor_${wireframeId}`);
       if (savedData) {
         console.log('HTML Editor - Found saved editor data for ID:', wireframeId);
-        return JSON.parse(savedData);
+        return savedData;
       }
       
       // Try to load from generated wireframes using ID
-      const wireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const wireframesData = storage.getItem('generated_wireframes');
+      const wireframes = Array.isArray(wireframesData) ? wireframesData : [];
       console.log('HTML Editor - Checking', wireframes.length, 'wireframes for ID:', wireframeId);
       
       const wireframe = wireframes.find((w: any) => w.id === wireframeId);

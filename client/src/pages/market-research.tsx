@@ -16,6 +16,7 @@ import {
   saveMarketResearchData,
   clearMarketResearchData,
   getProjectDescription,
+  saveProjectDescription,
 } from "@/lib/storage-utils";
 import { Link } from "wouter";
 import {
@@ -92,20 +93,50 @@ export default function MarketResearch() {
 
   // Load project input and existing research from localStorage
   useEffect(() => {
-    const savedProjectDescription = getProjectDescription();
+    const savedProjectDescription = localStorage.getItem('bpmn-project-description') || getProjectDescription();
     const savedResearchData = getMarketResearchData();
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
+    } else {
+      // Prefill with a comprehensive default project idea
+      const defaultProjectIdea = `Create a comprehensive personal finance management platform that helps users track expenses, manage budgets, monitor investments, and receive AI-powered financial advice.
+
+Key Features:
+- Real-time expense tracking with automatic bank account integration
+- Smart budget planning with predictive analytics
+- Investment portfolio management and performance tracking
+- AI-driven financial recommendations and insights
+- Bill reminder system with automated payment options
+- Credit score monitoring and improvement suggestions
+- Financial goal setting and progress tracking
+- Multi-currency support for international users
+
+Target Audience:
+- Young professionals (25-40 years old) looking to improve their financial health
+- Small business owners managing personal and business finances
+- Families planning for major expenses and long-term financial goals
+- Investment beginners seeking guidance and portfolio management
+
+The platform will use machine learning to analyze spending patterns, provide personalized recommendations, and help users make informed financial decisions. It will integrate with major banks and financial institutions to provide real-time data synchronization.`;
+      
+      setProjectInput(defaultProjectIdea);
     }
 
     if (savedResearchData) {
       setResearchData(savedResearchData);
       setCurrentStep("results");
-    } else if (savedProjectDescription) {
+    } else {
       setCurrentStep("input");
     }
   }, []);
+
+  const handleProjectInputChange = (value: string) => {
+    setProjectInput(value);
+    // Save to both storage systems for consistency
+    localStorage.setItem('bpmn-project-description', value);
+    saveProjectDescription(value);
+  };
 
   const performMarketResearch = async () => {
     if (!projectInput.trim()) return;
@@ -291,7 +322,7 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                     id="project-description"
                     placeholder="Describe your project idea... (e.g., Create a project management tool for remote teams with time tracking and collaboration features)"
                     value={projectInput}
-                    onChange={(e) => setProjectInput(e.target.value)}
+                    onChange={(e) => handleProjectInputChange(e.target.value)}
                     className="min-h-32 text-sm"
                     disabled={isResearching}
                   />

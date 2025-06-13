@@ -73,7 +73,7 @@ REQUIREMENTS:
 Generate the BPMN 2.0 XML:`;
 
     console.log(
-      "Generating AI-customized BPMN from 7-element structured data..."
+      "Generating AI-customized BPMN from 7-element structured data...",
     );
     const result = await model.generateContent(prompt);
     const response = await result.response;
@@ -90,14 +90,14 @@ Generate the BPMN 2.0 XML:`;
 
     console.log(
       "AI Generated BPMN 2.0 XML:",
-      bpmnXml.substring(0, 200) + "..."
+      bpmnXml.substring(0, 200) + "...",
     );
 
     return bpmnXml;
   } catch (error) {
     console.error(
       "Error generating customized BPMN from structured data:",
-      error
+      error,
     );
     throw error;
   }
@@ -140,7 +140,7 @@ export async function generateFlowAnalysis(prompt: string): Promise<string> {
 }
 
 export async function generateCustomSuggestions(
-  projectDescription: string
+  projectDescription: string,
 ): Promise<string[]> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
@@ -244,7 +244,7 @@ Example format: ["Implement multi-factor authentication (MFA) and biometric logi
           !line.includes("JSON") &&
           !line.startsWith("Here") &&
           !line.startsWith("Based") &&
-          line.length > 20
+          line.length > 20,
       )
       .map((line) => line.replace(/^[\d\.\-\*\+]\s*/, "")) // Remove list markers
       .filter((line) => line.length > 30); // Filter out short lines
@@ -254,7 +254,7 @@ Example format: ["Implement multi-factor authentication (MFA) and biometric logi
 }
 
 export async function generateProjectPlan(
-  projectDescription: string
+  projectDescription: string,
 ): Promise<string> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
@@ -655,12 +655,12 @@ Return ONLY the complete HTML document with embedded CSS. The document must be p
   ];
 
   const missingSections = requiredSections.filter(
-    (section) => !text.includes(section)
+    (section) => !text.includes(section),
   );
 
   if (missingSections.length > 0) {
     console.warn(
-      `Retrying generation - missing sections: ${missingSections.join(", ")}`
+      `Retrying generation - missing sections: ${missingSections.join(", ")}`,
     );
 
     // First retry with enhanced specificity
@@ -695,12 +695,12 @@ The document must be complete HTML with embedded CSS styling. Do not skip or mer
 
     // Validate retry attempt
     const stillMissing = requiredSections.filter(
-      (section) => !retryText.includes(section)
+      (section) => !retryText.includes(section),
     );
 
     if (stillMissing.length > 0) {
       console.warn(
-        `Second validation failed - still missing: ${stillMissing.join(", ")}`
+        `Second validation failed - still missing: ${stillMissing.join(", ")}`,
       );
 
       // Final attempt with ultra-specific prompt
@@ -734,7 +734,7 @@ Include visual elements: tables, flow diagrams, tree structures, timelines in ea
 }
 
 export async function generateUserJourneyFlows(
-  projectPlan: string
+  projectPlan: string,
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -778,7 +778,7 @@ Return ONLY the complete HTML document with embedded CSS - no explanations or ma
 
 export async function generatePersonaBpmnFlow(
   projectPlan: string,
-  personaType: "guest" | "loggedin" | "admin" | "power" | "mobile"
+  personaType: "guest" | "loggedin" | "admin" | "power" | "mobile",
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -860,29 +860,29 @@ export async function generatePersonaBpmnFlow(
     personaType === "guest"
       ? "Landing page visit, search discovery"
       : personaType === "admin"
-      ? "Admin login, dashboard access"
-      : "User login, app launch"
+        ? "Admin login, dashboard access"
+        : "User login, app launch"
   }
 - **User Tasks**: ${
     personaType === "guest"
       ? "Browse content, view features, register"
       : personaType === "admin"
-      ? "Manage users, configure settings, review reports"
-      : "Use core features, update profile"
+        ? "Manage users, configure settings, review reports"
+        : "Use core features, update profile"
   }
 - **Service Tasks**: ${
     personaType === "guest"
       ? "Show public content, track analytics"
       : personaType === "admin"
-      ? "Generate reports, sync data, send notifications"
-      : "Process requests, save data"
+        ? "Generate reports, sync data, send notifications"
+        : "Process requests, save data"
   }
 - **Decision Points**: ${
     personaType === "guest"
       ? "Register vs browse, feature access"
       : personaType === "admin"
-      ? "Permission checks, approval workflows"
-      : "Feature availability, data validation"
+        ? "Permission checks, approval workflows"
+        : "Feature availability, data validation"
   }
 - **End Events**: Successful completion, error handling, session timeout
 
@@ -959,7 +959,7 @@ Return ONLY the complete XML sitemap - no explanations or markdown.`;
 }
 
 export async function extractStakeholdersFromProject(
-  projectPlan: string
+  projectPlan: string,
 ): Promise<{ stakeholders: string[]; flowTypes: Record<string, string[]> }> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -1052,7 +1052,7 @@ export async function generatePersonaBpmnFlowWithType(
   projectPlan: string,
   stakeholder: string,
   flowType: string,
-  customPrompt?: string
+  customPrompt?: string,
 ): Promise<string> {
   if (!projectPlan.trim()) {
     throw new Error("Project plan is required");
@@ -1099,7 +1099,7 @@ export async function generatePersonaBpmnFlowWithType(
 - Valid XML declaration and BPMN namespace
 - Process ID: "Process_${stakeholder.replace(/\s+/g, "_")}_${flowType.replace(
     /\s+/g,
-    "_"
+    "_",
   )}"
 - Collaboration with appropriate participants
 - Complete BPMNDiagram with realistic coordinates
@@ -1137,7 +1137,7 @@ export async function generateBpmnXml(flowContent: string): Promise<string> {
 
   if (isStructuredFormat) {
     console.log(
-      "🎯 Using structured 7-element format for enhanced AI generation"
+      "🎯 Using structured 7-element format for enhanced AI generation",
     );
 
     // Parse structured content for better AI understanding
@@ -1207,7 +1207,7 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
   // Direct client-side BPMN generation using browser Gemini API
   if (!import.meta.env.VITE_GEMINI_API_KEY) {
     throw new Error(
-      "Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your environment."
+      "Gemini API key not configured. Please add VITE_GEMINI_API_KEY to your environment.",
     );
   }
 
@@ -1235,7 +1235,7 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
 }
 
 export async function generateBpmnXmlClient(
-  flowContent: string
+  flowContent: string,
 ): Promise<string> {
   if (!flowContent.trim()) {
     throw new Error("Flow content is required");
@@ -1362,7 +1362,7 @@ Return ONLY the complete, valid BPMN 2.0 XML - no explanations or markdown.`;
     "bpmn2:endEvent",
   ];
   const missingElements = requiredElements.filter(
-    (element) => !cleanedText.includes(element)
+    (element) => !cleanedText.includes(element),
   );
 
   if (missingElements.length > 0) {
@@ -1379,7 +1379,7 @@ export async function generateSwimlaneXml(
     description: string;
     participants: string[];
     activities: string[];
-  }
+  },
 ): Promise<string> {
   const model = genAI.getGenerativeModel({
     model: "gemini-1.5-flash",

@@ -15,6 +15,7 @@ import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/ht
 import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeResponse } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
+import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
@@ -186,6 +187,7 @@ export default function WireframeDesigner() {
   const [analysisResult, setAnalysisResult] = useState<WireframeAnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [detailedWireframes, setDetailedWireframes] = useState<DetailedPageContent[]>([]);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [showCodeModal, setShowCodeModal] = useState(false);
   const [selectedPageCode, setSelectedPageCode] = useState<{
     pageName: string;
@@ -213,6 +215,7 @@ export default function WireframeDesigner() {
     lastUpdated?: string;
     lastEnhancedElement?: string;
     enhancementExplanation?: string;
+    lastEditorSync?: string;
   }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
@@ -263,91 +266,168 @@ export default function WireframeDesigner() {
 
   // Load saved data
   useEffect(() => {
-    const savedWireframes = localStorage.getItem('wireframe_designs');
-    const savedPageContent = localStorage.getItem('page_content_cards');
-    const savedGeneratedWireframes = localStorage.getItem('generated_wireframes');
-    const savedAnalysisResult = localStorage.getItem('analysis_result');
-    const savedPageLayouts = localStorage.getItem('page_layouts');
+    const savedWireframes = storage.getItem('wireframe_designs');
+    const savedPageContent = storage.getItem('page_content_cards');
+    const savedGeneratedWireframes = storage.getItem('generated_wireframes');
+    const savedAnalysisResult = storage.getItem('analysis_result');
+    const savedPageLayouts = storage.getItem('page_layouts');
     
     if (savedWireframes) {
-      setWireframes(JSON.parse(savedWireframes));
+      setWireframes(savedWireframes);
     }
     if (savedPageContent) {
-      setPageContentCards(JSON.parse(savedPageContent));
+      setPageContentCards(savedPageContent);
     }
     if (savedGeneratedWireframes) {
-      const parsedWireframes = JSON.parse(savedGeneratedWireframes);
-      console.log('Loading generated wireframes from localStorage:', parsedWireframes.length, 'wireframes found');
+      // Ensure we have a valid array
+      let parsedWireframes = savedGeneratedWireframes;
       
-      // Check if wireframes have IDs, if not, add them (migration)
-      const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
-        if (!wireframe.id) {
-          console.log('Adding missing ID to wireframe:', wireframe.pageName);
-          wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      if (!Array.isArray(parsedWireframes)) {
+        console.log('Loading generated wireframes from localStorage:', parsedWireframes, 'wireframes found');
+        // If it's not an array, try to convert or initialize as empty array
+        parsedWireframes = [];
+      } else {
+        console.log('Loading generated wireframes from storage:', parsedWireframes.length, 'wireframes found');
+      }
+      
+      if (parsedWireframes.length > 0) {
+        // Check if wireframes have IDs, if not, add them (migration)
+        const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
+          if (!wireframe.id) {
+            console.log('Adding missing ID to wireframe:', wireframe.pageName);
+            wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          }
+          return wireframe;
+        });
+        
+        // Save back to storage if we added IDs
+        const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
+        if (needsUpdate) {
+          console.log('Updating storage with IDs for existing wireframes');
+          storage.setItem('generated_wireframes', wireframesWithIds);
         }
-        return wireframe;
-      });
-      
-      // Save back to localStorage if we added IDs
-      const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
-      if (needsUpdate) {
-        console.log('Updating localStorage with IDs for existing wireframes');
-        localStorage.setItem('generated_wireframes', JSON.stringify(wireframesWithIds));
+        
+        // Check for enhanced wireframes
+        const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
+        if (enhancedCount > 0) {
+          console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
+          console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+            id: w.id,
+            pageName: w.pageName, 
+            isEnhanced: w.isEnhanced, 
+            lastUpdated: w.lastUpdated 
+          })));
+        }
+        
+        console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
+        setGeneratedWireframes(wireframesWithIds);
       }
-      
-      // Check for enhanced wireframes
-      const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
-      if (enhancedCount > 0) {
-        console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
-        console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
-          id: w.id,
-          pageName: w.pageName, 
-          isEnhanced: w.isEnhanced, 
-          lastUpdated: w.lastUpdated 
-        })));
-      }
-      
-      console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
-      setGeneratedWireframes(wireframesWithIds);
     }
     if (savedAnalysisResult) {
-      setAnalysisResult(JSON.parse(savedAnalysisResult));
+      setAnalysisResult(savedAnalysisResult);
     }
     if (savedPageLayouts) {
-      setPageLayouts(JSON.parse(savedPageLayouts));
+      setPageLayouts(savedPageLayouts);
     }
   }, [detailedWireframes]);
 
-  // Save wireframes to localStorage
+  // Listen for changes in HTML editor data and update wireframes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedWireframes = storage.getItem('generated_wireframes');
+      if (updatedWireframes && Array.isArray(updatedWireframes)) {
+        setGeneratedWireframes(updatedWireframes);
+      }
+    };
+
+    // Listen for storage events (cross-tab communication)
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Set up polling to check for updates every 500ms for immediate sync
+    const pollInterval = setInterval(() => {
+      const currentWireframes = storage.getItem('generated_wireframes');
+      if (currentWireframes && Array.isArray(currentWireframes)) {
+        // Check if any wireframe has been updated since last check
+        const hasUpdates = currentWireframes.some((wireframe: any) => {
+          const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+          return existing && wireframe.lastUpdated && existing.lastUpdated !== wireframe.lastUpdated;
+        });
+        
+        // Also check for HTML editor specific updates
+        const hasEditorUpdates = currentWireframes.some((wireframe: any) => {
+          const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+          if (editorData) {
+            const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+            return existing && editorData.lastSaved && 
+                   (!existing.lastEditorSync || editorData.lastSaved > existing.lastEditorSync);
+          }
+          return false;
+        });
+        
+        if (hasUpdates || hasEditorUpdates) {
+          console.log('Detected wireframe updates, refreshing preview...');
+          setIsRefreshing(true);
+          
+          // Merge HTML editor data with wireframes
+          const syncedWireframes = currentWireframes.map((wireframe: any) => {
+            const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+            if (editorData && editorData.lastSaved) {
+              return {
+                ...wireframe,
+                htmlCode: editorData.htmlCode || wireframe.htmlCode,
+                cssCode: editorData.cssCode || wireframe.cssCode,
+                jsCode: editorData.jsCode || wireframe.jsCode,
+                lastUpdated: editorData.lastSaved,
+                lastEditorSync: editorData.lastSaved
+              };
+            }
+            return wireframe;
+          });
+          
+          setGeneratedWireframes(syncedWireframes);
+          
+          // Reset refresh indicator after a short delay
+          setTimeout(() => setIsRefreshing(false), 500);
+        }
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
+  }, [generatedWireframes]);
+
+  // Save wireframes to storage
   useEffect(() => {
     if (wireframes.length > 0) {
-      localStorage.setItem('wireframe_designs', JSON.stringify(wireframes));
+      storage.setItem('wireframe_designs', wireframes);
     }
   }, [wireframes]);
 
-  // Save page content cards to localStorage
+  // Save page content cards to storage
   useEffect(() => {
     if (pageContentCards.length > 0) {
-      localStorage.setItem('page_content_cards', JSON.stringify(pageContentCards));
+      storage.setItem('page_content_cards', pageContentCards);
     }
   }, [pageContentCards]);
 
-  // Save generated wireframes to localStorage
+  // Save generated wireframes to storage
   useEffect(() => {
     if (generatedWireframes.length > 0) {
-      localStorage.setItem('generated_wireframes', JSON.stringify(generatedWireframes));
+      storage.setItem('generated_wireframes', generatedWireframes);
     }
   }, [generatedWireframes]);
 
-  // Save page layouts to localStorage
+  // Save page layouts to storage
   useEffect(() => {
-    localStorage.setItem('page_layouts', JSON.stringify(pageLayouts));
+    storage.setItem('page_layouts', pageLayouts);
   }, [pageLayouts]);
 
-  // Save analysis results to localStorage
+  // Save analysis results to storage
   useEffect(() => {
     if (analysisResult) {
-      localStorage.setItem('analysis_result', JSON.stringify(analysisResult));
+      storage.setItem('analysis_result', analysisResult);
     }
   }, [analysisResult]);
 
@@ -357,9 +437,9 @@ export default function WireframeDesigner() {
     setError("");
     
     try {
-      const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
-      const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
-      const projectDescription = localStorage.getItem('project_description') || '';
+      const stakeholderFlows = storage.getItem('stakeholder_flows') || [];
+      const flowTypes = storage.getItem('flow_types') || {};
+      const projectDescription = storage.getItem('project_description') || '';
 
       const analysisAgent = createWireframeAnalysisAgent();
       const result = await analysisAgent.analyzeStakeholderFlows();
@@ -511,10 +591,26 @@ export default function WireframeDesigner() {
     setError("");
 
     try {
+      // First, check for HTML editor data to get the latest code
+      const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+      let latestHtmlCode = selectedPageCode.htmlCode;
+      let latestCssCode = selectedPageCode.cssCode;
+      let latestJsCode = selectedPageCode.jsCode;
+      
+      if (wireframe?.id) {
+        const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+        if (editorData && editorData.lastSaved) {
+          console.log('Using latest HTML editor data for enhancement');
+          latestHtmlCode = editorData.htmlCode || selectedPageCode.htmlCode;
+          latestCssCode = editorData.cssCode || selectedPageCode.cssCode;
+          latestJsCode = editorData.jsCode || selectedPageCode.jsCode;
+        }
+      }
+
       const enhancer = createAICodeEnhancer();
       const request: CodeEnhancementRequest = {
-        htmlCode: selectedPageCode.htmlCode,
-        cssCode: selectedPageCode.cssCode,
+        htmlCode: latestHtmlCode,
+        cssCode: latestCssCode,
         prompt: enhancementPrompt,
         pageName: selectedPageCode.pageName
       };
@@ -595,6 +691,68 @@ export default function WireframeDesigner() {
     } finally {
       setIsEnhancing(false);
     }
+  };
+
+  // Save HTML Editor data to wireframes
+  const handleSaveEditorData = () => {
+    if (!selectedPageCode) return;
+
+    const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+    if (!wireframe?.id) {
+      toast({
+        title: "Error",
+        description: "Could not find wireframe ID for this page.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get latest HTML editor data
+    const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+    if (!editorData) {
+      toast({
+        title: "No Changes Found",
+        description: "No HTML editor data found for this wireframe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Saving HTML editor data to wireframes:', editorData);
+
+    // Update the wireframes with HTML editor data
+    const updatedWireframes = generatedWireframes.map(w => {
+      if (w.id === wireframe.id) {
+        return {
+          ...w,
+          htmlCode: editorData.htmlCode || w.htmlCode,
+          cssCode: editorData.cssCode || w.cssCode,
+          jsCode: editorData.jsCode || w.jsCode,
+          isEnhanced: true,
+          lastUpdated: editorData.lastSaved || new Date().toISOString(),
+          lastEnhancedElement: 'HTML Editor',
+          lastEditorSync: editorData.lastSaved
+        };
+      }
+      return w;
+    });
+
+    // Update storage and state
+    storage.setItem('generated_wireframes', updatedWireframes);
+    setGeneratedWireframes(updatedWireframes);
+
+    // Update selected page code for immediate preview
+    setSelectedPageCode({
+      pageName: selectedPageCode.pageName,
+      htmlCode: editorData.htmlCode || selectedPageCode.htmlCode,
+      cssCode: editorData.cssCode || selectedPageCode.cssCode,
+      jsCode: editorData.jsCode || selectedPageCode.jsCode
+    });
+
+    toast({
+      title: "Code Saved Successfully",
+      description: "HTML editor changes have been saved to the wireframe.",
+    });
   };
 
   // Handle element selection for targeted enhancement
@@ -694,8 +852,8 @@ export default function WireframeDesigner() {
       };
       setSelectedPageCode(updatedPageCode);
 
-      // Update localStorage with enhanced wireframe data using correct key
-      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      // Update storage with enhanced wireframe data using correct key
+      const existingWireframes = storage.getItem('generated_wireframes') || [];
       console.log('Precise element enhancement - Looking for page:', selectedPageCode.pageName);
       
       const updatedWireframes = existingWireframes.map((wireframe: any) => {
@@ -715,12 +873,12 @@ export default function WireframeDesigner() {
         return wireframe;
       });
       
-      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      storage.setItem('generated_wireframes', updatedWireframes);
       
-      // Verify localStorage was updated correctly
-      const verifyData = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      // Verify storage was updated correctly
+      const verifyData = storage.getItem('generated_wireframes') || [];
       const verifyPage = verifyData.find((w: any) => w.pageName === selectedPageCode.pageName);
-      console.log('Verification - Enhanced wireframe saved to localStorage:', {
+      console.log('Verification - Enhanced wireframe saved to storage:', {
         pageName: verifyPage?.pageName,
         isEnhanced: verifyPage?.isEnhanced,
         lastUpdated: verifyPage?.lastUpdated,
@@ -2034,23 +2192,33 @@ document.addEventListener('DOMContentLoaded', function() {
                       />
                     </div>
                     
-                    <Button
-                      onClick={handleEnhanceCode}
-                      disabled={isEnhancing || !enhancementPrompt.trim()}
-                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                    >
-                      {isEnhancing ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Enhancing Code...
-                        </>
-                      ) : (
-                        <>
-                          <span className="mr-2">🚀</span>
-                          Enhance Code
-                        </>
-                      )}
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveEditorData}
+                        variant="outline"
+                        className="flex-1 bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save HTML Editor Changes
+                      </Button>
+                      <Button
+                        onClick={handleEnhanceCode}
+                        disabled={isEnhancing || !enhancementPrompt.trim()}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        {isEnhancing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Enhancing Code...
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2">🚀</span>
+                            Enhance Code
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -3515,7 +3683,7 @@ ${selectedPageCode.jsCode}
                       </div>
                     </CardHeader>
                     
-                    <CardContent className="p-4">
+                    <CardContent className="p-4 bg-[#f0f6ff]">
                       <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden border border-gray-200 group-hover:border-blue-200 transition-colors duration-300">
                         <div className="bg-gradient-to-r from-gray-200 to-gray-300 px-3 py-2 border-b border-gray-300">
                           <div className="flex items-center gap-2">
@@ -3527,11 +3695,18 @@ ${selectedPageCode.jsCode}
                             <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 truncate font-mono">
                               {wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html
                             </div>
+                            {isRefreshing && (
+                              <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </div>
+                            )}
                           </div>
                         </div>
                         
                         <div className="relative h-80 bg-white">
                           <iframe
+                            key={`${wireframe.id}-${wireframe.lastUpdated || Date.now()}`}
                             srcDoc={wireframe.htmlCode}
                             className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
