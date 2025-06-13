@@ -76,167 +76,172 @@ export default function HomeLanding() {
         </header>
 
         {/* Hero Section */}
-        <section className="text-center py-12 px-6">
-          <div className="max-w-6xl mx-auto">
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-cyan-500/20 via-blue-500/20 to-purple-500/20 backdrop-blur-lg border border-cyan-400/30 rounded-full mb-6 shadow-lg shadow-cyan-500/10">
-              <Brain className="h-4 w-4 mr-2 text-cyan-400" />
-              <span className="text-xs font-medium bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">7-Step AI Project Workflow</span>
+        <section className="text-center py-8 px-6">
+          <div className="max-w-5xl mx-auto">
+            {/* Compact Badge */}
+            <div className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-purple-500/15 backdrop-blur-sm border border-cyan-400/20 rounded-full mb-4 shadow-md">
+              <Brain className="h-3 w-3 mr-1.5 text-cyan-400" />
+              <span className="text-xs font-medium bg-gradient-to-r from-cyan-300 to-blue-300 bg-clip-text text-transparent">7-Step AI Workflow</span>
             </div>
             
-            <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">From Idea</span>
-              <span className="text-white"> to </span>
-              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Production Code</span>
+            {/* Streamlined Title */}
+            <h1 className="text-3xl md:text-5xl font-bold mb-3 leading-tight">
+              <span className="bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">Idea</span>
+              <span className="text-white"> → </span>
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent">Production</span>
             </h1>
             
-            <p className="text-lg text-gray-300 mb-12 max-w-3xl mx-auto">
-              Follow our proven 7-step workflow to transform any project idea into a complete, production-ready solution with <span className="text-cyan-400">AI-powered automation</span> at every stage.
+            {/* Concise Description */}
+            <p className="text-base text-gray-300 mb-8 max-w-2xl mx-auto">
+              Transform any project concept into production-ready code with our <span className="text-cyan-400">AI-powered</span> 7-step workflow.
             </p>
 
-            {/* 7-Step Workflow Visualization */}
-            <div className="mb-12">
-              <div className="flex flex-wrap justify-center items-center gap-2 md:gap-4 max-w-5xl mx-auto">
+            {/* Modern Compact Workflow */}
+            <div className="mb-8">
+              <div className="flex flex-wrap justify-center items-center gap-1 md:gap-2 max-w-4xl mx-auto bg-gradient-to-r from-black/40 via-gray-900/40 to-black/40 backdrop-blur-xl rounded-2xl p-4 border border-white/10">
                 {/* Step 1: Idea */}
-                <Link href="/start-over">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-green-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">1</span>
+                <div className="flex items-center">
+                  <Link href="/start-over">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">1</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-green-400">Idea</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-green-400 mb-1">Idea</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">Start Here</div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
                 {/* Step 2: Research */}
-                <Link href="/research">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-blue-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">2</span>
+                <div className="flex items-center">
+                  <Link href="/research">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">2</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-blue-400">Research</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-blue-400 mb-1">Research</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">Market Analysis</div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
                 {/* Step 3: Planning */}
-                <Link href="/plan">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-purple-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">3</span>
+                <div className="flex items-center">
+                  <Link href="/plan">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">3</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-purple-400">Planning</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-purple-400 mb-1">Planning</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">Project Plan</div>
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
+                {/* Step 4: Process */}
+                <div className="flex items-center">
+                  <Link href="/editor">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">4</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-orange-400">Process</div>
+                      </div>
                     </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
-                {/* Step 4: Process Mapping */}
-                <Link href="/editor">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-orange-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">4</span>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-orange-400 mb-1">Process</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">BPMN Flow</div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
                 {/* Step 5: Wireframes */}
-                <Link href="/wireframes">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-teal-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">5</span>
+                <div className="flex items-center">
+                  <Link href="/wireframes">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">5</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-teal-400">Wireframes</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-teal-400 mb-1">Wireframes</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">UI Design</div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
                 {/* Step 6: Stories */}
-                <Link href="/stories">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-indigo-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">6</span>
+                <div className="flex items-center">
+                  <Link href="/stories">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">6</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-indigo-400">Stories</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-indigo-400 mb-1">Stories</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">User Stories</div>
-                    </div>
-                  </div>
-                </Link>
-                
-                <ArrowRight className="h-4 w-4 text-gray-500 hidden md:block" />
-                
+                  </Link>
+                  <ArrowRight className="h-3 w-3 text-gray-500 mx-1 md:mx-2" />
+                </div>
+
                 {/* Step 7: Code */}
-                <Link href="/code">
-                  <div className="group flex flex-col items-center cursor-pointer">
-                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gradient-to-r from-pink-500 to-rose-600 rounded-full flex items-center justify-center mb-2 shadow-lg shadow-pink-500/25 group-hover:scale-110 transition-all duration-300">
-                      <span className="text-white font-bold text-sm md:text-lg">7</span>
+                <div className="flex items-center">
+                  <Link href="/code">
+                    <div className="group flex items-center cursor-pointer">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-pink-500 to-pink-600 rounded-lg flex items-center justify-center shadow-md group-hover:scale-110 transition-all duration-200">
+                        <span className="text-white font-bold text-xs md:text-sm">7</span>
+                      </div>
+                      <div className="ml-2 hidden md:block">
+                        <div className="text-xs font-medium text-pink-400">Code</div>
+                      </div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-xs md:text-sm font-semibold text-pink-400 mb-1">Code</div>
-                      <div className="text-xs text-gray-400 max-w-16 leading-tight">Production</div>
-                    </div>
-                  </div>
-                </Link>
+                  </Link>
+                </div>
               </div>
               
-              <div className="mt-8 text-sm text-gray-400 max-w-2xl mx-auto">
-                Click on any step to jump directly to that phase, or start from the beginning to follow the complete workflow
+              <div className="mt-4 text-xs text-gray-500 max-w-xl mx-auto">
+                Click any step to jump directly, or start from the beginning for the complete workflow
               </div>
             </div>
             
-            <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            {/* Streamlined CTA */}
+            <div className="flex flex-col sm:flex-row justify-center gap-3 mb-6">
               <Link href="/start-over">
-                <Button className="bg-gradient-to-r from-green-500 via-blue-500 to-purple-600 hover:from-green-400 hover:via-blue-400 hover:to-purple-500 px-8 py-3 font-semibold shadow-xl shadow-green-500/25 border-0 rounded-lg">
-                  <Rocket className="h-5 w-5 mr-2" />
-                  Start Your Project Journey
+                <Button className="bg-gradient-to-r from-green-500 via-blue-500 to-purple-600 hover:from-green-400 hover:via-blue-400 hover:to-purple-500 px-6 py-2.5 font-semibold shadow-lg text-sm rounded-lg border-0">
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Start Project
                 </Button>
               </Link>
               <Link href="/plan">
-                <Button variant="outline" className="px-8 py-3 border border-purple-400/50 text-purple-300 hover:bg-purple-400/10 backdrop-blur-lg bg-white/5 rounded-lg">
-                  <FileText className="h-5 w-5 mr-2" />
-                  Skip to Planning
+                <Button variant="outline" className="px-6 py-2.5 border border-purple-400/40 text-purple-300 hover:bg-purple-400/10 backdrop-blur-lg bg-white/5 text-sm rounded-lg">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Quick Plan
                 </Button>
               </Link>
             </div>
 
-            {/* 7-Step Workflow Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-              <div className="text-center backdrop-blur-lg bg-white/5 rounded-xl p-4 border border-green-400/20">
-                <div className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">7</div>
+            {/* Compact Stats */}
+            <div className="grid grid-cols-4 gap-3 max-w-2xl mx-auto">
+              <div className="text-center backdrop-blur-md bg-white/5 rounded-lg p-3 border border-green-400/20">
+                <div className="text-lg font-bold bg-gradient-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">7</div>
                 <div className="text-xs text-green-300">Steps</div>
               </div>
-              <div className="text-center backdrop-blur-lg bg-white/5 rounded-xl p-4 border border-blue-400/20">
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">AI</div>
+              <div className="text-center backdrop-blur-md bg-white/5 rounded-lg p-3 border border-blue-400/20">
+                <div className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">AI</div>
                 <div className="text-xs text-blue-300">Powered</div>
               </div>
-              <div className="text-center backdrop-blur-lg bg-white/5 rounded-xl p-4 border border-purple-400/20">
-                <div className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">End-to-End</div>
-                <div className="text-xs text-purple-300">Complete</div>
+              <div className="text-center backdrop-blur-md bg-white/5 rounded-lg p-3 border border-purple-400/20">
+                <div className="text-lg font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Full</div>
+                <div className="text-xs text-purple-300">Stack</div>
               </div>
-              <div className="text-center backdrop-blur-lg bg-white/5 rounded-xl p-4 border border-orange-400/20">
-                <div className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">Ready</div>
-                <div className="text-xs text-orange-300">Production</div>
+              <div className="text-center backdrop-blur-md bg-white/5 rounded-lg p-3 border border-orange-400/20">
+                <div className="text-lg font-bold bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">Prod</div>
+                <div className="text-xs text-orange-300">Ready</div>
               </div>
             </div>
           </div>
