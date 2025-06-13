@@ -9,10 +9,11 @@ import {
   BookOpen,
   Code,
   TrendingUp,
+  Layout,
 } from "lucide-react";
 
 interface WorkflowProgressProps {
-  currentStep?: "input" | "research" | "plan" | "diagram" | "stories" | "code";
+  currentStep?: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code";
   completedSteps?: string[];
 }
 
@@ -28,6 +29,7 @@ export function WorkflowProgress({
     research: "/market-research",
     plan: "/plan",
     diagram: "/user-journey",
+    wireframes: "/wireframes",
     stories: "/user-stories",
     code: "/code",
   };
@@ -70,18 +72,26 @@ export function WorkflowProgress({
         if (["plan"].includes(step)) return "completed";
         if (step === "diagram") return "active";
         break;
-      case "/user-stories":
+      case "/wireframes":
+      case "/wireframe-designer":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
         if (["plan", "diagram"].includes(step)) return "completed";
+        if (step === "wireframes") return "active";
+        break;
+      case "/user-stories":
+        if (step === "input") return "completed";
+        if (step === "research")
+          return hasResearchData ? "completed" : "pending";
+        if (["plan", "diagram", "wireframes"].includes(step)) return "completed";
         if (step === "stories") return "active";
         break;
       case "/code":
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
-        if (["plan", "diagram", "stories"].includes(step)) return "completed";
+        if (["plan", "diagram", "wireframes", "stories"].includes(step)) return "completed";
         if (step === "code") return "active";
         break;
       default:
@@ -270,7 +280,50 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 5: User Stories */}
+          {/* Step 5: Wireframes */}
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
+              getStepStatus("wireframes") === "active"
+                ? "bg-blue-100 shadow-md"
+                : getStepStatus("wireframes") === "completed"
+                  ? "bg-green-100"
+                  : "bg-white"
+            }`}
+            onClick={() => handleStepClick("wireframes")}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                getStepStatus("wireframes") === "completed"
+                  ? "bg-green-500 text-white"
+                  : getStepStatus("wireframes") === "active"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {getStepStatus("wireframes") === "completed" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : getStepStatus("wireframes") === "active" ? (
+                <Layout className="h-4 w-4" />
+              ) : (
+                "5"
+              )}
+            </div>
+            <span
+              className={`text-sm font-medium hidden sm:block ${
+                getStepStatus("wireframes") === "active"
+                  ? "text-blue-700"
+                  : getStepStatus("wireframes") === "completed"
+                    ? "text-green-700"
+                    : "text-gray-600"
+              }`}
+            >
+              Wireframes
+            </span>
+          </div>
+
+          <ArrowRight className="h-4 w-4 text-gray-300" />
+
+          {/* Step 6: User Stories */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("stories") === "active"
@@ -295,7 +348,7 @@ export function WorkflowProgress({
               ) : getStepStatus("stories") === "active" ? (
                 <BookOpen className="h-4 w-4" />
               ) : (
-                "5"
+                "6"
               )}
             </div>
             <span
