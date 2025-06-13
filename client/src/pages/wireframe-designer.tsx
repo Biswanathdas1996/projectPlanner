@@ -203,6 +203,9 @@ export default function WireframeDesigner() {
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancedCode, setEnhancedCode] = useState<{ html: string; css: string; js: string; explanation: string; improvements: string[] } | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedElementPrompt, setSelectedElementPrompt] = useState('');
   
   // Wireframe customization options
   const [selectedDeviceType, setSelectedDeviceType] = useState<'mobile' | 'tablet' | 'desktop'>('desktop');
@@ -510,7 +513,134 @@ export default function WireframeDesigner() {
     }
   };
 
+  // Handle element selection for targeted enhancement
+  const handleElementSelection = (event: React.MouseEvent) => {
+    if (!selectionMode) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const target = event.target as HTMLElement;
+    
+    // Create a more descriptive selector
+    let elementInfo = '';
+    if (target.tagName) {
+      elementInfo = target.tagName.toLowerCase();
+      if (target.className) {
+        elementInfo += `.${target.className.split(' ').join('.')}`;
+      }
+      if (target.id) {
+        elementInfo += `#${target.id}`;
+      }
+      
+      // Add content preview for better context
+      const textContent = target.textContent?.trim().substring(0, 50);
+      if (textContent) {
+        elementInfo += ` ("${textContent}${textContent.length > 50 ? '...' : ''}")`;
+      }
+    }
+    
+    setSelectedElement(elementInfo);
+    setSelectionMode(false);
+    
+    // Add visual feedback
+    target.style.outline = '2px solid #3B82F6';
+    target.style.outlineOffset = '2px';
+    setTimeout(() => {
+      target.style.outline = '';
+      target.style.outlineOffset = '';
+    }, 2000);
+  };
 
+  // Handle selective element enhancement
+  const handleEnhanceSelectedElement = async () => {
+    if (!selectedPageCode || !selectedElement || !selectedElementPrompt.trim()) return;
+    
+    setIsEnhancing(true);
+    
+    try {
+      const enhancer = createAICodeEnhancer();
+      
+      const request = {
+        htmlCode: selectedPageCode.htmlCode,
+        cssCode: selectedPageCode.cssCode,
+        prompt: `Focus only on enhancing the selected element: ${selectedElement}. ${selectedElementPrompt.trim()}. Keep all other elements unchanged and maintain the overall page structure.`,
+        pageName: selectedPageCode.pageName
+      };
+
+      const enhanced = await enhancer.enhanceCode(request);
+      setEnhancedCode(enhanced);
+
+      // Update the selected page code with enhanced versions
+      const updatedPageCode = {
+        pageName: selectedPageCode.pageName,
+        htmlCode: enhanced.html,
+        cssCode: enhanced.css,
+        jsCode: enhanced.js
+      };
+      setSelectedPageCode(updatedPageCode);
+
+      // Update localStorage with enhanced wireframe data
+      const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      console.log('Selective enhancement - Existing wireframes:', existingWireframes);
+      console.log('Looking for page:', selectedPageCode.pageName);
+      
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          console.log('Found matching wireframe, updating with selective enhancement...');
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString(),
+            lastEnhancedElement: selectedElement
+          };
+        }
+        return wireframe;
+      });
+      
+      console.log('Updated wireframes with selective enhancement:', updatedWireframes);
+      localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
+      
+      // Verify data was saved correctly
+      const savedData = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      const savedPage = savedData.find((w: any) => w.pageName === selectedPageCode.pageName);
+      console.log('Verification - saved selectively enhanced page:', savedPage);
+      
+      // Also update the current generated wireframes state
+      setGeneratedWireframes(prev => prev.map(wireframe => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js
+          };
+        }
+        return wireframe;
+      }));
+
+      // Clear selection after enhancement
+      setSelectedElement(null);
+      setSelectedElementPrompt('');
+
+      toast({
+        title: "Element Enhanced Successfully",
+        description: `Enhanced "${selectedElement}" and saved changes.`,
+      });
+    } catch (err) {
+      console.error("Error enhancing selected element:", err);
+      toast({
+        title: "Enhancement Failed",
+        description: "Failed to enhance the selected element. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   const generateWireframeJS = (card: PageContentCard, deviceType: string, designType: string, layout: string = 'standard-header'): string => {
     const interactiveElements = [];
@@ -1905,9 +2035,103 @@ ${selectedPageCode.jsCode}
                           </Button>
                         </div>
                       )}
+                      
+                      {/* Selective Enhancement Mode Toggle */}
+                      <div className="flex items-center gap-2 mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <Button
+                          onClick={() => {
+                            setSelectionMode(!selectionMode);
+                            setSelectedElement(null);
+                          }}
+                          variant={selectionMode ? "default" : "outline"}
+                          size="sm"
+                          className={selectionMode ? "bg-amber-600 hover:bg-amber-700" : ""}
+                        >
+                          {selectionMode ? "Exit Selection Mode" : "Select Element to Enhance"}
+                        </Button>
+                        {selectionMode && (
+                          <p className="text-sm text-amber-700">
+                            Click on any element in the preview to enhance it specifically
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Selected Element Enhancement */}
+                      {selectedElement && (
+                        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <h4 className="font-semibold text-blue-800 mb-2">Enhance Selected Element</h4>
+                          <p className="text-sm text-blue-700 mb-3">
+                            Selected: <code className="bg-blue-100 px-1 rounded">{selectedElement}</code>
+                          </p>
+                          <div className="space-y-3">
+                            <Textarea
+                              value={selectedElementPrompt}
+                              onChange={(e) => setSelectedElementPrompt(e.target.value)}
+                              placeholder="Describe how you want to enhance this specific element (e.g., 'Make this button more modern with hover effects' or 'Add form validation styling')"
+                              className="text-sm min-h-[80px]"
+                            />
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={handleEnhanceSelectedElement}
+                                disabled={isEnhancing || !selectedElementPrompt.trim()}
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                {isEnhancing ? (
+                                  <>
+                                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                    Enhancing...
+                                  </>
+                                ) : (
+                                  "Enhance Selected Element"
+                                )}
+                              </Button>
+                              <Button
+                                onClick={() => {
+                                  setSelectedElement(null);
+                                  setSelectedElementPrompt('');
+                                }}
+                                variant="outline"
+                                size="sm"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="border rounded-lg overflow-hidden">
-                        <style dangerouslySetInnerHTML={{ __html: selectedPageCode.cssCode }} />
-                        <div dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }} />
+                        <style dangerouslySetInnerHTML={{ 
+                          __html: selectedPageCode.cssCode + (selectionMode ? `
+                            /* Selection mode styles */
+                            * {
+                              transition: all 0.2s ease !important;
+                            }
+                            *:hover {
+                              outline: 2px dashed #F59E0B !important;
+                              outline-offset: 2px !important;
+                              background-color: rgba(245, 158, 11, 0.1) !important;
+                            }
+                            *:hover::before {
+                              content: "Click to enhance this element" !important;
+                              position: absolute !important;
+                              background: #F59E0B !important;
+                              color: white !important;
+                              padding: 2px 6px !important;
+                              border-radius: 4px !important;
+                              font-size: 10px !important;
+                              z-index: 1000 !important;
+                              transform: translateY(-100%) !important;
+                              white-space: nowrap !important;
+                            }
+                          ` : '')
+                        }} />
+                        <div 
+                          dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }}
+                          className={selectionMode ? "cursor-pointer relative" : ""}
+                          onClick={selectionMode ? handleElementSelection : undefined}
+                        />
                       </div>
                     </div>
                   </TabsContent>
