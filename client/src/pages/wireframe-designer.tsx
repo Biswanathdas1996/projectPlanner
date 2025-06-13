@@ -229,7 +229,16 @@ export default function WireframeDesigner() {
       setPageContentCards(JSON.parse(savedPageContent));
     }
     if (savedGeneratedWireframes) {
-      setGeneratedWireframes(JSON.parse(savedGeneratedWireframes));
+      const parsedWireframes = JSON.parse(savedGeneratedWireframes);
+      console.log('Loading generated wireframes from localStorage:', parsedWireframes.length, 'wireframes found');
+      
+      // Check for enhanced wireframes
+      const enhancedCount = parsedWireframes.filter((w: any) => w.isEnhanced).length;
+      if (enhancedCount > 0) {
+        console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
+      }
+      
+      setGeneratedWireframes(parsedWireframes);
     }
     if (savedAnalysisResult) {
       setAnalysisResult(JSON.parse(savedAnalysisResult));
@@ -611,8 +620,8 @@ export default function WireframeDesigner() {
       };
       setSelectedPageCode(updatedPageCode);
 
-      // Update localStorage with enhanced wireframe data
-      const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      // Update localStorage with enhanced wireframe data using correct key
+      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
       console.log('Precise element enhancement - Looking for page:', selectedPageCode.pageName);
       
       const updatedWireframes = existingWireframes.map((wireframe: any) => {
@@ -632,7 +641,19 @@ export default function WireframeDesigner() {
         return wireframe;
       });
       
-      localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
+      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      
+      // Verify localStorage was updated correctly
+      const verifyData = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const verifyPage = verifyData.find((w: any) => w.pageName === selectedPageCode.pageName);
+      console.log('Verification - Enhanced wireframe saved to localStorage:', {
+        pageName: verifyPage?.pageName,
+        isEnhanced: verifyPage?.isEnhanced,
+        lastUpdated: verifyPage?.lastUpdated,
+        lastEnhancedElement: verifyPage?.lastEnhancedElement,
+        htmlLength: verifyPage?.htmlCode?.length,
+        cssLength: verifyPage?.cssCode?.length
+      });
       
       // Also update the current generated wireframes state
       setGeneratedWireframes(prev => prev.map(wireframe => {
@@ -1962,7 +1983,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 <Tabs defaultValue="preview" className="space-y-4">
                   <TabsList className={selectedPageCode?.jsCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
-                    <TabsTrigger value="preview">Preview</TabsTrigger>
+                    <TabsTrigger value="preview" className="flex items-center gap-2">
+                      Preview
+                      {(() => {
+                        const currentWireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+                        return currentWireframe?.isEnhanced ? (
+                          <div className="w-2 h-2 bg-green-500 rounded-full" title="Enhanced with AI"></div>
+                        ) : null;
+                      })()}
+                    </TabsTrigger>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
                     {selectedPageCode?.jsCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
