@@ -1,13 +1,13 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface ProjectRequirements {
   projectType: string;
   industry: string;
-  scope: 'small' | 'medium' | 'large' | 'enterprise';
+  scope: "small" | "medium" | "large" | "enterprise";
   timeline: string;
   budget: string;
   teamSize: string;
-  technicalComplexity: 'low' | 'medium' | 'high' | 'expert';
+  technicalComplexity: "low" | "medium" | "high" | "expert";
   requirements: string[];
   stakeholders: string[];
   constraints: string[];
@@ -16,7 +16,7 @@ export interface ProjectRequirements {
 export interface ProjectSection {
   title: string;
   content: string;
-  priority: 'critical' | 'high' | 'medium' | 'low';
+  priority: "critical" | "high" | "medium" | "low";
   estimatedHours: number;
 }
 
@@ -47,47 +47,58 @@ export class AIProjectPlannerAgent {
 
   constructor() {
     if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is required for AI project planning');
+      throw new Error("GEMINI_API_KEY is required for AI project planning");
     }
-    
+
     const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-    this.model = genAI.getGenerativeModel({ 
+    this.model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
         temperature: 0.7,
         topK: 40,
         topP: 0.95,
         maxOutputTokens: 8192,
-      }
+      },
     });
   }
 
   async generateComprehensiveProjectPlan(
-    description: string, 
+    description: string,
     requirements: Partial<ProjectRequirements> = {},
     progressCallback?: (step: string, progress: number) => void
   ): Promise<ComprehensiveProjectPlan> {
-    
-    progressCallback?.('Analyzing project requirements', 10);
-    
+    progressCallback?.("Analyzing project requirements", 10);
+
     // Extract and analyze project requirements
-    const analyzedRequirements = await this.analyzeProjectRequirements(description);
+    const analyzedRequirements = await this.analyzeProjectRequirements(
+      description
+    );
     const mergedRequirements = { ...analyzedRequirements, ...requirements };
-    
-    progressCallback?.('Creating technical architecture plan', 20);
-    
+
+    progressCallback?.("Creating technical architecture plan", 20);
+
     // Generate each section with specialized prompts
-    const sections = await this.generateAllSections(mergedRequirements, description, progressCallback);
-    
-    progressCallback?.('Calculating project metrics', 90);
-    
+    const sections = await this.generateAllSections(
+      mergedRequirements,
+      description,
+      progressCallback
+    );
+
+    progressCallback?.("Calculating project metrics", 90);
+
     // Calculate totals and critical path
-    const totalEstimatedHours = sections.reduce((total, section) => total + section.estimatedHours, 0);
-    const totalEstimatedCost = this.calculateProjectCost(totalEstimatedHours, mergedRequirements);
+    const totalEstimatedHours = sections.reduce(
+      (total, section) => total + section.estimatedHours,
+      0
+    );
+    const totalEstimatedCost = this.calculateProjectCost(
+      totalEstimatedHours,
+      mergedRequirements
+    );
     const criticalPath = this.identifyCriticalPath(sections);
-    
-    progressCallback?.('Finalizing project plan', 100);
-    
+
+    progressCallback?.("Finalizing project plan", 100);
+
     return {
       projectOverview: sections[0],
       technicalArchitecture: sections[1],
@@ -105,11 +116,13 @@ export class AIProjectPlannerAgent {
       securityFramework: sections[17],
       totalEstimatedHours,
       totalEstimatedCost,
-      criticalPath
+      criticalPath,
     };
   }
 
-  private async analyzeProjectRequirements(description: string): Promise<ProjectRequirements> {
+  private async analyzeProjectRequirements(
+    description: string
+  ): Promise<ProjectRequirements> {
     const prompt = `
 Analyze the following project description and extract structured requirements:
 
@@ -132,48 +145,61 @@ Return a JSON object with the following structure:
 Ensure realistic estimates based on project complexity.`;
 
     try {
-      const result = await this.retryableRequest(() => this.model.generateContent(prompt));
+      const result = await this.retryableRequest(() =>
+        this.model.generateContent(prompt)
+      );
       const response = result.response.text();
       const cleanedResponse = this.extractJsonFromResponse(response);
       return JSON.parse(cleanedResponse);
     } catch (error) {
-      console.warn('Failed to analyze requirements, using defaults:', error);
+      console.warn("Failed to analyze requirements, using defaults:", error);
       return this.getDefaultRequirements();
     }
   }
 
   private async generateAllSections(
-    requirements: ProjectRequirements, 
+    requirements: ProjectRequirements,
     originalDescription: string,
     progressCallback?: (step: string, progress: number) => void
   ): Promise<ProjectSection[]> {
-    
-    const sectionPrompts = this.buildSectionPrompts(requirements, originalDescription);
+    const sectionPrompts = this.buildSectionPrompts(
+      requirements,
+      originalDescription
+    );
     const sections: ProjectSection[] = [];
-    
+
     for (let i = 0; i < sectionPrompts.length; i++) {
       const progress = 20 + (i / sectionPrompts.length) * 70;
       progressCallback?.(sectionPrompts[i].title, progress);
-      
+
       try {
-        const section = await this.generateSection(sectionPrompts[i], requirements);
+        const section = await this.generateSection(
+          sectionPrompts[i],
+          requirements
+        );
         sections.push(section);
-        
+
         // Add small delay to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 200));
       } catch (error) {
-        console.warn(`Failed to generate section: ${sectionPrompts[i].title}`, error);
+        console.warn(
+          `Failed to generate section: ${sectionPrompts[i].title}`,
+          error
+        );
         sections.push(this.getFallbackSection(sectionPrompts[i].title));
       }
     }
-    
+
     return sections;
   }
 
-  private buildSectionPrompts(requirements: ProjectRequirements, description: string) {
+  private buildSectionPrompts(
+    requirements: ProjectRequirements,
+    description: string
+  ) {
     return [
       {
-        title: 'Project Overview',
+        title: "Project Overview",
         prompt: `Create a comprehensive project overview for: "${description}"
         
         Include:
@@ -189,10 +215,10 @@ Ensure realistic estimates based on project complexity.`;
         Scope: ${requirements.scope}
         Timeline: ${requirements.timeline}
         
-        Make it professional and investor-ready.`
+        Make it professional and investor-ready.`,
       },
       {
-        title: 'Technical Architecture',
+        title: "Technical Architecture",
         prompt: `Design detailed technical architecture for: "${description}"
         
         Include:
@@ -208,10 +234,10 @@ Ensure realistic estimates based on project complexity.`;
         Technical Complexity: ${requirements.technicalComplexity}
         Team Size: ${requirements.teamSize}
         
-        Provide specific technology recommendations and justify choices.`
+        Provide specific technology recommendations and justify choices.`,
       },
       {
-        title: 'Phase 1: Foundation & Setup',
+        title: "Phase 1: Foundation & Setup",
         prompt: `Detail Phase 1 foundation work for: "${description}"
         
         Include:
@@ -223,10 +249,10 @@ Ensure realistic estimates based on project complexity.`;
         - Authentication system
         - Basic UI/UX framework
         
-        Provide specific tasks, dependencies, and time estimates.`
+        Provide specific tasks, dependencies, and time estimates.`,
       },
       {
-        title: 'Phase 2: Core Development',
+        title: "Phase 2: Core Development",
         prompt: `Detail Phase 2 core development for: "${description}"
         
         Include:
@@ -237,10 +263,10 @@ Ensure realistic estimates based on project complexity.`;
         - Frontend component development
         - Integration testing
         
-        Focus on core functionality and MVP features.`
+        Focus on core functionality and MVP features.`,
       },
       {
-        title: 'Phase 3: Advanced Features',
+        title: "Phase 3: Advanced Features",
         prompt: `Detail Phase 3 advanced features for: "${description}"
         
         Include:
@@ -251,10 +277,10 @@ Ensure realistic estimates based on project complexity.`;
         - Advanced UI/UX components
         - Analytics implementation
         
-        Focus on value-added features and optimizations.`
+        Focus on value-added features and optimizations.`,
       },
       {
-        title: 'Phase 4: Testing & QA',
+        title: "Phase 4: Testing & QA",
         prompt: `Detail Phase 4 testing and quality assurance for: "${description}"
         
         Include:
@@ -265,10 +291,10 @@ Ensure realistic estimates based on project complexity.`;
         - User acceptance testing
         - Bug fixing and optimization
         
-        Ensure production-ready quality.`
+        Ensure production-ready quality.`,
       },
       {
-        title: 'Phase 5: Deployment & Launch',
+        title: "Phase 5: Deployment & Launch",
         prompt: `Detail Phase 5 deployment and launch for: "${description}"
         
         Include:
@@ -279,10 +305,10 @@ Ensure realistic estimates based on project complexity.`;
         - Launch strategy
         - Post-launch support
         
-        Ensure smooth production deployment.`
+        Ensure smooth production deployment.`,
       },
       {
-        title: 'Risk Management',
+        title: "Risk Management",
         prompt: `Create comprehensive risk management plan for: "${description}"
         
         Include:
@@ -293,10 +319,10 @@ Ensure realistic estimates based on project complexity.`;
         - External dependency risks
         - Contingency planning
         
-        Provide specific risk levels and mitigation strategies.`
+        Provide specific risk levels and mitigation strategies.`,
       },
       {
-        title: 'Quality Assurance',
+        title: "Quality Assurance",
         prompt: `Design quality assurance framework for: "${description}"
         
         Include:
@@ -307,10 +333,10 @@ Ensure realistic estimates based on project complexity.`;
         - Security standards
         - Documentation requirements
         
-        Ensure enterprise-grade quality.`
+        Ensure enterprise-grade quality.`,
       },
       {
-        title: 'Deployment Strategy',
+        title: "Deployment Strategy",
         prompt: `Create detailed deployment strategy for: "${description}"
         
         Include:
@@ -321,10 +347,10 @@ Ensure realistic estimates based on project complexity.`;
         - Rollback procedures
         - Monitoring and alerting
         
-        Focus on reliability and scalability.`
+        Focus on reliability and scalability.`,
       },
       {
-        title: 'Maintenance & Support',
+        title: "Maintenance & Support",
         prompt: `Plan maintenance and support strategy for: "${description}"
         
         Include:
@@ -335,10 +361,10 @@ Ensure realistic estimates based on project complexity.`;
         - Security maintenance
         - Long-term sustainability
         
-        Plan for 3-5 year lifecycle.`
+        Plan for 3-5 year lifecycle.`,
       },
       {
-        title: 'Budget Breakdown',
+        title: "Budget Breakdown",
         prompt: `Create detailed budget breakdown for: "${description}"
         
         Include:
@@ -353,10 +379,10 @@ Ensure realistic estimates based on project complexity.`;
         Budget Range: ${requirements.budget}
         Team Size: ${requirements.teamSize}
         
-        Provide realistic cost estimates with contingency.`
+        Provide realistic cost estimates with contingency.`,
       },
       {
-        title: 'Timeline Details',
+        title: "Timeline Details",
         prompt: `Create detailed project timeline for: "${description}"
         
         Include:
@@ -370,10 +396,10 @@ Ensure realistic estimates based on project complexity.`;
         Timeline: ${requirements.timeline}
         Scope: ${requirements.scope}
         
-        Provide realistic scheduling with risk buffers.`
+        Provide realistic scheduling with risk buffers.`,
       },
       {
-        title: 'Team Structure',
+        title: "Team Structure",
         prompt: `Design optimal team structure for: "${description}"
         
         Include:
@@ -387,10 +413,10 @@ Ensure realistic estimates based on project complexity.`;
         Team Size: ${requirements.teamSize}
         Technical Complexity: ${requirements.technicalComplexity}
         
-        Match team structure to project needs.`
+        Match team structure to project needs.`,
       },
       {
-        title: 'Stakeholder Matrix',
+        title: "Stakeholder Matrix",
         prompt: `Create stakeholder engagement matrix for: "${description}"
         
         Include:
@@ -401,12 +427,12 @@ Ensure realistic estimates based on project complexity.`;
         - Decision-making authority
         - Escalation procedures
         
-        Stakeholders: ${requirements.stakeholders.join(', ')}
+        Stakeholders: ${requirements.stakeholders.join(", ")}
         
-        Ensure effective stakeholder management.`
+        Ensure effective stakeholder management.`,
       },
       {
-        title: 'Compliance Requirements',
+        title: "Compliance Requirements",
         prompt: `Define compliance and regulatory requirements for: "${description}"
         
         Include:
@@ -419,10 +445,10 @@ Ensure realistic estimates based on project complexity.`;
         
         Industry: ${requirements.industry}
         
-        Ensure full regulatory compliance.`
+        Ensure full regulatory compliance.`,
       },
       {
-        title: 'Scalability Plan',
+        title: "Scalability Plan",
         prompt: `Design scalability and growth plan for: "${description}"
         
         Include:
@@ -435,10 +461,10 @@ Ensure realistic estimates based on project complexity.`;
         
         Scope: ${requirements.scope}
         
-        Plan for 10x growth scenarios.`
+        Plan for 10x growth scenarios.`,
       },
       {
-        title: 'Security Framework',
+        title: "Security Framework",
         prompt: `Create comprehensive security framework for: "${description}"
         
         Include:
@@ -452,18 +478,21 @@ Ensure realistic estimates based on project complexity.`;
         Industry: ${requirements.industry}
         Technical Complexity: ${requirements.technicalComplexity}
         
-        Implement defense-in-depth strategy.`
-      }
+        Implement defense-in-depth strategy.`,
+      },
     ];
   }
 
-  private async generateSection(sectionPrompt: any, requirements: ProjectRequirements): Promise<ProjectSection> {
+  private async generateSection(
+    sectionPrompt: any,
+    requirements: ProjectRequirements
+  ): Promise<ProjectSection> {
     const enhancedPrompt = `${sectionPrompt.prompt}
 
 Additional Context:
-- Requirements: ${requirements.requirements.join(', ')}
-- Constraints: ${requirements.constraints.join(', ')}
-- Stakeholders: ${requirements.stakeholders.join(', ')}
+- Requirements: ${requirements.requirements.join(", ")}
+- Constraints: ${requirements.constraints.join(", ")}
+- Stakeholders: ${requirements.stakeholders.join(", ")}
 
 Generate a detailed, professional section with:
 1. Clear structure and headings
@@ -477,18 +506,24 @@ Include estimated hours for completion at the end.
 
 Estimated Hours: [X hours]`;
 
-    const result = await this.retryableRequest(() => this.model.generateContent(enhancedPrompt));
+    const result = await this.retryableRequest(() =>
+      this.model.generateContent(enhancedPrompt)
+    );
     const content = result.response.text();
-    
+
     // Extract estimated hours from content
-    const hoursMatch = content.match(/Estimated Hours:\s*\[?(\d+)\s*hours?\]?/i);
-    const estimatedHours = hoursMatch ? parseInt(hoursMatch[1]) : this.getDefaultHours(sectionPrompt.title);
-    
+    const hoursMatch = content.match(
+      /Estimated Hours:\s*\[?(\d+)\s*hours?\]?/i
+    );
+    const estimatedHours = hoursMatch
+      ? parseInt(hoursMatch[1])
+      : this.getDefaultHours(sectionPrompt.title);
+
     return {
       title: sectionPrompt.title,
       content: this.cleanHtmlContent(content),
       priority: this.getSectionPriority(sectionPrompt.title),
-      estimatedHours
+      estimatedHours,
     };
   }
 
@@ -500,8 +535,12 @@ Estimated Hours: [X hours]`;
         if (attempt === this.maxRetries) {
           throw error;
         }
-        console.warn(`Request attempt ${attempt} failed, retrying in ${this.retryDelay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+        console.warn(
+          `Request attempt ${attempt} failed, retrying in ${this.retryDelay}ms...`
+        );
+        await new Promise((resolve) =>
+          setTimeout(resolve, this.retryDelay * attempt)
+        );
       }
     }
   }
@@ -514,85 +553,111 @@ Estimated Hours: [X hours]`;
   private cleanHtmlContent(content: string): string {
     // Remove estimated hours line and clean up formatting
     return content
-      .replace(/Estimated Hours:\s*\[?\d+\s*hours?\]?/gi, '')
-      .replace(/```html\s*/g, '')
-      .replace(/```\s*/g, '')
+      .replace(/Estimated Hours:\s*\[?\d+\s*hours?\]?/gi, "")
+      .replace(/```html\s*/g, "")
+      .replace(/```\s*/g, "")
       .trim();
   }
 
-  private getSectionPriority(title: string): 'critical' | 'high' | 'medium' | 'low' {
-    const criticalSections = ['Project Overview', 'Technical Architecture', 'Phase 1: Foundation & Setup'];
-    const highSections = ['Phase 2: Core Development', 'Risk Management', 'Security Framework'];
-    const mediumSections = ['Phase 3: Advanced Features', 'Quality Assurance', 'Deployment Strategy'];
-    
-    if (criticalSections.includes(title)) return 'critical';
-    if (highSections.includes(title)) return 'high';
-    if (mediumSections.includes(title)) return 'medium';
-    return 'low';
+  private getSectionPriority(
+    title: string
+  ): "critical" | "high" | "medium" | "low" {
+    const criticalSections = [
+      "Project Overview",
+      "Technical Architecture",
+      "Phase 1: Foundation & Setup",
+    ];
+    const highSections = [
+      "Phase 2: Core Development",
+      "Risk Management",
+      "Security Framework",
+    ];
+    const mediumSections = [
+      "Phase 3: Advanced Features",
+      "Quality Assurance",
+      "Deployment Strategy",
+    ];
+
+    if (criticalSections.includes(title)) return "critical";
+    if (highSections.includes(title)) return "high";
+    if (mediumSections.includes(title)) return "medium";
+    return "low";
   }
 
   private getDefaultHours(sectionTitle: string): number {
     const hourMapping: Record<string, number> = {
-      'Project Overview': 16,
-      'Technical Architecture': 40,
-      'Phase 1: Foundation & Setup': 120,
-      'Phase 2: Core Development': 200,
-      'Phase 3: Advanced Features': 160,
-      'Phase 4: Testing & QA': 80,
-      'Phase 5: Deployment & Launch': 60,
-      'Risk Management': 24,
-      'Quality Assurance': 32,
-      'Deployment Strategy': 40,
-      'Maintenance & Support': 24,
-      'Budget Breakdown': 16,
-      'Timeline Details': 20,
-      'Team Structure': 16,
-      'Stakeholder Matrix': 12,
-      'Compliance Requirements': 32,
-      'Scalability Plan': 40,
-      'Security Framework': 48
+      "Project Overview": 16,
+      "Technical Architecture": 40,
+      "Phase 1: Foundation & Setup": 120,
+      "Phase 2: Core Development": 200,
+      "Phase 3: Advanced Features": 160,
+      "Phase 4: Testing & QA": 80,
+      "Phase 5: Deployment & Launch": 60,
+      "Risk Management": 24,
+      "Quality Assurance": 32,
+      "Deployment Strategy": 40,
+      "Maintenance & Support": 24,
+      "Budget Breakdown": 16,
+      "Timeline Details": 20,
+      "Team Structure": 16,
+      "Stakeholder Matrix": 12,
+      "Compliance Requirements": 32,
+      "Scalability Plan": 40,
+      "Security Framework": 48,
     };
-    
+
     return hourMapping[sectionTitle] || 24;
   }
 
-  private calculateProjectCost(totalHours: number, requirements: ProjectRequirements): number {
+  private calculateProjectCost(
+    totalHours: number,
+    requirements: ProjectRequirements
+  ): number {
     const hourlyRates = {
       low: 50,
       medium: 75,
       high: 100,
-      expert: 150
+      expert: 150,
     };
-    
+
     const baseRate = hourlyRates[requirements.technicalComplexity];
     const complexityMultiplier = {
       small: 1,
       medium: 1.2,
       large: 1.5,
-      enterprise: 2
+      enterprise: 2,
     };
-    
-    return Math.round(totalHours * baseRate * complexityMultiplier[requirements.scope]);
+
+    return Math.round(
+      totalHours * baseRate * complexityMultiplier[requirements.scope]
+    );
   }
 
   private identifyCriticalPath(sections: ProjectSection[]): string[] {
     return sections
-      .filter(section => section.priority === 'critical' || section.priority === 'high')
-      .map(section => section.title);
+      .filter(
+        (section) =>
+          section.priority === "critical" || section.priority === "high"
+      )
+      .map((section) => section.title);
   }
 
   private getDefaultRequirements(): ProjectRequirements {
     return {
-      projectType: 'web_app',
-      industry: 'technology',
-      scope: 'medium',
-      timeline: '6-12 months',
-      budget: '$50,000 - $200,000',
-      teamSize: '5-8 developers',
-      technicalComplexity: 'medium',
-      requirements: ['User authentication', 'Data management', 'Responsive design'],
-      stakeholders: ['Project Manager', 'Development Team', 'End Users'],
-      constraints: ['Budget limitations', 'Timeline constraints']
+      projectType: "web_app",
+      industry: "technology",
+      scope: "medium",
+      timeline: "6-12 months",
+      budget: "$50,000 - $200,000",
+      teamSize: "5-8 developers",
+      technicalComplexity: "medium",
+      requirements: [
+        "User authentication",
+        "Data management",
+        "Responsive design",
+      ],
+      stakeholders: ["Project Manager", "Development Team", "End Users"],
+      constraints: ["Budget limitations", "Timeline constraints"],
     };
   }
 
@@ -609,8 +674,8 @@ Estimated Hours: [X hours]`;
           <li>Set realistic timelines</li>
         </ul>
       </div>`,
-      priority: 'medium' as const,
-      estimatedHours: this.getDefaultHours(title)
+      priority: "medium" as const,
+      estimatedHours: this.getDefaultHours(title),
     };
   }
 }

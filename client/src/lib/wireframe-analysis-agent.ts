@@ -51,7 +51,7 @@ export class WireframeAnalysisAgent {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E",
+      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
     );
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
@@ -71,7 +71,7 @@ export class WireframeAnalysisAgent {
         localStorage.getItem("bpmn-project-plan") ||
         "";
       const extractedStakeholders = localStorage.getItem(
-        "bpmn-extracted-stakeholders",
+        "bpmn-extracted-stakeholders"
       );
       const personaBpmnFlows = localStorage.getItem("bpmn-persona-flows");
 
@@ -86,7 +86,7 @@ export class WireframeAnalysisAgent {
       // Check if we have any flow-related data
       if (!personaFlowTypes && !stakeholderFlowData && !personaBpmnFlows) {
         throw new Error(
-          "No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page and generating flow details.",
+          "No stakeholder flow data found. Please complete the Stakeholder Flow Analysis first by going to the User Journey page and generating flow details."
         );
       }
 
@@ -136,11 +136,11 @@ export class WireframeAnalysisAgent {
         Object.keys(flowTypes).length === 0
       ) {
         console.log(
-          "No valid flow data found, generating basic analysis from stakeholders",
+          "No valid flow data found, generating basic analysis from stakeholders"
         );
         return this.generateBasicAnalysisFromStakeholders(
           stakeholders,
-          projectDescription,
+          projectDescription
         );
       }
 
@@ -148,7 +148,7 @@ export class WireframeAnalysisAgent {
         flowData,
         flowTypes,
         projectDescription,
-        stakeholders,
+        stakeholders
       );
       console.log("Generated analysis prompt, calling Gemini API...");
 
@@ -165,7 +165,7 @@ export class WireframeAnalysisAgent {
       if (error instanceof Error) {
         if (error.message.includes("API key")) {
           throw new Error(
-            "API key issue. Please check your Gemini API configuration.",
+            "API key issue. Please check your Gemini API configuration."
           );
         } else if (
           error.message.includes("quota") ||
@@ -177,7 +177,7 @@ export class WireframeAnalysisAgent {
           error.message.includes("fetch")
         ) {
           throw new Error(
-            "Network error. Please check your internet connection.",
+            "Network error. Please check your internet connection."
           );
         } else if (error.message.includes("stakeholder flow data")) {
           throw error; // Pass through our custom error messages
@@ -185,14 +185,16 @@ export class WireframeAnalysisAgent {
       }
 
       throw new Error(
-        `Analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Analysis failed: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
       );
     }
   }
 
   private generateBasicAnalysisFromStakeholders(
     stakeholders: string[],
-    projectDescription: string,
+    projectDescription: string
   ): WireframeAnalysisResult {
     console.log("Generating basic analysis from stakeholders:", stakeholders);
 
@@ -311,7 +313,7 @@ export class WireframeAnalysisAgent {
     flowData: any,
     flowTypes: any,
     projectDescription: string,
-    stakeholders: string[],
+    stakeholders: string[]
   ): string {
     return `
 You are an expert UX/UI analyst and wireframe designer. Analyze the following stakeholder flow data and determine what pages/screens are needed for a comprehensive digital solution.
@@ -394,7 +396,7 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
   private parseAnalysisResult(
     analysisText: string,
     flowData: any,
-    flowTypes: any,
+    flowTypes: any
   ): WireframeAnalysisResult {
     try {
       // Extract JSON from the response
@@ -415,7 +417,7 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
           analysisResult.pageRequirements?.length ||
           0,
         pageRequirements: this.validatePageRequirements(
-          analysisResult.pageRequirements || [],
+          analysisResult.pageRequirements || []
         ),
         stakeholders: analysisResult.stakeholders || [],
         commonElements: analysisResult.commonElements || [],
@@ -492,7 +494,7 @@ Provide a comprehensive analysis that covers all stakeholder needs and business 
 
   private generateFallbackAnalysis(
     flowData: any,
-    flowTypes: any,
+    flowTypes: any
   ): WireframeAnalysisResult {
     const pageRequirements: PageRequirement[] = [];
     const stakeholders = Object.keys(flowTypes);

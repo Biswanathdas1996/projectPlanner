@@ -1,20 +1,25 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+const genAI = new GoogleGenerativeAI(
+  import.meta.env.VITE_GEMINI_API_KEY ||
+    "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+);
 
-export async function generateCustomSuggestions(projectDescription: string): Promise<string[]> {
+export async function generateCustomSuggestions(
+  projectDescription: string
+): Promise<string[]> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.8,
       topK: 40,
       topP: 0.95,
       maxOutputTokens: 2048,
-    }
+    },
   });
 
   const prompt = `Analyze this project description and generate 10-15 highly relevant, actionable enhancement suggestions: "${projectDescription}"
@@ -56,17 +61,19 @@ Each suggestion should be:
 
   // Clean up the response
   text = text.trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```json")) {
+    text = text.replace(/^```json\s*/, "").replace(/```\s*$/, "");
   }
-  if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```")) {
+    text = text.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
   try {
     const suggestions = JSON.parse(text);
     if (Array.isArray(suggestions)) {
-      return suggestions.filter(s => typeof s === 'string' && s.trim().length > 0);
+      return suggestions.filter(
+        (s) => typeof s === "string" && s.trim().length > 0
+      );
     }
     throw new Error("Response is not an array");
   } catch (parseError) {
@@ -77,26 +84,26 @@ Each suggestion should be:
       "Add real-time data synchronization",
       "Create comprehensive reporting dashboard",
       "Integrate third-party APIs for enhanced functionality",
-      "Implement advanced search and filtering capabilities"
+      "Implement advanced search and filtering capabilities",
     ];
   }
 }
 
 export async function generateProjectPlan(
-  projectDescription: string,
+  projectDescription: string
 ): Promise<string> {
   if (!projectDescription.trim()) {
     throw new Error("Project description is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
       topP: 0.95,
       maxOutputTokens: 4096,
-    }
+    },
   });
 
   const prompt = `Create a comprehensive project plan for: "${projectDescription}"
@@ -129,18 +136,18 @@ Return only the complete HTML document with embedded CSS.`;
 
   // Clean up the response
   text = text.trim();
-  if (text.startsWith('```html')) {
-    text = text.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```html")) {
+    text = text.replace(/^```html\s*/, "").replace(/```\s*$/, "");
   }
-  if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```")) {
+    text = text.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
   return text;
 }
 
 export async function generateProjectPlanLegacy(
-  projectDescription: string,
+  projectDescription: string
 ): Promise<string> {
   return generateProjectPlan(projectDescription);
 }
@@ -150,14 +157,14 @@ export async function generateBpmnJson(projectPlan: string): Promise<string> {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-2.0-flash",
+  const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
     generationConfig: {
       temperature: 0.3,
       topK: 30,
       topP: 0.8,
       maxOutputTokens: 3072,
-    }
+    },
   });
 
   const prompt = `Based on this project plan, generate a comprehensive BPMN workflow structure in JSON format:
@@ -206,11 +213,11 @@ Return ONLY valid JSON in this exact structure:
 
   // Clean up the response
   text = text.trim();
-  if (text.startsWith('```json')) {
-    text = text.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```json")) {
+    text = text.replace(/^```json\s*/, "").replace(/```\s*$/, "");
   }
-  if (text.startsWith('```')) {
-    text = text.replace(/^```\s*/, '').replace(/```\s*$/, '');
+  if (text.startsWith("```")) {
+    text = text.replace(/^```\s*/, "").replace(/```\s*$/, "");
   }
 
   try {

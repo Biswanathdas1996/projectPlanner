@@ -1,5 +1,5 @@
-import { Request, Response } from 'express';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { Request, Response } from "express";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 interface PageContentCard {
   id: string;
@@ -24,17 +24,20 @@ interface WireframeGenerationRequest {
 
 export async function generateWireframeHTML(req: Request, res: Response) {
   try {
-    const { pageContent, designStyle, deviceType }: WireframeGenerationRequest = req.body;
+    const { pageContent, designStyle, deviceType }: WireframeGenerationRequest =
+      req.body;
 
     if (!pageContent || !pageContent.pageName) {
-      return res.status(400).json({ error: 'Invalid page content data' });
+      return res.status(400).json({ error: "Invalid page content data" });
     }
 
-    const genAI = new GoogleGenerativeAI("AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E");
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+    );
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = buildWireframePrompt(pageContent, designStyle, deviceType);
-    
+
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
@@ -46,39 +49,50 @@ export async function generateWireframeHTML(req: Request, res: Response) {
       success: true,
       htmlCode,
       cssCode,
-      pageName: pageContent.pageName
+      pageName: pageContent.pageName,
     });
-
   } catch (error) {
-    console.error('Error generating wireframe HTML:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate wireframe HTML',
-      details: error instanceof Error ? error.message : 'Unknown error'
+    console.error("Error generating wireframe HTML:", error);
+    res.status(500).json({
+      error: "Failed to generate wireframe HTML",
+      details: error instanceof Error ? error.message : "Unknown error",
     });
   }
 }
 
-function buildWireframePrompt(pageContent: PageContentCard, designStyle: string, deviceType: string): string {
-  return `Generate a complete HTML wireframe with embedded CSS for a ${pageContent.pageType} page.
+function buildWireframePrompt(
+  pageContent: PageContentCard,
+  designStyle: string,
+  deviceType: string
+): string {
+  return `Generate a complete HTML wireframe with embedded CSS for a ${
+    pageContent.pageType
+  } page.
 
 **Page Details:**
 - Page Name: ${pageContent.pageName}
 - Purpose: ${pageContent.purpose}
-- Target Users: ${pageContent.stakeholders.join(', ')}
+- Target Users: ${pageContent.stakeholders.join(", ")}
 - Design Style: ${designStyle}
 - Device Type: ${deviceType}
 
 **Content Elements to Include:**
 
-**Headers:** ${pageContent.headers.join(', ')}
+**Headers:** ${pageContent.headers.join(", ")}
 
-**Buttons:** ${pageContent.buttons.map(btn => `${btn.label} (${btn.style} style)`).join(', ')}
+**Buttons:** ${pageContent.buttons
+    .map((btn) => `${btn.label} (${btn.style} style)`)
+    .join(", ")}
 
-**Forms:** ${pageContent.forms.map(form => `${form.title} with fields: ${form.fields.join(', ')}`).join(' | ')}
+**Forms:** ${pageContent.forms
+    .map((form) => `${form.title} with fields: ${form.fields.join(", ")}`)
+    .join(" | ")}
 
-**Lists:** ${pageContent.lists.map(list => `${list.title}: ${list.items.join(', ')}`).join(' | ')}
+**Lists:** ${pageContent.lists
+    .map((list) => `${list.title}: ${list.items.join(", ")}`)
+    .join(" | ")}
 
-**Navigation:** ${pageContent.navigation.join(', ')}
+**Navigation:** ${pageContent.navigation.join(", ")}
 
 **Requirements:**
 1. Create a complete HTML page with modern, responsive design
@@ -98,29 +112,33 @@ Provide the HTML code first, followed by additional CSS if needed.
 Generate a professional, realistic wireframe that could be used as a starting point for actual development.`;
 }
 
-function extractCodeFromResponse(response: string): { htmlCode: string; cssCode: string } {
+function extractCodeFromResponse(response: string): {
+  htmlCode: string;
+  cssCode: string;
+} {
   // Extract HTML code
-  const htmlMatch = response.match(/```html\s*([\s\S]*?)\s*```/i) || 
-                   response.match(/<html[\s\S]*?<\/html>/i) ||
-                   response.match(/<!DOCTYPE html[\s\S]*?<\/html>/i);
-  
-  let htmlCode = htmlMatch ? htmlMatch[1] || htmlMatch[0] : '';
-  
+  const htmlMatch =
+    response.match(/```html\s*([\s\S]*?)\s*```/i) ||
+    response.match(/<html[\s\S]*?<\/html>/i) ||
+    response.match(/<!DOCTYPE html[\s\S]*?<\/html>/i);
+
+  let htmlCode = htmlMatch ? htmlMatch[1] || htmlMatch[0] : "";
+
   // If no HTML found, try to extract from general code blocks
   if (!htmlCode) {
     const codeMatch = response.match(/```\s*([\s\S]*?)\s*```/);
-    if (codeMatch && codeMatch[1].includes('<html')) {
+    if (codeMatch && codeMatch[1].includes("<html")) {
       htmlCode = codeMatch[1];
     }
   }
 
   // Extract CSS code (separate from HTML)
   const cssMatch = response.match(/```css\s*([\s\S]*?)\s*```/i);
-  let cssCode = cssMatch ? cssMatch[1] : '';
+  let cssCode = cssMatch ? cssMatch[1] : "";
 
   // If HTML doesn't include DOCTYPE, add it
-  if (htmlCode && !htmlCode.includes('<!DOCTYPE')) {
-    if (!htmlCode.includes('<html')) {
+  if (htmlCode && !htmlCode.includes("<!DOCTYPE")) {
+    if (!htmlCode.includes("<html")) {
       htmlCode = `<!DOCTYPE html>
 <html lang="en">
 <head>

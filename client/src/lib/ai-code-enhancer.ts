@@ -26,7 +26,7 @@ export class AICodeEnhancer {
   }
 
   async enhanceCode(
-    request: CodeEnhancementRequest,
+    request: CodeEnhancementRequest
   ): Promise<EnhancedCodeResponse> {
     const prompt = this.buildEnhancementPrompt(request);
 
@@ -42,22 +42,24 @@ export class AICodeEnhancer {
       console.error("Error enhancing code:", error);
       if (error?.message?.includes("API_KEY_INVALID")) {
         throw new Error(
-          "Invalid API key. Please check your Gemini API configuration.",
+          "Invalid API key. Please check your Gemini API configuration."
         );
       }
       if (error?.message?.includes("SAFETY")) {
         throw new Error(
-          "Content filtered by safety settings. Please try a different enhancement request.",
+          "Content filtered by safety settings. Please try a different enhancement request."
         );
       }
       if (error?.message?.includes("QUOTA_EXCEEDED")) {
         throw new Error("API quota exceeded. Please try again later.");
       }
       if (error?.status === 404) {
-        throw new Error("API endpoint not found. Please check your API configuration.");
+        throw new Error(
+          "API endpoint not found. Please check your API configuration."
+        );
       }
       throw new Error(
-        `Enhancement failed: ${error?.message || "Unknown error occurred"}`,
+        `Enhancement failed: ${error?.message || "Unknown error occurred"}`
       );
     }
   }

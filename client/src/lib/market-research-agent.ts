@@ -51,52 +51,67 @@ export class MarketResearchAgent {
     // Initialize the agent
   }
 
-  async performMarketResearch(projectDescription: string): Promise<MarketResearchData> {
+  async performMarketResearch(
+    projectDescription: string
+  ): Promise<MarketResearchData> {
     if (!projectDescription.trim()) {
-      throw new Error('Project description is required for market research');
+      throw new Error("Project description is required for market research");
     }
 
     try {
       // Use Perplexity API for web search and analysis
-      const researchData = await this.searchAndAnalyzeMarket(projectDescription);
+      const researchData = await this.searchAndAnalyzeMarket(
+        projectDescription
+      );
       return researchData;
     } catch (error) {
-      console.error('Market research failed:', error);
-      throw new Error('Failed to perform market research. Please check your internet connection and try again.');
+      console.error("Market research failed:", error);
+      throw new Error(
+        "Failed to perform market research. Please check your internet connection and try again."
+      );
     }
   }
 
-  private async searchAndAnalyzeMarket(projectDescription: string): Promise<MarketResearchData> {
+  private async searchAndAnalyzeMarket(
+    projectDescription: string
+  ): Promise<MarketResearchData> {
     try {
       // Perform web search using free search APIs
       const searchResults = await this.performWebSearch(projectDescription);
-      
+
       // Analyze the search results to extract structured market data
-      const marketData = await this.analyzeSearchResults(searchResults, projectDescription);
-      
+      const marketData = await this.analyzeSearchResults(
+        searchResults,
+        projectDescription
+      );
+
       return {
         ...marketData,
         projectIdea: projectDescription,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
-      console.error('Web search and analysis failed:', error);
-      throw new Error('Failed to search web and analyze market data');
+      console.error("Web search and analysis failed:", error);
+      throw new Error("Failed to search web and analyze market data");
     }
   }
 
   private async performWebSearch(projectDescription: string): Promise<string> {
     // Since web search APIs often have CORS restrictions in browsers,
-    // we'll use AI to generate comprehensive market research based on 
+    // we'll use AI to generate comprehensive market research based on
     // knowledge of similar companies and market patterns
     return await this.generateMarketInsightsFromDescription(projectDescription);
   }
 
-  private async generateMarketInsightsFromDescription(projectDescription: string): Promise<string> {
+  private async generateMarketInsightsFromDescription(
+    projectDescription: string
+  ): Promise<string> {
     // Use Gemini to generate market insights based on the project description
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI('AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E');
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' }); 
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+    );
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const prompt = `
 Act as a senior market research analyst and provide comprehensive competitive intelligence for this project:
@@ -185,16 +200,21 @@ CRITICAL: Only include REAL company names that actually exist in the industry. D
       const response = result.response.text();
       return response;
     } catch (error) {
-      console.error('AI market insights generation failed:', error);
-      throw new Error('Failed to generate market insights');
+      console.error("AI market insights generation failed:", error);
+      throw new Error("Failed to generate market insights");
     }
   }
 
-  private async analyzeSearchResults(searchResults: string, projectDescription: string): Promise<Omit<MarketResearchData, 'projectIdea' | 'timestamp'>> {
+  private async analyzeSearchResults(
+    searchResults: string,
+    projectDescription: string
+  ): Promise<Omit<MarketResearchData, "projectIdea" | "timestamp">> {
     // Use Gemini to analyze and structure the search results
-    const { GoogleGenerativeAI } = await import('@google/generative-ai');
-    const genAI = new GoogleGenerativeAI('AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E');
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const { GoogleGenerativeAI } = await import("@google/generative-ai");
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+    );
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     const analysisPrompt = `
 Based on the web search results below, analyze the market for the following project idea and provide a comprehensive market research report:
@@ -268,59 +288,75 @@ CRITICAL REQUIREMENTS:
     try {
       const result = await model.generateContent(analysisPrompt);
       const response = result.response.text();
-      
+
       // Extract JSON from response
       const jsonMatch = response.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in analysis response');
+        throw new Error("No valid JSON found in analysis response");
       }
 
       const analysisData = JSON.parse(jsonMatch[0]);
-      
+
       // Validate the structure
-      if (!analysisData.marketOverview || !analysisData.competitors || !analysisData.marketInsights) {
-        throw new Error('Invalid analysis data structure');
+      if (
+        !analysisData.marketOverview ||
+        !analysisData.competitors ||
+        !analysisData.marketInsights
+      ) {
+        throw new Error("Invalid analysis data structure");
       }
 
       // Filter out any competitors with placeholder or generic names
       if (analysisData.competitors) {
-        analysisData.competitors = analysisData.competitors.filter((competitor: any) => {
-          const name = competitor.name.toLowerCase();
-          const isPlaceholder = 
-            name.includes('company') && (name.includes('name') || name.includes('a') || name.includes('b') || name.includes('c') || /\d/.test(name)) ||
-            name.includes('[') || name.includes(']') ||
-            name.includes('techcorp') || name.includes('startup') ||
-            name.includes('placeholder') || name.includes('example') ||
-            name === 'n/a' || name === 'unknown' || name === '';
-          
-          return !isPlaceholder && competitor.name.length > 2;
-        });
+        analysisData.competitors = analysisData.competitors.filter(
+          (competitor: any) => {
+            const name = competitor.name.toLowerCase();
+            const isPlaceholder =
+              (name.includes("company") &&
+                (name.includes("name") ||
+                  name.includes("a") ||
+                  name.includes("b") ||
+                  name.includes("c") ||
+                  /\d/.test(name))) ||
+              name.includes("[") ||
+              name.includes("]") ||
+              name.includes("techcorp") ||
+              name.includes("startup") ||
+              name.includes("placeholder") ||
+              name.includes("example") ||
+              name === "n/a" ||
+              name === "unknown" ||
+              name === "";
+
+            return !isPlaceholder && competitor.name.length > 2;
+          }
+        );
       }
 
       return analysisData;
     } catch (error) {
-      console.error('Analysis failed:', error);
-      throw new Error('Failed to analyze search results');
+      console.error("Analysis failed:", error);
+      throw new Error("Failed to analyze search results");
     }
   }
 
-
-
   private async retryableRequest(requestFn: () => Promise<any>): Promise<any> {
     let lastError: any;
-    
+
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         return await requestFn();
       } catch (error) {
         lastError = error;
         if (attempt < this.maxRetries) {
-          console.warn(`Attempt ${attempt} failed, retrying in ${this.retryDelay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+          console.warn(
+            `Attempt ${attempt} failed, retrying in ${this.retryDelay}ms...`
+          );
+          await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
         }
       }
     }
-    
+
     throw lastError;
   }
 }
