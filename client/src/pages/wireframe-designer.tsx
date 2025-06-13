@@ -422,9 +422,16 @@ export default function WireframeDesigner() {
       const enhanced = await enhancer.enhanceCode(request);
       setEnhancedCode(enhanced);
 
+      // Update the selected page code with enhanced versions
+      setSelectedPageCode({
+        pageName: selectedPageCode.pageName,
+        htmlCode: enhanced.html,
+        cssCode: enhanced.css
+      });
+
       toast({
         title: "Code Enhanced Successfully",
-        description: "Your code has been enhanced with improved functionality and design.",
+        description: "HTML and CSS tabs now show the enhanced code.",
       });
     } catch (err) {
       console.error("Error enhancing code:", err);
@@ -1667,136 +1674,35 @@ export default function WireframeDesigner() {
                   </div>
                 </div>
 
-                {/* Enhanced Code Results */}
+                {/* Enhancement Success Message */}
                 {enhancedCode && (
-                  <div className="space-y-4 mb-4">
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
-                      <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
-                      {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
-                        <div>
-                          <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
-                          <ul className="text-sm text-green-700 space-y-1">
-                            {enhancedCode.improvements.map((improvement: string, idx: number) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">•</span>
-                                {improvement}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-
-                    <Tabs defaultValue="enhanced-html" className="space-y-4">
-                      <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="enhanced-html">Enhanced HTML</TabsTrigger>
-                        <TabsTrigger value="enhanced-css">Enhanced CSS</TabsTrigger>
-                        <TabsTrigger value="enhanced-js">JavaScript</TabsTrigger>
-                      </TabsList>
-                      
-                      <TabsContent value="enhanced-html">
-                        <div className="relative">
-                          <Button
-                            onClick={() => navigator.clipboard.writeText(enhancedCode.html)}
-                            className="absolute top-2 right-2 z-10"
-                            size="sm"
-                            variant="outline"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                            <code>{enhancedCode.html}</code>
-                          </pre>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="enhanced-css">
-                        <div className="relative">
-                          <Button
-                            onClick={() => navigator.clipboard.writeText(enhancedCode.css)}
-                            className="absolute top-2 right-2 z-10"
-                            size="sm"
-                            variant="outline"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                            <code>{enhancedCode.css}</code>
-                          </pre>
-                        </div>
-                      </TabsContent>
-                      
-                      <TabsContent value="enhanced-js">
-                        <div className="relative">
-                          <Button
-                            onClick={() => navigator.clipboard.writeText(enhancedCode.js)}
-                            className="absolute top-2 right-2 z-10"
-                            size="sm"
-                            variant="outline"
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                            <code>{enhancedCode.js}</code>
-                          </pre>
-                        </div>
-                      </TabsContent>
-                    </Tabs>
-
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => {
-                          const combinedHtml = `${enhancedCode.html}
-<style>
-${enhancedCode.css}
-</style>
-<script>
-${enhancedCode.js}
-</script>`;
-                          const newWindow = window.open('', '_blank');
-                          if (newWindow) {
-                            newWindow.document.write(combinedHtml);
-                            newWindow.document.close();
-                          }
-                        }}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        <Frame className="h-4 w-4 mr-2" />
-                        Preview Enhanced
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          const combinedHtml = `${enhancedCode.html}
-<style>
-${enhancedCode.css}
-</style>
-<script>
-${enhancedCode.js}
-</script>`;
-                          const blob = new Blob([combinedHtml], { type: 'text/html' });
-                          const url = URL.createObjectURL(blob);
-                          const a = document.createElement('a');
-                          a.href = url;
-                          a.download = `enhanced_${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
-                          a.click();
-                          URL.revokeObjectURL(url);
-                        }}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        <Download className="h-4 w-4 mr-2" />
-                        Download Enhanced
-                      </Button>
-                    </div>
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
+                    <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
+                    {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
+                        <ul className="text-sm text-green-700 space-y-1">
+                          {enhancedCode.improvements.map((improvement: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-green-500 mt-0.5">•</span>
+                              {improvement}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p className="text-sm text-green-600 mt-2 font-medium">
+                      The HTML and CSS tabs below now show your enhanced code.
+                    </p>
                   </div>
                 )}
 
                 <Tabs defaultValue="html" className="space-y-4">
-                  <TabsList>
+                  <TabsList className={enhancedCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
+                    {enhancedCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
                     <TabsTrigger value="preview">Preview</TabsTrigger>
                   </TabsList>
                   
@@ -1832,10 +1738,78 @@ ${enhancedCode.js}
                     </div>
                   </TabsContent>
                   
+                  {enhancedCode && (
+                    <TabsContent value="javascript">
+                      <div className="relative">
+                        <Button
+                          onClick={() => navigator.clipboard.writeText(enhancedCode.js)}
+                          className="absolute top-2 right-2 z-10"
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
+                          <code>{enhancedCode.js}</code>
+                        </pre>
+                      </div>
+                    </TabsContent>
+                  )}
+                  
                   <TabsContent value="preview">
-                    <div className="border rounded-lg overflow-hidden">
-                      <style dangerouslySetInnerHTML={{ __html: selectedPageCode.cssCode }} />
-                      <div dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }} />
+                    <div className="space-y-4">
+                      {enhancedCode && (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              const combinedHtml = `${selectedPageCode.htmlCode}
+<style>
+${selectedPageCode.cssCode}
+</style>
+<script>
+${enhancedCode.js}
+</script>`;
+                              const newWindow = window.open('', '_blank');
+                              if (newWindow) {
+                                newWindow.document.write(combinedHtml);
+                                newWindow.document.close();
+                              }
+                            }}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Frame className="h-4 w-4 mr-2" />
+                            Preview with JavaScript
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const combinedHtml = `${selectedPageCode.htmlCode}
+<style>
+${selectedPageCode.cssCode}
+</style>
+<script>
+${enhancedCode.js}
+</script>`;
+                              const blob = new Blob([combinedHtml], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `enhanced_${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Complete
+                          </Button>
+                        </div>
+                      )}
+                      <div className="border rounded-lg overflow-hidden">
+                        <style dangerouslySetInnerHTML={{ __html: selectedPageCode.cssCode }} />
+                        <div dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }} />
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
