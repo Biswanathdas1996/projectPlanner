@@ -1628,11 +1628,175 @@ export default function WireframeDesigner() {
               </div>
               
               <div className="p-4 overflow-auto max-h-[calc(90vh-80px)]">
+                {/* AI Enhancement Section - Always Visible */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">🤖 AI Code Enhancement</h4>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Describe how you'd like to enhance this page. The AI will improve the HTML, CSS, and add JavaScript functionality while preserving all content.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Enhancement Prompt</Label>
+                      <Textarea
+                        value={enhancementPrompt}
+                        onChange={(e) => setEnhancementPrompt(e.target.value)}
+                        placeholder="e.g., Make it more modern with better animations, improve mobile responsiveness, add interactive elements, enhance the color scheme..."
+                        className="mt-1 min-h-[100px] resize-none"
+                        disabled={isEnhancing}
+                      />
+                    </div>
+                    
+                    <Button
+                      onClick={handleEnhanceCode}
+                      disabled={isEnhancing || !enhancementPrompt.trim()}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      {isEnhancing ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Enhancing Code...
+                        </>
+                      ) : (
+                        <>
+                          <span className="mr-2">🚀</span>
+                          Enhance Code
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Enhanced Code Results */}
+                {enhancedCode && (
+                  <div className="space-y-4 mb-4">
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
+                      <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
+                      {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
+                        <div>
+                          <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
+                          <ul className="text-sm text-green-700 space-y-1">
+                            {enhancedCode.improvements.map((improvement: string, idx: number) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <span className="text-green-500 mt-0.5">•</span>
+                                {improvement}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                    <Tabs defaultValue="enhanced-html" className="space-y-4">
+                      <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="enhanced-html">Enhanced HTML</TabsTrigger>
+                        <TabsTrigger value="enhanced-css">Enhanced CSS</TabsTrigger>
+                        <TabsTrigger value="enhanced-js">JavaScript</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="enhanced-html">
+                        <div className="relative">
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(enhancedCode.html)}
+                            className="absolute top-2 right-2 z-10"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
+                            <code>{enhancedCode.html}</code>
+                          </pre>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="enhanced-css">
+                        <div className="relative">
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(enhancedCode.css)}
+                            className="absolute top-2 right-2 z-10"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
+                            <code>{enhancedCode.css}</code>
+                          </pre>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="enhanced-js">
+                        <div className="relative">
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(enhancedCode.js)}
+                            className="absolute top-2 right-2 z-10"
+                            size="sm"
+                            variant="outline"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                          <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
+                            <code>{enhancedCode.js}</code>
+                          </pre>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => {
+                          const combinedHtml = `${enhancedCode.html}
+<style>
+${enhancedCode.css}
+</style>
+<script>
+${enhancedCode.js}
+</script>`;
+                          const newWindow = window.open('', '_blank');
+                          if (newWindow) {
+                            newWindow.document.write(combinedHtml);
+                            newWindow.document.close();
+                          }
+                        }}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Frame className="h-4 w-4 mr-2" />
+                        Preview Enhanced
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          const combinedHtml = `${enhancedCode.html}
+<style>
+${enhancedCode.css}
+</style>
+<script>
+${enhancedCode.js}
+</script>`;
+                          const blob = new Blob([combinedHtml], { type: 'text/html' });
+                          const url = URL.createObjectURL(blob);
+                          const a = document.createElement('a');
+                          a.href = url;
+                          a.download = `enhanced_${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
+                          a.click();
+                          URL.revokeObjectURL(url);
+                        }}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        Download Enhanced
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <Tabs defaultValue="html" className="space-y-4">
                   <TabsList>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
-                    <TabsTrigger value="enhance">🤖 AI Enhance</TabsTrigger>
                     <TabsTrigger value="preview">Preview</TabsTrigger>
                   </TabsList>
                   
@@ -1673,171 +1837,6 @@ export default function WireframeDesigner() {
                       <style dangerouslySetInnerHTML={{ __html: selectedPageCode.cssCode }} />
                       <div dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }} />
                     </div>
-                  </TabsContent>
-
-                  <TabsContent value="enhance" className="space-y-4">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <h4 className="font-semibold text-blue-800 mb-2">🤖 AI Code Enhancement</h4>
-                      <p className="text-sm text-blue-700 mb-4">
-                        Describe how you'd like to enhance this page. The AI will improve the HTML, CSS, and add JavaScript functionality while preserving all content.
-                      </p>
-                      
-                      <div className="space-y-3">
-                        <div>
-                          <Label className="text-sm font-medium">Enhancement Prompt</Label>
-                          <Textarea
-                            value={enhancementPrompt}
-                            onChange={(e) => setEnhancementPrompt(e.target.value)}
-                            placeholder="e.g., Make it more modern with better animations, improve mobile responsiveness, add interactive elements, enhance the color scheme..."
-                            className="mt-1 min-h-[100px] resize-none"
-                            disabled={isEnhancing}
-                          />
-                        </div>
-                        
-                        <Button
-                          onClick={handleEnhanceCode}
-                          disabled={isEnhancing || !enhancementPrompt.trim()}
-                          className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                        >
-                          {isEnhancing ? (
-                            <>
-                              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                              Enhancing Code...
-                            </>
-                          ) : (
-                            <>
-                              <span className="mr-2">🚀</span>
-                              Enhance Code
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-
-                    {enhancedCode && (
-                      <div className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                          <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
-                          <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
-                          {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
-                            <div>
-                              <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
-                              <ul className="text-sm text-green-700 space-y-1">
-                                {enhancedCode.improvements.map((improvement: string, idx: number) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <span className="text-green-500 mt-0.5">•</span>
-                                    {improvement}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </div>
-
-                        <Tabs defaultValue="enhanced-html" className="space-y-4">
-                          <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="enhanced-html">Enhanced HTML</TabsTrigger>
-                            <TabsTrigger value="enhanced-css">Enhanced CSS</TabsTrigger>
-                            <TabsTrigger value="enhanced-js">JavaScript</TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="enhanced-html">
-                            <div className="relative">
-                              <Button
-                                onClick={() => navigator.clipboard.writeText(enhancedCode.html)}
-                                className="absolute top-2 right-2 z-10"
-                                size="sm"
-                                variant="outline"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                              <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                                <code>{enhancedCode.html}</code>
-                              </pre>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="enhanced-css">
-                            <div className="relative">
-                              <Button
-                                onClick={() => navigator.clipboard.writeText(enhancedCode.css)}
-                                className="absolute top-2 right-2 z-10"
-                                size="sm"
-                                variant="outline"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                              <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                                <code>{enhancedCode.css}</code>
-                              </pre>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="enhanced-js">
-                            <div className="relative">
-                              <Button
-                                onClick={() => navigator.clipboard.writeText(enhancedCode.js)}
-                                className="absolute top-2 right-2 z-10"
-                                size="sm"
-                                variant="outline"
-                              >
-                                <Copy className="h-3 w-3" />
-                              </Button>
-                              <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm max-h-96">
-                                <code>{enhancedCode.js}</code>
-                              </pre>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
-
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => {
-                              const combinedHtml = `${enhancedCode.html}
-<style>
-${enhancedCode.css}
-</style>
-<script>
-${enhancedCode.js}
-</script>`;
-                              const newWindow = window.open('', '_blank');
-                              if (newWindow) {
-                                newWindow.document.write(combinedHtml);
-                                newWindow.document.close();
-                              }
-                            }}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Frame className="h-4 w-4 mr-2" />
-                            Preview Enhanced
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              const combinedHtml = `${enhancedCode.html}
-<style>
-${enhancedCode.css}
-</style>
-<script>
-${enhancedCode.js}
-</script>`;
-                              const blob = new Blob([combinedHtml], { type: 'text/html' });
-                              const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `enhanced_${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
-                              a.click();
-                              URL.revokeObjectURL(url);
-                            }}
-                            variant="outline"
-                            className="flex-1"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download Enhanced
-                          </Button>
-                        </div>
-                      </div>
-                    )}
                   </TabsContent>
                 </Tabs>
               </div>
