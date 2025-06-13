@@ -353,9 +353,7 @@ export function WorkflowProgress({
                     ? "text-green-700"
                     : "text-gray-600"
               }`}
-            >
-              User Stories
-            </span>
+            >Stories</span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
