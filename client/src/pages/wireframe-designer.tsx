@@ -15,6 +15,7 @@ import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/ht
 import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeResponse } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
+import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
@@ -263,21 +264,21 @@ export default function WireframeDesigner() {
 
   // Load saved data
   useEffect(() => {
-    const savedWireframes = localStorage.getItem('wireframe_designs');
-    const savedPageContent = localStorage.getItem('page_content_cards');
-    const savedGeneratedWireframes = localStorage.getItem('generated_wireframes');
-    const savedAnalysisResult = localStorage.getItem('analysis_result');
-    const savedPageLayouts = localStorage.getItem('page_layouts');
+    const savedWireframes = storage.getItem('wireframe_designs');
+    const savedPageContent = storage.getItem('page_content_cards');
+    const savedGeneratedWireframes = storage.getItem('generated_wireframes');
+    const savedAnalysisResult = storage.getItem('analysis_result');
+    const savedPageLayouts = storage.getItem('page_layouts');
     
     if (savedWireframes) {
-      setWireframes(JSON.parse(savedWireframes));
+      setWireframes(savedWireframes);
     }
     if (savedPageContent) {
-      setPageContentCards(JSON.parse(savedPageContent));
+      setPageContentCards(savedPageContent);
     }
     if (savedGeneratedWireframes) {
-      const parsedWireframes = JSON.parse(savedGeneratedWireframes);
-      console.log('Loading generated wireframes from localStorage:', parsedWireframes.length, 'wireframes found');
+      const parsedWireframes = savedGeneratedWireframes;
+      console.log('Loading generated wireframes from storage:', parsedWireframes.length, 'wireframes found');
       
       // Check if wireframes have IDs, if not, add them (migration)
       const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
@@ -288,11 +289,11 @@ export default function WireframeDesigner() {
         return wireframe;
       });
       
-      // Save back to localStorage if we added IDs
+      // Save back to storage if we added IDs
       const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
       if (needsUpdate) {
-        console.log('Updating localStorage with IDs for existing wireframes');
-        localStorage.setItem('generated_wireframes', JSON.stringify(wireframesWithIds));
+        console.log('Updating storage with IDs for existing wireframes');
+        storage.setItem('generated_wireframes', wireframesWithIds);
       }
       
       // Check for enhanced wireframes
