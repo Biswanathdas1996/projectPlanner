@@ -13,6 +13,7 @@ import { WorkflowProgress } from "@/components/workflow-progress";
 import { createWireframeAnalysisAgent, type PageRequirement, type WireframeAnalysisResult, type ContentElement } from "@/lib/wireframe-analysis-agent";
 import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
 import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeResponse } from "@/lib/ai-code-enhancer";
+import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -581,39 +582,17 @@ export default function WireframeDesigner() {
     
     try {
       const elementData = JSON.parse(selectedElement);
-      const enhancer = createAICodeEnhancer();
+      const preciseEnhancer = createPreciseElementEnhancer();
       
-      // Create a very specific prompt for the exact element
-      const specificPrompt = `
-CRITICAL: Only modify the EXACT element specified below. Do not change any other elements on the page.
-
-Target Element Details:
-- Tag: ${elementData.tagName}
-- Class: ${elementData.className}
-- ID: ${elementData.id}
-- Content: "${elementData.textContent}"
-- Unique Identifier: data-enhance-id="${elementData.uniqueId}"
-
-Enhancement Request: ${selectedElementPrompt.trim()}
-
-Instructions:
-1. Find the element with data-enhance-id="${elementData.uniqueId}" in the HTML
-2. Only modify the CSS styles for this specific element or add new CSS rules targeting this element
-3. Do NOT change any other elements, their structure, or existing CSS rules
-4. Do NOT modify the overall page layout or other components
-5. Keep all existing HTML structure intact except for the target element
-6. If adding new CSS, use the data-enhance-id attribute as the selector: [data-enhance-id="${elementData.uniqueId}"]
-      `;
-
-      const request = {
+      const request: PreciseElementRequest = {
         htmlCode: selectedPageCode.htmlCode,
         cssCode: selectedPageCode.cssCode,
-        prompt: specificPrompt,
+        elementData: elementData,
+        enhancementPrompt: selectedElementPrompt.trim(),
         pageName: selectedPageCode.pageName
       };
 
-      const enhanced = await enhancer.enhanceCode(request);
-      setEnhancedCode(enhanced);
+      const enhanced = await preciseEnhancer.enhanceElement(request);
 
       // Update the selected page code with enhanced versions
       const updatedPageCode = {
@@ -638,7 +617,8 @@ Instructions:
             jsCode: enhanced.js,
             isEnhanced: true,
             lastUpdated: new Date().toISOString(),
-            lastEnhancedElement: elementData.displayName
+            lastEnhancedElement: elementData.displayName,
+            enhancementExplanation: enhanced.explanation
           };
         }
         return wireframe;
@@ -664,8 +644,8 @@ Instructions:
       setSelectedElementPrompt('');
 
       toast({
-        title: "Element Enhanced",
-        description: `Only the selected ${elementData.displayName} was modified.`,
+        title: "Element Enhanced Successfully",
+        description: enhanced.explanation,
       });
     } catch (err) {
       console.error("Error enhancing selected element:", err);
@@ -2090,9 +2070,21 @@ ${selectedPageCode.jsCode}
                           </Button>
                         </div>
                         {selectionMode ? (
-                          <p className="text-sm text-blue-700">
-                            <span className="font-medium">Click any element below</span> to enhance it (buttons, forms, headers, etc.)
-                          </p>
+                          <div className="space-y-2">
+                            <p className="text-sm text-blue-700">
+                              <span className="font-medium">Click any element below</span> to target it for enhancement
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-blue-600">
+                              <div className="flex items-center gap-1">
+                                <div className="w-3 h-1 bg-blue-400 rounded"></div>
+                                <span>Basic elements</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-3 h-1 bg-green-500 rounded"></div>
+                                <span>Interactive elements (buttons, forms, headers)</span>
+                              </div>
+                            </div>
+                          </div>
                         ) : (
                           <p className="text-sm text-blue-600">
                             Target specific page elements for AI enhancement instead of the entire page
@@ -2118,20 +2110,21 @@ ${selectedPageCode.jsCode}
                             </code>
                           </div>
                           <div className="mb-3">
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              <span className="text-xs text-gray-600">Quick options:</span>
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                              <span className="col-span-2 text-xs text-gray-600 mb-1">Quick enhancement options:</span>
                               {[
                                 "Make it more modern",
                                 "Add hover effects", 
                                 "Improve colors",
                                 "Better typography",
-                                "Add animations"
+                                "Add subtle animations",
+                                "Enhanced styling"
                               ].map((option) => (
                                 <Button
                                   key={option}
                                   variant="outline"
                                   size="sm"
-                                  className="h-6 px-2 text-xs"
+                                  className="h-7 px-2 text-xs justify-start"
                                   onClick={() => setSelectedElementPrompt(option)}
                                 >
                                   {option}
