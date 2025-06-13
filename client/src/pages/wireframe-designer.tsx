@@ -214,67 +214,6 @@ export default function WireframeDesigner() {
     lastEnhancedElement?: string;
     enhancementExplanation?: string;
   }[]>([]);
-  
-  // Delete wireframe handler
-  const handleDeleteWireframe = async (wireframeId: string, pageName: string) => {
-    const confirmed = window.confirm(`Are you sure you want to delete the wireframe "${pageName}"? This action cannot be undone.`);
-    
-    if (!confirmed) return;
-    
-    try {
-      // Remove from detailedWireframes state
-      setDetailedWireframes(prev => prev.filter(wireframe => wireframe.pageName !== pageName));
-      
-      // Remove from generatedWireframes state
-      setGeneratedWireframes(prev => prev.filter(wireframe => wireframe.id !== wireframeId));
-      
-      // Remove from localStorage - generatedWireframes
-      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
-      const updatedWireframes = existingWireframes.filter((w: any) => w.id !== wireframeId);
-      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
-      
-      // Remove from localStorage - enhanced wireframes data
-      const enhancedWireframes = JSON.parse(localStorage.getItem('enhanced_wireframes') || '[]');
-      const updatedEnhanced = enhancedWireframes.filter((w: any) => w.id !== wireframeId);
-      localStorage.setItem('enhanced_wireframes', JSON.stringify(updatedEnhanced));
-      
-      // Remove HTML editor data for this wireframe
-      localStorage.removeItem(`html_editor_${wireframeId}`);
-      
-      // Show success notification
-      toast({
-        title: "Wireframe Deleted",
-        description: `"${pageName}" has been successfully deleted.`,
-        variant: "default",
-      });
-      
-      // Check if all wireframes are deleted, reset to input step
-      if (updatedWireframes.length === 0) {
-        setCurrentStep("input");
-        setAnalysisResult(null);
-        setPageContentCards([]);
-        
-        // Clear related localStorage data
-        localStorage.removeItem('analysis_result');
-        localStorage.removeItem('page_content_cards');
-        localStorage.removeItem('page_layouts');
-        
-        toast({
-          title: "All Wireframes Deleted",
-          description: "Returning to the input step to start fresh.",
-          variant: "default",
-        });
-      }
-      
-    } catch (error) {
-      console.error("Error deleting wireframe:", error);
-      toast({
-        title: "Delete Failed",
-        description: "Failed to delete the wireframe. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -2032,20 +1971,6 @@ document.addEventListener('DOMContentLoaded', function() {
                           <Edit3 className="h-3 w-3 mr-1" />
                           HTML Editor
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="text-xs flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
-                          onClick={() => {
-                            const wireframe = generatedWireframes.find(w => w.pageName === page.pageName);
-                            if (wireframe) {
-                              handleDeleteWireframe(wireframe.id, page.pageName);
-                            }
-                          }}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
-                        </Button>
                       </div>
                     </div>
                   </CardContent>
@@ -3654,15 +3579,6 @@ ${selectedPageCode.jsCode}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />
                           Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs font-medium border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 transition-all duration-200"
-                          onClick={() => handleDeleteWireframe(wireframe.id, wireframe.pageName)}
-                        >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          Delete
                         </Button>
                       </div>
                     </CardContent>
