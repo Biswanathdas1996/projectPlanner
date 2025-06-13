@@ -587,7 +587,7 @@ ${jsCode}
               <Label htmlFor="auto-save" className="text-sm">Auto-save</Label>
             </div>
             
-            <Button onClick={saveToLocalStorage} variant="outline" size="sm">
+            <Button onClick={saveToStorage} variant="outline" size="sm">
               <Save className="h-4 w-4 mr-2" />
               Save
             </Button>
