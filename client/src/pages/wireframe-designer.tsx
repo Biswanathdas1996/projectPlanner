@@ -522,6 +522,10 @@ export default function WireframeDesigner() {
     
     const target = event.target as HTMLElement;
     
+    // Create unique identifier for the element
+    const uniqueId = `enhanced-${Date.now()}`;
+    target.setAttribute('data-enhance-id', uniqueId);
+    
     // Create user-friendly element description
     let elementInfo = '';
     const tagName = target.tagName.toLowerCase();
@@ -544,7 +548,15 @@ export default function WireframeDesigner() {
       elementInfo = textContent ? `${tagName}: "${textContent}"` : tagName;
     }
     
-    setSelectedElement(elementInfo);
+    // Store both display name and technical details
+    setSelectedElement(JSON.stringify({
+      displayName: elementInfo,
+      tagName: tagName,
+      className: target.className,
+      id: target.id,
+      uniqueId: uniqueId,
+      textContent: textContent
+    }));
     setSelectionMode(false);
     
     // Quick visual confirmation
@@ -568,12 +580,35 @@ export default function WireframeDesigner() {
     setIsEnhancing(true);
     
     try {
+      const elementData = JSON.parse(selectedElement);
       const enhancer = createAICodeEnhancer();
       
+      // Create a very specific prompt for the exact element
+      const specificPrompt = `
+CRITICAL: Only modify the EXACT element specified below. Do not change any other elements on the page.
+
+Target Element Details:
+- Tag: ${elementData.tagName}
+- Class: ${elementData.className}
+- ID: ${elementData.id}
+- Content: "${elementData.textContent}"
+- Unique Identifier: data-enhance-id="${elementData.uniqueId}"
+
+Enhancement Request: ${selectedElementPrompt.trim()}
+
+Instructions:
+1. Find the element with data-enhance-id="${elementData.uniqueId}" in the HTML
+2. Only modify the CSS styles for this specific element or add new CSS rules targeting this element
+3. Do NOT change any other elements, their structure, or existing CSS rules
+4. Do NOT modify the overall page layout or other components
+5. Keep all existing HTML structure intact except for the target element
+6. If adding new CSS, use the data-enhance-id attribute as the selector: [data-enhance-id="${elementData.uniqueId}"]
+      `;
+
       const request = {
         htmlCode: selectedPageCode.htmlCode,
         cssCode: selectedPageCode.cssCode,
-        prompt: `Focus only on enhancing the selected element: ${selectedElement}. ${selectedElementPrompt.trim()}. Keep all other elements unchanged and maintain the overall page structure.`,
+        prompt: specificPrompt,
         pageName: selectedPageCode.pageName
       };
 
@@ -591,12 +626,11 @@ export default function WireframeDesigner() {
 
       // Update localStorage with enhanced wireframe data
       const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
-      console.log('Selective enhancement - Existing wireframes:', existingWireframes);
-      console.log('Looking for page:', selectedPageCode.pageName);
+      console.log('Precise element enhancement - Looking for page:', selectedPageCode.pageName);
       
       const updatedWireframes = existingWireframes.map((wireframe: any) => {
         if (wireframe.pageName === selectedPageCode.pageName) {
-          console.log('Found matching wireframe, updating with selective enhancement...');
+          console.log('Found matching wireframe, updating with precise element enhancement...');
           return {
             ...wireframe,
             htmlCode: enhanced.html,
@@ -604,19 +638,13 @@ export default function WireframeDesigner() {
             jsCode: enhanced.js,
             isEnhanced: true,
             lastUpdated: new Date().toISOString(),
-            lastEnhancedElement: selectedElement
+            lastEnhancedElement: elementData.displayName
           };
         }
         return wireframe;
       });
       
-      console.log('Updated wireframes with selective enhancement:', updatedWireframes);
       localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
-      
-      // Verify data was saved correctly
-      const savedData = JSON.parse(localStorage.getItem('wireframeData') || '[]');
-      const savedPage = savedData.find((w: any) => w.pageName === selectedPageCode.pageName);
-      console.log('Verification - saved selectively enhanced page:', savedPage);
       
       // Also update the current generated wireframes state
       setGeneratedWireframes(prev => prev.map(wireframe => {
@@ -636,8 +664,8 @@ export default function WireframeDesigner() {
       setSelectedElementPrompt('');
 
       toast({
-        title: "Element Enhanced Successfully",
-        description: `Enhanced "${selectedElement}" and saved changes.`,
+        title: "Element Enhanced",
+        description: `Only the selected ${elementData.displayName} was modified.`,
       });
     } catch (err) {
       console.error("Error enhancing selected element:", err);
@@ -2078,7 +2106,16 @@ ${selectedPageCode.jsCode}
                           <div className="flex items-center gap-2 mb-3">
                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                             <span className="text-sm font-medium text-green-800">Selected Element</span>
-                            <code className="bg-green-100 px-2 py-1 rounded text-xs text-green-700">{selectedElement}</code>
+                            <code className="bg-green-100 px-2 py-1 rounded text-xs text-green-700">
+                              {(() => {
+                                try {
+                                  const elementData = JSON.parse(selectedElement);
+                                  return elementData.displayName;
+                                } catch {
+                                  return selectedElement;
+                                }
+                              })()}
+                            </code>
                           </div>
                           <div className="mb-3">
                             <div className="flex flex-wrap gap-2 mb-2">
@@ -2141,24 +2178,49 @@ ${selectedPageCode.jsCode}
                       <div className="border rounded-lg overflow-hidden">
                         <style dangerouslySetInnerHTML={{ 
                           __html: selectedPageCode.cssCode + (selectionMode ? `
-                            /* Simplified Selection Mode */
+                            /* Precise Element Selection Mode */
                             .wireframe-container * {
                               cursor: pointer !important;
-                              transition: outline 0.2s ease !important;
+                              transition: all 0.2s ease !important;
+                              position: relative !important;
                             }
                             .wireframe-container *:hover {
-                              outline: 2px solid #3B82F6 !important;
-                              outline-offset: 1px !important;
+                              outline: 2px dashed #3B82F6 !important;
+                              outline-offset: 2px !important;
+                              background-color: rgba(59, 130, 246, 0.05) !important;
                             }
+                            .wireframe-container *:hover::after {
+                              content: "Click to enhance this element" !important;
+                              position: absolute !important;
+                              top: -25px !important;
+                              left: 0 !important;
+                              background: #3B82F6 !important;
+                              color: white !important;
+                              padding: 2px 6px !important;
+                              border-radius: 3px !important;
+                              font-size: 10px !important;
+                              white-space: nowrap !important;
+                              z-index: 1000 !important;
+                              pointer-events: none !important;
+                            }
+                            /* Enhanced targeting for interactive elements */
+                            .wireframe-container button:hover,
+                            .wireframe-container input:hover,
+                            .wireframe-container textarea:hover,
                             .wireframe-container h1:hover,
                             .wireframe-container h2:hover,
-                            .wireframe-container h3:hover,
-                            .wireframe-container button:hover,
-                            .wireframe-container form:hover,
-                            .wireframe-container input:hover,
-                            .wireframe-container textarea:hover {
+                            .wireframe-container h3:hover {
                               outline: 3px solid #10B981 !important;
-                              outline-offset: 2px !important;
+                              background-color: rgba(16, 185, 129, 0.1) !important;
+                            }
+                            .wireframe-container button:hover::after,
+                            .wireframe-container input:hover::after,
+                            .wireframe-container textarea:hover::after,
+                            .wireframe-container h1:hover::after,
+                            .wireframe-container h2:hover::after,
+                            .wireframe-container h3:hover::after {
+                              background: #10B981 !important;
+                              content: "Click to enhance this " attr(data-element-type) !important;
                             }
                           ` : '')
                         }} />
