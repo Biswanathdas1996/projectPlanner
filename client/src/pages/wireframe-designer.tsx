@@ -1935,6 +1935,17 @@ document.addEventListener('DOMContentLoaded', function() {
                           <Eye className="h-3 w-3 mr-1" />
                           View Code
                         </Button>
+                        <Button
+                          size="sm"
+                          className="text-xs flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                          onClick={() => {
+                            const pageNameEncoded = encodeURIComponent(page.pageName);
+                            window.open(`/html-editor?page=${pageNameEncoded}`, '_blank');
+                          }}
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          HTML Editor
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
