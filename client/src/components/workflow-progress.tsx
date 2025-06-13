@@ -185,9 +185,7 @@ export function WorkflowProgress({
                     ? "text-green-700"
                     : "text-gray-600"
               }`}
-            >
-              Market Research
-            </span>
+            >Research</span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
