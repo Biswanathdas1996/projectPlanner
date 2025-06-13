@@ -267,8 +267,7 @@ export function WorkflowProgress({
                     ? "text-green-700"
                     : "text-gray-600"
               }`}
-            >
-              Stakeholder & Process Mapping{" "}
+            > Process Mapping {" "}
             </span>
           </div>
 
