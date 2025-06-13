@@ -3337,7 +3337,18 @@ ${selectedPageCode.jsCode}
                         
                         <div className="relative h-80 bg-white">
                           <iframe
-                            srcDoc={wireframe.htmlCode}
+                            srcDoc={`
+                              <!DOCTYPE html>
+                              <html>
+                              <head>
+                                <style>${wireframe.cssCode}</style>
+                              </head>
+                              <body>
+                                ${wireframe.htmlCode.replace(/<\/?html[^>]*>|<\/?head[^>]*>|<\/?body[^>]*>|<link[^>]*>/gi, '')}
+                                <script>${wireframe.jsCode || ''}</script>
+                              </body>
+                              </html>
+                            `}
                             className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
                               width: '250%', 
@@ -3345,7 +3356,7 @@ ${selectedPageCode.jsCode}
                               overflow: 'hidden'
                             }}
                             title={`Preview of ${wireframe.pageName}`}
-                            sandbox="allow-same-origin"
+                            sandbox="allow-scripts allow-same-origin"
                             scrolling="no"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none"></div>
