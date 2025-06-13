@@ -20,7 +20,7 @@ export class AICodeEnhancer {
   private model: any;
 
   constructor() {
-    const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
+    const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }

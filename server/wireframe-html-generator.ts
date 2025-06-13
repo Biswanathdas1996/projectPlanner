@@ -32,7 +32,7 @@ export async function generateWireframeHTML(req: Request, res: Response) {
     }
 
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
     );
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 

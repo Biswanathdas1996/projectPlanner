@@ -36,7 +36,7 @@ export class PageContentAgent {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
     );
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }

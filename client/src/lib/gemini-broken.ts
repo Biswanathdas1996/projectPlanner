@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(
   import.meta.env.VITE_GEMINI_API_KEY ||
-    "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E"
+    "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
 );
 
 export async function generateCustomSuggestions(
