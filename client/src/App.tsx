@@ -11,6 +11,7 @@ import UserStoryGenerator from "@/pages/user-story-generator";
 import CodeGenerator from "@/pages/code-generator";
 import MarketResearch from "@/pages/market-research";
 import WireframeDesigner from "@/pages/wireframe-designer";
+import HTMLEditor from "@/pages/html-editor";
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
@@ -40,6 +41,8 @@ function Router() {
       <Route path="/editor" component={BpmnEditor} />
       <Route path="/bpmn-editor" component={BpmnEditor} />
       <Route path="/diagram" component={BpmnEditor} />
+      <Route path="/html-editor" component={HTMLEditor} />
+      <Route path="/html-editor/:pageName" component={HTMLEditor} />
       <Route component={NotFound} />
     </Switch>
   );
