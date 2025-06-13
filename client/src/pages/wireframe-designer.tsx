@@ -279,18 +279,36 @@ export default function WireframeDesigner() {
       const parsedWireframes = JSON.parse(savedGeneratedWireframes);
       console.log('Loading generated wireframes from localStorage:', parsedWireframes.length, 'wireframes found');
       
+      // Check if wireframes have IDs, if not, add them (migration)
+      const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
+        if (!wireframe.id) {
+          console.log('Adding missing ID to wireframe:', wireframe.pageName);
+          wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        }
+        return wireframe;
+      });
+      
+      // Save back to localStorage if we added IDs
+      const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
+      if (needsUpdate) {
+        console.log('Updating localStorage with IDs for existing wireframes');
+        localStorage.setItem('generated_wireframes', JSON.stringify(wireframesWithIds));
+      }
+      
       // Check for enhanced wireframes
-      const enhancedCount = parsedWireframes.filter((w: any) => w.isEnhanced).length;
+      const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
       if (enhancedCount > 0) {
         console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
-        console.log('Enhanced wireframes:', parsedWireframes.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+        console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+          id: w.id,
           pageName: w.pageName, 
           isEnhanced: w.isEnhanced, 
           lastUpdated: w.lastUpdated 
         })));
       }
       
-      setGeneratedWireframes(parsedWireframes);
+      console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
+      setGeneratedWireframes(wireframesWithIds);
     }
     if (savedAnalysisResult) {
       setAnalysisResult(JSON.parse(savedAnalysisResult));
@@ -3550,6 +3568,12 @@ ${selectedPageCode.jsCode}
                           size="sm"
                           className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
                           onClick={() => {
+                            console.log('Edit button clicked for wireframe:', wireframe);
+                            console.log('Wireframe ID:', wireframe.id);
+                            console.log('Full wireframe object keys:', Object.keys(wireframe));
+                            if (!wireframe.id) {
+                              console.error('Wireframe ID is missing! Wireframe object:', wireframe);
+                            }
                             window.location.href = `/html-editor?id=${wireframe.id}`;
                           }}
                         >
