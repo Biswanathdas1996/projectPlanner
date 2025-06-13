@@ -391,7 +391,7 @@ export function WorkflowProgress({
               ) : getStepStatus("code") === "active" ? (
                 <Code className="h-4 w-4" />
               ) : (
-                "6"
+                "7"
               )}
             </div>
             <span
