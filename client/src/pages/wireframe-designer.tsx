@@ -190,6 +190,7 @@ export default function WireframeDesigner() {
     pageName: string;
     htmlCode: string;
     cssCode: string;
+    jsCode?: string;
   } | null>(null);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
@@ -1772,11 +1773,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 )}
 
                 <Tabs defaultValue="preview" className="space-y-4">
-                  <TabsList className={enhancedCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
+                  <TabsList className={selectedPageCode?.jsCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
                     <TabsTrigger value="preview">Preview</TabsTrigger>
                     <TabsTrigger value="html">HTML</TabsTrigger>
                     <TabsTrigger value="css">CSS</TabsTrigger>
-                    {enhancedCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
+                    {selectedPageCode?.jsCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
                   </TabsList>
                   
                   <TabsContent value="html">
@@ -1811,11 +1812,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                   </TabsContent>
                   
-                  {enhancedCode && (
+                  {selectedPageCode?.jsCode && (
                     <TabsContent value="javascript">
                       <div className="relative">
                         <Button
-                          onClick={() => navigator.clipboard.writeText(enhancedCode.js)}
+                          onClick={() => navigator.clipboard.writeText(selectedPageCode.jsCode || '')}
                           className="absolute top-2 right-2 z-10"
                           size="sm"
                           variant="outline"
@@ -1823,7 +1824,7 @@ document.addEventListener('DOMContentLoaded', function() {
                           <Copy className="h-3 w-3" />
                         </Button>
                         <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
-                          <code>{enhancedCode.js}</code>
+                          <code>{selectedPageCode.jsCode}</code>
                         </pre>
                       </div>
                     </TabsContent>
@@ -1831,7 +1832,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   
                   <TabsContent value="preview">
                     <div className="space-y-4">
-                      {enhancedCode && (
+                      {selectedPageCode?.jsCode && (
                         <div className="flex gap-2">
                           <Button
                             onClick={() => {
@@ -1840,7 +1841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 ${selectedPageCode.cssCode}
 </style>
 <script>
-${enhancedCode.js}
+${selectedPageCode.jsCode}
 </script>`;
                               const newWindow = window.open('', '_blank');
                               if (newWindow) {
@@ -1861,13 +1862,13 @@ ${enhancedCode.js}
 ${selectedPageCode.cssCode}
 </style>
 <script>
-${enhancedCode.js}
+${selectedPageCode.jsCode}
 </script>`;
                               const blob = new Blob([combinedHtml], { type: 'text/html' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a');
                               a.href = url;
-                              a.download = `enhanced_${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
+                              a.download = `${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
                               a.click();
                               URL.revokeObjectURL(url);
                             }}
@@ -2983,7 +2984,8 @@ ${enhancedCode.js}
                               setSelectedPageCode({
                                 pageName: wireframe.pageName,
                                 htmlCode: wireframe.htmlCode,
-                                cssCode: wireframe.cssCode
+                                cssCode: wireframe.cssCode,
+                                jsCode: wireframe.jsCode
                               });
                               setShowCodeModal(true);
                             }}
