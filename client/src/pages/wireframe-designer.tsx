@@ -204,6 +204,7 @@ export default function WireframeDesigner() {
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
 
   const [generatedWireframes, setGeneratedWireframes] = useState<{ 
+    id: string;
     pageName: string; 
     htmlCode: string; 
     cssCode: string; 
@@ -425,7 +426,7 @@ export default function WireframeDesigner() {
     setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
     
     try {
-      const wireframes: { pageName: string; htmlCode: string; cssCode: string; jsCode: string }[] = [];
+      const wireframes: { id: string; pageName: string; htmlCode: string; cssCode: string; jsCode: string; isEnhanced: boolean }[] = [];
       
       for (let i = 0; i < pageContentCards.length; i++) {
         const card = pageContentCards[i];
@@ -437,7 +438,12 @@ export default function WireframeDesigner() {
         });
         
         const wireframe = await generatePageWireframe(card);
-        wireframes.push(wireframe);
+        const wireframeWithId = {
+          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          ...wireframe,
+          isEnhanced: false
+        };
+        wireframes.push(wireframeWithId);
       }
       
       // Save wireframes to localStorage with complete data
@@ -446,11 +452,10 @@ export default function WireframeDesigner() {
         deviceType: selectedDeviceType,
         colorScheme: selectedColorScheme,
         designType: selectedDesignType,
-        timestamp: new Date().toISOString(),
-        isEnhanced: false
+        timestamp: new Date().toISOString()
       }));
       console.log('Saving initial wireframes to localStorage:', wireframeData);
-      localStorage.setItem('wireframeData', JSON.stringify(wireframeData));
+      localStorage.setItem('generated_wireframes', JSON.stringify(wireframes));
       
       setGeneratedWireframes(wireframes);
       
