@@ -300,6 +300,16 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       doc.open();
       doc.write(combinedHtml);
       doc.close();
+      
+      // Re-establish selection mode state after iframe content is rewritten
+      setTimeout(() => {
+        if (previewRef.current?.contentWindow) {
+          previewRef.current.contentWindow.postMessage({
+            type: 'setSelectionMode',
+            enabled: selectionMode
+          }, '*');
+        }
+      }, 100);
     }
   };
 
@@ -309,6 +319,11 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       return () => clearTimeout(timer);
     }
   }, [htmlCode, cssCode, jsCode, previewMode, isPreviewLive]);
+
+  // Initial preview load
+  useEffect(() => {
+    updatePreview();
+  }, []);
 
   // Listen for element selection from preview
   useEffect(() => {
@@ -334,12 +349,25 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
 
   // Send selection mode changes to iframe
   useEffect(() => {
-    if (previewRef.current?.contentWindow) {
-      previewRef.current.contentWindow.postMessage({
-        type: 'setSelectionMode',
-        enabled: selectionMode
-      }, '*');
-    }
+    const sendSelectionMode = () => {
+      if (previewRef.current?.contentWindow) {
+        try {
+          previewRef.current.contentWindow.postMessage({
+            type: 'setSelectionMode',
+            enabled: selectionMode
+          }, '*');
+        } catch (error) {
+          // Iframe might not be ready yet, try again shortly
+          setTimeout(sendSelectionMode, 50);
+        }
+      }
+    };
+    
+    // Send immediately and also with a delay to ensure iframe is ready
+    sendSelectionMode();
+    const timer = setTimeout(sendSelectionMode, 200);
+    
+    return () => clearTimeout(timer);
   }, [selectionMode]);
 
   const handleFullPageEnhancement = async () => {
