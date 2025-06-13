@@ -385,6 +385,7 @@ export default function WireframeDesigner() {
         timestamp: new Date().toISOString(),
         isEnhanced: false
       }));
+      console.log('Saving initial wireframes to localStorage:', wireframeData);
       localStorage.setItem('wireframeData', JSON.stringify(wireframeData));
       
       setGeneratedWireframes(wireframes);
@@ -445,8 +446,12 @@ export default function WireframeDesigner() {
 
       // Update localStorage with enhanced wireframe data
       const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      console.log('Existing wireframes:', existingWireframes);
+      console.log('Looking for page:', selectedPageCode.pageName);
+      
       const updatedWireframes = existingWireframes.map((wireframe: any) => {
         if (wireframe.pageName === selectedPageCode.pageName) {
+          console.log('Found matching wireframe, updating...');
           return {
             ...wireframe,
             htmlCode: enhanced.html,
@@ -458,11 +463,31 @@ export default function WireframeDesigner() {
         }
         return wireframe;
       });
+      
+      console.log('Updated wireframes:', updatedWireframes);
       localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
+      
+      // Verify data was saved correctly
+      const savedData = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      const savedPage = savedData.find((w: any) => w.pageName === selectedPageCode.pageName);
+      console.log('Verification - saved enhanced page:', savedPage);
+      
+      // Also update the current generated wireframes state
+      setGeneratedWireframes(prev => prev.map(wireframe => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js
+          };
+        }
+        return wireframe;
+      }));
 
       toast({
         title: "Code Enhanced Successfully",
-        description: "HTML and CSS tabs now show the enhanced code.",
+        description: "Enhanced code saved to localStorage and tabs updated.",
       });
     } catch (err) {
       console.error("Error enhancing code:", err);
