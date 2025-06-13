@@ -312,43 +312,43 @@ export default function WireframeDesigner() {
       setGeneratedWireframes(wireframesWithIds);
     }
     if (savedAnalysisResult) {
-      setAnalysisResult(JSON.parse(savedAnalysisResult));
+      setAnalysisResult(savedAnalysisResult);
     }
     if (savedPageLayouts) {
-      setPageLayouts(JSON.parse(savedPageLayouts));
+      setPageLayouts(savedPageLayouts);
     }
   }, [detailedWireframes]);
 
-  // Save wireframes to localStorage
+  // Save wireframes to storage
   useEffect(() => {
     if (wireframes.length > 0) {
-      localStorage.setItem('wireframe_designs', JSON.stringify(wireframes));
+      storage.setItem('wireframe_designs', wireframes);
     }
   }, [wireframes]);
 
-  // Save page content cards to localStorage
+  // Save page content cards to storage
   useEffect(() => {
     if (pageContentCards.length > 0) {
-      localStorage.setItem('page_content_cards', JSON.stringify(pageContentCards));
+      storage.setItem('page_content_cards', pageContentCards);
     }
   }, [pageContentCards]);
 
-  // Save generated wireframes to localStorage
+  // Save generated wireframes to storage
   useEffect(() => {
     if (generatedWireframes.length > 0) {
-      localStorage.setItem('generated_wireframes', JSON.stringify(generatedWireframes));
+      storage.setItem('generated_wireframes', generatedWireframes);
     }
   }, [generatedWireframes]);
 
-  // Save page layouts to localStorage
+  // Save page layouts to storage
   useEffect(() => {
-    localStorage.setItem('page_layouts', JSON.stringify(pageLayouts));
+    storage.setItem('page_layouts', pageLayouts);
   }, [pageLayouts]);
 
-  // Save analysis results to localStorage
+  // Save analysis results to storage
   useEffect(() => {
     if (analysisResult) {
-      localStorage.setItem('analysis_result', JSON.stringify(analysisResult));
+      storage.setItem('analysis_result', analysisResult);
     }
   }, [analysisResult]);
 
@@ -358,9 +358,9 @@ export default function WireframeDesigner() {
     setError("");
     
     try {
-      const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
-      const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
-      const projectDescription = localStorage.getItem('project_description') || '';
+      const stakeholderFlows = storage.getItem('stakeholder_flows') || [];
+      const flowTypes = storage.getItem('flow_types') || {};
+      const projectDescription = storage.getItem('project_description') || '';
 
       const analysisAgent = createWireframeAnalysisAgent();
       const result = await analysisAgent.analyzeStakeholderFlows();
@@ -695,8 +695,8 @@ export default function WireframeDesigner() {
       };
       setSelectedPageCode(updatedPageCode);
 
-      // Update localStorage with enhanced wireframe data using correct key
-      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      // Update storage with enhanced wireframe data using correct key
+      const existingWireframes = storage.getItem('generated_wireframes') || [];
       console.log('Precise element enhancement - Looking for page:', selectedPageCode.pageName);
       
       const updatedWireframes = existingWireframes.map((wireframe: any) => {
@@ -716,12 +716,12 @@ export default function WireframeDesigner() {
         return wireframe;
       });
       
-      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      storage.setItem('generated_wireframes', updatedWireframes);
       
-      // Verify localStorage was updated correctly
-      const verifyData = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      // Verify storage was updated correctly
+      const verifyData = storage.getItem('generated_wireframes') || [];
       const verifyPage = verifyData.find((w: any) => w.pageName === selectedPageCode.pageName);
-      console.log('Verification - Enhanced wireframe saved to localStorage:', {
+      console.log('Verification - Enhanced wireframe saved to storage:', {
         pageName: verifyPage?.pageName,
         isEnhanced: verifyPage?.isEnhanced,
         lastUpdated: verifyPage?.lastUpdated,

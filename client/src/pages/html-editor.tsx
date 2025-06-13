@@ -12,6 +12,7 @@ import { NavigationBar } from "@/components/navigation-bar";
 import { useToast } from "@/hooks/use-toast";
 import { createAICodeEnhancer } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer } from "@/lib/precise-element-enhancer";
+import { storage } from "@/lib/storage-utils";
 import {
   ArrowLeft,
   Save,
@@ -83,27 +84,57 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     if (!autoSave || !wireframeId) return;
     
     const saveTimer = setTimeout(() => {
-      saveToLocalStorage();
+      if (!wireframeId) return;
+      
+      const editorData = {
+        id: wireframeId,
+        pageName,
+        htmlCode,
+        cssCode,
+        jsCode,
+        lastSaved: new Date().toISOString()
+      };
+      
+      storage.setItem(`html_editor_${wireframeId}`, editorData);
+      
+      // Also update the main wireframes data using ID
+      const existingWireframes = storage.getItem('generated_wireframes') || [];
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.id === wireframeId) {
+          return {
+            ...wireframe,
+            htmlCode,
+            cssCode,
+            jsCode,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString(),
+            lastEnhancedElement: 'HTML Editor'
+          };
+        }
+        return wireframe;
+      });
+      
+      storage.setItem('generated_wireframes', updatedWireframes);
+      setLastSaved(new Date());
     }, 2000);
 
     return () => clearTimeout(saveTimer);
   }, [htmlCode, cssCode, jsCode, pageName, wireframeId, autoSave]);
 
-  // Load data from localStorage on mount
+  // Load data from storage on mount
   useEffect(() => {
     if (!initialData?.id) return;
     
-    const savedData = localStorage.getItem(`html_editor_${initialData.id}`);
+    const savedData = storage.getItem(`html_editor_${initialData.id}`);
     if (savedData) {
-      const parsed = JSON.parse(savedData);
-      setHtmlCode(parsed.htmlCode || initialData.htmlCode);
-      setCssCode(parsed.cssCode || initialData.cssCode);
-      setJsCode(parsed.jsCode || initialData.jsCode || '');
-      setLastSaved(new Date(parsed.lastSaved));
+      setHtmlCode(savedData.htmlCode || initialData.htmlCode);
+      setCssCode(savedData.cssCode || initialData.cssCode);
+      setJsCode(savedData.jsCode || initialData.jsCode || '');
+      setLastSaved(new Date(savedData.lastSaved));
     }
   }, [initialData]);
 
-  const saveToLocalStorage = () => {
+  const saveToStorage = () => {
     if (!wireframeId) return;
     
     const editorData = {
@@ -115,10 +146,10 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       lastSaved: new Date().toISOString()
     };
     
-    localStorage.setItem(`html_editor_${wireframeId}`, JSON.stringify(editorData));
+    storage.setItem(`html_editor_${wireframeId}`, editorData);
     
     // Also update the main wireframes data using ID
-    const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+    const existingWireframes = storage.getItem('generated_wireframes') || [];
     const updatedWireframes = existingWireframes.map((wireframe: any) => {
       if (wireframe.id === wireframeId) {
         return {
@@ -134,7 +165,7 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
       return wireframe;
     });
     
-    localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+    storage.setItem('generated_wireframes', updatedWireframes);
     setLastSaved(new Date());
     
     console.log('Auto-saved HTML editor data for wireframe ID:', wireframeId);
