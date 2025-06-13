@@ -192,6 +192,10 @@ export default function WireframeDesigner() {
     htmlCode: string;
     cssCode: string;
     jsCode?: string;
+    isEnhanced?: boolean;
+    lastUpdated?: string;
+    lastEnhancedElement?: string;
+    enhancementExplanation?: string;
   } | null>(null);
   const [isGeneratingContent, setIsGeneratingContent] = useState(false);
   const [pageContentCards, setPageContentCards] = useState<PageContentCard[]>([]);
@@ -199,7 +203,16 @@ export default function WireframeDesigner() {
   const [contentGenerationProgress, setContentGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
 
-  const [generatedWireframes, setGeneratedWireframes] = useState<{ pageName: string; htmlCode: string; cssCode: string; jsCode: string }[]>([]);
+  const [generatedWireframes, setGeneratedWireframes] = useState<{ 
+    pageName: string; 
+    htmlCode: string; 
+    cssCode: string; 
+    jsCode: string;
+    isEnhanced?: boolean;
+    lastUpdated?: string;
+    lastEnhancedElement?: string;
+    enhancementExplanation?: string;
+  }[]>([]);
   const [wireframeGenerationProgress, setWireframeGenerationProgress] = useState({ current: 0, total: 0, currentPage: "" });
   const [enhancementPrompt, setEnhancementPrompt] = useState('');
   const [isEnhancing, setIsEnhancing] = useState(false);
@@ -213,6 +226,39 @@ export default function WireframeDesigner() {
   const [selectedColorScheme, setSelectedColorScheme] = useState<string>('modern-blue');
   const [selectedDesignType, setSelectedDesignType] = useState<string>('modern');
   const [selectedLayout, setSelectedLayout] = useState<string>('standard-header');
+
+  // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
+  const getBestWireframeVersion = (pageName: string) => {
+    const enhancedWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+    const enhancedVersion = enhancedWireframes.find((w: any) => w.pageName === pageName && w.isEnhanced);
+    
+    if (enhancedVersion) {
+      return {
+        pageName: enhancedVersion.pageName,
+        htmlCode: enhancedVersion.htmlCode,
+        cssCode: enhancedVersion.cssCode,
+        jsCode: enhancedVersion.jsCode,
+        isEnhanced: true,
+        lastUpdated: enhancedVersion.lastUpdated,
+        lastEnhancedElement: enhancedVersion.lastEnhancedElement,
+        enhancementExplanation: enhancedVersion.enhancementExplanation
+      };
+    }
+    
+    // Fallback to original if no enhanced version exists
+    const originalPage = detailedWireframes.find(page => page.pageName === pageName);
+    if (originalPage) {
+      return {
+        pageName: originalPage.pageName,
+        htmlCode: originalPage.htmlContent,
+        cssCode: originalPage.cssStyles,
+        jsCode: '',
+        isEnhanced: false
+      };
+    }
+    
+    return null;
+  };
 
   // Load saved data
   useEffect(() => {
@@ -236,6 +282,11 @@ export default function WireframeDesigner() {
       const enhancedCount = parsedWireframes.filter((w: any) => w.isEnhanced).length;
       if (enhancedCount > 0) {
         console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
+        console.log('Enhanced wireframes:', parsedWireframes.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+          pageName: w.pageName, 
+          isEnhanced: w.isEnhanced, 
+          lastUpdated: w.lastUpdated 
+        })));
       }
       
       setGeneratedWireframes(parsedWireframes);
@@ -246,7 +297,7 @@ export default function WireframeDesigner() {
     if (savedPageLayouts) {
       setPageLayouts(JSON.parse(savedPageLayouts));
     }
-  }, []);
+  }, [detailedWireframes]);
 
   // Save wireframes to localStorage
   useEffect(() => {
@@ -1863,11 +1914,21 @@ document.addEventListener('DOMContentLoaded', function() {
                           size="sm"
                           className="text-xs flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
                           onClick={() => {
-                            setSelectedPageCode({
-                              pageName: page.pageName,
-                              htmlCode: page.htmlContent,
-                              cssCode: page.cssStyles
-                            });
+                            const bestVersion = getBestWireframeVersion(page.pageName);
+                            if (bestVersion) {
+                              console.log(`Loading ${bestVersion.isEnhanced ? 'enhanced' : 'original'} version for:`, page.pageName);
+                              setSelectedPageCode(bestVersion);
+                            } else {
+                              // Final fallback to current page data
+                              console.log('Loading fallback version for:', page.pageName);
+                              setSelectedPageCode({
+                                pageName: page.pageName,
+                                htmlCode: page.htmlContent,
+                                cssCode: page.cssStyles,
+                                jsCode: '',
+                                isEnhanced: false
+                              });
+                            }
                             setShowCodeModal(true);
                           }}
                         >
