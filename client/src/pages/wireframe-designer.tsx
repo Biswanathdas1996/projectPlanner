@@ -3085,7 +3085,35 @@ ${selectedPageCode.jsCode}
                         
                         <div className="relative h-80 bg-white">
                           <iframe
-                            srcDoc={wireframe.htmlCode}
+                            srcDoc={(() => {
+                              // Check if HTML already includes DOCTYPE/html tags (enhanced code)
+                              const htmlContent = wireframe.htmlCode;
+                              if (htmlContent.includes('<!DOCTYPE') || htmlContent.includes('<html')) {
+                                // Enhanced HTML - use as is but inject additional JS if available
+                                const jsInjection = wireframe?.jsCode ? 
+                                  htmlContent.replace('</body>', `<script>${wireframe.jsCode}</script></body>`) : 
+                                  htmlContent;
+                                return jsInjection;
+                              } else {
+                                // Original wireframe HTML - wrap in complete document
+                                return `
+                                  <!DOCTYPE html>
+                                  <html>
+                                  <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <style>
+                                      ${wireframe.cssCode}
+                                    </style>
+                                  </head>
+                                  <body>
+                                    ${htmlContent}
+                                    ${wireframe?.jsCode ? `<script>${wireframe.jsCode}</script>` : ''}
+                                  </body>
+                                  </html>
+                                `;
+                              }
+                            })()}
                             className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
                             style={{ 
                               width: '250%', 
@@ -3108,7 +3136,36 @@ ${selectedPageCode.jsCode}
                           onClick={() => {
                             const newWindow = window.open('', '_blank');
                             if (newWindow) {
-                              newWindow.document.write(wireframe.htmlCode);
+                              // Create complete HTML with CSS and JS
+                              const htmlContent = wireframe.htmlCode;
+                              let completeHtml;
+                              
+                              if (htmlContent.includes('<!DOCTYPE') || htmlContent.includes('<html')) {
+                                // Enhanced HTML - use as is but inject additional JS if available
+                                completeHtml = wireframe?.jsCode ? 
+                                  htmlContent.replace('</body>', `<script>${wireframe.jsCode}</script></body>`) : 
+                                  htmlContent;
+                              } else {
+                                // Original wireframe HTML - wrap in complete document
+                                completeHtml = `
+                                  <!DOCTYPE html>
+                                  <html>
+                                  <head>
+                                    <meta charset="UTF-8">
+                                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                    <style>
+                                      ${wireframe.cssCode}
+                                    </style>
+                                  </head>
+                                  <body>
+                                    ${htmlContent}
+                                    ${wireframe?.jsCode ? `<script>${wireframe.jsCode}</script>` : ''}
+                                  </body>
+                                  </html>
+                                `;
+                              }
+                              
+                              newWindow.document.write(completeHtml);
                               newWindow.document.close();
                             }
                           }}
