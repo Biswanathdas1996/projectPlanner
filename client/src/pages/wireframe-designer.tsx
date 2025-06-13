@@ -1392,20 +1392,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         {/* AI Analysis Section */}
         {currentStep === "input" && (
-          <Accordion type="single" collapsible className="mb-6" defaultValue="stakeholder-analysis">
-            <AccordionItem value="stakeholder-analysis" className="border rounded-lg">
-              <AccordionTrigger className="px-6 py-4 hover:no-underline">
-                <div className="flex items-center gap-2 text-left">
-                  <Sparkles className="h-5 w-5" />
-                  <div>
-                    <h3 className="text-lg font-semibold">AI-Powered Stakeholder Flow Analysis</h3>
-                    <p className="text-sm text-gray-600">
-                      Analyze your stakeholder flows to automatically generate contextual wireframes
-                    </p>
-                  </div>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-6 pb-6">
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                AI-Powered Stakeholder Flow Analysis
+              </CardTitle>
+              <p className="text-sm text-gray-600">
+                Analyze your stakeholder flows to automatically generate contextual wireframes
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
                 <div className="space-y-4">
                   <div className="flex flex-col sm:flex-row gap-4">
                     <Button
@@ -1680,9 +1677,280 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                   )}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <Button
+                      onClick={analyzeStakeholderFlows}
+                      disabled={isAnalyzing}
+                      className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Analyzing Flows...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          Analyze Stakeholder Flows
+                        </>
+                      )}
+                    </Button>
+                    
+                    {analysisResult && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="bg-green-50 text-green-700">
+                          {analysisResult.totalPages} pages analyzed
+                        </Badge>
+                        <Button
+                          onClick={generateWireframes}
+                          disabled={isGenerating}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
+                        >
+                          {isGenerating ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Grid className="h-4 w-4 mr-2" />
+                              Generate Wireframes
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {analysisResult && (
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <h3 className="font-semibold text-blue-900 mb-3">Analysis Results</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm text-blue-700 mb-2">
+                            <strong>Project Context:</strong> {analysisResult.projectContext}
+                          </p>
+                          <p className="text-sm text-blue-700">
+                            <strong>Total Pages:</strong> {analysisResult.totalPages}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-blue-700 mb-2">
+                            <strong>Identified Stakeholders:</strong>
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {analysisResult.stakeholders?.map((stakeholder, idx) => (
+                              <Badge key={idx} variant="secondary" className="text-xs">
+                                {stakeholder}
+                              </Badge>
+                            )) || <span className="text-xs text-gray-500">No stakeholders identified</span>}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-4">
+                        <p className="text-sm text-blue-700 mb-2">
+                          <strong>Page Types Identified:</strong>
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {analysisResult.pageRequirements.map((page, idx) => (
+                            <div key={idx} className="bg-white p-3 rounded border border-gray-200 hover:border-blue-300 transition-colors">
+                              <div className="flex justify-between items-start">
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-sm text-gray-900 truncate">{page.pageName}</p>
+                                  <p className="text-xs text-gray-600 mt-1">{page.pageType}</p>
+                                  {page.purpose && (
+                                    <p className="text-xs text-gray-500 mt-1 line-clamp-2">{page.purpose}</p>
+                                  )}
+                                </div>
+                                <div className="flex gap-1 ml-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-blue-100"
+                                    onClick={() => {
+                                      const updatedResult = { ...analysisResult };
+                                      updatedResult.pageRequirements[idx] = {
+                                        ...page,
+                                        isEditing: !page.isEditing
+                                      } as PageRequirement;
+                                      setAnalysisResult(updatedResult);
+                                    }}
+                                  >
+                                    <Edit2 className="h-3 w-3 text-blue-600" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0 hover:bg-red-100"
+                                    onClick={() => {
+                                      const updatedResult = { ...analysisResult };
+                                      updatedResult.pageRequirements = updatedResult.pageRequirements.filter((_, i) => i !== idx);
+                                      updatedResult.totalPages = updatedResult.pageRequirements.length;
+                                      setAnalysisResult(updatedResult);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-red-600" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              {page.isEditing && (
+                                <div className="mt-3 space-y-2 border-t pt-2">
+                                  <div>
+                                    <Label className="text-xs font-medium text-gray-700">Page Name</Label>
+                                    <Input
+                                      value={page.pageName}
+                                      onChange={(e) => {
+                                        const updatedResult = { ...analysisResult };
+                                        const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                        updatedPage.pageName = e.target.value;
+                                        updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                        setAnalysisResult(updatedResult);
+                                      }}
+                                      className="text-xs h-7 mt-1"
+                                      placeholder="Enter page name"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs font-medium text-gray-700">Page Type</Label>
+                                    <Input
+                                      value={page.pageType}
+                                      onChange={(e) => {
+                                        const updatedResult = { ...analysisResult };
+                                        const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                        updatedPage.pageType = e.target.value;
+                                        updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                        setAnalysisResult(updatedResult);
+                                      }}
+                                      className="text-xs h-7 mt-1"
+                                      placeholder="Enter page type"
+                                    />
+                                  </div>
+                                  {page.purpose !== undefined && (
+                                    <div>
+                                      <Label className="text-xs font-medium text-gray-700">Purpose</Label>
+                                      <Textarea
+                                        value={page.purpose || ''}
+                                        onChange={(e) => {
+                                          const updatedResult = { ...analysisResult };
+                                          const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                          updatedPage.purpose = e.target.value;
+                                          updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                          setAnalysisResult(updatedResult);
+                                        }}
+                                        className="text-xs min-h-[60px] mt-1"
+                                        placeholder="Enter page purpose"
+                                      />
+                                    </div>
+                                  )}
+                                  <div className="flex gap-2 pt-1">
+                                    <Button
+                                      size="sm"
+                                      className="h-6 text-xs px-2 bg-green-600 hover:bg-green-700"
+                                      onClick={() => {
+                                        const updatedResult = { ...analysisResult };
+                                        const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                        updatedPage.isEditing = false;
+                                        updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                        setAnalysisResult(updatedResult);
+                                      }}
+                                    >
+                                      Save
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-6 text-xs px-2"
+                                      onClick={() => {
+                                        const updatedResult = { ...analysisResult };
+                                        const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                        updatedPage.isEditing = false;
+                                        updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                        setAnalysisResult(updatedResult);
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        
+                        <div className="mt-3 flex justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-8 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+                            onClick={() => {
+                              const updatedResult = { ...analysisResult };
+                              const newPage: PageRequirement = {
+                                pageName: "New Page",
+                                pageType: "Custom",
+                                purpose: "Enter page purpose",
+                                stakeholders: [],
+                                contentElements: [],
+                                userInteractions: [],
+                                dataRequirements: [],
+                                priority: "medium" as const,
+                                isEditing: true
+                              };
+                              updatedResult.pageRequirements.push(newPage);
+                              updatedResult.totalPages = updatedResult.pageRequirements.length;
+                              setAnalysisResult(updatedResult);
+                            }}
+                          >
+                            <Plus className="h-3 w-3 mr-1" />
+                            Add New Page
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-6 flex justify-center">
+                        <Button 
+                          onClick={handleGeneratePageContent}
+                          disabled={isGeneratingContent}
+                          className="bg-purple-600 hover:bg-purple-700 text-white"
+                        >
+                          {isGeneratingContent ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Generating Content...
+                            </>
+                          ) : (
+                            'Generate content of all pages'
+                          )}
+                        </Button>
+                      </div>
+                      
+                      {isGeneratingContent && (
+                        <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-purple-700">
+                              Generating Page Content ({contentGenerationProgress.current}/{contentGenerationProgress.total})
+                            </span>
+                            <span className="text-xs text-purple-600">
+                              {Math.round((contentGenerationProgress.current / contentGenerationProgress.total) * 100)}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-purple-200 rounded-full h-2">
+                            <div 
+                              className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                              style={{ width: `${(contentGenerationProgress.current / contentGenerationProgress.total) * 100}%` }}
+                            ></div>
+                          </div>
+                          {contentGenerationProgress.currentPage && (
+                            <p className="text-xs text-purple-600 mt-2">
+                              Currently generating: {contentGenerationProgress.currentPage}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+            </CardContent>
+          </Card>
         )}
 
         {/* Generation Progress */}
@@ -1954,10 +2222,8 @@ document.addEventListener('DOMContentLoaded', function() {
                   )}
                 </div>
               )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+            </CardContent>
+          </Card>
         )}
 
         {/* Generation Progress */}
