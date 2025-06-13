@@ -376,16 +376,21 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
 
     try {
       const enhancer = createPreciseElementEnhancer();
+      
+      // Create display name for the element
+      const displayName = `${selectedElement.tagName}${selectedElement.className ? '.' + selectedElement.className.split(' ')[0] : ''}${selectedElement.id ? '#' + selectedElement.id : ''}`;
+      
       const enhanced = await enhancer.enhanceElement({
         htmlCode: htmlCode,
         cssCode: cssCode,
         elementData: {
-          displayName: selectedElement,
-          tagName: selectedElement.split(':')[0] || 'div',
-          className: '',
-          id: '',
+          displayName: displayName,
+          tagName: selectedElement.tagName,
+          className: selectedElement.className || '',
+          id: selectedElement.id || '',
           uniqueId: `element_${Date.now()}`,
-          textContent: selectedElement
+          textContent: selectedElement.textContent || '',
+          selector: selectedElement.selector || selectedElement.tagName
         },
         enhancementPrompt: selectedElementPrompt,
         pageName
@@ -393,12 +398,16 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
 
       setHtmlCode(enhanced.html);
       setCssCode(enhanced.css);
+      if (enhanced.js) {
+        setJsCode(enhanced.js);
+      }
+      
       setSelectedElementPrompt('');
       setSelectedElement(null);
 
       toast({
         title: "Element Enhanced",
-        description: `Successfully enhanced ${selectedElement}`,
+        description: `Successfully enhanced ${displayName}`,
       });
 
     } catch (error) {
