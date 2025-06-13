@@ -78,6 +78,8 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
   const [enhancedCode, setEnhancedCode] = useState<EnhancedCodeResponse | null>(null);
   const [uploadedImages, setUploadedImages] = useState<{[key: string]: string}>({});
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageInsertMode, setImageInsertMode] = useState(false);
+  const [selectedImageToInsert, setSelectedImageToInsert] = useState<{name: string, data: string} | null>(null);
   
   const previewRef = useRef<HTMLIFrameElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -572,10 +574,9 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     }
   };
 
-  const insertImageIntoHTML = (imageName: string, imageData: string) => {
+  const insertImageIntoHTML = (imageName: string, imageData: string, targetElement?: any) => {
     const imageTag = `<img src="${imageData}" alt="${imageName}" style="max-width: 100%; height: auto;" class="uploaded-image">`;
     
-    // Insert at the end of the body or at cursor position if possible
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlCode, 'text/html');
     
@@ -585,19 +586,88 @@ function HTMLEditorComponent({ initialData }: { initialData?: HTMLEditorData }) 
     imageContainer.style.cssText = 'margin: 20px 0; text-align: center;';
     imageContainer.innerHTML = imageTag;
     
-    // Insert before the last closing tag of body
-    if (doc.body) {
-      doc.body.appendChild(imageContainer);
+    let insertionSuccess = false;
+    
+    // If we have a target element from selection mode, insert there
+    if (targetElement) {
+      let targetInDoc = null;
+      
+      // Find the target element in the parsed document
+      if (targetElement.id) {
+        targetInDoc = doc.getElementById(targetElement.id);
+      } else if (targetElement.className) {
+        const elements = doc.getElementsByClassName(targetElement.className.split(' ')[0]);
+        if (elements.length > 0) {
+          // Find the element with matching text content
+          for (let i = 0; i < elements.length; i++) {
+            if (elements[i].textContent?.trim().includes(targetElement.textContent.trim().substring(0, 50))) {
+              targetInDoc = elements[i];
+              break;
+            }
+          }
+          if (!targetInDoc) targetInDoc = elements[0];
+        }
+      } else {
+        // Search by tag name and text content
+        const elements = doc.getElementsByTagName(targetElement.tagName);
+        for (let i = 0; i < elements.length; i++) {
+          if (elements[i].textContent?.trim().includes(targetElement.textContent.trim().substring(0, 50))) {
+            targetInDoc = elements[i];
+            break;
+          }
+        }
+      }
+      
+      if (targetInDoc) {
+        // Insert image as the last child of the target element
+        targetInDoc.appendChild(imageContainer);
+        insertionSuccess = true;
+      }
     }
     
-    // Update HTML code
-    const updatedHTML = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${pageName}</title>\n    <style>\n        ${cssCode}\n        .image-container { margin: 20px 0; text-align: center; }\n        .uploaded-image { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n    </style>\n</head>\n<body>\n    ${doc.body.innerHTML}\n</body>\n</html>`;
+    // Fallback: Insert at the end of the body
+    if (!insertionSuccess && doc.body) {
+      doc.body.appendChild(imageContainer);
+      insertionSuccess = true;
+    }
     
-    setHtmlCode(updatedHTML);
+    if (insertionSuccess) {
+      // Update HTML code
+      const updatedHTML = `<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>${pageName}</title>\n    <style>\n        ${cssCode}\n        .image-container { margin: 20px 0; text-align: center; }\n        .uploaded-image { max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }\n    </style>\n</head>\n<body>\n    ${doc.body.innerHTML}\n</body>\n</html>`;
+      
+      setHtmlCode(updatedHTML);
+      
+      // Clear image insert mode if it was active
+      if (imageInsertMode) {
+        setImageInsertMode(false);
+        setSelectedImageToInsert(null);
+        setSelectedElement(null);
+      }
+      
+      toast({
+        title: "Image Added",
+        description: targetElement ? 
+          `${imageName} added to selected ${targetElement.tagName} element` :
+          `${imageName} added to your page`,
+      });
+    } else {
+      toast({
+        title: "Insert Failed",
+        description: "Could not insert image. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const startImageInsertMode = (imageName: string, imageData: string) => {
+    setSelectedImageToInsert({ name: imageName, data: imageData });
+    setImageInsertMode(true);
+    setSelectionMode(true);
+    setSelectedElement(null);
     
     toast({
-      title: "Image Added",
-      description: `${imageName} has been added to your page`,
+      title: "Select Target Element",
+      description: "Click on an element in the preview to insert the image there",
     });
   };
 
