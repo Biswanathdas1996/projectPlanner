@@ -12,6 +12,7 @@ import {
   generateSitemapXml,
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
+import { getProjectDescription, saveProjectDescription } from "@/lib/storage-utils";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { Link, useLocation } from "wouter";
@@ -73,9 +74,7 @@ export default function Landing() {
 
   // Load data from localStorage when component mounts or route changes
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem(
-      STORAGE_KEYS.PROJECT_DESCRIPTION,
-    );
+    const savedProjectDescription = getProjectDescription();
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
 
@@ -98,6 +97,13 @@ export default function Landing() {
       setCurrentStep("input");
     }
   }, [location]);
+
+  // Auto-save project input to localStorage whenever it changes
+  useEffect(() => {
+    if (projectInput.trim()) {
+      saveProjectDescription(projectInput);
+    }
+  }, [projectInput]);
 
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
