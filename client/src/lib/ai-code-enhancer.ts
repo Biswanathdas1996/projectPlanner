@@ -20,10 +20,8 @@ export class AICodeEnhancer {
   private model: any;
 
   constructor() {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      throw new Error('Gemini API key not found');
-    }
-    this.genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const apiKey = "AIzaSyDgcDMg-20A1C5a0y9dZ12fH79q4PXki6E";
+    this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
   }
 
@@ -31,14 +29,25 @@ export class AICodeEnhancer {
     const prompt = this.buildEnhancementPrompt(request);
     
     try {
+      console.log('Sending enhancement request to Gemini...');
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
       
+      console.log('Received response from Gemini, parsing...');
       return this.parseEnhancedResponse(text);
     } catch (error) {
       console.error('Error enhancing code:', error);
-      throw new Error('Failed to enhance code. Please try again.');
+      if (error.message?.includes('API_KEY_INVALID')) {
+        throw new Error('Invalid API key. Please check your Gemini API configuration.');
+      }
+      if (error.message?.includes('SAFETY')) {
+        throw new Error('Content filtered by safety settings. Please try a different enhancement request.');
+      }
+      if (error.message?.includes('QUOTA_EXCEEDED')) {
+        throw new Error('API quota exceeded. Please try again later.');
+      }
+      throw new Error(`Enhancement failed: ${error.message || 'Unknown error occurred'}`);
     }
   }
 
