@@ -277,39 +277,49 @@ export default function WireframeDesigner() {
       setPageContentCards(savedPageContent);
     }
     if (savedGeneratedWireframes) {
-      const parsedWireframes = savedGeneratedWireframes;
-      console.log('Loading generated wireframes from storage:', parsedWireframes.length, 'wireframes found');
+      // Ensure we have a valid array
+      let parsedWireframes = savedGeneratedWireframes;
       
-      // Check if wireframes have IDs, if not, add them (migration)
-      const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
-        if (!wireframe.id) {
-          console.log('Adding missing ID to wireframe:', wireframe.pageName);
-          wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      if (!Array.isArray(parsedWireframes)) {
+        console.log('Loading generated wireframes from localStorage:', parsedWireframes, 'wireframes found');
+        // If it's not an array, try to convert or initialize as empty array
+        parsedWireframes = [];
+      } else {
+        console.log('Loading generated wireframes from storage:', parsedWireframes.length, 'wireframes found');
+      }
+      
+      if (parsedWireframes.length > 0) {
+        // Check if wireframes have IDs, if not, add them (migration)
+        const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
+          if (!wireframe.id) {
+            console.log('Adding missing ID to wireframe:', wireframe.pageName);
+            wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          }
+          return wireframe;
+        });
+        
+        // Save back to storage if we added IDs
+        const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
+        if (needsUpdate) {
+          console.log('Updating storage with IDs for existing wireframes');
+          storage.setItem('generated_wireframes', wireframesWithIds);
         }
-        return wireframe;
-      });
-      
-      // Save back to storage if we added IDs
-      const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
-      if (needsUpdate) {
-        console.log('Updating storage with IDs for existing wireframes');
-        storage.setItem('generated_wireframes', wireframesWithIds);
+        
+        // Check for enhanced wireframes
+        const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
+        if (enhancedCount > 0) {
+          console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
+          console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+            id: w.id,
+            pageName: w.pageName, 
+            isEnhanced: w.isEnhanced, 
+            lastUpdated: w.lastUpdated 
+          })));
+        }
+        
+        console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
+        setGeneratedWireframes(wireframesWithIds);
       }
-      
-      // Check for enhanced wireframes
-      const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
-      if (enhancedCount > 0) {
-        console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
-        console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
-          id: w.id,
-          pageName: w.pageName, 
-          isEnhanced: w.isEnhanced, 
-          lastUpdated: w.lastUpdated 
-        })));
-      }
-      
-      console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
-      setGeneratedWireframes(wireframesWithIds);
     }
     if (savedAnalysisResult) {
       setAnalysisResult(savedAnalysisResult);
