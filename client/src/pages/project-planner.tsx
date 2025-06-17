@@ -1023,10 +1023,21 @@ Please provide the regenerated section content as properly formatted HTML:`;
       const result = await model.generateContent(regenerationPrompt);
       const regeneratedContent = result.response.text();
 
-      // Update the enhanced sections
+      // Clean and format the regenerated content
+      let cleanedContent = regeneratedContent.trim();
+      
+      // Remove any markdown code block markers if present
+      if (cleanedContent.startsWith('```html')) {
+        cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+      }
+      if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      }
+
+      // Update the enhanced sections with the cleaned content
       setEnhancedSections(prev => prev.map(section => 
         section.id === sectionId 
-          ? { ...section, content: regeneratedContent }
+          ? { ...section, content: cleanedContent }
           : section
       ));
 
@@ -1039,7 +1050,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         const newSectionHtml = `<section class="project-section" id="${sectionId}">
           <h2 class="section-title">${targetSection.title}</h2>
           <div class="section-content">
-            ${regeneratedContent}
+            ${cleanedContent}
           </div>
         </section>`;
         
@@ -1052,6 +1063,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
         
         setProjectPlan(updatedHtml);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
+      }
+
+      // Force a re-render by updating the active tab
+      const currentActiveTab = document.querySelector('[data-state="active"][data-orientation="horizontal"]');
+      if (currentActiveTab) {
+        const tabValue = currentActiveTab.getAttribute('value');
+        if (tabValue === sectionId) {
+          // Trigger a re-render by briefly switching tabs
+          setActiveTabId(null);
+          setTimeout(() => {
+            setActiveTabId(sectionId);
+          }, 10);
+        }
       }
       
       // Close modal and reset state
