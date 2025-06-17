@@ -1097,11 +1097,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
           {sections.map((section) => (
             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                    <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
-                  </div>
+                <div className="flex items-center gap-3 p-6 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                  {(() => {
+                    const { icon: SectionIcon } = getSectionIconAndDescription(section.title);
+                    return (
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
+                          <SectionIcon className="w-4 h-4 text-white" />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="p-0">
                   {(() => {
@@ -4147,23 +4154,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           {enhancedSections.filter(s => s.content).map((section) => (
                             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
                               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                                <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                                      <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
-                                    </div>
-                                    <Button
-                                      onClick={() => startEditingSection(section.id, section.content, section.id)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      <Edit className="h-3 w-3 mr-1" />
-                                      Edit
-                                    </Button>
-                                  </div>
-                                </div>
+                                
                                 <div className="p-6">
                                   {editingSectionId === section.id && activeTabId === section.id ? (
                                     <div className="space-y-4">
