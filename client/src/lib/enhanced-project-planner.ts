@@ -136,13 +136,14 @@ export class EnhancedProjectPlanner {
         - Success metrics dashboard layout
         - ROI projections table with timeline`,
 
-      "Technical Architecture & Infrastructure": `Design technical architecture with HTML-based visual elements:
-        - System architecture using HTML flowcharts (no images, use div boxes and CSS)
-        - Technology stack comparison table with detailed specifications
-        - Database schema represented as HTML tables and relationships
-        - API endpoints table with request/response examples
-        - Scalability metrics dashboard using HTML metrics cards
-        - Security protocols matrix with implementation details`,
+      "Technical Architecture & Infrastructure": `Design technical architecture with sophisticated HTML-based visual elements:
+        - Multi-layered system architecture using compact HTML flowcharts with precise positioning
+        - Technology stack comparison table with detailed specifications and performance metrics
+        - Database schema represented as interconnected HTML tables with relationship indicators
+        - API endpoints table with request/response examples and status codes
+        - Scalability metrics dashboard using dense HTML cards with nested information
+        - Security protocols matrix with implementation details and compliance checkmarks
+        - Create complex technical flow diagrams with branching decision paths and no overlapping elements`,
 
       "Detailed Feature Specifications": `Create feature specifications with structured layouts:
         - Feature priority matrix table
@@ -152,21 +153,21 @@ export class EnhancedProjectPlanner {
         - Feature dependencies flowchart
         - API specifications table`,
 
-      "Development Methodology & Timeline": `Develop methodology with HTML-based visual planning:
-        - Methodology comparison table with pros/cons
-        - Sprint timeline using HTML timeline components (no images)
-        - Team structure using HTML organizational chart with connected boxes
-        - Critical path represented as HTML flowchart with dependencies
-        - Resource allocation table with capacity metrics
-        - Delivery schedule using HTML timeline with milestones`,
+      "Development Methodology & Timeline": `Develop methodology with sophisticated HTML-based visual planning:
+        - Methodology comparison table with detailed pros/cons and complexity metrics
+        - Sprint timeline using compact HTML timeline components with nested task breakdowns
+        - Team structure using hierarchical HTML organizational chart with role interconnections
+        - Critical path represented as dense HTML flowchart with dependency arrows and risk indicators
+        - Resource allocation matrix with capacity utilization heat mapping
+        - Delivery schedule using multi-track HTML timeline with milestone dependencies and buffer zones`,
 
-      "User Experience & Interface Design": `Design UX strategy with HTML visual elements:
-        - User persona cards using HTML card components
-        - User journey represented as HTML flow diagrams (no images)
-        - Information architecture as nested HTML structure
-        - Design principles in checklist format
-        - Accessibility compliance table with WCAG standards
-        - Responsive breakpoint specifications table`,
+      "User Experience & Interface Design": `Design UX strategy with sophisticated HTML visual elements:
+        - User persona cards using dense HTML card components with behavioral matrices
+        - User journey represented as complex HTML flow diagrams with decision branches and touchpoint analysis
+        - Information architecture as multi-level nested HTML structure with navigation flows
+        - Design principles in interactive checklist format with implementation examples
+        - Accessibility compliance matrix with WCAG standards and testing checkpoints
+        - Responsive breakpoint grid with device-specific optimization strategies`,
 
       "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
         - Testing types coverage matrix
@@ -217,37 +218,42 @@ ${prompt}
 
 CRITICAL: Return ONLY clean HTML content without any markdown formatting, code blocks, or backtick tags. Your response must start directly with the HTML section tag and contain no explanatory text or markdown.
 
-Create comprehensive HTML sections using ONLY HTML and CSS - NO IMAGES. For technical diagrams use:
+Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES. For technical diagrams use dense, modern layouts with NO overlapping elements:
 
-ARCHITECTURE DIAGRAMS - Use HTML structure:
+COMPACT ARCHITECTURE DIAGRAMS - Use precise grid positioning:
 <div class="architecture-diagram">
   <div class="diagram-layer">
-    <div class="diagram-component frontend">Frontend Layer</div>
-    <div class="diagram-arrow right">→</div>
+    <div class="diagram-component frontend">Frontend</div>
     <div class="diagram-component api">API Gateway</div>
-    <div class="diagram-arrow right">→</div>
     <div class="diagram-component database">Database</div>
+    <div class="diagram-component cache">Cache Layer</div>
+  </div>
+  <div class="diagram-layer">
+    <div class="diagram-component load-balancer">Load Balancer</div>
+    <div class="diagram-component microservice">Service A</div>
+    <div class="diagram-component microservice">Service B</div>
   </div>
 </div>
 
-ORGANIZATIONAL CHARTS - Use HTML structure:
+DENSE ORGANIZATIONAL TREES - Use hierarchical structure:
 <div class="org-chart">
-  <div class="org-level">
-    <div class="org-role manager">Project Manager</div>
+  <div class="org-level-compact">
+    <div class="org-role manager">PM</div>
   </div>
-  <div class="org-level">
-    <div class="org-role developer">Frontend Dev</div>
-    <div class="org-role developer">Backend Dev</div>
-    <div class="org-role designer">UI Designer</div>
+  <div class="org-level-compact">
+    <div class="org-role developer">Frontend</div>
+    <div class="org-role developer">Backend</div>
+    <div class="org-role designer">UX/UI</div>
+    <div class="org-role developer">DevOps</div>
   </div>
 </div>
 
-PROCESS FLOWS - Use HTML structure:
+SOPHISTICATED PROCESS FLOWS - Use compact numbered flow:
 <div class="process-flow">
   <div class="process-step">
     <div class="process-number">1</div>
     <div class="process-content">
-      <div class="process-title">Requirements Analysis</div>
+      <div class="process-title">Analysis</div>
       <div class="process-description">Gather and document requirements</div>
     </div>
   </div>

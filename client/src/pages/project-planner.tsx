@@ -1904,6 +1904,14 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     position: relative;
                   }
                   
+                  .org-level-compact {
+                    display: flex;
+                    justify-content: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    margin: 4px 0;
+                  }
+                  
                   .org-role {
                     background: white;
                     border: 2px solid #6366f1;
