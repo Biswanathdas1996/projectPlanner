@@ -1069,6 +1069,10 @@ Please provide the regenerated section content:`;
   };
 
   const openCustomPromptModal = (sectionId: string) => {
+    console.log('Opening modal for section ID:', sectionId);
+    console.log('Enhanced sections:', enhancedSections);
+    console.log('Project plan exists:', !!projectPlan);
+    
     setCustomPromptSectionId(sectionId);
     setCustomPrompt('');
     setShowCustomPromptModal(true);
@@ -4888,16 +4892,22 @@ Please provide the regenerated section content:`;
                 </div>
                 <p className="text-sm text-purple-700">
                   {customPromptSectionId && (() => {
+                    console.log('Looking for section:', customPromptSectionId);
+                    console.log('Enhanced sections available:', enhancedSections?.map((s: any) => ({ id: s.id, title: s.title })));
+                    
                     // Check enhanced sections first
                     let section = enhancedSections?.find((s: any) => s.id === customPromptSectionId);
+                    console.log('Found in enhanced sections:', section);
                     
                     // If not found in enhanced sections, check plain text sections
                     if (!section && projectPlan) {
                       const plainSections = parseProjectPlanSections(projectPlan);
+                      console.log('Plain sections available:', plainSections?.map(s => ({ id: s.id, title: s.title })));
                       section = plainSections.find(s => s.id === customPromptSectionId);
+                      console.log('Found in plain sections:', section);
                     }
                     
-                    return section ? `Regenerating: "${section.title}"` : 'Section not found';
+                    return section ? `Regenerating: "${section.title}"` : `Section not found (ID: ${customPromptSectionId})`;
                   })()}
                 </p>
               </div>
