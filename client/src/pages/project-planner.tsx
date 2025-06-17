@@ -973,22 +973,36 @@ Return the complete enhanced project plan as HTML with all existing content plus
       let targetSection = null;
       let isEnhancedSection = false;
       
-      // First check if it's an enhanced section
-      if (enhancedSections && enhancedSections.length > 0) {
-        targetSection = enhancedSections.find(s => s.id === sectionId);
-        if (targetSection) {
-          isEnhancedSection = true;
+      // Check if content is HTML
+      if (projectPlan && (projectPlan.includes('<section') || projectPlan.includes('<!DOCTYPE html>'))) {
+        // Extract section from HTML content
+        const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+        let match;
+        
+        while ((match = sectionPattern.exec(projectPlan)) !== null) {
+          const sectionHtml = match[0];
+          const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+          const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
+          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          
+          if (id === sectionId) {
+            targetSection = {
+              id,
+              title,
+              content: sectionHtml
+            };
+            isEnhancedSection = true;
+            break;
+          }
         }
-      }
-      
-      // If not found in enhanced sections, check plain text sections
-      if (!targetSection) {
+      } else {
+        // Handle plain text sections
         const currentSections = parseProjectPlanSections(projectPlan);
         targetSection = currentSections.find(s => s.id === sectionId);
       }
       
       if (!targetSection) {
-        setError('Section not found');
+        setError(`Section not found: ${sectionId}`);
         return;
       }
 
@@ -1022,22 +1036,31 @@ Please provide the regenerated section content:`;
       const regeneratedContent = result.response.text();
 
       if (isEnhancedSection) {
-        // Update enhanced section
-        const updatedEnhancedSections = enhancedSections.map((section: any) => 
-          section.id === sectionId 
-            ? { ...section, content: regeneratedContent }
-            : section
-        );
-        setEnhancedSections(updatedEnhancedSections);
+        // For HTML content, replace the specific section in the HTML
+        let updatedHtml = projectPlan;
+        const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+        let replacementMade = false;
         
-        // Regenerate HTML report
-        const planner = createEnhancedProjectPlanner();
-        const htmlReport = planner.generateHtmlReport(updatedEnhancedSections);
-        setProjectPlan(htmlReport);
+        updatedHtml = updatedHtml.replace(sectionPattern, (match) => {
+          const titleMatch = match.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+          const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
+          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+          
+          if (id === sectionId && !replacementMade) {
+            replacementMade = true;
+            // Wrap the regenerated content in a section with proper formatting
+            return `<section class="project-section">
+              <h2>${targetSection.title}</h2>
+              <div class="section-content">
+                ${regeneratedContent.split('\n').map(line => line.trim() ? `<p>${line.trim()}</p>` : '').filter(Boolean).join('\n                ')}
+              </div>
+            </section>`;
+          }
+          return match;
+        });
         
-        // Save to localStorage
-        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
-        localStorage.setItem('enhanced_plan_sections', JSON.stringify(updatedEnhancedSections));
+        setProjectPlan(updatedHtml);
+        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
       } else {
         // Update plain text section
         const currentSections = parseProjectPlanSections(projectPlan);
@@ -1059,6 +1082,13 @@ Please provide the regenerated section content:`;
       setShowCustomPromptModal(false);
       setCustomPrompt('');
       setCustomPromptSectionId(null);
+      
+      // Show success notification
+      addNotification({
+        id: Date.now().toString(),
+        message: `Section "${targetSection.title}" regenerated successfully`,
+        type: 'success'
+      });
       
     } catch (error) {
       console.error('Section regeneration error:', error);
@@ -1117,12 +1147,12 @@ Please provide the regenerated section content:`;
   };
 
   // Parse project plan into sections for tabbed interface
-  const parseProjectPlanSections = (planContent: string) => {
+  const parseProjectPlanSections = (planContent: string): ProjectPlanSection[] => {
     if (!planContent) return [];
     
-    const sections: { id: string; title: string; content: string }[] = [];
+    const sections: ProjectPlanSection[] = [];
     const lines = planContent.split('\n');
-    let currentSection: { id: string; title: string; content: string } | null = null;
+    let currentSection: ProjectPlanSection | null = null;
     
     for (const line of lines) {
       const trimmedLine = line.trim();
@@ -4909,22 +4939,24 @@ Please provide the regenerated section content:`;
                 </div>
                 <p className="text-sm text-purple-700">
                   {customPromptSectionId && (() => {
-                    console.log('Looking for section:', customPromptSectionId);
-                    console.log('Enhanced sections available:', enhancedSections?.map(s => ({ id: s.id, title: s.title })));
-                    
-                    // Check enhanced sections first
-                    let section = enhancedSections?.find(s => s.id === customPromptSectionId);
-                    console.log('Found in enhanced sections:', section);
-                    
-                    // If not found in enhanced sections, check plain text sections
-                    if (!section && projectPlan) {
-                      const plainSections = parseProjectPlanSections(projectPlan);
-                      console.log('Plain sections available:', plainSections?.map(s => ({ id: s.id, title: s.title })));
-                      section = plainSections.find(s => s.id === customPromptSectionId);
-                      console.log('Found in plain sections:', section);
+                    // For HTML content, extract sections directly from the current content
+                    if (projectPlan && (projectPlan.includes('<section') || projectPlan.includes('<!DOCTYPE html>'))) {
+                      const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+                      let match;
+                      while ((match = sectionPattern.exec(projectPlan)) !== null) {
+                        const sectionHtml = match[0];
+                        const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+                        const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
+                        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                        
+                        if (id === customPromptSectionId) {
+                          return `Regenerating: "${title}"`;
+                        }
+                      }
                     }
                     
-                    return section ? `Regenerating: "${section.title}"` : `Section not found (ID: ${customPromptSectionId})`;
+                    // Fallback: just show the section ID
+                    return `Regenerating section: ${customPromptSectionId}`;
                   })()}
                 </p>
               </div>
