@@ -2321,30 +2321,68 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     width: 100%;
                     border-collapse: separate;
                     border-spacing: 0;
-                    margin: 12px 0;
-                    background: white;
-                    border-radius: 8px;
+                    margin: 20px 0;
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border-radius: 16px;
                     overflow: hidden;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
-                    border: 1px solid #e2e8f0;
-                    font-size: 13px;
+                    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+                    border: 2px solid #e2e8f0;
+                    font-size: 14px;
+                    position: relative;
+                  }
+                  
+                  table::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                    z-index: 1;
                   }
                   
                   th, td {
-                    padding: 8px 12px;
+                    padding: 16px 20px;
                     text-align: left;
-                    border-bottom: 1px solid #f1f5f9;
+                    border-bottom: 1px solid #e2e8f0;
                     vertical-align: middle;
+                    transition: all 0.3s ease;
+                    position: relative;
                   }
                   
                   th {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
-                    font-weight: 600;
-                    font-size: 11px;
+                    font-weight: 700;
+                    font-size: 13px;
                     text-transform: uppercase;
-                    letter-spacing: 0.3px;
+                    letter-spacing: 0.5px;
                     position: relative;
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+                    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                  }
+                  
+                  td {
+                    background: rgba(255, 255, 255, 0.8);
+                    backdrop-filter: blur(10px);
+                    font-weight: 500;
+                  }
+                  
+                  tr:hover td {
+                    background: rgba(99, 102, 241, 0.05);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.1);
+                  }
+                  
+                  td:first-child {
+                    font-weight: 600;
+                    color: #6366f1;
+                    border-left: 3px solid transparent;
+                  }
+                  
+                  tr:hover td:first-child {
+                    border-left-color: #6366f1;
                   }
                   
                   th:first-child {
@@ -3259,6 +3297,159 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   
                   .tab-content-shadow:hover {
                     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                  }
+                  
+                  /* Modern Section Headers */
+                  h1, h2, h3, h4, h5, h6 {
+                    color: #1e293b;
+                    margin: 24px 0 16px 0;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    position: relative;
+                  }
+                  
+                  h1 {
+                    font-size: 2.2rem;
+                    color: transparent;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    border-bottom: 3px solid transparent;
+                    border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
+                    padding-bottom: 12px;
+                    margin-bottom: 24px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                  }
+                  
+                  h2 {
+                    font-size: 1.6rem;
+                    color: #6366f1;
+                    position: relative;
+                    padding: 16px 0 16px 24px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                    border: 2px solid #e2e8f0;
+                    margin: 24px 0 20px 0;
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  h2:before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 6px;
+                    background: linear-gradient(to bottom, #6366f1, #8b5cf6, #ec4899);
+                    border-radius: 0 12px 12px 0;
+                  }
+                  
+                  h2:after {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                    border-radius: 12px 12px 0 0;
+                  }
+                  
+                  h3 {
+                    font-size: 1.3rem;
+                    color: #6366f1;
+                    position: relative;
+                    padding-left: 20px;
+                    margin: 20px 0 12px 0;
+                  }
+                  
+                  h3:before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 4px;
+                    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+                    border-radius: 2px;
+                  }
+                  
+                  /* Modern Content Sections */
+                  .section-container {
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 2px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 24px;
+                    margin: 20px 0;
+                    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  
+                  .section-container::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  /* Enhanced List Styling */
+                  ul, ol {
+                    margin: 16px 0;
+                    padding-left: 0;
+                  }
+                  
+                  li {
+                    margin: 8px 0;
+                    padding: 12px 16px 12px 40px;
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    position: relative;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
+                  }
+                  
+                  li:hover {
+                    transform: translateX(4px);
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.15);
+                    border-color: #6366f1;
+                  }
+                  
+                  li:before {
+                    content: '';
+                    position: absolute;
+                    left: 16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 8px;
+                    height: 8px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    border-radius: 50%;
+                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+                  }
+                  
+                  /* Enhanced Paragraph Styling */
+                  p {
+                    margin: 12px 0;
+                    line-height: 1.6;
+                    color: #374151;
+                    font-size: 14px;
+                  }
+                  
+                  /* Strong and emphasis styling */
+                  strong, b {
+                    color: #6366f1;
+                    font-weight: 700;
+                  }
+                  
+                  em, i {
+                    color: #8b5cf6;
+                    font-style: italic;
                   }
                 </style>
               </head>
