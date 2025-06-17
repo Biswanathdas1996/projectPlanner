@@ -1149,70 +1149,109 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       </html>
                     `;
                     
-                    const blob = new Blob([enhancedHtml], { type: 'text/html' });
-                    const blobUrl = URL.createObjectURL(blob);
-                    
                     return (
-                      <iframe
-                        src={blobUrl}
-                        className="w-full border-0"
-                        style={{
-                          height: '600px',
-                          backgroundColor: '#ffffff'
+                      <div 
+                        className="w-full border-0 bg-white rounded-lg p-8 prose prose-lg max-w-none"
+                        style={{ 
+                          minHeight: '400px',
+                          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+                          lineHeight: '1.7',
+                          color: '#1e293b',
+                          fontSize: '15px',
+                          letterSpacing: '-0.01em'
                         }}
-                        title={section.title}
-                        sandbox="allow-same-origin allow-scripts"
-                        onLoad={(e) => {
-                          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-                          
-                          // Auto-adjust height based on content
-                          const iframe = e.target as HTMLIFrameElement;
-                          try {
-                            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                            if (iframeDoc) {
-                              let isResizing = false;
+                        dangerouslySetInnerHTML={{
+                          __html: `
+                            <style>
+                              .grid {
+                                display: flex;
+                                flex-direction: row;
+                                flex-wrap: wrap;
+                                gap: 16px;
+                                margin: 20px 0;
+                                justify-content: flex-start;
+                                align-items: stretch;
+                              }
                               
-                              const adjustHeight = () => {
-                                if (isResizing) return;
-                                isResizing = true;
-                                
-                                requestAnimationFrame(() => {
-                                  const body = iframeDoc.body;
-                                  const html = iframeDoc.documentElement;
-                                  const height = Math.max(
-                                    body?.scrollHeight || 0,
-                                    body?.offsetHeight || 0,
-                                    html?.scrollHeight || 0,
-                                    html?.offsetHeight || 0
-                                  );
-                                  
-                                  if (height > 100 && height !== iframe.offsetHeight) {
-                                    iframe.style.height = `${height + 20}px`;
-                                  }
-                                  
-                                  isResizing = false;
-                                });
-                              };
+                              .metric {
+                                background: linear-gradient(135deg, #ffffff, #f8fafc);
+                                border: 1px solid #e2e8f0;
+                                border-radius: 20px;
+                                padding: 24px;
+                                text-align: center;
+                                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                                flex: 1;
+                                min-width: 160px;
+                                max-width: 220px;
+                                transition: all 0.3s ease;
+                                position: relative;
+                                overflow: hidden;
+                              }
                               
-                              // Use MutationObserver instead of ResizeObserver
-                              const mutationObserver = new MutationObserver(adjustHeight);
-                              mutationObserver.observe(iframeDoc.body, {
-                                childList: true,
-                                subtree: true,
-                                attributes: true
-                              });
+                              .metrics-dashboard {
+                                display: flex;
+                                flex-wrap: wrap;
+                                gap: 12px;
+                                margin: 16px 0;
+                                padding: 12px;
+                                background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                                border-radius: 12px;
+                              }
                               
-                              // Initial height adjustment
-                              setTimeout(adjustHeight, 200);
-                              setTimeout(adjustHeight, 500);
-                              setTimeout(adjustHeight, 1000);
-                            }
-                          } catch (error) {
-                            // Fallback for cross-origin restrictions
-                            setTimeout(() => {
-                              iframe.style.height = '800px';
-                            }, 100);
-                          }
+                              .metric-card {
+                                display: flex;
+                                flex-direction: column;
+                                background: white;
+                                border: 1px solid #e2e8f0;
+                                border-radius: 8px;
+                                padding: 12px;
+                                min-width: 100px;
+                                flex: 1;
+                                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                                transition: all 0.2s ease;
+                                text-align: center;
+                              }
+                              
+                              h1 {
+                                font-size: 2.5rem;
+                                background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                                margin-bottom: 32px;
+                                padding-bottom: 16px;
+                                border-bottom: 3px solid transparent;
+                                border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
+                                position: relative;
+                                font-weight: 700;
+                                letter-spacing: -0.025em;
+                              }
+                              
+                              h2 {
+                                font-size: 1.75rem;
+                                position: relative;
+                                padding: 16px 20px;
+                                background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                                border-radius: 16px;
+                                border-left: 5px solid #6366f1;
+                                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                                margin-bottom: 24px;
+                                font-weight: 700;
+                                letter-spacing: -0.025em;
+                                color: #0f172a;
+                              }
+                              
+                              .metric-trend.positive::before {
+                                content: '↗';
+                                margin-right: 2px;
+                              }
+                              
+                              .metric-trend.negative::before {
+                                content: '↘';
+                              }
+                            </style>
+                            ${section.content}
+                          `
                         }}
                       />
                     );
