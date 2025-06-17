@@ -191,10 +191,13 @@ export default function ProjectPlanner() {
       return;
     }
 
-    if (useEnhancedPlanner) {
-      await handleGenerateEnhancedPlan();
-      return;
-    }
+    // Always navigate to plan page first
+    setCurrentStep('plan');
+    setLocation('/plan');
+
+    // Use enhanced planner by default for individual section generation
+    await handleGenerateEnhancedPlan();
+    return;
 
     // Generate plan directly using dynamic multi-call approach
     setIsGeneratingDynamic(true);
@@ -257,67 +260,122 @@ export default function ProjectPlanner() {
     try {
       const planner = createEnhancedProjectPlanner();
       
-      // Initialize sections with default state
-      const defaultSections = [
-        { id: "executive-summary", title: "Executive Summary", content: "", isGenerating: false, isCompleted: false, order: 1 },
-        { id: "technical-architecture", title: "Technical Architecture & Infrastructure", content: "", isGenerating: false, isCompleted: false, order: 2 },
-        { id: "feature-specifications", title: "Detailed Feature Specifications", content: "", isGenerating: false, isCompleted: false, order: 3 },
-        { id: "development-methodology", title: "Development Methodology & Timeline", content: "", isGenerating: false, isCompleted: false, order: 4 },
-        { id: "user-experience", title: "User Experience & Interface Design", content: "", isGenerating: false, isCompleted: false, order: 5 },
-        { id: "quality-assurance", title: "Quality Assurance & Testing Strategy", content: "", isGenerating: false, isCompleted: false, order: 6 },
-        { id: "deployment-devops", title: "Deployment & DevOps Strategy", content: "", isGenerating: false, isCompleted: false, order: 7 },
-        { id: "risk-management", title: "Risk Management & Mitigation", content: "", isGenerating: false, isCompleted: false, order: 8 },
-        { id: "stakeholder-management", title: "Stakeholder Management", content: "", isGenerating: false, isCompleted: false, order: 9 },
-        { id: "post-launch", title: "Post-Launch Strategy", content: "", isGenerating: false, isCompleted: false, order: 10 }
-      ];
+      // Use enabled sections from settings
+      const enabledSections = projectSectionsSettings.filter(s => s.enabled).sort((a, b) => a.order - b.order);
       
-      setEnhancedSections(defaultSections);
+      // Initialize sections with project plan section format
+      const initialSections = enabledSections.map(section => ({
+        id: section.id,
+        title: section.title,
+        content: "",
+        isGenerating: false,
+        isCompleted: false,
+        order: section.order
+      }));
+      
+      setEnhancedSections(initialSections);
       
       const config: EnhancedProjectPlanConfig = {
         projectDescription: projectInput,
         additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
       };
 
-      const sections = await planner.generateCompletePlan(
-        config,
-        (progress: ProjectPlanProgress) => {
-          setEnhancedProgress(progress);
-          setEnhancedSections(currentSections => {
-            const updated = currentSections.map((section, index) => ({
-              ...section,
-              isGenerating: progress.isGenerating && progress.currentSection === index + 1,
-              isCompleted: progress.currentSection > index + 1 || (!progress.isGenerating && progress.currentSection === index + 1)
-            }));
-            return updated;
+      // Generate sections one by one with progress tracking
+      const generatedSections: ProjectPlanSection[] = [];
+      const totalSections = enabledSections.length;
+
+      for (let i = 0; i < enabledSections.length; i++) {
+        const section = enabledSections[i];
+        
+        // Update progress - starting generation
+        setEnhancedProgress({
+          currentSection: i + 1,
+          totalSections,
+          currentSectionTitle: section.title,
+          overallProgress: (i / totalSections) * 100,
+          isGenerating: true
+        });
+
+        // Update sections state to show current generating
+        setEnhancedSections(current => current.map((s, index) => ({
+          ...s,
+          isGenerating: index === i,
+          isCompleted: index < i
+        })));
+
+        try {
+          // Generate content for this section
+          console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
+          const content = await planner.generateSection(section.title, config);
+          
+          const generatedSection: ProjectPlanSection = {
+            id: section.id,
+            title: section.title,
+            content,
+            isGenerating: false,
+            isCompleted: true,
+            order: section.order
+          };
+          
+          generatedSections.push(generatedSection);
+          
+          // Update sections with generated content
+          setEnhancedSections(current => current.map((s, index) => 
+            index === i 
+              ? { ...s, content, isGenerating: false, isCompleted: true }
+              : s
+          ));
+          
+          // Update progress
+          setEnhancedProgress({
+            currentSection: i + 1,
+            totalSections,
+            currentSectionTitle: section.title,
+            overallProgress: ((i + 1) / totalSections) * 100,
+            isGenerating: i < totalSections - 1
+          });
+          
+        } catch (error) {
+          console.error(`Failed to generate section ${section.title}:`, error);
+          generatedSections.push({
+            id: section.id,
+            title: section.title,
+            content: `<div class="error-section"><h3>Error Generating ${section.title}</h3><p>Failed to generate content for this section. Please try again.</p></div>`,
+            isGenerating: false,
+            isCompleted: false,
+            order: section.order
           });
         }
-      );
 
-      setEnhancedSections(sections);
-      
-      // Generate HTML report
-      const htmlReport = planner.generateHtmlReport(sections);
+        // Delay between sections to prevent rate limiting
+        if (i < totalSections - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
+      }
+
+      // Generate combined HTML report
+      const htmlReport = planner.generateHtmlReport(generatedSections);
       setProjectPlan(htmlReport);
       
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      localStorage.setItem('enhanced_plan_sections', JSON.stringify(sections));
+      localStorage.setItem('enhanced_plan_sections', JSON.stringify(generatedSections));
       
-      setCurrentStep('plan');
-      setLocation('/plan');
+      // Final progress update
+      setEnhancedProgress({
+        currentSection: totalSections,
+        totalSections,
+        currentSectionTitle: 'Complete',
+        overallProgress: 100,
+        isGenerating: false
+      });
+      
     } catch (err) {
       console.error('Enhanced plan generation error:', err);
       setError('Failed to generate enhanced project plan. Please try again.');
     } finally {
       setIsGeneratingEnhanced(false);
-      setEnhancedProgress({
-        currentSection: 10,
-        totalSections: 10,
-        currentSectionTitle: 'Complete',
-        overallProgress: 100,
-        isGenerating: false
-      });
     }
   };
 
@@ -1815,11 +1873,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </div>
                 <Button
                   onClick={handleGenerateProjectPlan}
-                  disabled={!projectInput.trim() || isGeneratingDynamic || isGeneratingPlan || isGeneratingSuggestions}
+                  disabled={!projectInput.trim() || isGeneratingDynamic || isGeneratingPlan || isGeneratingSuggestions || isGeneratingEnhanced}
                   size="sm"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
                 >
-                  {isGeneratingDynamic ? (
+                  {isGeneratingDynamic || isGeneratingEnhanced ? (
                     <>
                       <Loader2 className="h-3 w-3 mr-2 animate-spin" />
                       Generating {currentGeneratingSection ? `${currentGeneratingSection}...` : 'Sections...'}
@@ -1837,7 +1895,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   ) : (
                     <>
                       <Sparkles className="h-3 w-3 mr-2" />
-                      Generate Plan ({projectSections.filter(s => s.enabled).length} sections)
+                      Generate Plan ({projectSectionsSettings.filter(s => s.enabled).length} sections)
                     </>
                   )}
                 </Button>
