@@ -1890,18 +1890,19 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 20px;
-                    margin: 24px 0;
-                    padding: 20px;
+                    gap: 12px;
+                    margin: 16px 0;
+                    padding: 12px;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    border-radius: 16px;
+                    border-radius: 12px;
                   }
                   
                   .org-level {
                     display: flex;
                     justify-content: center;
-                    gap: 30px;
+                    gap: 16px;
                     position: relative;
+                    flex-wrap: wrap;
                   }
                   
                   .org-level-compact {
@@ -1915,17 +1916,20 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .org-role {
                     background: white;
                     border: 2px solid #6366f1;
-                    border-radius: 12px;
-                    padding: 12px 16px;
+                    border-radius: 8px;
+                    padding: 8px 12px;
                     text-align: center;
-                    min-width: 100px;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                    transition: all 0.3s ease;
+                    min-width: 70px;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
+                    font-size: 13px;
+                    font-weight: 600;
+                    color: #1e293b;
                   }
                   
                   .org-role:hover {
-                    transform: scale(1.05);
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
                   
                   .org-role.manager {
@@ -2005,28 +2009,36 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   /* Data Flow Diagram */
                   .data-flow {
                     display: grid;
-                    grid-template-columns: repeat(3, 1fr);
-                    gap: 20px;
-                    margin: 24px 0;
-                    padding: 20px;
+                    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+                    gap: 12px;
+                    margin: 16px 0;
+                    padding: 12px;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    border-radius: 16px;
+                    border-radius: 12px;
                     position: relative;
+                    max-width: 100%;
+                    overflow: hidden;
                   }
                   
                   .data-node {
                     background: white;
                     border: 2px solid #6366f1;
-                    border-radius: 12px;
-                    padding: 16px;
+                    border-radius: 8px;
+                    padding: 8px 12px;
                     text-align: center;
                     font-weight: 600;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                    transition: all 0.3s ease;
+                    font-size: 13px;
+                    min-height: 50px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
                   }
                   
                   .data-node:hover {
-                    transform: scale(1.05);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
                   
                   .data-node.input {
@@ -2042,6 +2054,70 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .data-node.output {
                     border-color: #ec4899;
                     background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+                  }
+                  
+                  /* Advanced Grid Flow Layout */
+                  .advanced-flow-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    grid-template-rows: repeat(3, auto);
+                    gap: 8px;
+                    margin: 16px 0;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                    position: relative;
+                  }
+                  
+                  .flow-node {
+                    background: white;
+                    border: 2px solid #6366f1;
+                    border-radius: 6px;
+                    padding: 6px 10px;
+                    text-align: center;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #1e293b;
+                    min-height: 40px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.2s ease;
+                    z-index: 1;
+                  }
+                  
+                  .flow-node:hover {
+                    transform: scale(1.02);
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+                    z-index: 2;
+                  }
+                  
+                  /* Grid positioning for complex flows */
+                  .flow-node.start { grid-column: 1; grid-row: 2; }
+                  .flow-node.decision { grid-column: 2; grid-row: 2; }
+                  .flow-node.process-a { grid-column: 3; grid-row: 1; }
+                  .flow-node.process-b { grid-column: 3; grid-row: 3; }
+                  .flow-node.end { grid-column: 4; grid-row: 2; }
+                  
+                  /* Connection lines for grid flow */
+                  .flow-connection {
+                    position: absolute;
+                    height: 2px;
+                    background: #6366f1;
+                    z-index: 0;
+                  }
+                  
+                  .flow-connection.horizontal {
+                    width: calc(25% - 4px);
+                    top: 50%;
+                    transform: translateY(-50%);
+                  }
+                  
+                  .flow-connection.vertical {
+                    width: 2px;
+                    height: calc(33.33% - 4px);
+                    left: 50%;
+                    transform: translateX(-50%);
                   }
                 </style>
               </head>
