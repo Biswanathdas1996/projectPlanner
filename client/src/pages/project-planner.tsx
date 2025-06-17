@@ -1307,7 +1307,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
       
       // Render multiple sections in individual iframes
       return (
-        <div className="space-y-6">
+        <div className="space-y-0">
           {sections.map((sectionHtml, index) => {
             // Extract section title if available
             const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
@@ -1641,22 +1641,25 @@ Return the complete enhanced project plan as HTML with all existing content plus
             const blobUrl = URL.createObjectURL(blob);
             
             return (
-              <div key={`section-${index}`} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="border-b border-gray-200 p-4">
+              <div key={`section-${index}`} className="bg-white border border-gray-200 overflow-hidden">
+                <div className="border-b border-gray-200 p-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded flex items-center justify-center text-white font-bold text-xs">
                       {index + 1}
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900">{sectionTitle}</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">{sectionTitle}</h3>
                   </div>
                 </div>
                 <div className="p-0">
                   <iframe
                     src={blobUrl}
-                    className="w-full border-0"
+                    className="w-full border-0 block"
                     style={{
                       height: '500px',
-                      backgroundColor: '#ffffff'
+                      backgroundColor: '#ffffff',
+                      margin: 0,
+                      padding: 0,
+                      display: 'block'
                     }}
                     title={sectionTitle}
                     sandbox="allow-same-origin allow-scripts"
