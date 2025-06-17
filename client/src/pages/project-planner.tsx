@@ -1270,160 +1270,246 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         cleanedContent.includes('<style>');
     
     if (isHtmlContent) {
-      // Create a blob URL for the iframe content
-      const blob = new Blob([cleanedContent], { type: 'text/html' });
-      const blobUrl = URL.createObjectURL(blob);
+      // Extract content from HTML and render with modern styling
+      const parser = new DOMParser();
+      let htmlDoc;
+      
+      try {
+        htmlDoc = parser.parseFromString(cleanedContent, 'text/html');
+      } catch (error) {
+        console.error('Failed to parse HTML content:', error);
+        return (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+            <p className="text-red-700">Error parsing HTML content. Please regenerate the project plan.</p>
+          </div>
+        );
+      }
+      
+      // Extract text content and structure
+      const body = htmlDoc.body;
+      if (!body) {
+        return (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+            <p className="text-yellow-700">No content found in HTML. Please regenerate the project plan.</p>
+          </div>
+        );
+      }
+      
+      // Convert HTML elements to modern React components
+      const convertHtmlToModernComponents = (element: Element, prefix = 'html'): JSX.Element[] => {
+        const components: JSX.Element[] = [];
+        
+        Array.from(element.children).forEach((child, index) => {
+          const tagName = child.tagName.toLowerCase();
+          const textContent = child.textContent?.trim() || '';
+          const uniqueKey = `${prefix}-${tagName}-${index}`;
+          
+          if (!textContent && !child.children.length) return;
+          
+          switch (tagName) {
+            case 'h1':
+              components.push(
+                <div key={uniqueKey} className="mb-8">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-200">
+                    {textContent}
+                  </h1>
+                </div>
+              );
+              break;
+              
+            case 'h2':
+              components.push(
+                <div key={uniqueKey} className="mb-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                    <h2 className="text-2xl font-semibold text-gray-900">{textContent}</h2>
+                  </div>
+                </div>
+              );
+              break;
+              
+            case 'h3':
+              components.push(
+                <div key={uniqueKey} className="mb-4">
+                  <h3 className="text-xl font-medium text-gray-800 mb-3 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    {textContent}
+                  </h3>
+                </div>
+              );
+              break;
+              
+            case 'ul':
+            case 'ol':
+              const listItems = Array.from(child.children).map((li, liIndex) => (
+                <div key={`${uniqueKey}-li-${liIndex}`} className="flex items-start gap-3 mb-3">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                  <span className="text-gray-700 leading-relaxed">{li.textContent?.trim()}</span>
+                </div>
+              ));
+              components.push(
+                <div key={uniqueKey} className="mb-6 ml-4">
+                  {listItems}
+                </div>
+              );
+              break;
+              
+            case 'p':
+              if (textContent) {
+                components.push(
+                  <p key={uniqueKey} className="text-gray-700 mb-4 leading-relaxed">
+                    {textContent}
+                  </p>
+                );
+              }
+              break;
+              
+            case 'div':
+              // Handle divs with classes or special content
+              const className = child.getAttribute('class') || '';
+              if (className.includes('section') || className.includes('card')) {
+                const subComponents = convertHtmlToModernComponents(child, `${uniqueKey}-sub`);
+                components.push(
+                  <div key={uniqueKey} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+                    {subComponents}
+                  </div>
+                );
+              } else if (child.children.length > 0) {
+                components.push(...convertHtmlToModernComponents(child, `${uniqueKey}-nested`));
+              } else if (textContent) {
+                components.push(
+                  <p key={uniqueKey} className="text-gray-700 mb-4 leading-relaxed">
+                    {textContent}
+                  </p>
+                );
+              }
+              break;
+              
+            default:
+              // Handle other elements or recursively process children
+              if (child.children.length > 0) {
+                components.push(...convertHtmlToModernComponents(child, `${uniqueKey}-other`));
+              } else if (textContent) {
+                components.push(
+                  <div key={uniqueKey} className="text-gray-700 mb-3 leading-relaxed">
+                    {textContent}
+                  </div>
+                );
+              }
+          }
+        });
+        
+        return components;
+      };
+      
+      const modernComponents = convertHtmlToModernComponents(body);
       
       return (
-        <div className="w-full">
-          <iframe
-              src={blobUrl}
-              className="project-plan-content w-full min-h-[800px]"
-              style={{
-                border: 'none',
-                backgroundColor: '#ffffff',
-                overflow: 'hidden',
-                height: '1200px' // Start with larger default height
-              }}
-              title="Project Plan Content"
-              sandbox="allow-same-origin allow-scripts"
-              onLoad={(e) => {
-                const iframe = e.target as HTMLIFrameElement;
-                
-                const adjustHeight = () => {
-                  try {
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-                    if (iframeDoc) {
-                      const body = iframeDoc.body;
-                      const html = iframeDoc.documentElement;
-                      
-                      // Multiple attempts to get accurate height
-                      const measurements = [
-                        body?.scrollHeight || 0,
-                        body?.offsetHeight || 0,
-                        html?.scrollHeight || 0,
-                        html?.offsetHeight || 0,
-                        html?.clientHeight || 0
-                      ];
-                      
-                      // Get the maximum measurement
-                      const contentHeight = Math.max(...measurements);
-                      
-                      // Calculate final height with generous padding
-                      const finalHeight = Math.max(contentHeight + 100, 800);
-                      
-                      // Apply the height
-                      iframe.style.height = `${finalHeight}px`;
-                      
-                      // Ensure content doesn't get cut off
-                      if (body) {
-                        body.style.overflow = 'visible';
-                        body.style.margin = '0';
-                        body.style.padding = '20px';
-                        body.style.minHeight = 'auto';
-                      }
-                      if (html) {
-                        html.style.overflow = 'visible';
-                        html.style.minHeight = 'auto';
-                      }
-                      
-                      console.log('Iframe height adjusted to:', finalHeight, 'Content measurements:', measurements);
-                    }
-                  } catch (error) {
-                    console.error('Height adjustment failed:', error);
-                    // More generous fallback height
-                    iframe.style.height = '1500px';
-                  }
-                };
-                
-                // Multiple timing attempts for height adjustment
-                setTimeout(adjustHeight, 100);
-                setTimeout(adjustHeight, 500);
-                setTimeout(adjustHeight, 1000);
-                
-                // Clean up blob URL after iframe loads
-                setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
-              }}
-            />
+        <div className="space-y-6">
+          {modernComponents.length > 0 ? modernComponents : (
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
+              <p className="text-gray-600">Generated content will appear here</p>
+            </div>
+          )}
         </div>
       );
     }
     
-    // If not HTML, render as markdown
+    // If not HTML, render as markdown with modern styling
     return (
-      <div className="bg-gradient-to-br from-gray-50 to-blue-50 border border-gray-200 rounded-xl p-6 mb-6">
-        <div className="prose prose-gray max-w-none">
-          <div className="text-gray-800 leading-relaxed">
-            {cleanedContent.split('\n').map((line, index) => {
-              const trimmedLine = line.trim();
-              
-              // Clean markdown symbols and format content
-              let cleanLine = trimmedLine
-                .replace(/^\*\s+/, '')
-                .replace(/^\-\s+/, '')
-                .replace(/^#+\s+/, '')
-                .replace(/\*\*(.*?)\*\*/g, '$1')
-                .replace(/\*(.*?)\*/g, '$1');
-              
-              if (!cleanLine) return null;
-              
-              // Format section headers
-              if (trimmedLine.startsWith('#')) {
-                const level = (trimmedLine.match(/^#+/) || [''])[0].length;
-                const HeaderTag = `h${Math.min(level + 1, 6)}` as keyof JSX.IntrinsicElements;
-                return (
-                  <HeaderTag key={index} className="text-blue-800 font-bold mb-4 mt-6">
-                    {cleanLine}
-                  </HeaderTag>
-                );
-              }
-              
-              // Format bullet points
-              if (trimmedLine.match(/^[\*\-]\s+/)) {
-                return (
-                  <div key={index} className="flex items-start gap-3 mb-3 ml-4">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                    <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
-                  </div>
-                );
-              }
-              
-              // Format numbered lists
-              if (trimmedLine.match(/^\d+\./)) {
-                const number = trimmedLine.match(/^(\d+)/)?.[1];
-                return (
-                  <div key={index} className="flex items-start gap-4 mb-4 ml-2">
-                    <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
-                      {number}
-                    </div>
-                    <div className="flex-1">
-                      <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
-                    </div>
-                  </div>
-                );
-              }
-            
-              // Format key-value pairs or important statements
-              if (cleanLine.includes(':') && cleanLine.length < 100) {
-                const [key, ...valueParts] = cleanLine.split(':');
-                const value = valueParts.join(':').trim();
-                return (
-                  <div key={index} className="mb-3 p-3 bg-white rounded-lg border-l-4 border-blue-400">
-                    <span className="font-semibold text-blue-800">{key.trim()}:</span>
-                    {value && <span className="text-gray-700 ml-2">{value}</span>}
-                  </div>
-                );
-              }
-              
-              // Regular paragraphs
-              return (
-                <p key={index} className="text-gray-700 mb-4 leading-relaxed text-justify">
+      <div className="space-y-6">
+        {cleanedContent.split('\n').map((line, index) => {
+          const trimmedLine = line.trim();
+          
+          if (!trimmedLine) return null;
+          
+          // Clean markdown symbols and format content
+          let cleanLine = trimmedLine
+            .replace(/^\*\s+/, '')
+            .replace(/^\-\s+/, '')
+            .replace(/^#+\s+/, '')
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1');
+          
+          if (!cleanLine) return null;
+          
+          // Format section headers
+          if (trimmedLine.startsWith('# ')) {
+            return (
+              <div key={`h1-${index}`} className="mb-8">
+                <h1 className="text-3xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-200">
                   {cleanLine}
-                </p>
-              );
-            })}
-          </div>
-        </div>
+                </h1>
+              </div>
+            );
+          }
+          
+          if (trimmedLine.startsWith('## ')) {
+            return (
+              <div key={`h2-${index}`} className="mb-6">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
+                  <h2 className="text-2xl font-semibold text-gray-900">{cleanLine}</h2>
+                </div>
+              </div>
+            );
+          }
+          
+          if (trimmedLine.startsWith('### ')) {
+            return (
+              <div key={`h3-${index}`} className="mb-4">
+                <h3 className="text-xl font-medium text-gray-800 mb-3 flex items-center gap-2">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  {cleanLine}
+                </h3>
+              </div>
+            );
+          }
+          
+          // Format bullet points
+          if (trimmedLine.match(/^[\*\-]\s+/)) {
+            return (
+              <div key={`bullet-${index}`} className="flex items-start gap-3 mb-3 ml-4">
+                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
+              </div>
+            );
+          }
+          
+          // Format numbered lists
+          if (trimmedLine.match(/^\d+\./)) {
+            const number = trimmedLine.match(/^(\d+)/)?.[1];
+            return (
+              <div key={`numbered-${index}`} className="flex items-start gap-4 mb-4 ml-2">
+                <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
+                  {number}
+                </div>
+                <div className="flex-1">
+                  <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                </div>
+              </div>
+            );
+          }
+        
+          // Format key-value pairs or important statements
+          if (cleanLine.includes(':') && cleanLine.length < 100) {
+            const [key, ...valueParts] = cleanLine.split(':');
+            const value = valueParts.join(':').trim();
+            return (
+              <div key={`keyvalue-${index}`} className="mb-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                <span className="font-semibold text-blue-800">{key.trim()}:</span>
+                {value && <span className="text-gray-700 ml-2">{value}</span>}
+              </div>
+            );
+          }
+          
+          // Regular paragraphs
+          return (
+            <p key={`paragraph-${index}`} className="text-gray-700 mb-4 leading-relaxed">
+              {cleanLine}
+            </p>
+          );
+        })}
       </div>
     );
   };
