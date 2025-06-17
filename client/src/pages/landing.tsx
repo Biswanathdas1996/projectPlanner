@@ -126,32 +126,31 @@ export default function Landing() {
   };
 
   const handleGenerateWithSuggestions = async () => {
-    setIsGeneratingPlan(true);
     setShowSuggestions(false);
 
     try {
-      const enhancedPrompt =
-        selectedSuggestions.length > 0
-          ? `${projectInput}\n\nAdditional Requirements:\n${selectedSuggestions.map((s) => `• ${s}`).join("\n")}`
-          : projectInput;
+      // Get existing project description from localStorage
+      const existingDescription = localStorage.getItem("bpmn-project-description") || "";
+      
+      // Create enhanced description with selected requirements
+      const enhancedDescription = selectedSuggestions.length > 0
+        ? `${projectInput}\n\nAdditional Requirements:\n${selectedSuggestions.map((s) => `• ${s}`).join("\n")}`
+        : projectInput;
 
-      const plan = await generateProjectPlan(enhancedPrompt);
-      setProjectPlan(plan);
-      setCurrentStep("plan");
+      // Append to existing description or set new one
+      const finalDescription = existingDescription 
+        ? `${existingDescription}\n\n${enhancedDescription}`
+        : enhancedDescription;
 
-      // Store project plan
-      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, plan);
+      // Store the enhanced description in localStorage
+      localStorage.setItem("bpmn-project-description", finalDescription);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, enhancedDescription);
 
-      // Auto-generate BPMN diagram
-      await handleGenerateBpmnDiagram(plan);
-
-      // Navigate to /plan immediately after successful generation
-      setLocation("/market-research");
+      // Redirect to /plan page without API calls
+      setLocation("/plan");
     } catch (error) {
-      console.error("Error generating project plan:", error);
-      setError("Failed to generate project plan. Please try again.");
-    } finally {
-      setIsGeneratingPlan(false);
+      console.error("Error storing project description:", error);
+      setError("Failed to store project description. Please try again.");
     }
   };
 
