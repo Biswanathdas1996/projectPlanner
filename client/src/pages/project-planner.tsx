@@ -2046,43 +2046,106 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     // Force layout recalculation
                     document.body.style.display = 'block';
                     document.body.style.overflow = 'hidden';
+                    document.documentElement.style.overflow = 'hidden';
                     
-                    // Get all possible height measurements
-                    const bodyHeight = document.body.scrollHeight;
-                    const bodyOffset = document.body.offsetHeight;
-                    const htmlHeight = document.documentElement.scrollHeight;
-                    const htmlOffset = document.documentElement.offsetHeight;
-                    const clientHeight = document.documentElement.clientHeight;
+                    // Force a reflow
+                    document.body.offsetHeight;
                     
-                    // Find the maximum actual content height
-                    const contentHeight = Math.max(bodyHeight, bodyOffset, htmlHeight, htmlOffset, clientHeight);
+                    // Get precise measurements of all content
+                    const body = document.body;
+                    const html = document.documentElement;
                     
-                    // Add minimal padding to prevent content cutoff
-                    const finalHeight = contentHeight + 10;
+                    // Calculate the actual content bounds
+                    const rect = body.getBoundingClientRect();
+                    const bodyHeight = body.scrollHeight;
+                    const bodyOffset = body.offsetHeight;
+                    const htmlHeight = html.scrollHeight;
+                    const htmlClient = html.clientHeight;
+                    
+                    // Find the last element to determine true bottom
+                    const allElements = document.querySelectorAll('*');
+                    let maxBottom = 0;
+                    
+                    allElements.forEach(el => {
+                      const elementRect = el.getBoundingClientRect();
+                      const elementBottom = elementRect.bottom;
+                      if (elementBottom > maxBottom) {
+                        maxBottom = elementBottom;
+                      }
+                    });
+                    
+                    // Calculate precise height using multiple methods
+                    const heights = [
+                      bodyHeight,
+                      bodyOffset,
+                      htmlHeight,
+                      Math.ceil(maxBottom),
+                      rect.height
+                    ];
+                    
+                    // Use the maximum height that represents actual content
+                    const contentHeight = Math.max(...heights.filter(h => h > 0));
+                    
+                    // Add minimal buffer (2px) to prevent any cutoff
+                    const finalHeight = contentHeight + 2;
                     
                     window.parent.postMessage({
                       type: 'resize',
                       height: finalHeight
                     }, '*');
                     
-                    console.log('Content height calculated:', finalHeight);
+                    console.log('Precise height calculated:', {
+                      bodyHeight,
+                      bodyOffset,
+                      htmlHeight,
+                      maxBottom: Math.ceil(maxBottom),
+                      rectHeight: rect.height,
+                      finalHeight
+                    });
                   }
                   
-                  // Multiple adjustment attempts for thorough measurement
-                  window.addEventListener('load', () => {
+                  // Multiple precise adjustment attempts
+                  function performAdjustments() {
+                    adjustHeight();
+                    setTimeout(adjustHeight, 10);
                     setTimeout(adjustHeight, 50);
-                    setTimeout(adjustHeight, 200);
-                    setTimeout(adjustHeight, 500);
-                    setTimeout(adjustHeight, 1000);
+                    setTimeout(adjustHeight, 150);
+                    setTimeout(adjustHeight, 300);
+                    setTimeout(adjustHeight, 600);
+                    setTimeout(adjustHeight, 1200);
+                  }
+                  
+                  // Start adjustments when DOM is ready
+                  if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', performAdjustments);
+                  } else {
+                    performAdjustments();
+                  }
+                  
+                  // Adjust on load
+                  window.addEventListener('load', () => {
+                    setTimeout(performAdjustments, 100);
                   });
                   
-                  // Immediate adjustment
-                  adjustHeight();
-                  
-                  // Watch for content changes
+                  // Watch for any content changes
                   if (window.ResizeObserver) {
-                    const observer = new ResizeObserver(adjustHeight);
+                    const observer = new ResizeObserver(() => {
+                      setTimeout(adjustHeight, 10);
+                    });
                     observer.observe(document.body);
+                    observer.observe(document.documentElement);
+                  }
+                  
+                  // Watch for dynamic content changes
+                  if (window.MutationObserver) {
+                    const mutationObserver = new MutationObserver(() => {
+                      setTimeout(adjustHeight, 10);
+                    });
+                    mutationObserver.observe(document.body, {
+                      childList: true,
+                      subtree: true,
+                      attributes: true
+                    });
                   }
                 </script>
               </body>
@@ -2118,40 +2181,53 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     onLoad={(e) => {
                       const iframe = e.target as HTMLIFrameElement;
                       
-                      // Auto-adjust height to content
-                      const adjustHeight = () => {
+                      // Precise height adjustment handler
+                      const handleMessage = (event: MessageEvent) => {
+                        if (event.data.type === 'resize' && event.source === iframe.contentWindow) {
+                          const newHeight = Math.max(event.data.height, 50);
+                          
+                          // Apply height immediately
+                          iframe.style.height = `${newHeight}px`;
+                          
+                          // Force layout recalculation
+                          iframe.offsetHeight;
+                          
+                          console.log(`Iframe height adjusted to: ${newHeight}px`);
+                        }
+                      };
+                      
+                      // Direct height adjustment for same-origin content
+                      const adjustHeightDirect = () => {
                         try {
                           if (iframe.contentDocument) {
                             const body = iframe.contentDocument.body;
                             const html = iframe.contentDocument.documentElement;
-                            const height = Math.max(
+                            
+                            // Get all possible measurements
+                            const measurements = [
                               body.scrollHeight,
                               body.offsetHeight,
-                              html.clientHeight,
                               html.scrollHeight,
-                              html.offsetHeight
-                            );
-                            iframe.style.height = `${height}px`;
+                              html.offsetHeight,
+                              html.clientHeight
+                            ].filter(h => h > 0);
+                            
+                            if (measurements.length > 0) {
+                              const height = Math.max(...measurements);
+                              iframe.style.height = `${height + 2}px`;
+                              console.log(`Direct height adjustment: ${height + 2}px`);
+                            }
                           }
                         } catch (error) {
-                          // Fallback for cross-origin restrictions
-                          console.log('Using message-based height adjustment');
-                        }
-                      };
-                      
-                      // Listen for resize messages from iframe
-                      const handleMessage = (event: MessageEvent) => {
-                        if (event.data.type === 'resize' && event.source === iframe.contentWindow) {
-                          iframe.style.height = `${Math.max(event.data.height, 100)}px`;
+                          // Expected for blob URLs - will use message-based approach
                         }
                       };
                       
                       window.addEventListener('message', handleMessage);
                       
-                      // Try direct height adjustment first
-                      setTimeout(adjustHeight, 100);
-                      setTimeout(adjustHeight, 500);
-                      setTimeout(adjustHeight, 1000);
+                      // Try direct adjustment first, then rely on message-based
+                      setTimeout(adjustHeightDirect, 50);
+                      setTimeout(adjustHeightDirect, 200);
                       
                       // Clean up
                       setTimeout(() => {
