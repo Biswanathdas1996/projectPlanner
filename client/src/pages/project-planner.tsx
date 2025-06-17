@@ -1200,9 +1200,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
       
       return (
         <div className="w-full">
-          <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-            
-            <iframe
+          <iframe
               src={blobUrl}
               className="project-plan-content w-full min-h-[800px]"
               style={{
@@ -1271,7 +1269,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
               }}
             />
-          </div>
         </div>
       );
     }
