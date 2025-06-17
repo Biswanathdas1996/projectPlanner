@@ -178,8 +178,8 @@
 
   .diagram-title {
     @apply font-bold text-base mb-2;
-    @apply text-transform: uppercase;
-    @apply letter-spacing: 0.5px;
+    @apply uppercase;
+    @apply tracking-wide;
     @apply drop-shadow-sm;
   }
 
