@@ -137,13 +137,13 @@ export class EnhancedProjectPlanner {
         - ROI projections table with timeline`,
 
       "Technical Architecture & Infrastructure": `Design technical architecture with ultra-compact HTML-based visual elements:
-        - Multi-layered system architecture using tight horizontal flowcharts with arrow connectors (→)
-        - Technology stack comparison table with detailed specifications and performance metrics
-        - Database schema represented as interconnected HTML tables with relationship arrows
-        - API endpoints table with request/response examples and status codes
-        - Scalability metrics dashboard using dense HTML cards with nested information
-        - Security protocols matrix with implementation details and compliance checkmarks
-        - Create compact technical flow diagrams using inline arrow symbols (→ ↓ ↑ ←) with minimal spacing`,
+        - Multi-layered microservices architecture: API Gateway → Service Mesh → Container Orchestrator → Database Cluster → Message Queue → Cache Layer
+        - Technology stack comparison table with modern frameworks (Next.js, React Native, Node.js, PostgreSQL, Redis, Docker, Kubernetes)
+        - Database schema with microservices patterns: User Service ↔ Payment Service ↔ Notification Service ↔ Analytics Service
+        - API endpoints table with GraphQL, REST, WebSocket, and gRPC implementations
+        - Metrics dashboard using display: flex layout with real-time monitoring cards (CPU, Memory, Latency, Throughput, Error Rate)
+        - Security protocols: OAuth 2.0 → JWT → Rate Limiting → WAF → SSL/TLS → Zero Trust Architecture
+        - Complex cloud-native flow: CI/CD Pipeline → Blue/Green Deployment → Auto-scaling → Load Balancing → Service Discovery`,
 
       "Detailed Feature Specifications": `Create feature specifications with structured layouts:
         - Feature priority matrix table
@@ -154,20 +154,20 @@ export class EnhancedProjectPlanner {
         - API specifications table`,
 
       "Development Methodology & Timeline": `Develop methodology with ultra-compact HTML-based visual planning:
-        - Methodology comparison table with detailed pros/cons and complexity metrics
-        - Sprint timeline using tight horizontal flowcharts: Phase1 → Phase2 → Phase3 → Delivery
-        - Team structure using compact organizational tree with arrow connections (PM → Dev → QA)
-        - Critical path represented as inline flow: Req → Design → Code → Test → Deploy with risk badges
-        - Resource allocation matrix with capacity utilization heat mapping
-        - Delivery schedule using connected milestone chains with arrow transitions (→ ↓ ↑)`,
+        - Agile methodology comparison: Scrum → Kanban → SAFe → DevOps → Lean with complexity metrics
+        - Sprint timeline: Epic Planning → Sprint Planning → Daily Standups → Sprint Review → Retrospective → Next Sprint
+        - Modern team structure: Product Owner → Scrum Master → Frontend Engineer → Backend Engineer → DevOps Engineer → QA Automation Engineer
+        - Critical path flow: Requirements Gathering → System Design → API Development → Frontend Development → Integration Testing → UAT → Production Deployment
+        - Resource allocation dashboard using display: flex with capacity cards (Frontend: 80%, Backend: 95%, QA: 60%, DevOps: 70%)
+        - Delivery pipeline: Feature Branch → Pull Request → Code Review → Automated Testing → Staging Deployment → Production Release`,
 
       "User Experience & Interface Design": `Design UX strategy with ultra-compact HTML visual elements:
-        - User persona cards using dense HTML card components with behavioral matrices
-        - User journey represented as tight flow chains: Awareness → Interest → Consideration → Purchase → Retention
-        - Information architecture as connected navigation tree with arrow pathways (Home → Category → Product → Checkout)
-        - Design principles in interactive checklist format with implementation examples
-        - Accessibility compliance matrix with WCAG standards and testing checkpoints
-        - Responsive breakpoint grid with device flow transitions: Mobile → Tablet → Desktop`,
+        - User persona cards with behavioral data: Power User → Casual User → Admin → Guest with engagement metrics
+        - User journey mapping: Brand Discovery → Product Research → Comparison → Add to Cart → Checkout → Post-Purchase → Loyalty
+        - Information architecture: Landing Page → Product Categories → Search Results → Product Details → Shopping Cart → Payment Gateway → Order Confirmation
+        - Design system components: Atomic Design → Design Tokens → Component Library → Pattern Library → Style Guide
+        - UX metrics dashboard using display: flex layout (Conversion Rate, Bounce Rate, Session Duration, User Satisfaction, Task Completion)
+        - Responsive design flow: Mobile-First → Progressive Enhancement → Breakpoint Optimization → Cross-Device Testing`,
 
       "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
         - Testing types coverage matrix
@@ -178,36 +178,36 @@ export class EnhancedProjectPlanner {
         - QA process flowchart`,
 
       "Deployment & DevOps Strategy": `Design DevOps with ultra-compact HTML-based infrastructure visualization:
-        - CI/CD pipeline using tight horizontal flow: Code → Build → Test → Stage → Deploy → Monitor
-        - Environment configuration comparison table with arrow transitions
-        - Infrastructure architecture as connected component chain: Load Balancer → API → Database → Cache
-        - Monitoring metrics dashboard using HTML cards with flow indicators
-        - Deployment checklist with arrow-connected steps: Pre-deploy → Deploy → Verify → Post-deploy
-        - Backup and recovery procedures as compact flow: Backup → Store → Verify → Restore → Test`,
+        - CI/CD pipeline: Git Commit → Webhook Trigger → Docker Build → Unit Tests → Integration Tests → Security Scan → Staging Deploy → E2E Tests → Production Deploy
+        - Environment configuration: Development → Testing → Staging → Pre-Production → Production with infrastructure as code
+        - Cloud infrastructure: CDN → Load Balancer → API Gateway → Microservices → Service Mesh → Database Cluster → Message Queue → Cache Layer → Monitoring Stack
+        - DevOps metrics dashboard using display: flex layout (Deployment Frequency, Lead Time, MTTR, Change Failure Rate, Uptime)
+        - Container orchestration: Dockerfile → Image Registry → Kubernetes Cluster → Pod Scaling → Service Discovery → Ingress Controller
+        - Monitoring stack: Prometheus → Grafana → ELK Stack → Jaeger → Alertmanager → PagerDuty → Incident Response`,
 
       "Risk Management & Mitigation": `Develop risk management with ultra-compact HTML-based assessment visualization:
-        - Risk probability/impact matrix using HTML table with color coding
-        - Mitigation strategies table with action flow arrows
-        - Risk timeline using connected phases: Identify → Assess → Plan → Monitor → Review
-        - Contingency planning as decision flow: Risk Triggered → Assess Impact → Execute Plan → Monitor Results
-        - Risk response procedures as compact workflow: Detect → Escalate → Respond → Verify → Close
-        - Escalation matrix with arrow paths showing responsibility flow`,
+        - Risk assessment matrix with probability/impact scoring and modern risk categories (Cybersecurity, Compliance, Technical Debt, Market, Operational)
+        - Mitigation strategies: Risk Identification → Impact Analysis → Probability Assessment → Mitigation Planning → Implementation → Monitoring → Review
+        - Risk monitoring timeline: Continuous Monitoring → Threat Detection → Risk Assessment → Response Planning → Incident Response → Post-Incident Review
+        - Risk metrics dashboard using display: flex layout (Risk Score, Mitigation Coverage, Response Time, Incident Frequency, Compliance Status)
+        - Modern risk categories: Supply Chain → Data Privacy → API Security → Infrastructure → Third-Party Dependencies → Regulatory Compliance
+        - Incident response flow: Alert → Triage → Investigation → Containment → Eradication → Recovery → Lessons Learned`,
 
       "Stakeholder Management": `Create stakeholder plan with ultra-compact HTML communication visualization:
-        - Stakeholder analysis matrix with influence/interest grid
-        - Communication calendar using connected timeline: Planning → Execution → Review → Feedback
-        - Responsibility assignment table with role flow arrows
-        - Escalation procedures using tight flow: Issue → L1 Support → L2 Manager → L3 Executive
-        - Progress tracking dashboard using HTML metrics cards with status flows
-        - Feedback collection system as connected workflow: Collect → Analyze → Prioritize → Implement → Validate`,
+        - Stakeholder ecosystem: Product Owner → Engineering Manager → Tech Lead → Senior Developer → Junior Developer → QA Lead → DevOps Engineer → UX Designer
+        - Communication flow: Sprint Planning → Daily Standups → Code Reviews → Deployment Notifications → Incident Reports → Post-Mortem Reviews
+        - RACI matrix with modern roles: Product Manager → Engineering → Design → Marketing → Sales → Customer Success → Legal → Security
+        - Escalation chain: Developer → Tech Lead → Engineering Manager → VP Engineering → CTO → CEO
+        - Stakeholder metrics dashboard using display: flex layout (Engagement Score, Response Time, Decision Velocity, Satisfaction Rating)
+        - Feedback loop: User Research → Product Requirements → Technical Specification → Development → Testing → Release → User Feedback`,
 
       "Post-Launch Strategy": `Develop post-launch with ultra-compact HTML roadmap visualization:
-        - Launch timeline using connected milestone chain: Pre-Launch → Soft Launch → Full Launch → Monitor → Optimize
-        - User onboarding flow as tight step sequence: Registration → Setup → Tutorial → First Action → Success
-        - Analytics dashboard using HTML metrics cards with trend arrows
-        - Maintenance schedule with connected task flows: Daily → Weekly → Monthly → Quarterly
-        - Growth metrics tracking using progress chains: Acquisition → Activation → Retention → Revenue → Referral
-        - Feature roadmap using phased timeline: Q1 Features → Q2 Features → Q3 Features → Q4 Features`
+        - Launch phases: Alpha Testing → Beta Release → Soft Launch → Public Launch → Scale-up → Optimization
+        - User onboarding journey: Account Creation → Email Verification → Profile Setup → Feature Discovery → First Success → Habit Formation
+        - Analytics stack: Google Analytics → Mixpanel → Amplitude → Hotjar → DataDog → Custom Dashboards
+        - Post-launch metrics dashboard using display: flex layout (MAU, DAU, Retention Rate, Churn Rate, Revenue Growth, Feature Adoption)
+        - Growth strategies: SEO Optimization → Content Marketing → Social Media → Paid Advertising → Referral Programs → Partnership Development
+        - Product roadmap: Bug Fixes → Performance Optimization → Feature Enhancements → New Integrations → Mobile App → Enterprise Features`
     };
 
     const prompt = sectionPrompts[sectionTitle as keyof typeof sectionPrompts] || `Create a detailed section about ${sectionTitle} for this project.`;

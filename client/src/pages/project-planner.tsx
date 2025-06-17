@@ -2119,6 +2119,72 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     left: 50%;
                     transform: translateX(-50%);
                   }
+                  
+                  /* Metrics Dashboard Flex Layouts */
+                  .metrics-dashboard {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 12px;
+                    margin: 16px 0;
+                    padding: 12px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                  }
+                  
+                  .metric-card {
+                    display: flex;
+                    flex-direction: column;
+                    background: white;
+                    border: 1px solid #e2e8f0;
+                    border-radius: 8px;
+                    padding: 12px;
+                    min-width: 100px;
+                    flex: 1;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
+                    text-align: center;
+                  }
+                  
+                  .metric-card:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                  }
+                  
+                  .metric-title {
+                    font-size: 11px;
+                    font-weight: 600;
+                    color: #64748b;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                  }
+                  
+                  .metric-value {
+                    font-size: 18px;
+                    font-weight: 700;
+                    color: #1e293b;
+                    margin-bottom: 2px;
+                  }
+                  
+                  .metric-trend {
+                    font-size: 10px;
+                    color: #10b981;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                  }
+                  
+                  .metric-trend.negative {
+                    color: #ef4444;
+                  }
+                  
+                  .metric-trend::before {
+                    content: '↗';
+                    margin-right: 2px;
+                  }
+                  
+                  .metric-trend.negative::before {
+                    content: '↘';
+                  }
                 </style>
               </head>
               <body>
