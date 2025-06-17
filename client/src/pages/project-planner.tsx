@@ -1201,14 +1201,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
       return (
         <div className="w-full">
           <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-            <div className="bg-gray-50 px-4 py-2 border-b border-gray-200 flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Project Plan Preview</span>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              </div>
-            </div>
+            
             <iframe
               src={blobUrl}
               className="project-plan-content w-full min-h-[800px]"
