@@ -1008,24 +1008,24 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
       return (
         <Tabs defaultValue={sections[0]?.id} className="w-full">
-          <div className="w-full overflow-x-auto scrollbar-hide mb-6">
-            <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-gradient-to-r from-slate-100 to-slate-200 p-1 text-slate-500 shadow-inner min-w-max">
+          <div className="w-full mb-6">
+            <div className="flex flex-wrap gap-3 p-4 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
               {sections.map((section, index) => (
                 <TabsTrigger 
                   key={section.id} 
                   value={section.id} 
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-lg hover:bg-white/60 hover:text-slate-950 relative group min-w-[140px]"
+                  className="flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm"
                 >
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-60 group-data-[state=active]:opacity-100 transition-opacity duration-200"></div>
-                    <span className="max-w-[120px] truncate font-medium">{section.title}</span>
+                  <span className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                    <span className="font-semibold text-center text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight">
+                      {section.title}
+                    </span>
                   </span>
-                  {index < sections.length - 1 && (
-                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-slate-300 border-y-[4px] border-y-transparent opacity-30"></div>
-                  )}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
                 </TabsTrigger>
               ))}
-            </TabsList>
+            </div>
           </div>
           {sections.map((section) => (
             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
@@ -1241,24 +1241,24 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
       return (
         <Tabs defaultValue={sections[0]?.id} className="w-full">
-          <div className="w-full overflow-x-auto scrollbar-hide mb-6">
-            <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-gradient-to-r from-slate-100 to-slate-200 p-1 text-slate-500 shadow-inner min-w-max">
+          <div className="w-full mb-6">
+            <div className="flex flex-wrap gap-3 p-4 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
               {sections.map((section, index) => (
                 <TabsTrigger 
                   key={section.id} 
                   value={section.id} 
-                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-lg hover:bg-white/60 hover:text-slate-950 relative group min-w-[140px]"
+                  className="flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm"
                 >
-                  <span className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-60 group-data-[state=active]:opacity-100 transition-opacity duration-200"></div>
-                    <span className="max-w-[120px] truncate font-medium">{section.title}</span>
+                  <span className="flex items-center gap-2.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                    <span className="font-semibold text-center text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight">
+                      {section.title}
+                    </span>
                   </span>
-                  {index < sections.length - 1 && (
-                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-slate-300 border-y-[4px] border-y-transparent opacity-30"></div>
-                  )}
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
                 </TabsTrigger>
               ))}
-            </TabsList>
+            </div>
           </div>
           {sections.map((section) => (
             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
