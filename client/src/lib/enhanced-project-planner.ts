@@ -27,12 +27,9 @@ export class EnhancedProjectPlanner {
   private model: any;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error('VITE_GOOGLE_AI_API_KEY environment variable is required');
-    }
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+    this.genAI = genAI;
+    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
   private getDefaultSections(): ProjectPlanSection[] {
@@ -251,7 +248,7 @@ Please provide a comprehensive, well-structured response with clear headings, bu
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
       
-      // Update progress
+      // Update progress - starting generation
       if (onProgress) {
         onProgress({
           currentSection: i + 1,
@@ -262,22 +259,34 @@ Please provide a comprehensive, well-structured response with clear headings, bu
         });
       }
 
-      // Mark section as generating
-      section.isGenerating = true;
-
       try {
         // Generate content for this section
+        console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
         section.content = await this.generateSection(section.title, config);
         section.isCompleted = true;
+        section.isGenerating = false;
+        
+        // Update progress - section completed
+        if (onProgress) {
+          onProgress({
+            currentSection: i + 1,
+            totalSections,
+            currentSectionTitle: section.title,
+            overallProgress: ((i + 1) / totalSections) * 100,
+            isGenerating: i < totalSections - 1
+          });
+        }
       } catch (error) {
         console.error(`Failed to generate section ${section.title}:`, error);
         section.content = `Error generating content for ${section.title}. Please try again.`;
-      } finally {
+        section.isCompleted = false;
         section.isGenerating = false;
       }
 
-      // Small delay between sections to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Small delay between sections to prevent rate limiting and allow UI updates
+      if (i < totalSections - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
     }
 
     // Final progress update

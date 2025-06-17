@@ -244,9 +244,26 @@ export default function ProjectPlanner() {
 
     setIsGeneratingEnhanced(true);
     setError('');
+    setShowSuggestions(false);
     
     try {
       const planner = createEnhancedProjectPlanner();
+      
+      // Initialize sections with default state
+      const defaultSections = [
+        { id: "executive-summary", title: "Executive Summary", content: "", isGenerating: false, isCompleted: false, order: 1 },
+        { id: "technical-architecture", title: "Technical Architecture & Infrastructure", content: "", isGenerating: false, isCompleted: false, order: 2 },
+        { id: "feature-specifications", title: "Detailed Feature Specifications", content: "", isGenerating: false, isCompleted: false, order: 3 },
+        { id: "development-methodology", title: "Development Methodology & Timeline", content: "", isGenerating: false, isCompleted: false, order: 4 },
+        { id: "user-experience", title: "User Experience & Interface Design", content: "", isGenerating: false, isCompleted: false, order: 5 },
+        { id: "quality-assurance", title: "Quality Assurance & Testing Strategy", content: "", isGenerating: false, isCompleted: false, order: 6 },
+        { id: "deployment-devops", title: "Deployment & DevOps Strategy", content: "", isGenerating: false, isCompleted: false, order: 7 },
+        { id: "risk-management", title: "Risk Management & Mitigation", content: "", isGenerating: false, isCompleted: false, order: 8 },
+        { id: "stakeholder-management", title: "Stakeholder Management", content: "", isGenerating: false, isCompleted: false, order: 9 },
+        { id: "post-launch", title: "Post-Launch Strategy", content: "", isGenerating: false, isCompleted: false, order: 10 }
+      ];
+      
+      setEnhancedSections(defaultSections);
       
       const config: EnhancedProjectPlanConfig = {
         projectDescription: projectInput,
@@ -258,18 +275,11 @@ export default function ProjectPlanner() {
         (progress: ProjectPlanProgress) => {
           setEnhancedProgress(progress);
           setEnhancedSections(currentSections => {
-            const updated = [...currentSections];
-            if (progress.currentSection > 0) {
-              // Update the current section status
-              const currentIndex = progress.currentSection - 1;
-              if (updated[currentIndex]) {
-                updated[currentIndex] = {
-                  ...updated[currentIndex],
-                  isGenerating: progress.isGenerating && progress.currentSection === currentIndex + 1,
-                  isCompleted: !progress.isGenerating && progress.currentSection > currentIndex + 1
-                };
-              }
-            }
+            const updated = currentSections.map((section, index) => ({
+              ...section,
+              isGenerating: progress.isGenerating && progress.currentSection === index + 1,
+              isCompleted: progress.currentSection > index + 1 || (!progress.isGenerating && progress.currentSection === index + 1)
+            }));
             return updated;
           });
         }
@@ -304,6 +314,11 @@ export default function ProjectPlanner() {
   };
 
   const handleGenerateWithSuggestions = async () => {
+    if (useEnhancedPlanner) {
+      await handleGenerateEnhancedPlan();
+      return;
+    }
+    
     if (useAdvancedAgent) {
       await handleGenerateComprehensivePlan();
       return;
