@@ -984,7 +984,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
     try {
       const gemini = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-      const model = gemini.getGenerativeModel({ model: "gemini-pro" });
+      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       // Find the target section
       const targetSection = enhancedSections.find(s => s.id === sectionId);
