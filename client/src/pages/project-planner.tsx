@@ -4453,13 +4453,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="prose prose-gray max-w-none">
+                                    <div className="prose prose-lg prose-slate max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-blue-200 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
                                       <div 
                                         dangerouslySetInnerHTML={{ __html: section.content }}
-                                        className="text-gray-700 leading-relaxed"
+                                        className="modern-content text-gray-700 leading-relaxed space-y-6"
                                         style={{
-                                          fontSize: '15px',
-                                          lineHeight: '1.7',
+                                          fontSize: '16px',
+                                          lineHeight: '1.8',
                                         }}
                                       />
                                     </div>
