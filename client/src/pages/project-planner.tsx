@@ -81,6 +81,8 @@ export default function ProjectPlanner() {
   const [showBpmnScript, setShowBpmnScript] = useState(false);
   const [isEditingBpmn, setIsEditingBpmn] = useState(false);
   const [editedBpmnScript, setEditedBpmnScript] = useState('');
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [editedSectionContent, setEditedSectionContent] = useState('');
   const [progressSteps, setProgressSteps] = useState<{step: string; completed: boolean; current: boolean}[]>([]);
   const [overallProgress, setOverallProgress] = useState(0);
   const [currentProgressStep, setCurrentProgressStep] = useState('');
@@ -1723,6 +1725,45 @@ Return the complete enhanced project plan as HTML with all existing content plus
   const cancelBpmnEditing = () => {
     setIsEditingBpmn(false);
     setEditedBpmnScript('');
+  };
+
+  const startEditingSection = (sectionId: string, content: string) => {
+    setEditingSectionId(sectionId);
+    setEditedSectionContent(content);
+  };
+
+  const saveSectionEdit = () => {
+    if (!editingSectionId) return;
+
+    // Update the enhanced sections
+    setEnhancedSections(prev => prev.map(section => 
+      section.id === editingSectionId 
+        ? { ...section, content: editedSectionContent }
+        : section
+    ));
+
+    // Also update the main project plan if it exists
+    if (projectPlan) {
+      // For HTML content, we need to update the specific section
+      let updatedPlan = projectPlan;
+      const sectionTitle = enhancedSections.find(s => s.id === editingSectionId)?.title || '';
+      
+      if (sectionTitle && updatedPlan.includes(sectionTitle)) {
+        // Simple replacement for now - could be more sophisticated
+        const sectionPattern = new RegExp(`(<h[1-6][^>]*>${sectionTitle}</h[1-6]>)(.*?)(?=<h[1-6]|$)`, 'is');
+        const replacement = `$1\n${editedSectionContent}\n`;
+        updatedPlan = updatedPlan.replace(sectionPattern, replacement);
+        setProjectPlan(updatedPlan);
+      }
+    }
+
+    setEditingSectionId(null);
+    setEditedSectionContent('');
+  };
+
+  const cancelSectionEdit = () => {
+    setEditingSectionId(null);
+    setEditedSectionContent('');
   };
 
   const getStepStatus = (step: string) => {
