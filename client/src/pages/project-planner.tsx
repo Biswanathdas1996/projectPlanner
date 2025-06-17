@@ -1560,8 +1560,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .flowchart {
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 20px;
-                    margin: 24px 0;
+                    gap: 12px;
+                    margin: 16px 0;
                     justify-content: center;
                     align-items: center;
                   }
@@ -1569,32 +1569,31 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .flow-step {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
-                    padding: 16px 24px;
-                    border-radius: 16px;
+                    padding: 8px 16px;
+                    border-radius: 8px;
                     font-weight: 600;
                     position: relative;
-                    min-width: 140px;
+                    min-width: 100px;
                     text-align: center;
-                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
-                    transition: all 0.3s ease;
-                    backdrop-filter: blur(10px);
+                    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+                    transition: all 0.2s ease;
+                    font-size: 14px;
                   }
                   
                   .flow-step:hover {
-                    transform: translateY(-2px) scale(1.05);
-                    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4), 0 10px 10px -5px rgba(99, 102, 241, 0.2);
+                    transform: translateY(-1px);
+                    box-shadow: 0 8px 12px -2px rgba(99, 102, 241, 0.4);
                   }
                   
                   .flow-step:not(:last-child):after {
                     content: '→';
                     position: absolute;
-                    right: -30px;
+                    right: -18px;
                     top: 50%;
                     transform: translateY(-50%);
                     color: #6366f1;
-                    font-size: 24px;
+                    font-size: 16px;
                     font-weight: bold;
-                    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
                   }
                   
                   .grid {
@@ -1814,11 +1813,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 20px;
-                    margin: 24px 0;
-                    padding: 20px;
+                    gap: 12px;
+                    margin: 16px 0;
+                    padding: 12px;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    border-radius: 16px;
+                    border-radius: 12px;
                     border: 1px solid #e2e8f0;
                   }
                   
@@ -1826,7 +1825,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     display: flex;
                     justify-content: center;
                     align-items: center;
-                    gap: 30px;
+                    gap: 16px;
                     width: 100%;
                     position: relative;
                   }
@@ -1834,20 +1833,21 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .diagram-component {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border: 2px solid #6366f1;
-                    border-radius: 12px;
-                    padding: 16px 20px;
-                    min-width: 120px;
+                    border-radius: 8px;
+                    padding: 8px 12px;
+                    min-width: 80px;
                     text-align: center;
                     font-weight: 600;
                     color: #1e293b;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-                    transition: all 0.3s ease;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
                     position: relative;
+                    font-size: 13px;
                   }
                   
                   .diagram-component:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
                   
                   .diagram-component.database {
@@ -1879,9 +1879,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   .diagram-arrow.right {
-                    right: -40px;
+                    right: -24px;
                     top: 50%;
                     transform: translateY(-50%);
+                    font-size: 16px;
                   }
                   
                   /* Organizational Chart */
@@ -1938,33 +1939,33 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .process-flow {
                     display: flex;
                     flex-direction: column;
-                    gap: 16px;
-                    margin: 24px 0;
-                    padding: 20px;
+                    gap: 8px;
+                    margin: 16px 0;
+                    padding: 12px;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    border-radius: 16px;
+                    border-radius: 12px;
                   }
                   
                   .process-step {
                     display: flex;
                     align-items: center;
-                    gap: 16px;
-                    padding: 16px;
+                    gap: 12px;
+                    padding: 10px 12px;
                     background: white;
-                    border-radius: 12px;
-                    border-left: 4px solid #6366f1;
-                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    transition: all 0.3s ease;
+                    border-radius: 8px;
+                    border-left: 3px solid #6366f1;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    transition: all 0.2s ease;
                   }
                   
                   .process-step:hover {
-                    transform: translateX(4px);
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                    transform: translateX(2px);
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                   }
                   
                   .process-number {
-                    width: 32px;
-                    height: 32px;
+                    width: 24px;
+                    height: 24px;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
                     border-radius: 50%;
@@ -1972,7 +1973,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     align-items: center;
                     justify-content: center;
                     font-weight: 600;
-                    font-size: 14px;
+                    font-size: 12px;
+                    flex-shrink: 0;
                   }
                   
                   .process-content {
@@ -1982,12 +1984,14 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   .process-title {
                     font-weight: 600;
                     color: #1e293b;
-                    margin-bottom: 4px;
+                    margin-bottom: 2px;
+                    font-size: 14px;
                   }
                   
                   .process-description {
                     color: #64748b;
-                    font-size: 14px;
+                    font-size: 12px;
+                    line-height: 1.4;
                   }
                   
                   /* Data Flow Diagram */
