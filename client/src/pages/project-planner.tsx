@@ -1512,10 +1512,13 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   .grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    display: flex;
+                    flex-direction: row;
+                    flex-wrap: wrap;
                     gap: 16px;
                     margin: 20px 0;
+                    justify-content: flex-start;
+                    align-items: stretch;
                   }
                   
                   .metric {
@@ -1525,6 +1528,9 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     padding: 16px;
                     text-align: center;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    flex: 1;
+                    min-width: 150px;
+                    max-width: 200px;
                   }
                   
                   .metric-value {
