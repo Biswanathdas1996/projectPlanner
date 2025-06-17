@@ -4478,9 +4478,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                                 
                                 {/* Section Header with Actions */}
-                                <div className="border-b border-gray-100 px-6 py-4">
+                                <div className="border-b border-gray-100 px-3 py-2">
                                   <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-900">Complete Generated Plan</h3>
+                                    <h3 className="text-base font-semibold text-gray-900">Complete Generated Plan</h3>
                                     <div className="flex gap-2">
                                       <Button
                                         onClick={startEditingPlan}
@@ -4496,7 +4496,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                   </div>
                                 </div>
 
-                                <div className="p-6">
+                                <div className="p-3">
                                   {renderTabbedProjectPlan()}
                                 </div>
                               </div>
@@ -4511,16 +4511,16 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
               {/* BPMN Script Section */}
               {showBpmnScript && generatedBpmnXml && (
-                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                  <div className="border-b border-gray-200 p-4">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="border-b border-gray-200 p-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                          <Code className="h-4 w-4 text-white" />
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-md flex items-center justify-center">
+                          <Code className="h-3 w-3 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">BPMN 2.0 Script</h3>
-                          <p className="text-sm text-gray-600">Export and manage your workflow script</p>
+                          <h3 className="text-base font-semibold text-gray-900">BPMN 2.0 Script</h3>
+                          <p className="text-xs text-gray-600">Export and manage your workflow script</p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -4556,28 +4556,29 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     </div>
                   </div>
                   
-                  <div className="p-6">
+                  <div className="p-3">
                     {isEditingBpmn ? (
-                      <div className="space-y-4">
+                      <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-xs text-gray-600">
                             Edit the BPMN XML script. Ensure proper XML syntax before saving.
                           </p>
                           <div className="flex gap-2">
                             <Button
                               onClick={saveBpmnEdits}
                               size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white"
+                              className="bg-green-600 hover:bg-green-700 text-white text-xs"
                             >
-                              <Save className="h-4 w-4 mr-2" />
-                              Save Changes
+                              <Save className="h-3 w-3 mr-1" />
+                              Save
                             </Button>
                             <Button
                               onClick={cancelBpmnEditing}
                               variant="outline"
                               size="sm"
+                              className="text-xs"
                             >
-                              <X className="h-4 w-4 mr-2" />
+                              <X className="h-3 w-3 mr-1" />
                               Cancel
                             </Button>
                           </div>
@@ -4586,27 +4587,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <Textarea
                           value={editedBpmnScript}
                           onChange={(e) => setEditedBpmnScript(e.target.value)}
-                          className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                          className="min-h-[300px] font-mono text-xs bg-gray-50 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                           placeholder="Edit BPMN XML script..."
                         />
                         
-                        <div className="text-sm text-gray-500">
+                        <div className="text-xs text-gray-500">
                           {editedBpmnScript.length} characters | Maintain valid BPMN XML structure
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
+                      <div className="space-y-3">
+                        <p className="text-xs text-gray-600">
                           Generated BPMN 2.0 script that powers your visual workflow diagram. Compatible with any BPMN editor.
                         </p>
                         
-                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
-                          <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
+                        <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 max-h-[300px] overflow-y-auto">
+                          <pre className="text-xs text-gray-800 font-mono whitespace-pre-wrap">
                             {generatedBpmnXml}
                           </pre>
                         </div>
                         
-                        <div className="flex justify-between items-center text-sm text-gray-500">
+                        <div className="flex justify-between items-center text-xs text-gray-500">
                           <span>BPMN 2.0 XML format with swimlanes</span>
                           <span>{generatedBpmnXml.length} characters</span>
                         </div>
@@ -4617,41 +4618,41 @@ Please provide the regenerated section content as properly formatted HTML:`;
               )}
               
               {/* Enhancement Section */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-                <div className="border-b border-gray-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                      <Plus className="h-4 w-4 text-white" />
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="border-b border-gray-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-md flex items-center justify-center">
+                      <Plus className="h-3 w-3 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">Enhance Project Plan</h3>
-                      <p className="text-sm text-gray-600">Add features and requirements to your plan</p>
+                      <h3 className="text-base font-semibold text-gray-900">Enhance Project Plan</h3>
+                      <p className="text-xs text-gray-600">Add features and requirements to your plan</p>
                     </div>
                   </div>
                 </div>
                 
-                <div className="p-6 space-y-4">
+                <div className="p-3 space-y-3">
                   <Textarea
                     value={enhancementPrompt}
                     onChange={(e) => setEnhancementPrompt(e.target.value)}
                     placeholder="e.g., Add user authentication system, Include mobile app requirements, Add payment gateway integration, Include security audit section..."
-                    className="min-h-[120px] resize-y border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                    className="min-h-[80px] resize-y border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
                     disabled={isEnhancing}
                   />
                   
                   <Button
                     onClick={enhanceProjectPlan}
                     disabled={isEnhancing || !enhancementPrompt.trim()}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg"
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg text-sm"
                   >
                     {isEnhancing ? (
                       <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
                         Enhancing Plan...
                       </>
                     ) : (
                       <>
-                        <Plus className="h-4 w-4 mr-2" />
+                        <Plus className="h-3 w-3 mr-2" />
                         Enhance Project Plan
                       </>
                     )}
@@ -4660,8 +4661,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </div>
               
               {/* Action Buttons */}
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
+                <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
                   <Button
                     variant="outline"
                     onClick={resetPlanner}
@@ -4859,39 +4860,39 @@ Please provide the regenerated section content as properly formatted HTML:`;
               )}
 
               {/* Sitemap XML Generation Section */}
-              <div className="mt-6">
-                <Card className="border-0 shadow-lg">
-                  <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b">
-                    <CardTitle className="flex items-center justify-between text-xl">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-lg flex items-center justify-center">
-                          <FileText className="h-5 w-5 text-white" />
+              <div className="mt-3">
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b p-3">
+                    <CardTitle className="flex items-center justify-between text-base">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-md flex items-center justify-center">
+                          <FileText className="h-3 w-3 text-white" />
                         </div>
                         Sitemap XML Generator
                       </div>
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-6">
-                    <div className="space-y-4">
-                      <p className="text-gray-600">
+                  <CardContent className="p-3">
+                    <div className="space-y-3">
+                      <p className="text-gray-600 text-sm">
                         Generate a comprehensive XML sitemap for your project including all suggested pages, 
                         content hierarchy, SEO metadata, and navigation structure.
                       </p>
                       
-                      <div className="flex gap-3">
+                      <div className="flex gap-2">
                         <Button
                           onClick={generateSitemap}
                           disabled={isGeneratingSitemap || !projectInput.trim()}
-                          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700"
+                          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-sm"
                         >
                           {isGeneratingSitemap ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Generating Sitemap...
+                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              Generating...
                             </>
                           ) : (
                             <>
-                              <Sparkles className="h-4 w-4 mr-2" />
+                              <Sparkles className="h-3 w-3 mr-2" />
                               Generate Sitemap XML
                             </>
                           )}
@@ -4903,19 +4904,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               onClick={copySitemapXml}
                               variant="outline"
                               size="sm"
-                              className="border-teal-300 text-teal-600 hover:bg-teal-50"
+                              className="border-teal-300 text-teal-600 hover:bg-teal-50 text-xs"
                             >
-                              <Copy className="h-4 w-4 mr-2" />
-                              Copy XML
+                              <Copy className="h-3 w-3 mr-1" />
+                              Copy
                             </Button>
                             <Button
                               onClick={downloadSitemapXml}
                               variant="outline"
                               size="sm"
-                              className="border-green-300 text-green-600 hover:bg-green-50"
+                              className="border-green-300 text-green-600 hover:bg-green-50 text-xs"
                             >
-                              <Download className="h-4 w-4 mr-2" />
-                              Download XML
+                              <Download className="h-3 w-3 mr-1" />
+                              Download
                             </Button>
                           </>
                         )}
