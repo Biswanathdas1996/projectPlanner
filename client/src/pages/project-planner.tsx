@@ -3699,16 +3699,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   
                   
-                  <Button
-                    onClick={startEditingPlan}
-                    variant="outline"
-                    size="sm"
-                    disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
-                    className="border-blue-200 text-blue-600 hover:bg-blue-50 text-xs px-2 py-1"
-                  >
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Button>
+                  
                 </div>
               </CardTitle>
             </CardHeader>
@@ -3879,7 +3870,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
                       <div>
-                        <h2 className="text-lg font-semibold text-gray-900 mb-0.5">Project Sections</h2>
+                        
                         <p className="text-xs text-gray-500">
                           {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
                         </p>

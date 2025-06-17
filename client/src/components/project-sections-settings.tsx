@@ -124,12 +124,7 @@ export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectS
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="border-purple-200 text-purple-600 hover:bg-purple-50">
-          <Settings className="h-4 w-4 mr-2" />
-          Section Settings
-        </Button>
-      </DialogTrigger>
+      
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
