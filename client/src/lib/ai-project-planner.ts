@@ -207,6 +207,88 @@ Ensure realistic estimates based on project complexity.`;
         title: "Project Overview",
         prompt: `Create a comprehensive project overview for: "${description}" using modern HTML with responsive design elements.
 
+        Use these exact CSS template patterns for consistent styling:
+
+        <!-- Modern Card Template -->
+        <div class="modern-card" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Card Title</h3>
+          <p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">Card content goes here...</p>
+        </div>
+
+        <!-- Modern List Template -->
+        <ul class="modern-list" style="margin: 20px 0; padding: 0; list-style: none;">
+          <li style="margin: 12px 0; padding: 16px 20px 16px 44px; background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 8px; position: relative; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+            <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 50%; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);"></div>
+            List item content
+          </li>
+        </ul>
+
+        <!-- Modern Table Template -->
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 24px 0; background: linear-gradient(135deg, #ffffff, #f8fafc); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; position: relative;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <thead>
+            <tr>
+              <th style="padding: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Header</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="transition: all 0.2s ease;">
+              <td style="padding: 16px 18px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; color: #374151;">Content</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Tree Structure Template -->
+        <div class="tree-structure" style="margin: 24px 0; padding: 20px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0;">
+          <div class="tree-node" style="margin: 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border-radius: 8px; font-weight: 600; position: relative;">
+            Root Node
+            <div class="tree-children" style="margin-left: 24px; margin-top: 12px; border-left: 2px solid #8b5cf6; padding-left: 16px;">
+              <div class="tree-child" style="margin: 8px 0; padding: 10px 14px; background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 6px; color: #374151; position: relative;">
+                Child Node
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flow Diagram Template -->
+        <div class="flowchart" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; justify-content: center; align-items: center; padding: 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);">
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 1
+            <div style="position: absolute; right: -18px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 14px solid #6366f1; z-index: 10;"></div>
+          </div>
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 2
+          </div>
+        </div>
+
+        <!-- Architecture Diagram Template -->
+        <div class="architecture-diagram" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Architecture Overview</h3>
+          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
+            <div class="diagram-box primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Component</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Description</div>
+            </div>
+            <div class="diagram-box secondary" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: 2px solid #047857; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Service</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Type</div>
+            </div>
+            <div class="diagram-box accent" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: 2px solid #b45309; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Storage</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Database</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section Divider Template -->
+        <div class="section-divider" style="display: flex; align-items: center; margin: 24px 0; position: relative;">
+          <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);"></div>
+          <div class="section-divider-text" style="padding: 0 20px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border-radius: 20px; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);">Section Title</div>
+          <div style="flex: 1; height: 2px; background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);"></div>
+        </div>
+
         Generate HTML with these specific styling patterns:
 
         <div class="section-divider">
@@ -266,6 +348,73 @@ Ensure realistic estimates based on project complexity.`;
       {
         title: "Technical Architecture",
         prompt: `Design comprehensive technical architecture for: "${description}" with modern visual diagrams and responsive layout.
+
+        Use these exact CSS template patterns for consistent styling:
+
+        <!-- Modern Card Template -->
+        <div class="modern-card" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Card Title</h3>
+          <p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">Card content goes here...</p>
+        </div>
+
+        <!-- Modern List Template -->
+        <ul class="modern-list" style="margin: 20px 0; padding: 0; list-style: none;">
+          <li style="margin: 12px 0; padding: 16px 20px 16px 44px; background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 8px; position: relative; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);">
+            <div style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 8px; height: 8px; background: linear-gradient(135deg, #6366f1, #8b5cf6); border-radius: 50%; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);"></div>
+            List item content
+          </li>
+        </ul>
+
+        <!-- Modern Table Template -->
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 24px 0; background: linear-gradient(135deg, #ffffff, #f8fafc); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; position: relative;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <thead>
+            <tr>
+              <th style="padding: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Header</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="transition: all 0.2s ease;">
+              <td style="padding: 16px 18px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; color: #374151;">Content</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Tree Structure Template -->
+        <div class="tree-structure" style="margin: 24px 0; padding: 20px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0;">
+          <div class="tree-node" style="margin: 8px 0; padding: 12px 16px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border-radius: 8px; font-weight: 600; position: relative;">
+            Root Node
+            <div class="tree-children" style="margin-left: 24px; margin-top: 12px; border-left: 2px solid #8b5cf6; padding-left: 16px;">
+              <div class="tree-child" style="margin: 8px 0; padding: 10px 14px; background: linear-gradient(135deg, #ffffff, #f8fafc); border: 1px solid #e2e8f0; border-radius: 6px; color: #374151; position: relative;">
+                Child Node
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flow Diagram Template -->
+        <div class="flowchart" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; justify-content: center; align-items: center; padding: 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);">
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 1
+            <div style="position: absolute; right: -18px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 14px solid #6366f1; z-index: 10;"></div>
+          </div>
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 2
+          </div>
+        </div>
+
+        <!-- Architecture Diagram Template -->
+        <div class="architecture-diagram" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Architecture Overview</h3>
+          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
+            <div class="diagram-box primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Component</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Description</div>
+            </div>
+          </div>
+        </div>
 
         Generate HTML using these exact CSS classes and structure patterns:
 
@@ -358,6 +507,50 @@ Ensure realistic estimates based on project complexity.`;
       {
         title: "Phase 1: Foundation & Setup",
         prompt: `Create detailed Phase 1 foundation plan for: "${description}" with modern visual workflow and tree structure.
+
+        Use these exact CSS template patterns for consistent styling:
+
+        <!-- Modern Card Template -->
+        <div class="modern-card" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Card Title</h3>
+          <p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">Card content goes here...</p>
+        </div>
+
+        <!-- Modern Table Template -->
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 24px 0; background: linear-gradient(135deg, #ffffff, #f8fafc); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; position: relative;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <thead>
+            <tr>
+              <th style="padding: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Header</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="transition: all 0.2s ease;">
+              <td style="padding: 16px 18px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; color: #374151;">Content</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Flow Diagram Template -->
+        <div class="flowchart" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; justify-content: center; align-items: center; padding: 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);">
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 1
+            <div style="position: absolute; right: -18px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 14px solid #6366f1; z-index: 10;"></div>
+          </div>
+        </div>
+
+        <!-- Architecture Diagram Template -->
+        <div class="architecture-diagram" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Architecture Overview</h3>
+          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
+            <div class="diagram-box primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Component</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Description</div>
+            </div>
+          </div>
+        </div>
 
         Generate HTML with comprehensive development flow using these CSS classes:
 
@@ -1391,6 +1584,50 @@ Ensure realistic estimates based on project complexity.`;
       {
         title: "Budget Breakdown",
         prompt: `Create comprehensive budget breakdown for: "${description}" with detailed cost analysis and financial planning visualization.
+
+        Use these exact CSS template patterns for consistent styling:
+
+        <!-- Modern Card Template -->
+        <div class="modern-card" style="background: linear-gradient(135deg, #ffffff, #f8fafc); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Card Title</h3>
+          <p style="color: #374151; line-height: 1.6; margin-bottom: 16px;">Card content goes here...</p>
+        </div>
+
+        <!-- Modern Table Template -->
+        <table style="width: 100%; border-collapse: separate; border-spacing: 0; margin: 24px 0; background: linear-gradient(135deg, #ffffff, #f8fafc); border-radius: 12px; overflow: hidden; box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1); border: 2px solid #e2e8f0; position: relative;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <thead>
+            <tr>
+              <th style="padding: 18px; background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; font-weight: 700; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; text-align: left;">Header</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="transition: all 0.2s ease;">
+              <td style="padding: 16px 18px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid #e2e8f0; color: #374151;">Content</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Flow Diagram Template -->
+        <div class="flowchart" style="display: flex; flex-wrap: wrap; gap: 16px; margin: 20px 0; justify-content: center; align-items: center; padding: 24px; background: linear-gradient(135deg, #f8fafc, #f1f5f9); border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);">
+          <div class="flow-step" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; padding: 14px 20px; border-radius: 12px; font-weight: 600; position: relative; min-width: 140px; text-align: center; box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3); transition: all 0.3s ease; font-size: 14px; border: 2px solid rgba(255, 255, 255, 0.2);">
+            Step 1
+            <div style="position: absolute; right: -18px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-left: 14px solid #6366f1; z-index: 10;"></div>
+          </div>
+        </div>
+
+        <!-- Architecture Diagram Template -->
+        <div class="architecture-diagram" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
+          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+          <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Architecture Overview</h3>
+          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
+            <div class="diagram-box primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
+              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Component</div>
+              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Description</div>
+            </div>
+          </div>
+        </div>
 
         Generate HTML with modern budget analysis design:
 
