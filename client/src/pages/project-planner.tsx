@@ -969,9 +969,23 @@ Return the complete enhanced project plan as HTML with all existing content plus
       const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
       const gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      // Get current section info
-      const currentSections = parseProjectPlanSections(projectPlan);
-      const targetSection = currentSections.find(s => s.id === sectionId);
+      // Get current section info - handle both enhanced and plain text sections
+      let targetSection = null;
+      let isEnhancedSection = false;
+      
+      // First check if it's an enhanced section
+      if (enhancedSections && enhancedSections.length > 0) {
+        targetSection = enhancedSections.find(s => s.id === sectionId);
+        if (targetSection) {
+          isEnhancedSection = true;
+        }
+      }
+      
+      // If not found in enhanced sections, check plain text sections
+      if (!targetSection) {
+        const currentSections = parseProjectPlanSections(projectPlan);
+        targetSection = currentSections.find(s => s.id === sectionId);
+      }
       
       if (!targetSection) {
         setError('Section not found');
@@ -1007,19 +1021,39 @@ Please provide the regenerated section content:`;
       const result = await gemini.generateContent(regenerationPrompt);
       const regeneratedContent = result.response.text();
 
-      // Update the specific section in the project plan
-      const updatedSections = currentSections.map(section => 
-        section.id === sectionId 
-          ? { ...section, content: regeneratedContent }
-          : section
-      );
+      if (isEnhancedSection) {
+        // Update enhanced section
+        const updatedEnhancedSections = enhancedSections.map((section: any) => 
+          section.id === sectionId 
+            ? { ...section, content: regeneratedContent }
+            : section
+        );
+        setEnhancedSections(updatedEnhancedSections);
+        
+        // Regenerate HTML report
+        const planner = createEnhancedProjectPlanner();
+        const htmlReport = planner.generateHtmlReport(updatedEnhancedSections);
+        setProjectPlan(htmlReport);
+        
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
+        localStorage.setItem('enhanced_plan_sections', JSON.stringify(updatedEnhancedSections));
+      } else {
+        // Update plain text section
+        const currentSections = parseProjectPlanSections(projectPlan);
+        const updatedSections = currentSections.map((section: any) => 
+          section.id === sectionId 
+            ? { ...section, content: regeneratedContent }
+            : section
+        );
 
-      // Rebuild the full project plan
-      const updatedPlan = updatedSections.map(section => section.content).join('\n\n');
-      setProjectPlan(updatedPlan);
-      
-      // Save to localStorage
-      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedPlan);
+        // Rebuild the full project plan
+        const updatedPlan = updatedSections.map((section: any) => section.content).join('\n\n');
+        setProjectPlan(updatedPlan);
+        
+        // Save to localStorage
+        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedPlan);
+      }
       
       // Close modal and reset state
       setShowCustomPromptModal(false);
@@ -4854,8 +4888,15 @@ Please provide the regenerated section content:`;
                 </div>
                 <p className="text-sm text-purple-700">
                   {customPromptSectionId && (() => {
-                    const sections = parseProjectPlanSections(projectPlan);
-                    const section = sections.find(s => s.id === customPromptSectionId);
+                    // Check enhanced sections first
+                    let section = enhancedSections?.find((s: any) => s.id === customPromptSectionId);
+                    
+                    // If not found in enhanced sections, check plain text sections
+                    if (!section && projectPlan) {
+                      const plainSections = parseProjectPlanSections(projectPlan);
+                      section = plainSections.find(s => s.id === customPromptSectionId);
+                    }
+                    
                     return section ? `Regenerating: "${section.title}"` : 'Section not found';
                   })()}
                 </p>
