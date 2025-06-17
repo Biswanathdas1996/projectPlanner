@@ -1084,11 +1084,7 @@ Please provide the regenerated section content:`;
       setCustomPromptSectionId(null);
       
       // Show success notification
-      addNotification({
-        id: Date.now().toString(),
-        message: `Section "${targetSection.title}" regenerated successfully`,
-        type: 'success'
-      });
+      console.log(`Section "${targetSection.title}" regenerated successfully`);
       
     } catch (error) {
       console.error('Section regeneration error:', error);
@@ -2070,10 +2066,21 @@ Please provide the regenerated section content:`;
     setEditedBpmnScript('');
   };
 
-  const startEditingSection = (sectionId: string, content: string, tabId: string) => {
-    setEditingSectionId(sectionId);
-    setEditedSectionContent(content);
-    setActiveTabId(tabId);
+  const startEditingSection = (sectionId: string, content?: string, tabId?: string) => {
+    if (content && tabId) {
+      // Called with 3 parameters
+      setEditingSectionId(sectionId);
+      setEditedSectionContent(content);
+      setActiveTabId(tabId);
+    } else {
+      // Called with 1 parameter - find section from enhanced sections
+      const section = enhancedSections.find(s => s.id === sectionId);
+      if (section) {
+        setEditingSectionId(sectionId);
+        setEditedSectionContent(section.content);
+        setActiveTabId(sectionId);
+      }
+    }
   };
 
   const saveSectionEdit = () => {
@@ -2111,6 +2118,8 @@ Please provide the regenerated section content:`;
     setEditedSectionContent('');
     setActiveTabId(null);
   };
+
+
 
   const getStepStatus = (step: string) => {
     if (step === 'input') return currentStep === 'input' ? 'active' : currentStep === 'plan' || currentStep === 'diagram' ? 'completed' : 'pending';
@@ -4363,6 +4372,35 @@ Please provide the regenerated section content:`;
                             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
                               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                                 
+                                {/* Section Header with Actions */}
+                                <div className="border-b border-gray-100 px-6 py-4">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={() => openCustomPromptModal(section.id)}
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isRegeneratingSection}
+                                        className="text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
+                                      >
+                                        <RefreshCw className="h-3 w-3 mr-1" />
+                                        Regenerate
+                                      </Button>
+                                      <Button
+                                        onClick={() => startEditingSection(section.id)}
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={editingSectionId === section.id}
+                                        className="text-xs"
+                                      >
+                                        <Edit className="h-3 w-3 mr-1" />
+                                        Edit
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+
                                 <div className="p-6">
                                   {editingSectionId === section.id && activeTabId === section.id ? (
                                     <div className="space-y-4">
