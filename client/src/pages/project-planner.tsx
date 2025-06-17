@@ -1198,7 +1198,7 @@ Please provide the regenerated section content:`;
           {sections.map((section) => (
             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="flex items-center gap-3 p-6 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
+                <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
                   {(() => {
                     const { icon: SectionIcon } = getSectionIconAndDescription(section.title);
                     return (
@@ -1210,6 +1210,16 @@ Please provide the regenerated section content:`;
                       </div>
                     );
                   })()}
+                  <Button
+                    onClick={() => openCustomPromptModal(section.id)}
+                    size="sm"
+                    variant="outline"
+                    className="text-xs bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 hover:from-purple-100 hover:to-indigo-100"
+                    disabled={isRegeneratingSection}
+                  >
+                    <Wand2 className="h-3 w-3 mr-1" />
+                    Regenerate
+                  </Button>
                 </div>
                 <div className="p-0">
                   {(() => {
