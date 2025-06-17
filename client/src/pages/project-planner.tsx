@@ -3945,6 +3945,128 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     )}
                   </div>
                   
+                  {/* Enhanced Sections Content */}
+                  {enhancedSections && enhancedSections.length > 0 && enhancedSections.some(s => s.content) && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="border-b border-gray-200 p-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">Enhanced Plan Sections</h3>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={downloadPDF}
+                              variant="outline"
+                              size="sm"
+                              disabled={isDownloadingPdf}
+                              className="text-xs"
+                            >
+                              {isDownloadingPdf ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Download className="h-3 w-3 mr-1" />
+                              )}
+                              PDF
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <Tabs defaultValue={enhancedSections.filter(s => s.content)[0]?.id} className="w-full">
+                          <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
+                            {enhancedSections.filter(s => s.content).map((section, index) => (
+                              <TabsTrigger 
+                                key={section.id} 
+                                value={section.id} 
+                                className="flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm"
+                              >
+                                <span className="flex items-center gap-2.5">
+                                  <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                  <span className="font-semibold text-center text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight">
+                                    {section.title}
+                                  </span>
+                                </span>
+                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                              </TabsTrigger>
+                            ))}
+                          </TabsList>
+                          {enhancedSections.filter(s => s.content).map((section) => (
+                            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
+                              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                                      <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                                    </div>
+                                    <Button
+                                      onClick={() => startEditingSection(section.id, section.content)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                  </div>
+                                </div>
+                                <div className="p-6">
+                                  {editingSectionId === section.id ? (
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between">
+                                        <p className="text-sm text-gray-600">
+                                          Edit the content for this section. You can use HTML or plain text.
+                                        </p>
+                                        <div className="flex gap-2">
+                                          <Button
+                                            onClick={saveSectionEdit}
+                                            size="sm"
+                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                          >
+                                            <Save className="h-4 w-4 mr-2" />
+                                            Save Changes
+                                          </Button>
+                                          <Button
+                                            onClick={cancelSectionEdit}
+                                            variant="outline"
+                                            size="sm"
+                                          >
+                                            <X className="h-4 w-4 mr-2" />
+                                            Cancel
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      
+                                      <Textarea
+                                        value={editedSectionContent}
+                                        onChange={(e) => setEditedSectionContent(e.target.value)}
+                                        className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                        placeholder="Enter content for this section..."
+                                      />
+                                      
+                                      <div className="text-sm text-gray-500">
+                                        {editedSectionContent.length} characters | HTML and plain text supported
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="prose prose-gray max-w-none">
+                                      <div 
+                                        dangerouslySetInnerHTML={{ __html: section.content }}
+                                        className="text-gray-700 leading-relaxed"
+                                        style={{
+                                          fontSize: '15px',
+                                          lineHeight: '1.7',
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </TabsContent>
+                          ))}
+                        </Tabs>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Generated Plan Content */}
                   {projectPlan && (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
