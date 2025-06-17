@@ -1141,7 +1141,10 @@ Please provide the regenerated section content:`;
         currentSection = {
           id,
           title,
-          content: line + '\n'
+          content: line + '\n',
+          isGenerating: false,
+          isCompleted: true,
+          order: sections.length
         };
       } else if (currentSection) {
         // Add line to current section
@@ -1152,7 +1155,10 @@ Please provide the regenerated section content:`;
           currentSection = {
             id: 'introduction',
             title: 'Project Overview',
-            content: line + '\n'
+            content: line + '\n',
+            isGenerating: false,
+            isCompleted: true,
+            order: 0
           };
         }
       }
@@ -1201,7 +1207,10 @@ Please provide the regenerated section content:`;
         sections.push({
           id,
           title,
-          content: sectionHtml
+          content: sectionHtml,
+          isGenerating: false,
+          isCompleted: true,
+          order: sections.length
         });
       }
 
@@ -1210,8 +1219,16 @@ Please provide the regenerated section content:`;
         sections.push({
           id: 'project-plan',
           title: 'Project Plan',
-          content: cleanedContent
+          content: cleanedContent,
+          isGenerating: false,
+          isCompleted: true,
+          order: 0
         });
+      }
+
+      // Update enhancedSections state if it's different
+      if (!enhancedSections || enhancedSections.length !== sections.length) {
+        setEnhancedSections(sections);
       }
 
       return (
@@ -4893,10 +4910,10 @@ Please provide the regenerated section content:`;
                 <p className="text-sm text-purple-700">
                   {customPromptSectionId && (() => {
                     console.log('Looking for section:', customPromptSectionId);
-                    console.log('Enhanced sections available:', enhancedSections?.map((s: any) => ({ id: s.id, title: s.title })));
+                    console.log('Enhanced sections available:', enhancedSections?.map(s => ({ id: s.id, title: s.title })));
                     
                     // Check enhanced sections first
-                    let section = enhancedSections?.find((s: any) => s.id === customPromptSectionId);
+                    let section = enhancedSections?.find(s => s.id === customPromptSectionId);
                     console.log('Found in enhanced sections:', section);
                     
                     // If not found in enhanced sections, check plain text sections
