@@ -136,14 +136,14 @@ export class EnhancedProjectPlanner {
         - Success metrics dashboard layout
         - ROI projections table with timeline`,
 
-      "Technical Architecture & Infrastructure": `Design technical architecture with sophisticated HTML-based visual elements:
-        - Multi-layered system architecture using compact HTML flowcharts with precise positioning
+      "Technical Architecture & Infrastructure": `Design technical architecture with ultra-compact HTML-based visual elements:
+        - Multi-layered system architecture using tight horizontal flowcharts with arrow connectors (→)
         - Technology stack comparison table with detailed specifications and performance metrics
-        - Database schema represented as interconnected HTML tables with relationship indicators
+        - Database schema represented as interconnected HTML tables with relationship arrows
         - API endpoints table with request/response examples and status codes
         - Scalability metrics dashboard using dense HTML cards with nested information
         - Security protocols matrix with implementation details and compliance checkmarks
-        - Create complex technical flow diagrams with branching decision paths and no overlapping elements`,
+        - Create compact technical flow diagrams using inline arrow symbols (→ ↓ ↑ ←) with minimal spacing`,
 
       "Detailed Feature Specifications": `Create feature specifications with structured layouts:
         - Feature priority matrix table
@@ -153,21 +153,21 @@ export class EnhancedProjectPlanner {
         - Feature dependencies flowchart
         - API specifications table`,
 
-      "Development Methodology & Timeline": `Develop methodology with sophisticated HTML-based visual planning:
+      "Development Methodology & Timeline": `Develop methodology with ultra-compact HTML-based visual planning:
         - Methodology comparison table with detailed pros/cons and complexity metrics
-        - Sprint timeline using compact HTML timeline components with nested task breakdowns
-        - Team structure using hierarchical HTML organizational chart with role interconnections
-        - Critical path represented as dense HTML flowchart with dependency arrows and risk indicators
+        - Sprint timeline using tight horizontal flowcharts: Phase1 → Phase2 → Phase3 → Delivery
+        - Team structure using compact organizational tree with arrow connections (PM → Dev → QA)
+        - Critical path represented as inline flow: Req → Design → Code → Test → Deploy with risk badges
         - Resource allocation matrix with capacity utilization heat mapping
-        - Delivery schedule using multi-track HTML timeline with milestone dependencies and buffer zones`,
+        - Delivery schedule using connected milestone chains with arrow transitions (→ ↓ ↑)`,
 
-      "User Experience & Interface Design": `Design UX strategy with sophisticated HTML visual elements:
+      "User Experience & Interface Design": `Design UX strategy with ultra-compact HTML visual elements:
         - User persona cards using dense HTML card components with behavioral matrices
-        - User journey represented as complex HTML flow diagrams with decision branches and touchpoint analysis
-        - Information architecture as multi-level nested HTML structure with navigation flows
+        - User journey represented as tight flow chains: Awareness → Interest → Consideration → Purchase → Retention
+        - Information architecture as connected navigation tree with arrow pathways (Home → Category → Product → Checkout)
         - Design principles in interactive checklist format with implementation examples
         - Accessibility compliance matrix with WCAG standards and testing checkpoints
-        - Responsive breakpoint grid with device-specific optimization strategies`,
+        - Responsive breakpoint grid with device flow transitions: Mobile → Tablet → Desktop`,
 
       "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
         - Testing types coverage matrix
@@ -177,37 +177,37 @@ export class EnhancedProjectPlanner {
         - Testing tools comparison
         - QA process flowchart`,
 
-      "Deployment & DevOps Strategy": `Design DevOps with HTML-based infrastructure visualization:
-        - CI/CD pipeline using HTML flowchart components (no images)
-        - Environment configuration comparison table
-        - Infrastructure architecture as HTML connected diagrams
-        - Monitoring metrics dashboard using HTML cards and tables
-        - Deployment checklist with step-by-step HTML timeline
-        - Backup and recovery procedures flowchart in HTML`,
+      "Deployment & DevOps Strategy": `Design DevOps with ultra-compact HTML-based infrastructure visualization:
+        - CI/CD pipeline using tight horizontal flow: Code → Build → Test → Stage → Deploy → Monitor
+        - Environment configuration comparison table with arrow transitions
+        - Infrastructure architecture as connected component chain: Load Balancer → API → Database → Cache
+        - Monitoring metrics dashboard using HTML cards with flow indicators
+        - Deployment checklist with arrow-connected steps: Pre-deploy → Deploy → Verify → Post-deploy
+        - Backup and recovery procedures as compact flow: Backup → Store → Verify → Restore → Test`,
 
-      "Risk Management & Mitigation": `Develop risk management with HTML-based assessment visualization:
+      "Risk Management & Mitigation": `Develop risk management with ultra-compact HTML-based assessment visualization:
         - Risk probability/impact matrix using HTML table with color coding
-        - Mitigation strategies table with action items
-        - Risk timeline using HTML timeline components (no images)
-        - Contingency planning flowchart using HTML connected elements
-        - Risk response procedures as HTML workflow diagrams
-        - Escalation matrix with responsibility levels`,
+        - Mitigation strategies table with action flow arrows
+        - Risk timeline using connected phases: Identify → Assess → Plan → Monitor → Review
+        - Contingency planning as decision flow: Risk Triggered → Assess Impact → Execute Plan → Monitor Results
+        - Risk response procedures as compact workflow: Detect → Escalate → Respond → Verify → Close
+        - Escalation matrix with arrow paths showing responsibility flow`,
 
-      "Stakeholder Management": `Create stakeholder plan with HTML communication visualization:
+      "Stakeholder Management": `Create stakeholder plan with ultra-compact HTML communication visualization:
         - Stakeholder analysis matrix with influence/interest grid
-        - Communication calendar using HTML timeline format
-        - Responsibility assignment table with clear roles
-        - Escalation procedures using HTML flowchart (no images)
-        - Progress tracking dashboard using HTML metrics cards
-        - Feedback collection system workflow in HTML`,
+        - Communication calendar using connected timeline: Planning → Execution → Review → Feedback
+        - Responsibility assignment table with role flow arrows
+        - Escalation procedures using tight flow: Issue → L1 Support → L2 Manager → L3 Executive
+        - Progress tracking dashboard using HTML metrics cards with status flows
+        - Feedback collection system as connected workflow: Collect → Analyze → Prioritize → Implement → Validate`,
 
-      "Post-Launch Strategy": `Develop post-launch with HTML roadmap visualization:
-        - Launch timeline using HTML milestone components (no images)
-        - User onboarding flow as HTML step-by-step diagram
-        - Analytics dashboard using HTML metrics and charts
-        - Maintenance schedule table with recurring tasks
-        - Growth metrics tracking using HTML progress indicators
-        - Feature roadmap using HTML timeline with phases`
+      "Post-Launch Strategy": `Develop post-launch with ultra-compact HTML roadmap visualization:
+        - Launch timeline using connected milestone chain: Pre-Launch → Soft Launch → Full Launch → Monitor → Optimize
+        - User onboarding flow as tight step sequence: Registration → Setup → Tutorial → First Action → Success
+        - Analytics dashboard using HTML metrics cards with trend arrows
+        - Maintenance schedule with connected task flows: Daily → Weekly → Monthly → Quarterly
+        - Growth metrics tracking using progress chains: Acquisition → Activation → Retention → Revenue → Referral
+        - Feature roadmap using phased timeline: Q1 Features → Q2 Features → Q3 Features → Q4 Features`
     };
 
     const prompt = sectionPrompts[sectionTitle as keyof typeof sectionPrompts] || `Create a detailed section about ${sectionTitle} for this project.`;
@@ -248,15 +248,24 @@ DENSE ORGANIZATIONAL TREES - Use hierarchical structure:
   </div>
 </div>
 
-SOPHISTICATED PROCESS FLOWS - Use compact numbered flow:
-<div class="process-flow">
-  <div class="process-step">
-    <div class="process-number">1</div>
-    <div class="process-content">
-      <div class="process-title">Analysis</div>
-      <div class="process-description">Gather and document requirements</div>
-    </div>
-  </div>
+COMPACT CONNECTED FLOWS - Use tight horizontal layout with arrows:
+<div class="flowchart">
+  <div class="flow-step">Requirements</div>
+  <div class="flow-step">Design</div>
+  <div class="flow-step">Development</div>
+  <div class="flow-step">Testing</div>
+  <div class="flow-step">Deployment</div>
+</div>
+
+ADVANCED GRID FLOWS - Use precise positioning with connection arrows:
+<div class="advanced-flow-grid">
+  <div class="flow-node start">Start</div>
+  <div class="flow-node decision">Validate?</div>
+  <div class="flow-node process-a">Process A</div>
+  <div class="flow-node process-b">Process B</div>
+  <div class="flow-node end">Complete</div>
+  <div class="flow-connection horizontal" style="left: 25%;"></div>
+  <div class="flow-connection horizontal" style="left: 50%;"></div>
 </div>
 
 Use tables, flowcharts, timelines, cards, metrics, and status badges. Never suggest images or external diagrams. All visualizations must be HTML/CSS based.`;
