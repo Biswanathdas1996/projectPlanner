@@ -4291,12 +4291,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     )}
                   </div>
                   
-                  {/* Enhanced Sections Content */}
-                  {enhancedSections && enhancedSections.length > 0 && enhancedSections.some(s => s.content) && (
+                  {/* Combined Project Plan Content */}
+                  {(enhancedSections && enhancedSections.length > 0 && enhancedSections.some(s => s.content)) || projectPlan ? (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                       <div className="border-b border-gray-200 p-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">Enhanced Plan Sections</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">Project Plan Sections</h3>
                           <div className="flex items-center gap-2">
                             <Button
                               onClick={downloadPDF}
@@ -4317,7 +4317,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </div>
                       <div className="p-6">
                         <Tabs 
-                          defaultValue={enhancedSections.filter(s => s.content)[0]?.id} 
+                          defaultValue={enhancedSections.filter(s => s.content)[0]?.id || (projectPlan ? "generated-plan" : undefined)} 
                           className="w-full"
                           onValueChange={(value) => {
                             // Cancel any active editing when switching tabs
@@ -4327,6 +4327,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           }}
                         >
                           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
+                            {/* Enhanced Plan Section Tabs */}
                             {enhancedSections.filter(s => s.content).map((section, index) => {
                               const { icon: SectionIcon, description } = getSectionIconAndDescription(section.title);
                               return (
@@ -4353,7 +4354,33 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 </TabsTrigger>
                               );
                             })}
+                            
+                            {/* Generated Plan Tab (if exists and no enhanced sections) */}
+                            {projectPlan && !enhancedSections.some(s => s.content) && (
+                              <TabsTrigger 
+                                value="generated-plan"
+                                className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-green-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                              >
+                                <div className="flex flex-col items-center gap-1.5">
+                                  <div className="flex items-center gap-2">
+                                    <FileText className="w-4 h-4 text-green-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                  </div>
+                                  <div className="text-center">
+                                    <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
+                                      Generated Plan
+                                    </div>
+                                    <div className="text-xs text-slate-500 group-data-[state=active]:text-green-100 transition-colors duration-300 mt-0.5">
+                                      Complete Plan
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                              </TabsTrigger>
+                            )}
                           </TabsList>
+                          
+                          {/* Enhanced Plan Section Content */}
                           {enhancedSections.filter(s => s.content).map((section) => (
                             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
                               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
@@ -4441,50 +4468,41 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               </div>
                             </TabsContent>
                           ))}
+                          
+                          {/* Generated Plan Content (only if no enhanced sections) */}
+                          {projectPlan && !enhancedSections.some(s => s.content) && (
+                            <TabsContent value="generated-plan" className="mt-0 animate-in fade-in-50 duration-200">
+                              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                
+                                {/* Section Header with Actions */}
+                                <div className="border-b border-gray-100 px-6 py-4">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="text-lg font-semibold text-gray-900">Complete Generated Plan</h3>
+                                    <div className="flex gap-2">
+                                      <Button
+                                        onClick={startEditingPlan}
+                                        variant="outline"
+                                        size="sm"
+                                        disabled={isEditingPlan}
+                                        className="text-xs"
+                                      >
+                                        <Edit className="h-3 w-3 mr-1" />
+                                        Edit
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="p-6">
+                                  {renderTabbedProjectPlan()}
+                                </div>
+                              </div>
+                            </TabsContent>
+                          )}
                         </Tabs>
                       </div>
                     </div>
-                  )}
-
-                  {/* Generated Plan Content */}
-                  {projectPlan && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                      <div className="border-b border-gray-200 p-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">Generated Content</h3>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              onClick={downloadPDF}
-                              variant="outline"
-                              size="sm"
-                              disabled={isDownloadingPdf}
-                              className="text-xs"
-                            >
-                              {isDownloadingPdf ? (
-                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                              ) : (
-                                <Download className="h-3 w-3 mr-1" />
-                              )}
-                              PDF
-                            </Button>
-                            <Button
-                              onClick={startEditingPlan}
-                              variant="outline"
-                              size="sm"
-                              disabled={isEditingPlan}
-                              className="text-xs"
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        {renderTabbedProjectPlan()}
-                      </div>
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               )}
 
