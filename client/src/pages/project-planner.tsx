@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
 import { 
@@ -905,6 +906,416 @@ Return the complete enhanced project plan as HTML with all existing content plus
     localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
     setLocation('/');
+  };
+
+  // Parse project plan into sections for tabbed interface
+  const parseProjectPlanSections = (planContent: string) => {
+    if (!planContent) return [];
+    
+    const sections: { id: string; title: string; content: string }[] = [];
+    const lines = planContent.split('\n');
+    let currentSection: { id: string; title: string; content: string } | null = null;
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      
+      // Check for main section headers (# or ##)
+      if (trimmedLine.match(/^#{1,2}\s+(.+)/)) {
+        // Save previous section if exists
+        if (currentSection) {
+          sections.push(currentSection);
+        }
+        
+        // Start new section
+        const title = trimmedLine.replace(/^#{1,2}\s+/, '').trim();
+        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        
+        currentSection = {
+          id,
+          title,
+          content: line + '\n'
+        };
+      } else if (currentSection) {
+        // Add line to current section
+        currentSection.content += line + '\n';
+      } else if (trimmedLine && !currentSection) {
+        // Content before first header - create introduction section
+        if (sections.length === 0) {
+          currentSection = {
+            id: 'introduction',
+            title: 'Project Overview',
+            content: line + '\n'
+          };
+        }
+      }
+    }
+    
+    // Add the last section
+    if (currentSection) {
+      sections.push(currentSection);
+    }
+    
+    return sections;
+  };
+
+  const renderTabbedProjectPlan = () => {
+    if (!projectPlan) return null;
+
+    // Clean the project plan content to remove code block markers
+    let cleanedContent = projectPlan.trim();
+    
+    // Remove ```html and ``` markers if present
+    if (cleanedContent.startsWith('```html')) {
+      cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+    }
+    if (cleanedContent.startsWith('```')) {
+      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    }
+
+    // Check if it's HTML content
+    const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
+                        cleanedContent.startsWith('<html') || 
+                        cleanedContent.startsWith('<div') || 
+                        cleanedContent.includes('<style>');
+
+    if (isHtmlContent) {
+      // For HTML content, extract sections from <section> tags
+      const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+      const sections = [];
+      let match;
+      
+      while ((match = sectionPattern.exec(cleanedContent)) !== null) {
+        const sectionHtml = match[0];
+        const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+        const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${sections.length + 1}`;
+        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        
+        sections.push({
+          id,
+          title,
+          content: sectionHtml
+        });
+      }
+
+      if (sections.length === 0) {
+        // If no sections found, treat entire content as one section
+        sections.push({
+          id: 'project-plan',
+          title: 'Project Plan',
+          content: cleanedContent
+        });
+      }
+
+      return (
+        <Tabs defaultValue={sections[0]?.id} className="w-full">
+          <TabsList className="grid w-full grid-cols-auto max-w-full overflow-x-auto" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(120px, 1fr))` }}>
+            {sections.map((section) => (
+              <TabsTrigger key={section.id} value={section.id} className="text-xs px-3 py-2 truncate">
+                {section.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {sections.map((section) => (
+            <TabsContent key={section.id} value={section.id} className="mt-4">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="border-b border-gray-200 p-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+                </div>
+                <div className="p-0">
+                  {(() => {
+                    const enhancedHtml = `
+                      <!DOCTYPE html>
+                      <html lang="en">
+                      <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>${section.title}</title>
+                        <style>
+                          ${/* Include the same enhanced styling from renderProjectPlan */ ''}
+                          * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                          }
+                          
+                          body {
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+                            line-height: 1.7;
+                            color: #1e293b;
+                            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                            padding: 32px;
+                            font-size: 15px;
+                            letter-spacing: -0.01em;
+                          }
+                          
+                          h1, h2, h3, h4, h5, h6 {
+                            color: #0f172a;
+                            margin-bottom: 20px;
+                            font-weight: 700;
+                            letter-spacing: -0.025em;
+                          }
+                          
+                          h1 {
+                            font-size: 2.5rem;
+                            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+                            -webkit-background-clip: text;
+                            -webkit-text-fill-color: transparent;
+                            background-clip: text;
+                            margin-bottom: 32px;
+                            padding-bottom: 16px;
+                            border-bottom: 3px solid transparent;
+                            border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
+                            position: relative;
+                          }
+                          
+                          h2 {
+                            font-size: 1.75rem;
+                            position: relative;
+                            padding: 16px 20px;
+                            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                            border-radius: 16px;
+                            border-left: 5px solid #6366f1;
+                            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                            margin-bottom: 24px;
+                          }
+                          
+                          .grid {
+                            display: flex;
+                            flex-direction: row;
+                            flex-wrap: wrap;
+                            gap: 16px;
+                            margin: 20px 0;
+                            justify-content: flex-start;
+                            align-items: stretch;
+                          }
+                          
+                          .metric {
+                            background: linear-gradient(135deg, #ffffff, #f8fafc);
+                            border: 1px solid #e2e8f0;
+                            border-radius: 20px;
+                            padding: 24px;
+                            text-align: center;
+                            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                            flex: 1;
+                            min-width: 160px;
+                            max-width: 220px;
+                            transition: all 0.3s ease;
+                            position: relative;
+                            overflow: hidden;
+                          }
+                          
+                          /* Metrics Dashboard Flex Layouts */
+                          .metrics-dashboard {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 12px;
+                            margin: 16px 0;
+                            padding: 12px;
+                            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                            border-radius: 12px;
+                          }
+                          
+                          .metric-card {
+                            display: flex;
+                            flex-direction: column;
+                            background: white;
+                            border: 1px solid #e2e8f0;
+                            border-radius: 8px;
+                            padding: 12px;
+                            min-width: 100px;
+                            flex: 1;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                            transition: all 0.2s ease;
+                            text-align: center;
+                          }
+                        </style>
+                      </head>
+                      <body>
+                        ${section.content}
+                      </body>
+                      </html>
+                    `;
+                    
+                    const blob = new Blob([enhancedHtml], { type: 'text/html' });
+                    const blobUrl = URL.createObjectURL(blob);
+                    
+                    return (
+                      <iframe
+                        src={blobUrl}
+                        className="w-full border-0"
+                        style={{
+                          height: '600px',
+                          backgroundColor: '#ffffff'
+                        }}
+                        title={section.title}
+                        sandbox="allow-same-origin allow-scripts"
+                        onLoad={(e) => {
+                          setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+                          
+                          // Auto-adjust height based on content
+                          const iframe = e.target as HTMLIFrameElement;
+                          try {
+                            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (iframeDoc) {
+                              const resizeObserver = new ResizeObserver(() => {
+                                const body = iframeDoc.body;
+                                const html = iframeDoc.documentElement;
+                                const height = Math.max(
+                                  body?.scrollHeight || 0,
+                                  body?.offsetHeight || 0,
+                                  html?.scrollHeight || 0,
+                                  html?.offsetHeight || 0
+                                );
+                                
+                                if (height > 100) {
+                                  iframe.style.height = `${height + 2}px`;
+                                  console.log(`Iframe height adjusted to: ${height + 2}px`);
+                                }
+                              });
+                              
+                              resizeObserver.observe(iframeDoc.body);
+                              
+                              // Initial height adjustment
+                              setTimeout(() => {
+                                const body = iframeDoc.body;
+                                const html = iframeDoc.documentElement;
+                                const height = Math.max(
+                                  body?.scrollHeight || 0,
+                                  body?.offsetHeight || 0,
+                                  html?.scrollHeight || 0,
+                                  html?.offsetHeight || 0
+                                );
+                                
+                                if (height > 100) {
+                                  iframe.style.height = `${height + 2}px`;
+                                  console.log(`Iframe height adjusted to: ${height + 2}px`);
+                                }
+                              }, 100);
+                            }
+                          } catch (error) {
+                            console.log('Cross-origin iframe height adjustment skipped');
+                          }
+                        }}
+                      />
+                    );
+                  })()}
+                </div>
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      );
+    } else {
+      // For plain text content, parse into sections based on headers
+      const sections = parseProjectPlanSections(cleanedContent);
+      
+      if (sections.length === 0) {
+        return (
+          <div className="space-y-4 leading-relaxed">
+            <div className="prose prose-gray max-w-none">
+              <p className="text-gray-700">No content available to display.</p>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <Tabs defaultValue={sections[0]?.id} className="w-full">
+          <TabsList className="grid w-full grid-cols-auto max-w-full overflow-x-auto" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(120px, 1fr))` }}>
+            {sections.map((section) => (
+              <TabsTrigger key={section.id} value={section.id} className="text-xs px-3 py-2 truncate">
+                {section.title}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {sections.map((section) => (
+            <TabsContent key={section.id} value={section.id} className="mt-4">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="border-b border-gray-200 p-4">
+                  <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+                </div>
+                <div className="p-6">
+                  <div className="prose prose-gray max-w-none">
+                    {section.content.split('\n').map((line, index) => {
+                      const cleanLine = line.trim();
+
+                      if (!cleanLine) {
+                        return <div key={index} className="h-4"></div>;
+                      }
+
+                      if (cleanLine.startsWith('# ')) {
+                        return (
+                          <h1
+                            key={index}
+                            className="text-2xl font-bold text-gray-900 mb-4 mt-6 border-b-2 border-blue-200 pb-2"
+                          >
+                            {cleanLine.substring(2).trim()}
+                          </h1>
+                        );
+                      }
+
+                      if (cleanLine.startsWith('## ')) {
+                        return (
+                          <h2
+                            key={index}
+                            className="text-xl font-semibold text-gray-800 mb-3 mt-5"
+                          >
+                            {cleanLine.substring(3).trim()}
+                          </h2>
+                        );
+                      }
+
+                      if (cleanLine.startsWith('### ')) {
+                        return (
+                          <h3
+                            key={index}
+                            className="text-lg font-medium text-gray-700 mb-2 mt-4"
+                          >
+                            {cleanLine.substring(4).trim()}
+                          </h3>
+                        );
+                      }
+
+                      if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
+                        return (
+                          <li
+                            key={index}
+                            className="text-gray-700 mb-2 ml-4 list-disc list-inside"
+                          >
+                            {cleanLine.substring(2).trim()}
+                          </li>
+                        );
+                      }
+
+                      if (cleanLine.match(/^\d+\.\s/)) {
+                        return (
+                          <li
+                            key={index}
+                            className="text-gray-700 mb-2 ml-4 list-decimal list-inside"
+                          >
+                            {cleanLine.replace(/^\d+\.\s/, '').trim()}
+                          </li>
+                        );
+                      }
+
+                      // Regular paragraphs
+                      return (
+                        <p
+                          key={index}
+                          className="text-gray-700 mb-4 leading-relaxed text-justify"
+                        >
+                          {cleanLine}
+                        </p>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      );
+    }
   };
 
   const downloadPDF = async () => {
@@ -3407,7 +3818,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         </div>
                       </div>
                       <div className="p-6">
-                        {renderProjectPlan()}
+                        {renderTabbedProjectPlan()}
                       </div>
                     </div>
                   )}

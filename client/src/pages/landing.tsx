@@ -147,7 +147,7 @@ export default function Landing() {
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, enhancedDescription);
 
       // Redirect to /plan page without API calls
-      setLocation("/plan");
+      setLocation("/market-research");
     } catch (error) {
       console.error("Error storing project description:", error);
       setError("Failed to store project description. Please try again.");
