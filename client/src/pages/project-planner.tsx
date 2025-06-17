@@ -106,6 +106,7 @@ export default function ProjectPlanner() {
     isGenerating: false
   });
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
+  const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(null);
 
   // Project sections settings state
   const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
@@ -797,6 +798,81 @@ Return the complete enhanced project plan as HTML with all existing content plus
         return [...prev, suggestion];
       }
     });
+  };
+
+  const generateIndividualSection = async (sectionId: string) => {
+    if (!projectInput.trim()) {
+      setError('Please enter a project description');
+      return;
+    }
+
+    const section = projectSectionsSettings.find(s => s.id === sectionId);
+    if (!section) {
+      setError('Section not found');
+      return;
+    }
+
+    setGeneratingSectionId(sectionId);
+    setError('');
+
+    try {
+      const planner = createEnhancedProjectPlanner();
+      
+      const config: EnhancedProjectPlanConfig = {
+        projectDescription: projectInput,
+        additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
+      };
+
+      // Generate content for this specific section
+      const content = await planner.generateSection(section.title, config);
+      
+      // Update the enhanced sections state
+      setEnhancedSections(current => {
+        const existingIndex = current.findIndex(s => s.id === sectionId);
+        const newSection: ProjectPlanSection = {
+          id: sectionId,
+          title: section.title,
+          content,
+          isGenerating: false,
+          isCompleted: true,
+          order: section.order
+        };
+
+        if (existingIndex >= 0) {
+          // Update existing section
+          const updated = [...current];
+          updated[existingIndex] = newSection;
+          return updated;
+        } else {
+          // Add new section
+          return [...current, newSection].sort((a, b) => a.order - b.order);
+        }
+      });
+
+      // Update project plan if this is the first section or regenerate the HTML
+      const allSections = enhancedSections.filter(s => s.id !== sectionId);
+      allSections.push({
+        id: sectionId,
+        title: section.title,
+        content,
+        isGenerating: false,
+        isCompleted: true,
+        order: section.order
+      });
+      
+      if (allSections.length > 0) {
+        const planner = createEnhancedProjectPlanner();
+        const htmlReport = planner.generateHtmlReport(allSections.sort((a, b) => a.order - b.order));
+        setProjectPlan(htmlReport);
+        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
+      }
+
+    } catch (err) {
+      console.error(`Failed to generate section ${section.title}:`, err);
+      setError(`Failed to generate ${section.title}. Please try again.`);
+    } finally {
+      setGeneratingSectionId(null);
+    }
   };
 
   const executeCommand = (command: string, value?: string) => {
@@ -2112,28 +2188,80 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <div className="mb-8">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-2xl font-bold text-gray-900">Comprehensive Project Plan</h2>
-                      <div className="text-sm text-gray-500">
-                        {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} sections enabled
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-gray-500">
+                          {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} sections enabled
+                        </div>
+                        <Button
+                          onClick={handleGenerateEnhancedPlan}
+                          disabled={!projectInput.trim() || isGeneratingEnhanced || isGeneratingPlan}
+                          size="sm"
+                          className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-sm"
+                        >
+                          {isGeneratingEnhanced ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              Generating All...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3 w-3 mr-2" />
+                              Generate All Sections
+                            </>
+                          )}
+                        </Button>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
                       {projectSectionsSettings
                         .filter(section => section.enabled)
                         .sort((a, b) => a.order - b.order)
-                        .map((section) => (
-                          <div key={section.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                            <div className="flex items-start space-x-3">
-                              <div className="text-2xl">{section.icon}</div>
-                              <div className="flex-1">
-                                <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                                  {section.order}. {section.title}
-                                  {section.isCustom && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Custom</span>}
-                                </h3>
-                                <p className="text-xs text-gray-600">{section.description}</p>
+                        .map((section) => {
+                          const isGenerating = generatingSectionId === section.id;
+                          const hasContent = enhancedSections.some(s => s.id === section.id && s.content);
+                          
+                          return (
+                            <div key={section.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                              <div className="flex items-start justify-between space-x-3">
+                                <div className="flex items-start space-x-3 flex-1">
+                                  <div className="text-2xl">{section.icon}</div>
+                                  <div className="flex-1">
+                                    <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                                      {section.order}. {section.title}
+                                      {section.isCustom && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Custom</span>}
+                                      {hasContent && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Generated</span>}
+                                    </h3>
+                                    <p className="text-xs text-gray-600">{section.description}</p>
+                                  </div>
+                                </div>
+                                <Button
+                                  onClick={() => generateIndividualSection(section.id)}
+                                  disabled={!projectInput.trim() || isGenerating || isGeneratingEnhanced}
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs px-2 py-1 h-auto border-blue-300 text-blue-600 hover:bg-blue-50"
+                                >
+                                  {isGenerating ? (
+                                    <>
+                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                      Gen...
+                                    </>
+                                  ) : hasContent ? (
+                                    <>
+                                      <Sparkles className="h-3 w-3 mr-1" />
+                                      Regen
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Sparkles className="h-3 w-3 mr-1" />
+                                      Generate
+                                    </>
+                                  )}
+                                </Button>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                     </div>
                     {projectSectionsSettings.filter(s => s.enabled).length === 0 && (
                       <div className="text-center py-8 text-gray-500">
