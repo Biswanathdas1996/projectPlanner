@@ -226,12 +226,40 @@ Ensure realistic estimates based on project complexity.`;
         title: "Technical Architecture",
         prompt: `Design detailed technical architecture for: "${description}"
         
+        Create a modern HTML architecture diagram using these specific CSS classes and structure:
+        
+        <div class="architecture-diagram">
+          <div class="section-divider">
+            <div class="section-divider-text">System Architecture</div>
+          </div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Frontend Layer</div>
+              <div class="diagram-subtitle">React/Vue/Angular</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">API Gateway</div>
+              <div class="diagram-subtitle">REST/GraphQL</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Database</div>
+              <div class="diagram-subtitle">PostgreSQL/MongoDB</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">User Interface</div>
+          <div class="flow-step">API Layer</div>
+          <div class="flow-step">Business Logic</div>
+          <div class="flow-step">Data Storage</div>
+        </div>
+        
         Include:
-        - System architecture diagram description
-        - Technology stack recommendations
+        - Technology stack recommendations with visual flow
         - Database design approach
-        - API architecture
-        - Security architecture
+        - API architecture with modern styling
+        - Security architecture layers
         - Performance considerations
         - Integration points
         - Scalability strategy
@@ -239,78 +267,213 @@ Ensure realistic estimates based on project complexity.`;
         Technical Complexity: ${requirements.technicalComplexity}
         Team Size: ${requirements.teamSize}
         
-        Provide specific technology recommendations and justify choices.`,
+        Use the provided CSS classes for all diagrams and flowcharts.`,
       },
       {
         title: "Phase 1: Foundation & Setup",
         prompt: `Detail Phase 1 foundation work for: "${description}"
         
-        Include:
-        - Environment setup
-        - Development tools configuration
-        - Basic infrastructure
-        - Core framework implementation
-        - Initial database setup
-        - Authentication system
-        - Basic UI/UX framework
+        Create a development flow with modern styling:
         
-        Provide specific tasks, dependencies, and time estimates.`,
+        <div class="section-divider">
+          <div class="section-divider-text">Development Flow</div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">Environment Setup</div>
+          <div class="flow-step">Framework Config</div>
+          <div class="flow-step">Database Init</div>
+          <div class="flow-step">Auth System</div>
+          <div class="flow-step">UI Framework</div>
+        </div>
+        
+        Include:
+        - Environment setup with visual progression
+        - Development tools configuration
+        - Basic infrastructure components
+        - Core framework implementation steps
+        - Initial database setup process
+        - Authentication system architecture
+        - Basic UI/UX framework structure
+        
+        Provide specific tasks, dependencies, and time estimates with flowchart visualization.`,
       },
       {
         title: "Phase 2: Core Development",
         prompt: `Detail Phase 2 core development for: "${description}"
         
-        Include:
-        - Main feature implementation
-        - Business logic development
-        - Database schema completion
-        - API development
-        - Frontend component development
-        - Integration testing
+        Create a development pipeline with modern architecture:
         
-        Focus on core functionality and MVP features.`,
+        <div class="architecture-diagram">
+          <div class="section-divider">
+            <div class="section-divider-text">Core Development Pipeline</div>
+          </div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Feature Development</div>
+              <div class="diagram-subtitle">Main Components</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">API Development</div>
+              <div class="diagram-subtitle">Backend Services</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Frontend UI</div>
+              <div class="diagram-subtitle">User Interface</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">Business Logic</div>
+          <div class="flow-step">Database Schema</div>
+          <div class="flow-step">API Endpoints</div>
+          <div class="flow-step">Component Library</div>
+          <div class="flow-step">Integration Tests</div>
+        </div>
+        
+        Include:
+        - Main feature implementation roadmap
+        - Business logic development with visual flow
+        - Database schema completion process
+        - API development architecture
+        - Frontend component development structure
+        - Integration testing pipeline
+        
+        Focus on core functionality and MVP features with modern diagram presentation.`,
       },
       {
         title: "Phase 3: Advanced Features",
         prompt: `Detail Phase 3 advanced features for: "${description}"
         
-        Include:
-        - Advanced functionality implementation
-        - Performance optimization
-        - Advanced security features
-        - Third-party integrations
-        - Advanced UI/UX components
-        - Analytics implementation
+        Create an advanced features architecture:
         
-        Focus on value-added features and optimizations.`,
+        <div class="architecture-diagram">
+          <div class="section-divider">
+            <div class="section-divider-text">Advanced Features Architecture</div>
+          </div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Performance Layer</div>
+              <div class="diagram-subtitle">Optimization & Caching</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Security Module</div>
+              <div class="diagram-subtitle">Advanced Protection</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Analytics Engine</div>
+              <div class="diagram-subtitle">Data Intelligence</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">Performance Optimization</div>
+          <div class="flow-step">Security Hardening</div>
+          <div class="flow-step">Third-party APIs</div>
+          <div class="flow-step">Advanced UI/UX</div>
+          <div class="flow-step">Analytics</div>
+        </div>
+        
+        Include:
+        - Advanced functionality implementation with visual flow
+        - Performance optimization strategies
+        - Advanced security features architecture
+        - Third-party integrations roadmap
+        - Advanced UI/UX components structure
+        - Analytics implementation pipeline
+        
+        Focus on value-added features and optimizations with modern diagram presentation.`,
       },
       {
         title: "Phase 4: Testing & QA",
         prompt: `Detail Phase 4 testing and quality assurance for: "${description}"
         
-        Include:
-        - Comprehensive testing strategy
-        - Automated testing implementation
-        - Performance testing
-        - Security testing
-        - User acceptance testing
-        - Bug fixing and optimization
+        Create a comprehensive testing pipeline:
         
-        Ensure production-ready quality.`,
+        <div class="architecture-diagram">
+          <div class="section-divider">
+            <div class="section-divider-text">Testing & QA Pipeline</div>
+          </div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Automated Testing</div>
+              <div class="diagram-subtitle">Unit & Integration</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Performance Testing</div>
+              <div class="diagram-subtitle">Load & Stress</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Security Testing</div>
+              <div class="diagram-subtitle">Penetration & Audit</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">Unit Tests</div>
+          <div class="flow-step">Integration Tests</div>
+          <div class="flow-step">Performance Tests</div>
+          <div class="flow-step">Security Audit</div>
+          <div class="flow-step">UAT</div>
+          <div class="flow-step">Production Ready</div>
+        </div>
+        
+        Include:
+        - Comprehensive testing strategy with visual flow
+        - Automated testing implementation pipeline
+        - Performance testing architecture
+        - Security testing framework
+        - User acceptance testing process
+        - Bug fixing and optimization workflow
+        
+        Ensure production-ready quality with modern testing visualization.`,
       },
       {
         title: "Phase 5: Deployment & Launch",
         prompt: `Detail Phase 5 deployment and launch for: "${description}"
         
-        Include:
-        - Production environment setup
-        - Deployment automation
-        - Monitoring and logging
-        - Performance monitoring
-        - Launch strategy
-        - Post-launch support
+        Create a deployment pipeline architecture:
         
-        Ensure smooth production deployment.`,
+        <div class="architecture-diagram">
+          <div class="section-divider">
+            <div class="section-divider-text">Deployment Pipeline</div>
+          </div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">CI/CD Pipeline</div>
+              <div class="diagram-subtitle">Automated Deployment</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Production Environment</div>
+              <div class="diagram-subtitle">Live Server Setup</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Monitoring System</div>
+              <div class="diagram-subtitle">Performance Tracking</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="flowchart">
+          <div class="flow-step">Environment Setup</div>
+          <div class="flow-step">CI/CD Configuration</div>
+          <div class="flow-step">Performance Monitoring</div>
+          <div class="flow-step">Launch Strategy</div>
+          <div class="flow-step">Post-Launch Support</div>
+        </div>
+        
+        Include:
+        - Production environment setup with visual flow
+        - Deployment automation pipeline
+        - Monitoring and logging architecture
+        - Performance monitoring systems
+        - Launch strategy roadmap
+        - Post-launch support structure
+        
+        Ensure smooth production deployment with modern visualization.`,
       },
       {
         title: "Risk Management",

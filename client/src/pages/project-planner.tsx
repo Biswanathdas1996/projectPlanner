@@ -2425,40 +2425,200 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   .flowchart {
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 8px;
-                    margin: 8px 0;
+                    gap: 16px;
+                    margin: 12px 0;
                     justify-content: center;
                     align-items: center;
+                    padding: 16px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                    border: 1px solid #e2e8f0;
                   }
                   
                   .flow-step {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
-                    padding: 6px 12px;
-                    border-radius: 6px;
+                    padding: 8px 16px;
+                    border-radius: 12px;
                     font-weight: 600;
                     position: relative;
-                    min-width: 80px;
+                    min-width: 100px;
                     text-align: center;
-                    box-shadow: 0 2px 4px -1px rgba(99, 102, 241, 0.3);
-                    transition: all 0.2s ease;
-                    font-size: 12px;
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+                    transition: all 0.3s ease;
+                    font-size: 13px;
+                    border: 2px solid rgba(255, 255, 255, 0.2);
                   }
                   
                   .flow-step:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 4px 8px -1px rgba(99, 102, 241, 0.4);
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4);
+                    border-color: rgba(255, 255, 255, 0.4);
                   }
                   
                   .flow-step:not(:last-child):after {
-                    content: '→';
+                    content: '';
                     position: absolute;
-                    right: -14px;
+                    right: -18px;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: #6366f1;
+                    width: 0;
+                    height: 0;
+                    border-top: 8px solid transparent;
+                    border-bottom: 8px solid transparent;
+                    border-left: 12px solid #6366f1;
+                    z-index: 10;
+                  }
+                  
+                  .flow-step:not(:last-child):before {
+                    content: '';
+                    position: absolute;
+                    right: -16px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 12px;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                    border-radius: 2px;
+                    z-index: 9;
+                  }
+                  
+                  .architecture-diagram {
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border: 2px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 20px;
+                    margin: 16px 0;
+                    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  
+                  .architecture-diagram::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  .diagram-container {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 20px;
+                    align-items: center;
+                    position: relative;
+                  }
+                  
+                  .diagram-box {
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 2px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    position: relative;
+                    min-height: 80px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                  }
+                  
+                  .diagram-box::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                    border-radius: 12px 12px 0 0;
+                  }
+                  
+                  .diagram-box:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
+                    border-color: #6366f1;
+                  }
+                  
+                  .diagram-box.primary {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    border-color: #4f46e5;
+                  }
+                  
+                  .diagram-box.secondary {
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    border-color: #047857;
+                  }
+                  
+                  .diagram-box.accent {
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    color: white;
+                    border-color: #b45309;
+                  }
+                  
+                  .diagram-title {
                     font-size: 14px;
-                    font-weight: bold;
+                    font-weight: 700;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  .diagram-subtitle {
+                    font-size: 11px;
+                    opacity: 0.8;
+                    font-weight: 500;
+                  }
+                  
+                  .diagram-connector {
+                    position: absolute;
+                    width: 2px;
+                    background: linear-gradient(to bottom, #6366f1, #8b5cf6);
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 1;
+                  }
+                  
+                  .diagram-connector.horizontal {
+                    width: 100%;
+                    height: 2px;
+                    top: 50%;
+                    left: 0;
+                    transform: translateY(-50%);
+                    background: linear-gradient(to right, #6366f1, #8b5cf6);
+                  }
+                  
+                  .section-divider {
+                    display: flex;
+                    align-items: center;
+                    margin: 20px 0;
+                    position: relative;
+                  }
+                  
+                  .section-divider::before {
+                    content: '';
+                    flex: 1;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);
+                  }
+                  
+                  .section-divider-text {
+                    padding: 0 16px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
                   }
                   
                   .grid {
