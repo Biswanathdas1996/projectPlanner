@@ -1548,49 +1548,82 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   .timeline {
                     position: relative;
-                    padding-left: 25px;
-                    margin: 15px 0;
+                    padding-left: 20px;
+                    margin: 12px 0;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                    padding: 16px 16px 16px 32px;
+                    border: 1px solid #e2e8f0;
                   }
                   
                   .timeline:before {
                     content: '';
                     position: absolute;
-                    left: 12px;
-                    top: 0;
-                    bottom: 0;
-                    width: 2px;
-                    background: #e5e7eb;
+                    left: 20px;
+                    top: 16px;
+                    bottom: 16px;
+                    width: 3px;
+                    background: linear-gradient(to bottom, #3b82f6, #6366f1, #8b5cf6);
+                    border-radius: 2px;
                   }
                   
                   .timeline-item {
                     position: relative;
-                    padding: 8px 0;
-                    margin-bottom: 8px;
+                    padding: 6px 0;
+                    margin-bottom: 6px;
+                    background: white;
+                    border-radius: 8px;
+                    padding: 12px 16px;
+                    margin-left: 16px;
+                    border: 1px solid #e5e7eb;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                    transition: all 0.2s ease;
+                  }
+                  
+                  .timeline-item:hover {
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    transform: translateY(-1px);
                   }
                   
                   .timeline-item:before {
-                    content: '';
+                    content: '●';
                     position: absolute;
-                    left: -19px;
-                    top: 12px;
-                    width: 8px;
-                    height: 8px;
-                    background: #3b82f6;
+                    left: -28px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 12px;
+                    height: 12px;
+                    background: linear-gradient(135deg, #3b82f6, #6366f1);
                     border-radius: 50%;
+                    color: white;
+                    font-size: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
                     border: 2px solid white;
-                    box-shadow: 0 0 0 2px #3b82f6;
+                    box-shadow: 0 0 0 2px #3b82f6, 0 2px 4px rgba(59,130,246,0.3);
                   }
                   
                   .timeline-item h3 {
-                    font-size: 1rem;
+                    font-size: 0.95rem;
                     margin-bottom: 4px;
                     font-weight: 600;
+                    color: #1e293b;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                  }
+                  
+                  .timeline-item h3:before {
+                    content: '📅';
+                    font-size: 0.8rem;
                   }
                   
                   .timeline-item p {
-                    font-size: 0.9rem;
+                    font-size: 0.85rem;
                     margin-bottom: 0;
-                    color: #6b7280;
+                    color: #64748b;
+                    line-height: 1.4;
                   }
                   
                   code {
