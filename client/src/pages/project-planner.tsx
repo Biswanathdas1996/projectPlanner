@@ -21,6 +21,7 @@ import {
   EnhancedProjectPlanConfig
 } from '@/lib/enhanced-project-planner';
 import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker';
+import { ProjectSectionsSettings, loadProjectSectionsSettings, ProjectSection as SettingsProjectSection } from '@/components/project-sections-settings';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
 import { NavigationBar } from '@/components/navigation-bar';
@@ -106,6 +107,9 @@ export default function ProjectPlanner() {
   });
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
 
+  // Project sections settings state
+  const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
+
   const [location, setLocation] = useLocation();
 
   // Load data from localStorage when component mounts or route changes
@@ -123,6 +127,10 @@ export default function ProjectPlanner() {
     if (savedDiagram) {
       setGeneratedBpmnXml(savedDiagram);
     }
+
+    // Load project sections settings
+    const sectionsSettings = loadProjectSectionsSettings();
+    setProjectSectionsSettings(sectionsSettings);
 
     // Set current step based on route
     if (location === '/plan') {
@@ -1850,6 +1858,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   Generated Project Plan
                 </div>
                 <div className="flex gap-1.5">
+                  <ProjectSectionsSettings 
+                    sections={projectSectionsSettings}
+                    onSectionsChange={setProjectSectionsSettings}
+                  />
                   <Button
                     onClick={downloadPDF}
                     variant="outline"
@@ -2048,35 +2060,38 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {/* 10 Section Headers */}
+                  {/* Configurable Section Headers */}
                   <div className="mb-8">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Comprehensive Project Plan</h2>
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Comprehensive Project Plan</h2>
+                      <div className="text-sm text-gray-500">
+                        {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} sections enabled
+                      </div>
+                    </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                      {[
-                        { id: 1, title: "Executive Summary", icon: "📋", description: "Project overview and objectives" },
-                        { id: 2, title: "Technical Architecture & Infrastructure", icon: "🏗️", description: "System design and technology stack" },
-                        { id: 3, title: "Detailed Feature Specifications", icon: "⚙️", description: "Complete feature breakdown" },
-                        { id: 4, title: "Development Methodology & Timeline", icon: "📅", description: "Project timeline and methodology" },
-                        { id: 5, title: "User Experience & Interface Design", icon: "🎨", description: "UX/UI design strategy" },
-                        { id: 6, title: "Quality Assurance & Testing Strategy", icon: "🧪", description: "Testing and QA approach" },
-                        { id: 7, title: "Deployment & DevOps Strategy", icon: "🚀", description: "Deployment and infrastructure" },
-                        { id: 8, title: "Risk Management & Mitigation", icon: "⚠️", description: "Risk assessment and planning" },
-                        { id: 9, title: "Stakeholder Management", icon: "👥", description: "Communication and stakeholder strategy" },
-                        { id: 10, title: "Post-Launch Strategy", icon: "📈", description: "Launch and growth planning" }
-                      ].map((section) => (
-                        <div key={section.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                          <div className="flex items-start space-x-3">
-                            <div className="text-2xl">{section.icon}</div>
-                            <div className="flex-1">
-                              <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                                {section.id}. {section.title}
-                              </h3>
-                              <p className="text-xs text-gray-600">{section.description}</p>
+                      {projectSectionsSettings
+                        .filter(section => section.enabled)
+                        .sort((a, b) => a.order - b.order)
+                        .map((section) => (
+                          <div key={section.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div className="flex items-start space-x-3">
+                              <div className="text-2xl">{section.icon}</div>
+                              <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900 text-sm mb-1">
+                                  {section.order}. {section.title}
+                                  {section.isCustom && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Custom</span>}
+                                </h3>
+                                <p className="text-xs text-gray-600">{section.description}</p>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))}
                     </div>
+                    {projectSectionsSettings.filter(s => s.enabled).length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No sections enabled. Use the Section Settings to configure which sections to display.</p>
+                      </div>
+                    )}
                   </div>
                   
                   {/* Generated Plan Content */}
