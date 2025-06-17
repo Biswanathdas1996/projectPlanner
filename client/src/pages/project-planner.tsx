@@ -3451,6 +3451,324 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     color: #8b5cf6;
                     font-style: italic;
                   }
+                  
+                  /* Modern Section Content Display */
+                  .modern-section-content {
+                    font-size: 14px;
+                    line-height: 1.6;
+                    color: #374151;
+                  }
+                  
+                  .enhanced-content-display {
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border-radius: 12px;
+                    padding: 20px;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+                  }
+                  
+                  .enhanced-content-display h1 {
+                    font-size: 1.8rem;
+                    color: transparent;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    background-clip: text;
+                    -webkit-background-clip: text;
+                    margin-bottom: 16px;
+                    font-weight: 700;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  .enhanced-content-display h2 {
+                    font-size: 1.4rem;
+                    color: #6366f1;
+                    margin: 20px 0 12px 0;
+                    padding: 12px 0 12px 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 8px;
+                    border-left: 4px solid #6366f1;
+                    font-weight: 600;
+                  }
+                  
+                  .enhanced-content-display h3 {
+                    font-size: 1.2rem;
+                    color: #6366f1;
+                    margin: 16px 0 8px 0;
+                    padding-left: 16px;
+                    border-left: 3px solid #8b5cf6;
+                    font-weight: 600;
+                  }
+                  
+                  .enhanced-content-display p {
+                    margin: 12px 0;
+                    line-height: 1.6;
+                    color: #374151;
+                  }
+                  
+                  .enhanced-content-display ul,
+                  .enhanced-content-display ol {
+                    margin: 16px 0;
+                    padding-left: 0;
+                  }
+                  
+                  .enhanced-content-display li {
+                    margin: 8px 0;
+                    padding: 10px 16px 10px 36px;
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 6px;
+                    position: relative;
+                    transition: all 0.2s ease;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                  }
+                  
+                  .enhanced-content-display li:hover {
+                    transform: translateX(2px);
+                    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
+                    border-color: #6366f1;
+                  }
+                  
+                  .enhanced-content-display li:before {
+                    content: '';
+                    position: absolute;
+                    left: 12px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 6px;
+                    height: 6px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    border-radius: 50%;
+                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+                  }
+                  
+                  /* Enhanced Architecture Diagrams */
+                  .enhanced-content-display .architecture-diagram {
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border: 2px solid #e2e8f0;
+                    border-radius: 16px;
+                    padding: 24px;
+                    margin: 20px 0;
+                    box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  
+                  .enhanced-content-display .architecture-diagram::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  /* Enhanced Flow Charts */
+                  .enhanced-content-display .flowchart {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 16px;
+                    margin: 16px 0;
+                    justify-content: center;
+                    align-items: center;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 12px;
+                    border: 1px solid #e2e8f0;
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+                  }
+                  
+                  .enhanced-content-display .flow-step {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 12px;
+                    font-weight: 600;
+                    position: relative;
+                    min-width: 120px;
+                    text-align: center;
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+                    transition: all 0.3s ease;
+                    font-size: 14px;
+                    border: 2px solid rgba(255, 255, 255, 0.2);
+                  }
+                  
+                  .enhanced-content-display .flow-step:hover {
+                    transform: translateY(-2px) scale(1.02);
+                    box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4);
+                    border-color: rgba(255, 255, 255, 0.4);
+                  }
+                  
+                  .enhanced-content-display .flow-step:not(:last-child):after {
+                    content: '';
+                    position: absolute;
+                    right: -20px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 0;
+                    height: 0;
+                    border-top: 10px solid transparent;
+                    border-bottom: 10px solid transparent;
+                    border-left: 14px solid #6366f1;
+                    z-index: 10;
+                  }
+                  
+                  .enhanced-content-display .flow-step:not(:last-child):before {
+                    content: '';
+                    position: absolute;
+                    right: -18px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    width: 14px;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                    border-radius: 2px;
+                    z-index: 9;
+                  }
+                  
+                  /* Enhanced Section Dividers */
+                  .enhanced-content-display .section-divider {
+                    display: flex;
+                    align-items: center;
+                    margin: 24px 0;
+                    position: relative;
+                  }
+                  
+                  .enhanced-content-display .section-divider::before {
+                    content: '';
+                    flex: 1;
+                    height: 2px;
+                    background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);
+                  }
+                  
+                  .enhanced-content-display .section-divider-text {
+                    padding: 0 20px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    border-radius: 20px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
+                  }
+                  
+                  /* Enhanced Diagram Boxes */
+                  .enhanced-content-display .diagram-box {
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 2px solid #e2e8f0;
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    position: relative;
+                    min-height: 80px;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: center;
+                    align-items: center;
+                    margin: 8px;
+                  }
+                  
+                  .enhanced-content-display .diagram-box::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+                    border-radius: 12px 12px 0 0;
+                  }
+                  
+                  .enhanced-content-display .diagram-box:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
+                    border-color: #6366f1;
+                  }
+                  
+                  .enhanced-content-display .diagram-box.primary {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    border-color: #4f46e5;
+                  }
+                  
+                  .enhanced-content-display .diagram-box.secondary {
+                    background: linear-gradient(135deg, #10b981, #059669);
+                    color: white;
+                    border-color: #047857;
+                  }
+                  
+                  .enhanced-content-display .diagram-box.accent {
+                    background: linear-gradient(135deg, #f59e0b, #d97706);
+                    color: white;
+                    border-color: #b45309;
+                  }
+                  
+                  .enhanced-content-display .diagram-title {
+                    font-size: 14px;
+                    font-weight: 700;
+                    margin-bottom: 4px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  .enhanced-content-display .diagram-subtitle {
+                    font-size: 11px;
+                    opacity: 0.8;
+                    font-weight: 500;
+                  }
+                  
+                  /* Enhanced Tables */
+                  .enhanced-content-display table {
+                    width: 100%;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                    margin: 20px 0;
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
+                    border: 2px solid #e2e8f0;
+                  }
+                  
+                  .enhanced-content-display table::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  .enhanced-content-display th,
+                  .enhanced-content-display td {
+                    padding: 14px 18px;
+                    text-align: left;
+                    border-bottom: 1px solid #e2e8f0;
+                    transition: all 0.2s ease;
+                  }
+                  
+                  .enhanced-content-display th {
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    font-weight: 700;
+                    font-size: 13px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  .enhanced-content-display td {
+                    background: rgba(255, 255, 255, 0.8);
+                    backdrop-filter: blur(10px);
+                  }
+                  
+                  .enhanced-content-display tr:hover td {
+                    background: rgba(99, 102, 241, 0.05);
+                    transform: translateY(-1px);
+                  }
                 </style>
               </head>
               <body>
@@ -4807,14 +5125,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="prose prose-sm prose-slate max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-blue-200 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
+                                    <div className="modern-section-content">
                                       <div 
                                         dangerouslySetInnerHTML={{ __html: section.content }}
-                                        className="modern-content text-gray-700 leading-relaxed space-y-3"
-                                        style={{
-                                          fontSize: '14px',
-                                          lineHeight: '1.5',
-                                        }}
+                                        className="enhanced-content-display"
                                       />
                                     </div>
                                   )}
