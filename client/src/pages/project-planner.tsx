@@ -1865,7 +1865,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   {projectInput.length}/1000 characters
                 </div>
                 <Button
-                  onClick={handleGenerateProjectPlan}
+                  onClick={handleGenerateEnhancedPlan}
                   disabled={!projectInput.trim() || isGeneratingDynamic || isGeneratingPlan || isGeneratingSuggestions || isGeneratingEnhanced}
                   size="sm"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
