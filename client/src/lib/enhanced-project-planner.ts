@@ -136,13 +136,13 @@ export class EnhancedProjectPlanner {
         - Success metrics dashboard layout
         - ROI projections table with timeline`,
 
-      "Technical Architecture & Infrastructure": `Design technical architecture with visual elements:
-        - System architecture flowchart with components
-        - Technology stack comparison table
-        - Database schema visualization
-        - API endpoints table with specifications
-        - Scalability metrics and performance benchmarks
-        - Security protocols matrix`,
+      "Technical Architecture & Infrastructure": `Design technical architecture with HTML-based visual elements:
+        - System architecture using HTML flowcharts (no images, use div boxes and CSS)
+        - Technology stack comparison table with detailed specifications
+        - Database schema represented as HTML tables and relationships
+        - API endpoints table with request/response examples
+        - Scalability metrics dashboard using HTML metrics cards
+        - Security protocols matrix with implementation details`,
 
       "Detailed Feature Specifications": `Create feature specifications with structured layouts:
         - Feature priority matrix table
@@ -152,21 +152,21 @@ export class EnhancedProjectPlanner {
         - Feature dependencies flowchart
         - API specifications table`,
 
-      "Development Methodology & Timeline": `Develop methodology with visual planning:
-        - Methodology comparison table
-        - Sprint timeline with milestones
-        - Team structure organizational chart
-        - Critical path flowchart
-        - Resource allocation table
-        - Delivery schedule with Gantt-style layout`,
+      "Development Methodology & Timeline": `Develop methodology with HTML-based visual planning:
+        - Methodology comparison table with pros/cons
+        - Sprint timeline using HTML timeline components (no images)
+        - Team structure using HTML organizational chart with connected boxes
+        - Critical path represented as HTML flowchart with dependencies
+        - Resource allocation table with capacity metrics
+        - Delivery schedule using HTML timeline with milestones`,
 
-      "User Experience & Interface Design": `Design UX strategy with visual elements:
-        - User persona cards with demographics
-        - User journey flow diagrams
-        - Information architecture sitemap
-        - Design principles checklist
-        - Accessibility compliance table
-        - Responsive breakpoint specifications`,
+      "User Experience & Interface Design": `Design UX strategy with HTML visual elements:
+        - User persona cards using HTML card components
+        - User journey represented as HTML flow diagrams (no images)
+        - Information architecture as nested HTML structure
+        - Design principles in checklist format
+        - Accessibility compliance table with WCAG standards
+        - Responsive breakpoint specifications table`,
 
       "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
         - Testing types coverage matrix
@@ -176,37 +176,37 @@ export class EnhancedProjectPlanner {
         - Testing tools comparison
         - QA process flowchart`,
 
-      "Deployment & DevOps Strategy": `Design DevOps with infrastructure diagrams:
-        - CI/CD pipeline flowchart
-        - Environment configuration table
-        - Infrastructure architecture diagram
-        - Monitoring metrics dashboard
-        - Deployment checklist
-        - Backup and recovery procedures`,
+      "Deployment & DevOps Strategy": `Design DevOps with HTML-based infrastructure visualization:
+        - CI/CD pipeline using HTML flowchart components (no images)
+        - Environment configuration comparison table
+        - Infrastructure architecture as HTML connected diagrams
+        - Monitoring metrics dashboard using HTML cards and tables
+        - Deployment checklist with step-by-step HTML timeline
+        - Backup and recovery procedures flowchart in HTML`,
 
-      "Risk Management & Mitigation": `Develop risk management with assessment matrices:
-        - Risk probability/impact matrix
-        - Mitigation strategies table
-        - Risk timeline and monitoring
-        - Contingency planning flowchart
-        - Risk response procedures
-        - Escalation matrix`,
+      "Risk Management & Mitigation": `Develop risk management with HTML-based assessment visualization:
+        - Risk probability/impact matrix using HTML table with color coding
+        - Mitigation strategies table with action items
+        - Risk timeline using HTML timeline components (no images)
+        - Contingency planning flowchart using HTML connected elements
+        - Risk response procedures as HTML workflow diagrams
+        - Escalation matrix with responsibility levels`,
 
-      "Stakeholder Management": `Create stakeholder plan with communication matrices:
-        - Stakeholder analysis matrix
-        - Communication calendar
-        - Responsibility assignment table
-        - Escalation procedures flowchart
-        - Progress tracking dashboard
-        - Feedback collection system`,
+      "Stakeholder Management": `Create stakeholder plan with HTML communication visualization:
+        - Stakeholder analysis matrix with influence/interest grid
+        - Communication calendar using HTML timeline format
+        - Responsibility assignment table with clear roles
+        - Escalation procedures using HTML flowchart (no images)
+        - Progress tracking dashboard using HTML metrics cards
+        - Feedback collection system workflow in HTML`,
 
-      "Post-Launch Strategy": `Develop post-launch with roadmap visualization:
-        - Launch timeline with milestones
-        - User onboarding flow
-        - Analytics dashboard mockup
-        - Maintenance schedule table
-        - Growth metrics tracking
-        - Feature roadmap timeline`
+      "Post-Launch Strategy": `Develop post-launch with HTML roadmap visualization:
+        - Launch timeline using HTML milestone components (no images)
+        - User onboarding flow as HTML step-by-step diagram
+        - Analytics dashboard using HTML metrics and charts
+        - Maintenance schedule table with recurring tasks
+        - Growth metrics tracking using HTML progress indicators
+        - Feature roadmap using HTML timeline with phases`
     };
 
     const prompt = sectionPrompts[sectionTitle as keyof typeof sectionPrompts] || `Create a detailed section about ${sectionTitle} for this project.`;
@@ -217,7 +217,43 @@ ${prompt}
 
 CRITICAL: Return ONLY clean HTML content without any markdown formatting, code blocks, or backtick tags. Your response must start directly with the HTML section tag and contain no explanatory text or markdown.
 
-Create a comprehensive HTML section with tables, flowcharts, timelines, cards, metrics, and status badges. Use proper semantic HTML structure with realistic project data. Do not wrap your response in code blocks or markdown formatting.`;
+Create comprehensive HTML sections using ONLY HTML and CSS - NO IMAGES. For technical diagrams use:
+
+ARCHITECTURE DIAGRAMS - Use HTML structure:
+<div class="architecture-diagram">
+  <div class="diagram-layer">
+    <div class="diagram-component frontend">Frontend Layer</div>
+    <div class="diagram-arrow right">→</div>
+    <div class="diagram-component api">API Gateway</div>
+    <div class="diagram-arrow right">→</div>
+    <div class="diagram-component database">Database</div>
+  </div>
+</div>
+
+ORGANIZATIONAL CHARTS - Use HTML structure:
+<div class="org-chart">
+  <div class="org-level">
+    <div class="org-role manager">Project Manager</div>
+  </div>
+  <div class="org-level">
+    <div class="org-role developer">Frontend Dev</div>
+    <div class="org-role developer">Backend Dev</div>
+    <div class="org-role designer">UI Designer</div>
+  </div>
+</div>
+
+PROCESS FLOWS - Use HTML structure:
+<div class="process-flow">
+  <div class="process-step">
+    <div class="process-number">1</div>
+    <div class="process-content">
+      <div class="process-title">Requirements Analysis</div>
+      <div class="process-description">Gather and document requirements</div>
+    </div>
+  </div>
+</div>
+
+Use tables, flowcharts, timelines, cards, metrics, and status badges. Never suggest images or external diagrams. All visualizations must be HTML/CSS based.`;
   }
 
   async generateSection(

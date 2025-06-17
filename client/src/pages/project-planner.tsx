@@ -1808,6 +1808,229 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   .status-danger::before { content: '✕'; }
+                  
+                  /* HTML-based Technical Diagrams */
+                  .architecture-diagram {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 20px;
+                    margin: 24px 0;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 16px;
+                    border: 1px solid #e2e8f0;
+                  }
+                  
+                  .diagram-layer {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    gap: 30px;
+                    width: 100%;
+                    position: relative;
+                  }
+                  
+                  .diagram-component {
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 2px solid #6366f1;
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    min-width: 120px;
+                    text-align: center;
+                    font-weight: 600;
+                    color: #1e293b;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                    position: relative;
+                  }
+                  
+                  .diagram-component:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  .diagram-component.database {
+                    border-color: #10b981;
+                    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+                  }
+                  
+                  .diagram-component.api {
+                    border-color: #f59e0b;
+                    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+                  }
+                  
+                  .diagram-component.frontend {
+                    border-color: #ec4899;
+                    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+                  }
+                  
+                  .diagram-arrow {
+                    position: absolute;
+                    color: #6366f1;
+                    font-size: 24px;
+                    font-weight: bold;
+                  }
+                  
+                  .diagram-arrow.down {
+                    bottom: -15px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                  }
+                  
+                  .diagram-arrow.right {
+                    right: -40px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                  }
+                  
+                  /* Organizational Chart */
+                  .org-chart {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 20px;
+                    margin: 24px 0;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 16px;
+                  }
+                  
+                  .org-level {
+                    display: flex;
+                    justify-content: center;
+                    gap: 30px;
+                    position: relative;
+                  }
+                  
+                  .org-role {
+                    background: white;
+                    border: 2px solid #6366f1;
+                    border-radius: 12px;
+                    padding: 12px 16px;
+                    text-align: center;
+                    min-width: 100px;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                  }
+                  
+                  .org-role:hover {
+                    transform: scale(1.05);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  .org-role.manager {
+                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+                    border-color: #3b82f6;
+                  }
+                  
+                  .org-role.developer {
+                    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+                    border-color: #10b981;
+                  }
+                  
+                  .org-role.designer {
+                    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+                    border-color: #ec4899;
+                  }
+                  
+                  /* Process Flow Diagram */
+                  .process-flow {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 16px;
+                    margin: 24px 0;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 16px;
+                  }
+                  
+                  .process-step {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    padding: 16px;
+                    background: white;
+                    border-radius: 12px;
+                    border-left: 4px solid #6366f1;
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                  }
+                  
+                  .process-step:hover {
+                    transform: translateX(4px);
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                  }
+                  
+                  .process-number {
+                    width: 32px;
+                    height: 32px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                    font-size: 14px;
+                  }
+                  
+                  .process-content {
+                    flex: 1;
+                  }
+                  
+                  .process-title {
+                    font-weight: 600;
+                    color: #1e293b;
+                    margin-bottom: 4px;
+                  }
+                  
+                  .process-description {
+                    color: #64748b;
+                    font-size: 14px;
+                  }
+                  
+                  /* Data Flow Diagram */
+                  .data-flow {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 20px;
+                    margin: 24px 0;
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    border-radius: 16px;
+                    position: relative;
+                  }
+                  
+                  .data-node {
+                    background: white;
+                    border: 2px solid #6366f1;
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                    font-weight: 600;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+                    transition: all 0.3s ease;
+                  }
+                  
+                  .data-node:hover {
+                    transform: scale(1.05);
+                  }
+                  
+                  .data-node.input {
+                    border-color: #10b981;
+                    background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+                  }
+                  
+                  .data-node.process {
+                    border-color: #f59e0b;
+                    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+                  }
+                  
+                  .data-node.output {
+                    border-color: #ec4899;
+                    background: linear-gradient(135deg, #fdf2f8, #fce7f3);
+                  }
                 </style>
               </head>
               <body>
