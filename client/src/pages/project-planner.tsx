@@ -3781,15 +3781,15 @@ Return the complete enhanced project plan as HTML with all existing content plus
               ) : (
                 <div className="space-y-4">
                   {/* Modern Header with Actions */}
-                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
                       <div>
-                        <h2 className="text-xl font-semibold text-gray-900 mb-1">Project Plan Sections</h2>
-                        <p className="text-sm text-gray-600">
-                          {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} sections enabled
+                        <h2 className="text-lg font-semibold text-gray-900 mb-0.5">Project Sections</h2>
+                        <p className="text-xs text-gray-500">
+                          {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2">
                         <ProjectSectionsSettings 
                           sections={projectSectionsSettings}
                           onSectionsChange={setProjectSectionsSettings}
@@ -3797,17 +3797,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         <Button
                           onClick={handleGenerateEnhancedPlan}
                           disabled={!projectInput.trim() || isGeneratingEnhanced || isGeneratingPlan}
-                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
+                          size="sm"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-sm text-xs"
                         >
                           {isGeneratingEnhanced ? (
                             <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Generating All...
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Generating...
                             </>
                           ) : (
                             <>
-                              <Sparkles className="h-4 w-4 mr-2" />
-                              Generate All Sections
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              Generate All
                             </>
                           )}
                         </Button>
@@ -3816,7 +3817,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
                     {/* Enhanced Progress Tracker */}
                     {isGeneratingEnhanced && (
-                      <div className="mb-6">
+                      <div className="mb-4">
                         <EnhancedProgressTracker 
                           progress={enhancedProgress}
                           sections={enhancedSections}
@@ -3824,9 +3825,9 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       </div>
                     )}
 
-                    {/* Compact Section Grid */}
+                    {/* Ultra Compact Section Grid */}
                     {projectSectionsSettings.filter(s => s.enabled).length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-2">
                         {projectSectionsSettings
                           .filter(section => section.enabled)
                           .sort((a, b) => a.order - b.order)
@@ -3839,26 +3840,26 @@ Return the complete enhanced project plan as HTML with all existing content plus
                                 hasContent 
                                   ? 'from-green-50 to-emerald-50 border-green-200' 
                                   : 'from-gray-50 to-slate-50 border-gray-200'
-                              } border rounded-lg p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]`}>
+                              } border rounded-md p-2.5 transition-all duration-200 hover:shadow-sm hover:scale-[1.01]`}>
                                 {hasContent && (
-                                  <div className="absolute top-2 right-2">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <div className="absolute top-1.5 right-1.5">
+                                    <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
                                   </div>
                                 )}
                                 
-                                <div className="flex items-start gap-3 mb-3">
-                                  <div className="text-lg flex-shrink-0">{section.icon}</div>
+                                <div className="flex items-start gap-2 mb-2">
+                                  <div className="text-sm flex-shrink-0">{section.icon}</div>
                                   <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <span className="text-xs font-medium text-gray-500">#{section.order}</span>
+                                    <div className="flex items-center gap-1 mb-0.5">
+                                      <span className="text-xs font-medium text-gray-400">#{section.order}</span>
                                       {section.isCustom && (
-                                        <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Custom</span>
+                                        <span className="text-xs bg-amber-100 text-amber-700 px-1 py-0.5 rounded text-xs">Custom</span>
                                       )}
                                     </div>
-                                    <h3 className="font-medium text-gray-900 text-sm leading-tight mb-1">
+                                    <h3 className="font-medium text-gray-900 text-xs leading-tight mb-0.5">
                                       {section.title}
                                     </h3>
-                                    <p className="text-xs text-gray-600 line-clamp-2">{section.description}</p>
+                                    <p className="text-xs text-gray-500 line-clamp-1">{section.description}</p>
                                   </div>
                                 </div>
                                 
@@ -3867,7 +3868,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                                   disabled={!projectInput.trim() || isGenerating || isGeneratingEnhanced}
                                   size="sm"
                                   variant={hasContent ? "secondary" : "outline"}
-                                  className={`w-full text-xs h-8 ${
+                                  className={`w-full text-xs h-6 ${
                                     hasContent 
                                       ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-300' 
                                       : 'border-gray-300 text-gray-700 hover:bg-gray-50'
@@ -3875,18 +3876,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
                                 >
                                   {isGenerating ? (
                                     <>
-                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                      Generating...
+                                      <Loader2 className="h-2.5 w-2.5 mr-1 animate-spin" />
+                                      Gen...
                                     </>
                                   ) : hasContent ? (
                                     <>
-                                      <Sparkles className="h-3 w-3 mr-1" />
-                                      Regenerate
+                                      <Sparkles className="h-2.5 w-2.5 mr-1" />
+                                      Regen
                                     </>
                                   ) : (
                                     <>
-                                      <Plus className="h-3 w-3 mr-1" />
-                                      Generate
+                                      <Plus className="h-2.5 w-2.5 mr-1" />
+                                      Gen
                                     </>
                                   )}
                                 </Button>
@@ -3895,10 +3896,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           })}
                       </div>
                     ) : (
-                      <div className="text-center py-12 text-gray-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                        <p className="text-lg font-medium mb-2">No sections enabled</p>
-                        <p className="text-sm">Use the Section Settings to configure which sections to display.</p>
+                      <div className="text-center py-8 text-gray-500">
+                        <FileText className="h-8 w-8 mx-auto mb-3 text-gray-300" />
+                        <p className="text-sm font-medium mb-1">No sections enabled</p>
+                        <p className="text-xs">Use Section Settings to configure sections.</p>
                       </div>
                     )}
                   </div>
