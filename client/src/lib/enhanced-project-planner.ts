@@ -215,93 +215,9 @@ export class EnhancedProjectPlanner {
 
 ${prompt}
 
-CRITICAL: Format your response as a complete HTML section with rich visual elements. Use this exact structure:
+CRITICAL: Return ONLY clean HTML content without any markdown formatting, code blocks, or backtick tags. Your response must start directly with the HTML section tag and contain no explanatory text or markdown.
 
-<section class="project-section">
-  <h1>${sectionTitle}</h1>
-  
-  <!-- Key metrics display -->
-  <div class="grid">
-    <div class="metric">
-      <span class="metric-value">42</span>
-      <span class="metric-label">Days Timeline</span>
-    </div>
-    <div class="metric">
-      <span class="metric-value">$50K</span>
-      <span class="metric-label">Budget Estimate</span>
-    </div>
-  </div>
-  
-  <!-- Data tables for comparisons -->
-  <table>
-    <thead>
-      <tr><th>Component</th><th>Technology</th><th>Priority</th><th>Timeline</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Frontend</td><td>React.js</td><td><span class="status-badge status-success">High</span></td><td>4 weeks</td></tr>
-      <tr><td>Backend</td><td>Node.js</td><td><span class="status-badge status-info">Medium</span></td><td>6 weeks</td></tr>
-    </tbody>
-  </table>
-  
-  <!-- Process flow diagrams -->
-  <div class="flowchart">
-    <div class="flow-step">Planning</div>
-    <div class="flow-step">Design</div>
-    <div class="flow-step">Development</div>
-    <div class="flow-step">Testing</div>
-    <div class="flow-step">Deployment</div>
-  </div>
-  
-  <!-- Timeline visualization -->
-  <div class="timeline">
-    <div class="timeline-item">
-      <h3>Phase 1: Requirements (Weeks 1-2)</h3>
-      <p>Gather requirements and define project scope</p>
-    </div>
-    <div class="timeline-item">
-      <h3>Phase 2: Development (Weeks 3-8)</h3>
-      <p>Core feature development and integration</p>
-    </div>
-  </div>
-  
-  <!-- Highlighted information boxes -->
-  <div class="highlight">
-    <h3>⚠️ Critical Consideration</h3>
-    <p>Important information that requires special attention</p>
-  </div>
-  
-  <!-- Organized content cards -->
-  <div class="card">
-    <h3>Technical Requirements</h3>
-    <ul>
-      <li>Modern web framework (React/Vue/Angular)</li>
-      <li>RESTful API with authentication</li>
-      <li>Database with ACID compliance</li>
-    </ul>
-  </div>
-  
-  <div class="card">
-    <h3>Success Criteria</h3>
-    <ol>
-      <li>User registration and authentication</li>
-      <li>Core functionality implementation</li>
-      <li>Performance benchmarks met</li>
-    </ol>
-  </div>
-</section>
-
-Requirements:
-- Use tables for data comparisons, specifications, and matrices
-- Use flowcharts for processes, workflows, and system architecture
-- Use timelines for project phases, milestones, and schedules
-- Use cards for grouping related information and features
-- Use status badges for priorities, states, and classifications
-- Use metrics for key performance indicators and measurements
-- Use highlight boxes for critical information and warnings
-- Include realistic, specific data relevant to the project
-- Structure content logically with proper HTML hierarchy
-
-Make the content comprehensive, visually organized, and easy to scan with proper HTML structure and semantic elements.`;
+Create a comprehensive HTML section with tables, flowcharts, timelines, cards, metrics, and status badges. Use proper semantic HTML structure with realistic project data. Do not wrap your response in code blocks or markdown formatting.`;
   }
 
   async generateSection(
@@ -317,7 +233,16 @@ Make the content comprehensive, visually organized, and easy to scan with proper
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
-      return response.text();
+      let content = response.text();
+      
+      // Clean up any markdown formatting or code blocks
+      content = content
+        .replace(/```html\s*/gi, '')
+        .replace(/```\s*/g, '')
+        .replace(/^\s*html\s*/gi, '')
+        .trim();
+      
+      return content;
     } catch (error) {
       console.error(`Error generating section ${sectionTitle}:`, error);
       throw new Error(`Failed to generate ${sectionTitle} section`);
