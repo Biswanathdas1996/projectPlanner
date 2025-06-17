@@ -2193,30 +2193,30 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   
                   body {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-                    line-height: 1.7;
+                    line-height: 1.5;
                     color: #1e293b;
                     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-                    padding: 32px;
-                    font-size: 15px;
+                    padding: 16px;
+                    font-size: 14px;
                     letter-spacing: -0.01em;
                   }
                   
                   h1, h2, h3, h4, h5, h6 {
                     color: #0f172a;
-                    margin-bottom: 20px;
+                    margin-bottom: 12px;
                     font-weight: 700;
                     letter-spacing: -0.025em;
                   }
                   
                   h1 {
-                    font-size: 2.5rem;
+                    font-size: 1.875rem;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                     background-clip: text;
-                    margin-bottom: 32px;
-                    padding-bottom: 16px;
-                    border-bottom: 3px solid transparent;
+                    margin-bottom: 16px;
+                    padding-bottom: 8px;
+                    border-bottom: 2px solid transparent;
                     border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
                     position: relative;
                   }
@@ -2224,69 +2224,70 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   h1::after {
                     content: '';
                     position: absolute;
-                    bottom: -3px;
+                    bottom: -2px;
                     left: 0;
-                    width: 60px;
-                    height: 3px;
+                    width: 40px;
+                    height: 2px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6);
-                    border-radius: 2px;
+                    border-radius: 1px;
                   }
                   
                   h2 {
-                    font-size: 1.75rem;
+                    font-size: 1.375rem;
                     position: relative;
-                    padding: 16px 20px;
+                    padding: 8px 12px;
                     background: linear-gradient(135deg, #f8fafc, #e2e8f0);
-                    border-radius: 16px;
-                    border-left: 5px solid #6366f1;
-                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-                    margin-bottom: 24px;
+                    border-radius: 8px;
+                    border-left: 3px solid #6366f1;
+                    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    margin-bottom: 12px;
                   }
                   
                   h3 {
-                    font-size: 1.375rem;
+                    font-size: 1.125rem;
                     display: flex;
                     align-items: center;
-                    gap: 12px;
-                    padding: 12px 0;
+                    gap: 8px;
+                    padding: 6px 0;
                     color: #475569;
                     border-bottom: 1px solid #e2e8f0;
-                    margin-bottom: 16px;
+                    margin-bottom: 8px;
                   }
                   
                   h3:before {
                     content: '';
-                    width: 12px;
-                    height: 12px;
+                    width: 8px;
+                    height: 8px;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     border-radius: 50%;
-                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+                    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
                   }
                   
                   p {
-                    margin-bottom: 16px;
+                    margin-bottom: 8px;
                     text-align: justify;
                   }
                   
                   ul, ol {
-                    margin: 16px 0;
+                    margin: 8px 0;
                     padding-left: 0;
                     list-style: none;
                   }
                   
                   li {
                     position: relative;
-                    padding: 8px 0 8px 24px;
-                    margin-bottom: 8px;
+                    padding: 4px 0 4px 20px;
+                    margin-bottom: 4px;
+                    font-size: 13px;
                   }
                   
                   ul li:before {
                     content: '';
                     position: absolute;
-                    left: 8px;
-                    top: 16px;
-                    width: 6px;
-                    height: 6px;
+                    left: 6px;
+                    top: 10px;
+                    width: 5px;
+                    height: 5px;
                     background: #3b82f6;
                     border-radius: 50%;
                   }
@@ -2303,16 +2304,16 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     content: counter(item);
                     position: absolute;
                     left: 0;
-                    top: 8px;
-                    width: 20px;
-                    height: 20px;
+                    top: 4px;
+                    width: 16px;
+                    height: 16px;
                     background: linear-gradient(135deg, #3b82f6, #8b5cf6);
                     color: white;
                     border-radius: 50%;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 12px;
+                    font-size: 10px;
                     font-weight: bold;
                   }
                   
@@ -2320,16 +2321,17 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     width: 100%;
                     border-collapse: separate;
                     border-spacing: 0;
-                    margin: 24px 0;
+                    margin: 12px 0;
                     background: white;
-                    border-radius: 16px;
+                    border-radius: 8px;
                     overflow: hidden;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
                     border: 1px solid #e2e8f0;
+                    font-size: 13px;
                   }
                   
                   th, td {
-                    padding: 16px 20px;
+                    padding: 8px 12px;
                     text-align: left;
                     border-bottom: 1px solid #f1f5f9;
                     vertical-align: middle;
@@ -2339,32 +2341,31 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
                     font-weight: 600;
-                    font-size: 13px;
+                    font-size: 11px;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.3px;
                     position: relative;
                   }
                   
                   th:first-child {
-                    border-top-left-radius: 16px;
+                    border-top-left-radius: 8px;
                   }
                   
                   th:last-child {
-                    border-top-right-radius: 16px;
+                    border-top-right-radius: 8px;
                   }
                   
                   tr:hover {
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    transform: scale(1.01);
                     transition: all 0.2s ease;
                   }
                   
                   tr:last-child td:first-child {
-                    border-bottom-left-radius: 16px;
+                    border-bottom-left-radius: 8px;
                   }
                   
                   tr:last-child td:last-child {
-                    border-bottom-right-radius: 16px;
+                    border-bottom-right-radius: 8px;
                   }
                   
                   tr:last-child td {
@@ -2374,10 +2375,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   .card {
                     background: white;
                     border: 1px solid #e2e8f0;
-                    border-radius: 20px;
-                    padding: 24px;
-                    margin: 20px 0;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border-radius: 12px;
+                    padding: 12px;
+                    margin: 8px 0;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
                     transition: all 0.3s ease;
                     position: relative;
                     overflow: hidden;
@@ -2389,42 +2390,43 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     top: 0;
                     left: 0;
                     right: 0;
-                    height: 4px;
+                    height: 3px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
                   
                   .card:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                    transform: translateY(-2px);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                   }
                   
                   .highlight {
                     background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
                     border: 1px solid #0ea5e9;
-                    border-radius: 16px;
-                    padding: 20px;
-                    margin: 20px 0;
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin: 8px 0;
                     position: relative;
-                    box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.1);
+                    box-shadow: 0 2px 4px -1px rgba(14, 165, 233, 0.1);
+                    font-size: 13px;
                   }
                   
                   .highlight::before {
                     content: '💡';
                     position: absolute;
-                    top: -8px;
-                    left: 20px;
+                    top: -6px;
+                    left: 12px;
                     background: white;
-                    padding: 4px 8px;
+                    padding: 2px 6px;
                     border-radius: 50%;
-                    font-size: 16px;
-                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    font-size: 12px;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                   }
                   
                   .flowchart {
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 12px;
-                    margin: 16px 0;
+                    gap: 8px;
+                    margin: 8px 0;
                     justify-content: center;
                     align-items: center;
                   }
@@ -2432,30 +2434,30 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   .flow-step {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
-                    padding: 8px 16px;
-                    border-radius: 8px;
+                    padding: 6px 12px;
+                    border-radius: 6px;
                     font-weight: 600;
                     position: relative;
-                    min-width: 100px;
+                    min-width: 80px;
                     text-align: center;
-                    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+                    box-shadow: 0 2px 4px -1px rgba(99, 102, 241, 0.3);
                     transition: all 0.2s ease;
-                    font-size: 14px;
+                    font-size: 12px;
                   }
                   
                   .flow-step:hover {
                     transform: translateY(-1px);
-                    box-shadow: 0 8px 12px -2px rgba(99, 102, 241, 0.4);
+                    box-shadow: 0 4px 8px -1px rgba(99, 102, 241, 0.4);
                   }
                   
                   .flow-step:not(:last-child):after {
                     content: '→';
                     position: absolute;
-                    right: -18px;
+                    right: -14px;
                     top: 50%;
                     transform: translateY(-50%);
                     color: #6366f1;
-                    font-size: 16px;
+                    font-size: 14px;
                     font-weight: bold;
                   }
                   
@@ -2463,8 +2465,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     display: flex;
                     flex-direction: row;
                     flex-wrap: wrap;
-                    gap: 16px;
-                    margin: 20px 0;
+                    gap: 8px;
+                    margin: 8px 0;
                     justify-content: flex-start;
                     align-items: stretch;
                   }
@@ -2472,13 +2474,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   .metric {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border: 1px solid #e2e8f0;
-                    border-radius: 20px;
-                    padding: 24px;
+                    border-radius: 8px;
+                    padding: 12px;
                     text-align: center;
-                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
                     flex: 1;
-                    min-width: 160px;
-                    max-width: 220px;
+                    min-width: 100px;
+                    max-width: 140px;
                     transition: all 0.3s ease;
                     position: relative;
                     overflow: hidden;
@@ -2490,17 +2492,17 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     top: 0;
                     left: 0;
                     right: 0;
-                    height: 4px;
+                    height: 3px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
                   
                   .metric:hover {
-                    transform: translateY(-4px);
-                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
                   }
                   
                   .metric-value {
-                    font-size: 2.5rem;
+                    font-size: 1.75rem;
                     font-weight: 800;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     -webkit-background-clip: text;
@@ -2508,95 +2510,95 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background-clip: text;
                     display: block;
                     letter-spacing: -0.025em;
-                    margin-bottom: 8px;
+                    margin-bottom: 4px;
                   }
                   
                   .metric-label {
                     color: #64748b;
-                    font-size: 14px;
+                    font-size: 11px;
                     font-weight: 500;
                     text-transform: uppercase;
-                    letter-spacing: 0.5px;
+                    letter-spacing: 0.3px;
                   }
                   
                   .timeline {
                     position: relative;
-                    padding-left: 20px;
-                    margin: 12px 0;
+                    padding-left: 16px;
+                    margin: 6px 0;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
-                    border-radius: 12px;
-                    padding: 16px 16px 16px 32px;
+                    border-radius: 8px;
+                    padding: 8px 8px 8px 20px;
                     border: 1px solid #e2e8f0;
                   }
                   
                   .timeline:before {
                     content: '';
                     position: absolute;
-                    left: 20px;
-                    top: 16px;
-                    bottom: 16px;
-                    width: 3px;
+                    left: 12px;
+                    top: 8px;
+                    bottom: 8px;
+                    width: 2px;
                     background: linear-gradient(to bottom, #3b82f6, #6366f1, #8b5cf6);
-                    border-radius: 2px;
+                    border-radius: 1px;
                   }
                   
                   .timeline-item {
                     position: relative;
-                    padding: 6px 0;
-                    margin-bottom: 6px;
+                    padding: 3px 0;
+                    margin-bottom: 3px;
                     background: white;
-                    border-radius: 8px;
-                    padding: 12px 16px;
-                    margin-left: 16px;
+                    border-radius: 6px;
+                    padding: 8px 10px;
+                    margin-left: 10px;
                     border: 1px solid #e5e7eb;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                    box-shadow: 0 1px 2px rgba(0,0,0,0.03);
                     transition: all 0.2s ease;
                   }
                   
                   .timeline-item:hover {
-                    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
                     transform: translateY(-1px);
                   }
                   
                   .timeline-item:before {
                     content: '●';
                     position: absolute;
-                    left: -28px;
+                    left: -18px;
                     top: 50%;
                     transform: translateY(-50%);
-                    width: 12px;
-                    height: 12px;
+                    width: 8px;
+                    height: 8px;
                     background: linear-gradient(135deg, #3b82f6, #6366f1);
                     border-radius: 50%;
                     color: white;
-                    font-size: 8px;
+                    font-size: 6px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    border: 2px solid white;
-                    box-shadow: 0 0 0 2px #3b82f6, 0 2px 4px rgba(59,130,246,0.3);
+                    border: 1px solid white;
+                    box-shadow: 0 0 0 1px #3b82f6, 0 1px 2px rgba(59,130,246,0.2);
                   }
                   
                   .timeline-item h3 {
-                    font-size: 0.95rem;
-                    margin-bottom: 4px;
+                    font-size: 0.8rem;
+                    margin-bottom: 2px;
                     font-weight: 600;
                     color: #1e293b;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 6px;
                   }
                   
                   .timeline-item h3:before {
                     content: '📅';
-                    font-size: 0.8rem;
+                    font-size: 0.7rem;
                   }
                   
                   .timeline-item p {
-                    font-size: 0.85rem;
+                    font-size: 0.75rem;
                     margin-bottom: 0;
                     color: #64748b;
-                    line-height: 1.4;
+                    line-height: 1.3;
                   }
                   
                   code {
@@ -4414,28 +4416,29 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                   </div>
                                 </div>
 
-                                <div className="p-6">
+                                <div className="p-3">
                                   {editingSectionId === section.id && activeTabId === section.id ? (
-                                    <div className="space-y-4">
+                                    <div className="space-y-3">
                                       <div className="flex items-center justify-between">
-                                        <p className="text-sm text-gray-600">
+                                        <p className="text-xs text-gray-600">
                                           Edit the content for this section. You can use HTML or plain text.
                                         </p>
                                         <div className="flex gap-2">
                                           <Button
                                             onClick={saveSectionEdit}
                                             size="sm"
-                                            className="bg-green-600 hover:bg-green-700 text-white"
+                                            className="bg-green-600 hover:bg-green-700 text-white text-xs"
                                           >
-                                            <Save className="h-4 w-4 mr-2" />
-                                            Save Changes
+                                            <Save className="h-3 w-3 mr-1" />
+                                            Save
                                           </Button>
                                           <Button
                                             onClick={cancelSectionEdit}
                                             variant="outline"
                                             size="sm"
+                                            className="text-xs"
                                           >
-                                            <X className="h-4 w-4 mr-2" />
+                                            <X className="h-3 w-3 mr-1" />
                                             Cancel
                                           </Button>
                                         </div>
@@ -4444,22 +4447,22 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                       <Textarea
                                         value={editedSectionContent}
                                         onChange={(e) => setEditedSectionContent(e.target.value)}
-                                        className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                                        className="min-h-[300px] font-mono text-xs bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                                         placeholder="Enter content for this section..."
                                       />
                                       
-                                      <div className="text-sm text-gray-500">
+                                      <div className="text-xs text-gray-500">
                                         {editedSectionContent.length} characters | HTML and plain text supported
                                       </div>
                                     </div>
                                   ) : (
-                                    <div className="prose prose-lg prose-slate max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-blue-200 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
+                                    <div className="prose prose-sm prose-slate max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-ul:text-gray-700 prose-ol:text-gray-700 prose-li:text-gray-700 prose-blockquote:text-gray-600 prose-blockquote:border-blue-200 prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline">
                                       <div 
                                         dangerouslySetInnerHTML={{ __html: section.content }}
-                                        className="modern-content text-gray-700 leading-relaxed space-y-6"
+                                        className="modern-content text-gray-700 leading-relaxed space-y-3"
                                         style={{
-                                          fontSize: '16px',
-                                          lineHeight: '1.8',
+                                          fontSize: '14px',
+                                          lineHeight: '1.5',
                                         }}
                                       />
                                     </div>
