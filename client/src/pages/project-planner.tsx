@@ -57,7 +57,73 @@ import {
   Users,
   BookOpen,
   TrendingUp,
+  Target,
+  Settings,
+  Shield,
+  Zap,
+  Clock,
+  Database,
+  Globe,
+  Briefcase,
+  BarChart3,
+  Layout,
+  Rocket,
+  Palette,
+  TestTube,
+  Cloud,
+  AlertCircle
 } from 'lucide-react';
+
+// Helper function to get icon and description for section types
+const getSectionIconAndDescription = (title: string) => {
+  const titleLower = title.toLowerCase();
+  
+  if (titleLower.includes('executive') || titleLower.includes('summary')) {
+    return { icon: Target, description: 'Overview & Goals' };
+  }
+  if (titleLower.includes('technical') || titleLower.includes('architecture')) {
+    return { icon: Settings, description: 'Tech Stack & Design' };
+  }
+  if (titleLower.includes('feature') || titleLower.includes('specification')) {
+    return { icon: Zap, description: 'Features & Requirements' };
+  }
+  if (titleLower.includes('development') || titleLower.includes('methodology')) {
+    return { icon: Code, description: 'Process & Timeline' };
+  }
+  if (titleLower.includes('user') || titleLower.includes('interface') || titleLower.includes('experience')) {
+    return { icon: Layout, description: 'Design & UX' };
+  }
+  if (titleLower.includes('quality') || titleLower.includes('testing')) {
+    return { icon: TestTube, description: 'QA & Testing' };
+  }
+  if (titleLower.includes('deployment') || titleLower.includes('devops')) {
+    return { icon: Cloud, description: 'Launch & Operations' };
+  }
+  if (titleLower.includes('risk') || titleLower.includes('management')) {
+    return { icon: Shield, description: 'Risk & Mitigation' };
+  }
+  if (titleLower.includes('stakeholder')) {
+    return { icon: Users, description: 'People & Roles' };
+  }
+  if (titleLower.includes('post-launch') || titleLower.includes('strategy')) {
+    return { icon: Rocket, description: 'Growth & Future' };
+  }
+  if (titleLower.includes('budget') || titleLower.includes('cost')) {
+    return { icon: BarChart3, description: 'Financial Planning' };
+  }
+  if (titleLower.includes('timeline') || titleLower.includes('schedule')) {
+    return { icon: Clock, description: 'Time Management' };
+  }
+  if (titleLower.includes('security')) {
+    return { icon: Shield, description: 'Safety & Protection' };
+  }
+  if (titleLower.includes('database') || titleLower.includes('data')) {
+    return { icon: Database, description: 'Data & Storage' };
+  }
+  
+  // Default fallback
+  return { icon: FileText, description: 'Project Content' };
+};
 
 export default function ProjectPlanner() {
   const [projectInput, setProjectInput] = useState('');
@@ -4040,21 +4106,32 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           }}
                         >
                           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
-                            {enhancedSections.filter(s => s.content).map((section, index) => (
-                              <TabsTrigger 
-                                key={section.id} 
-                                value={section.id} 
-                                className="flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm"
-                              >
-                                <span className="flex items-center gap-2.5">
-                                  <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
-                                  <span className="font-semibold text-center text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight">
-                                    {section.title}
-                                  </span>
-                                </span>
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
-                              </TabsTrigger>
-                            ))}
+                            {enhancedSections.filter(s => s.content).map((section, index) => {
+                              const { icon: SectionIcon, description } = getSectionIconAndDescription(section.title);
+                              return (
+                                <TabsTrigger 
+                                  key={section.id} 
+                                  value={section.id} 
+                                  className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <SectionIcon className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
+                                        {section.title}
+                                      </div>
+                                      <div className="text-xs text-slate-500 group-data-[state=active]:text-blue-100 transition-colors duration-300 mt-0.5">
+                                        {description}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                                </TabsTrigger>
+                              );
+                            })}
                           </TabsList>
                           {enhancedSections.filter(s => s.content).map((section) => (
                             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
