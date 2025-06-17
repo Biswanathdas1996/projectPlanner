@@ -1611,27 +1611,49 @@ Return the complete enhanced project plan as HTML with all existing content plus
                 ${sectionHtml}
                 
                 <script>
-                  // Auto-adjust iframe height
+                  // Auto-adjust iframe height to exact content size
                   function adjustHeight() {
-                    const height = Math.max(
-                      document.body.scrollHeight,
-                      document.body.offsetHeight,
-                      document.documentElement.clientHeight,
-                      document.documentElement.scrollHeight,
-                      document.documentElement.offsetHeight
-                    );
+                    // Force layout recalculation
+                    document.body.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                    
+                    // Get all possible height measurements
+                    const bodyHeight = document.body.scrollHeight;
+                    const bodyOffset = document.body.offsetHeight;
+                    const htmlHeight = document.documentElement.scrollHeight;
+                    const htmlOffset = document.documentElement.offsetHeight;
+                    const clientHeight = document.documentElement.clientHeight;
+                    
+                    // Find the maximum actual content height
+                    const contentHeight = Math.max(bodyHeight, bodyOffset, htmlHeight, htmlOffset, clientHeight);
+                    
+                    // Add minimal padding to prevent content cutoff
+                    const finalHeight = contentHeight + 10;
                     
                     window.parent.postMessage({
                       type: 'resize',
-                      height: height + 50
+                      height: finalHeight
                     }, '*');
+                    
+                    console.log('Content height calculated:', finalHeight);
                   }
                   
-                  // Call after load and periodically
-                  window.addEventListener('load', adjustHeight);
-                  setTimeout(adjustHeight, 100);
-                  setTimeout(adjustHeight, 500);
-                  setTimeout(adjustHeight, 1000);
+                  // Multiple adjustment attempts for thorough measurement
+                  window.addEventListener('load', () => {
+                    setTimeout(adjustHeight, 50);
+                    setTimeout(adjustHeight, 200);
+                    setTimeout(adjustHeight, 500);
+                    setTimeout(adjustHeight, 1000);
+                  });
+                  
+                  // Immediate adjustment
+                  adjustHeight();
+                  
+                  // Watch for content changes
+                  if (window.ResizeObserver) {
+                    const observer = new ResizeObserver(adjustHeight);
+                    observer.observe(document.body);
+                  }
                 </script>
               </body>
               </html>
@@ -1655,7 +1677,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     src={blobUrl}
                     className="w-full border-0 block"
                     style={{
-                      height: '500px',
+                      height: '200px', // Initial small height
                       backgroundColor: '#ffffff',
                       margin: 0,
                       padding: 0,
@@ -1666,14 +1688,40 @@ Return the complete enhanced project plan as HTML with all existing content plus
                     onLoad={(e) => {
                       const iframe = e.target as HTMLIFrameElement;
                       
+                      // Auto-adjust height to content
+                      const adjustHeight = () => {
+                        try {
+                          if (iframe.contentDocument) {
+                            const body = iframe.contentDocument.body;
+                            const html = iframe.contentDocument.documentElement;
+                            const height = Math.max(
+                              body.scrollHeight,
+                              body.offsetHeight,
+                              html.clientHeight,
+                              html.scrollHeight,
+                              html.offsetHeight
+                            );
+                            iframe.style.height = `${height}px`;
+                          }
+                        } catch (error) {
+                          // Fallback for cross-origin restrictions
+                          console.log('Using message-based height adjustment');
+                        }
+                      };
+                      
                       // Listen for resize messages from iframe
                       const handleMessage = (event: MessageEvent) => {
                         if (event.data.type === 'resize' && event.source === iframe.contentWindow) {
-                          iframe.style.height = `${event.data.height}px`;
+                          iframe.style.height = `${Math.max(event.data.height, 100)}px`;
                         }
                       };
                       
                       window.addEventListener('message', handleMessage);
+                      
+                      // Try direct height adjustment first
+                      setTimeout(adjustHeight, 100);
+                      setTimeout(adjustHeight, 500);
+                      setTimeout(adjustHeight, 1000);
                       
                       // Clean up
                       setTimeout(() => {
