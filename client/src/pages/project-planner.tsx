@@ -2183,95 +2183,169 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {/* Configurable Section Headers */}
-                  <div className="mb-8">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">Comprehensive Project Plan</h2>
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm text-gray-500">
+                <div className="space-y-4">
+                  {/* Modern Header with Actions */}
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+                      <div>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-1">Project Plan Sections</h2>
+                        <p className="text-sm text-gray-600">
                           {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} sections enabled
-                        </div>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <ProjectSectionsSettings 
+                          sections={projectSectionsSettings}
+                          onSectionsChange={setProjectSectionsSettings}
+                        />
                         <Button
                           onClick={handleGenerateEnhancedPlan}
                           disabled={!projectInput.trim() || isGeneratingEnhanced || isGeneratingPlan}
-                          size="sm"
-                          className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-sm"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg"
                         >
                           {isGeneratingEnhanced ? (
                             <>
-                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                               Generating All...
                             </>
                           ) : (
                             <>
-                              <Sparkles className="h-3 w-3 mr-2" />
+                              <Sparkles className="h-4 w-4 mr-2" />
                               Generate All Sections
                             </>
                           )}
                         </Button>
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                      {projectSectionsSettings
-                        .filter(section => section.enabled)
-                        .sort((a, b) => a.order - b.order)
-                        .map((section) => {
-                          const isGenerating = generatingSectionId === section.id;
-                          const hasContent = enhancedSections.some(s => s.id === section.id && s.content);
-                          
-                          return (
-                            <div key={section.id} className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                              <div className="flex items-start justify-between space-x-3">
-                                <div className="flex items-start space-x-3 flex-1">
-                                  <div className="text-2xl">{section.icon}</div>
-                                  <div className="flex-1">
-                                    <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                                      {section.order}. {section.title}
-                                      {section.isCustom && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Custom</span>}
-                                      {hasContent && <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Generated</span>}
+
+                    {/* Enhanced Progress Tracker */}
+                    {isGeneratingEnhanced && (
+                      <div className="mb-6">
+                        <EnhancedProgressTracker 
+                          progress={enhancedProgress}
+                          sections={enhancedSections}
+                        />
+                      </div>
+                    )}
+
+                    {/* Compact Section Grid */}
+                    {projectSectionsSettings.filter(s => s.enabled).length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+                        {projectSectionsSettings
+                          .filter(section => section.enabled)
+                          .sort((a, b) => a.order - b.order)
+                          .map((section) => {
+                            const isGenerating = generatingSectionId === section.id;
+                            const hasContent = enhancedSections.some(s => s.id === section.id && s.content);
+                            
+                            return (
+                              <div key={section.id} className={`relative bg-gradient-to-br ${
+                                hasContent 
+                                  ? 'from-green-50 to-emerald-50 border-green-200' 
+                                  : 'from-gray-50 to-slate-50 border-gray-200'
+                              } border rounded-lg p-4 transition-all duration-200 hover:shadow-md hover:scale-[1.02]`}>
+                                {hasContent && (
+                                  <div className="absolute top-2 right-2">
+                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  </div>
+                                )}
+                                
+                                <div className="flex items-start gap-3 mb-3">
+                                  <div className="text-lg flex-shrink-0">{section.icon}</div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="text-xs font-medium text-gray-500">#{section.order}</span>
+                                      {section.isCustom && (
+                                        <span className="text-xs bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Custom</span>
+                                      )}
+                                    </div>
+                                    <h3 className="font-medium text-gray-900 text-sm leading-tight mb-1">
+                                      {section.title}
                                     </h3>
-                                    <p className="text-xs text-gray-600">{section.description}</p>
+                                    <p className="text-xs text-gray-600 line-clamp-2">{section.description}</p>
                                   </div>
                                 </div>
+                                
                                 <Button
                                   onClick={() => generateIndividualSection(section.id)}
                                   disabled={!projectInput.trim() || isGenerating || isGeneratingEnhanced}
                                   size="sm"
-                                  variant="outline"
-                                  className="text-xs px-2 py-1 h-auto border-blue-300 text-blue-600 hover:bg-blue-50"
+                                  variant={hasContent ? "secondary" : "outline"}
+                                  className={`w-full text-xs h-8 ${
+                                    hasContent 
+                                      ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-300' 
+                                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                                  }`}
                                 >
                                   {isGenerating ? (
                                     <>
                                       <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                      Gen...
+                                      Generating...
                                     </>
                                   ) : hasContent ? (
                                     <>
                                       <Sparkles className="h-3 w-3 mr-1" />
-                                      Regen
+                                      Regenerate
                                     </>
                                   ) : (
                                     <>
-                                      <Sparkles className="h-3 w-3 mr-1" />
+                                      <Plus className="h-3 w-3 mr-1" />
                                       Generate
                                     </>
                                   )}
                                 </Button>
                               </div>
-                            </div>
-                          );
-                        })}
-                    </div>
-                    {projectSectionsSettings.filter(s => s.enabled).length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
-                        <p>No sections enabled. Use the Section Settings to configure which sections to display.</p>
+                            );
+                          })}
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-gray-500">
+                        <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                        <p className="text-lg font-medium mb-2">No sections enabled</p>
+                        <p className="text-sm">Use the Section Settings to configure which sections to display.</p>
                       </div>
                     )}
                   </div>
                   
                   {/* Generated Plan Content */}
-                  {renderProjectPlan()}
+                  {projectPlan && (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="border-b border-gray-200 p-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">Generated Content</h3>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={downloadPDF}
+                              variant="outline"
+                              size="sm"
+                              disabled={isDownloadingPdf}
+                              className="text-xs"
+                            >
+                              {isDownloadingPdf ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Download className="h-3 w-3 mr-1" />
+                              )}
+                              PDF
+                            </Button>
+                            <Button
+                              onClick={startEditingPlan}
+                              variant="outline"
+                              size="sm"
+                              disabled={isEditingPlan}
+                              className="text-xs"
+                            >
+                              <Edit className="h-3 w-3 mr-1" />
+                              Edit
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        {renderProjectPlan()}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
