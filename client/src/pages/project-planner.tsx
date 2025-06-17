@@ -1270,147 +1270,419 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         cleanedContent.includes('<style>');
     
     if (isHtmlContent) {
-      // Extract content from HTML and render with modern styling
-      const parser = new DOMParser();
-      let htmlDoc;
+      // Split HTML content into sections and render each in an iframe
+      const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+      const sections = cleanedContent.match(sectionPattern) || [];
       
-      try {
-        htmlDoc = parser.parseFromString(cleanedContent, 'text/html');
-      } catch (error) {
-        console.error('Failed to parse HTML content:', error);
+      if (sections.length === 0) {
+        // If no sections found, treat entire content as one section
+        const blob = new Blob([cleanedContent], { type: 'text/html' });
+        const blobUrl = URL.createObjectURL(blob);
+        
         return (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-6">
-            <p className="text-red-700">Error parsing HTML content. Please regenerate the project plan.</p>
+          <div className="space-y-6">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+              <div className="border-b border-gray-200 p-4">
+                <h3 className="text-lg font-semibold text-gray-900">Project Plan Content</h3>
+              </div>
+              <div className="p-0">
+                <iframe
+                  src={blobUrl}
+                  className="w-full border-0"
+                  style={{
+                    height: '600px',
+                    backgroundColor: '#ffffff'
+                  }}
+                  title="Project Plan Content"
+                  sandbox="allow-same-origin allow-scripts"
+                  onLoad={() => {
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+                  }}
+                />
+              </div>
+            </div>
           </div>
         );
       }
       
-      // Extract text content and structure
-      const body = htmlDoc.body;
-      if (!body) {
-        return (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-            <p className="text-yellow-700">No content found in HTML. Please regenerate the project plan.</p>
-          </div>
-        );
-      }
-      
-      // Convert HTML elements to modern React components
-      const convertHtmlToModernComponents = (element: Element, prefix = 'html'): JSX.Element[] => {
-        const components: JSX.Element[] = [];
-        
-        Array.from(element.children).forEach((child, index) => {
-          const tagName = child.tagName.toLowerCase();
-          const textContent = child.textContent?.trim() || '';
-          const uniqueKey = `${prefix}-${tagName}-${index}`;
-          
-          if (!textContent && !child.children.length) return;
-          
-          switch (tagName) {
-            case 'h1':
-              components.push(
-                <div key={uniqueKey} className="mb-8">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-200">
-                    {textContent}
-                  </h1>
-                </div>
-              );
-              break;
-              
-            case 'h2':
-              components.push(
-                <div key={uniqueKey} className="mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                    <h2 className="text-2xl font-semibold text-gray-900">{textContent}</h2>
-                  </div>
-                </div>
-              );
-              break;
-              
-            case 'h3':
-              components.push(
-                <div key={uniqueKey} className="mb-4">
-                  <h3 className="text-xl font-medium text-gray-800 mb-3 flex items-center gap-2">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    {textContent}
-                  </h3>
-                </div>
-              );
-              break;
-              
-            case 'ul':
-            case 'ol':
-              const listItems = Array.from(child.children).map((li, liIndex) => (
-                <div key={`${uniqueKey}-li-${liIndex}`} className="flex items-start gap-3 mb-3">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                  <span className="text-gray-700 leading-relaxed">{li.textContent?.trim()}</span>
-                </div>
-              ));
-              components.push(
-                <div key={uniqueKey} className="mb-6 ml-4">
-                  {listItems}
-                </div>
-              );
-              break;
-              
-            case 'p':
-              if (textContent) {
-                components.push(
-                  <p key={uniqueKey} className="text-gray-700 mb-4 leading-relaxed">
-                    {textContent}
-                  </p>
-                );
-              }
-              break;
-              
-            case 'div':
-              // Handle divs with classes or special content
-              const className = child.getAttribute('class') || '';
-              if (className.includes('section') || className.includes('card')) {
-                const subComponents = convertHtmlToModernComponents(child, `${uniqueKey}-sub`);
-                components.push(
-                  <div key={uniqueKey} className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
-                    {subComponents}
-                  </div>
-                );
-              } else if (child.children.length > 0) {
-                components.push(...convertHtmlToModernComponents(child, `${uniqueKey}-nested`));
-              } else if (textContent) {
-                components.push(
-                  <p key={uniqueKey} className="text-gray-700 mb-4 leading-relaxed">
-                    {textContent}
-                  </p>
-                );
-              }
-              break;
-              
-            default:
-              // Handle other elements or recursively process children
-              if (child.children.length > 0) {
-                components.push(...convertHtmlToModernComponents(child, `${uniqueKey}-other`));
-              } else if (textContent) {
-                components.push(
-                  <div key={uniqueKey} className="text-gray-700 mb-3 leading-relaxed">
-                    {textContent}
-                  </div>
-                );
-              }
-          }
-        });
-        
-        return components;
-      };
-      
-      const modernComponents = convertHtmlToModernComponents(body);
-      
+      // Render multiple sections in individual iframes
       return (
         <div className="space-y-6">
-          {modernComponents.length > 0 ? modernComponents : (
-            <div className="bg-gray-50 rounded-xl border border-gray-200 p-8 text-center">
-              <p className="text-gray-600">Generated content will appear here</p>
-            </div>
-          )}
+          {sections.map((sectionHtml, index) => {
+            // Extract section title if available
+            const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
+            const sectionTitle = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${index + 1}`;
+            
+            // Create enhanced HTML with modern styling
+            const enhancedHtml = `
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>${sectionTitle}</title>
+                <style>
+                  * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                  }
+                  
+                  body {
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                    line-height: 1.6;
+                    color: #374151;
+                    background: #ffffff;
+                    padding: 24px;
+                  }
+                  
+                  h1, h2, h3, h4, h5, h6 {
+                    color: #1f2937;
+                    margin-bottom: 16px;
+                    font-weight: 600;
+                  }
+                  
+                  h1 {
+                    font-size: 2rem;
+                    border-bottom: 2px solid #3b82f6;
+                    padding-bottom: 8px;
+                    margin-bottom: 24px;
+                  }
+                  
+                  h2 {
+                    font-size: 1.5rem;
+                    position: relative;
+                    padding-left: 16px;
+                  }
+                  
+                  h2:before {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                    bottom: 0;
+                    width: 4px;
+                    background: linear-gradient(to bottom, #3b82f6, #6366f1);
+                    border-radius: 2px;
+                  }
+                  
+                  h3 {
+                    font-size: 1.25rem;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                  }
+                  
+                  h3:before {
+                    content: '';
+                    width: 8px;
+                    height: 8px;
+                    background: #3b82f6;
+                    border-radius: 50%;
+                  }
+                  
+                  p {
+                    margin-bottom: 16px;
+                    text-align: justify;
+                  }
+                  
+                  ul, ol {
+                    margin: 16px 0;
+                    padding-left: 0;
+                    list-style: none;
+                  }
+                  
+                  li {
+                    position: relative;
+                    padding: 8px 0 8px 24px;
+                    margin-bottom: 8px;
+                  }
+                  
+                  ul li:before {
+                    content: '';
+                    position: absolute;
+                    left: 8px;
+                    top: 16px;
+                    width: 6px;
+                    height: 6px;
+                    background: #3b82f6;
+                    border-radius: 50%;
+                  }
+                  
+                  ol {
+                    counter-reset: item;
+                  }
+                  
+                  ol li {
+                    counter-increment: item;
+                  }
+                  
+                  ol li:before {
+                    content: counter(item);
+                    position: absolute;
+                    left: 0;
+                    top: 8px;
+                    width: 20px;
+                    height: 20px;
+                    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                    color: white;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    font-weight: bold;
+                  }
+                  
+                  table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin: 20px 0;
+                    background: white;
+                    border-radius: 8px;
+                    overflow: hidden;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  th, td {
+                    padding: 12px 16px;
+                    text-align: left;
+                    border-bottom: 1px solid #e5e7eb;
+                  }
+                  
+                  th {
+                    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+                    font-weight: 600;
+                    color: #374151;
+                    font-size: 14px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  tr:hover {
+                    background: #f9fafb;
+                  }
+                  
+                  .card {
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 12px;
+                    padding: 20px;
+                    margin: 16px 0;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  .highlight {
+                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+                    border-left: 4px solid #3b82f6;
+                    padding: 16px;
+                    margin: 16px 0;
+                    border-radius: 0 8px 8px 0;
+                  }
+                  
+                  .flowchart {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 16px;
+                    margin: 20px 0;
+                    justify-content: center;
+                  }
+                  
+                  .flow-step {
+                    background: linear-gradient(135deg, #3b82f6, #6366f1);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-weight: 500;
+                    position: relative;
+                    min-width: 120px;
+                    text-align: center;
+                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+                  }
+                  
+                  .flow-step:not(:last-child):after {
+                    content: '→';
+                    position: absolute;
+                    right: -24px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    color: #6b7280;
+                    font-size: 18px;
+                    font-weight: bold;
+                  }
+                  
+                  .grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                    gap: 16px;
+                    margin: 20px 0;
+                  }
+                  
+                  .metric {
+                    background: white;
+                    border: 1px solid #e5e7eb;
+                    border-radius: 8px;
+                    padding: 16px;
+                    text-align: center;
+                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                  }
+                  
+                  .metric-value {
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #3b82f6;
+                    display: block;
+                  }
+                  
+                  .metric-label {
+                    color: #6b7280;
+                    font-size: 14px;
+                    margin-top: 4px;
+                  }
+                  
+                  .timeline {
+                    position: relative;
+                    padding-left: 30px;
+                    margin: 20px 0;
+                  }
+                  
+                  .timeline:before {
+                    content: '';
+                    position: absolute;
+                    left: 15px;
+                    top: 0;
+                    bottom: 0;
+                    width: 2px;
+                    background: #e5e7eb;
+                  }
+                  
+                  .timeline-item {
+                    position: relative;
+                    padding: 16px 0;
+                  }
+                  
+                  .timeline-item:before {
+                    content: '';
+                    position: absolute;
+                    left: -23px;
+                    top: 20px;
+                    width: 12px;
+                    height: 12px;
+                    background: #3b82f6;
+                    border-radius: 50%;
+                    border: 3px solid white;
+                    box-shadow: 0 0 0 3px #3b82f6;
+                  }
+                  
+                  code {
+                    background: #f3f4f6;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    font-family: 'Monaco', 'Consolas', monospace;
+                    font-size: 14px;
+                  }
+                  
+                  blockquote {
+                    border-left: 4px solid #10b981;
+                    background: #ecfdf5;
+                    padding: 16px 20px;
+                    margin: 16px 0;
+                    border-radius: 0 8px 8px 0;
+                    font-style: italic;
+                  }
+                  
+                  .status-badge {
+                    display: inline-block;
+                    padding: 4px 12px;
+                    border-radius: 20px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                  }
+                  
+                  .status-success { background: #dcfce7; color: #166534; }
+                  .status-warning { background: #fef3c7; color: #92400e; }
+                  .status-info { background: #dbeafe; color: #1e40af; }
+                  .status-danger { background: #fee2e2; color: #991b1b; }
+                </style>
+              </head>
+              <body>
+                ${sectionHtml}
+                
+                <script>
+                  // Auto-adjust iframe height
+                  function adjustHeight() {
+                    const height = Math.max(
+                      document.body.scrollHeight,
+                      document.body.offsetHeight,
+                      document.documentElement.clientHeight,
+                      document.documentElement.scrollHeight,
+                      document.documentElement.offsetHeight
+                    );
+                    
+                    window.parent.postMessage({
+                      type: 'resize',
+                      height: height + 50
+                    }, '*');
+                  }
+                  
+                  // Call after load and periodically
+                  window.addEventListener('load', adjustHeight);
+                  setTimeout(adjustHeight, 100);
+                  setTimeout(adjustHeight, 500);
+                  setTimeout(adjustHeight, 1000);
+                </script>
+              </body>
+              </html>
+            `;
+            
+            const blob = new Blob([enhancedHtml], { type: 'text/html' });
+            const blobUrl = URL.createObjectURL(blob);
+            
+            return (
+              <div key={`section-${index}`} className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="border-b border-gray-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-sm">
+                      {index + 1}
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900">{sectionTitle}</h3>
+                  </div>
+                </div>
+                <div className="p-0">
+                  <iframe
+                    src={blobUrl}
+                    className="w-full border-0"
+                    style={{
+                      height: '500px',
+                      backgroundColor: '#ffffff'
+                    }}
+                    title={sectionTitle}
+                    sandbox="allow-same-origin allow-scripts"
+                    onLoad={(e) => {
+                      const iframe = e.target as HTMLIFrameElement;
+                      
+                      // Listen for resize messages from iframe
+                      const handleMessage = (event: MessageEvent) => {
+                        if (event.data.type === 'resize' && event.source === iframe.contentWindow) {
+                          iframe.style.height = `${event.data.height}px`;
+                        }
+                      };
+                      
+                      window.addEventListener('message', handleMessage);
+                      
+                      // Clean up
+                      setTimeout(() => {
+                        URL.revokeObjectURL(blobUrl);
+                        window.removeEventListener('message', handleMessage);
+                      }, 5000);
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       );
     }

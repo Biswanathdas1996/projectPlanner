@@ -128,85 +128,85 @@ export class EnhancedProjectPlanner {
       : '';
 
     const sectionPrompts: Record<string, string> = {
-      "Executive Summary": `Create a comprehensive executive summary for this project. Include:
-        - Project overview and objectives
-        - Key value propositions
-        - Target market and user base
-        - High-level technical approach
-        - Expected outcomes and success metrics
-        - Investment requirements and ROI projections`,
+      "Executive Summary": `Create a comprehensive executive summary with rich HTML formatting. Include:
+        - Project overview and objectives with key metrics
+        - Value propositions in card format
+        - Target market analysis with demographics table
+        - Technical approach with architecture flow
+        - Success metrics dashboard layout
+        - ROI projections table with timeline`,
 
-      "Technical Architecture & Infrastructure": `Design the technical architecture and infrastructure for this project. Include:
-        - System architecture diagrams and component breakdown
-        - Technology stack recommendations with justifications
-        - Database design and data flow architecture
-        - API design and integration points
-        - Scalability considerations and performance requirements
-        - Security architecture and compliance considerations`,
+      "Technical Architecture & Infrastructure": `Design technical architecture with visual elements:
+        - System architecture flowchart with components
+        - Technology stack comparison table
+        - Database schema visualization
+        - API endpoints table with specifications
+        - Scalability metrics and performance benchmarks
+        - Security protocols matrix`,
 
-      "Detailed Feature Specifications": `Create detailed feature specifications for this project. Include:
-        - Complete feature list with priorities
-        - User stories and acceptance criteria
-        - Functional requirements and business rules
-        - Non-functional requirements
-        - Feature dependencies and integration points
-        - API specifications and data models`,
+      "Detailed Feature Specifications": `Create feature specifications with structured layouts:
+        - Feature priority matrix table
+        - User stories in card format
+        - Acceptance criteria checklists
+        - Requirements traceability matrix
+        - Feature dependencies flowchart
+        - API specifications table`,
 
-      "Development Methodology & Timeline": `Develop the methodology and timeline for this project. Include:
-        - Development methodology (Agile/Scrum/etc.) with justification
-        - Sprint planning and milestone breakdown
-        - Resource allocation and team structure
-        - Critical path analysis and dependencies
-        - Risk buffer and contingency planning
-        - Delivery schedule with realistic timelines`,
+      "Development Methodology & Timeline": `Develop methodology with visual planning:
+        - Methodology comparison table
+        - Sprint timeline with milestones
+        - Team structure organizational chart
+        - Critical path flowchart
+        - Resource allocation table
+        - Delivery schedule with Gantt-style layout`,
 
-      "User Experience & Interface Design": `Design the user experience and interface strategy. Include:
-        - User personas and journey mapping
-        - Information architecture and navigation flow
-        - Wireframes and UI/UX design principles
-        - Accessibility and usability standards
-        - Responsive design considerations
-        - User testing and feedback integration plan`,
+      "User Experience & Interface Design": `Design UX strategy with visual elements:
+        - User persona cards with demographics
+        - User journey flow diagrams
+        - Information architecture sitemap
+        - Design principles checklist
+        - Accessibility compliance table
+        - Responsive breakpoint specifications`,
 
-      "Quality Assurance & Testing Strategy": `Create a comprehensive testing strategy. Include:
-        - Testing methodology and approach
-        - Unit, integration, and end-to-end testing plans
-        - Performance and load testing strategies
-        - Security testing and vulnerability assessment
-        - User acceptance testing procedures
-        - Bug tracking and quality metrics`,
+      "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
+        - Testing types coverage matrix
+        - Test execution timeline
+        - Quality metrics dashboard
+        - Bug severity classification table
+        - Testing tools comparison
+        - QA process flowchart`,
 
-      "Deployment & DevOps Strategy": `Design the deployment and DevOps strategy. Include:
-        - CI/CD pipeline design and implementation
-        - Environment management (dev, staging, prod)
-        - Infrastructure as code and automation
-        - Monitoring and logging strategies
-        - Backup and disaster recovery plans
-        - Release management and rollback procedures`,
+      "Deployment & DevOps Strategy": `Design DevOps with infrastructure diagrams:
+        - CI/CD pipeline flowchart
+        - Environment configuration table
+        - Infrastructure architecture diagram
+        - Monitoring metrics dashboard
+        - Deployment checklist
+        - Backup and recovery procedures`,
 
-      "Risk Management & Mitigation": `Develop risk management strategies. Include:
-        - Technical risk assessment and mitigation
-        - Project timeline and resource risks
-        - Market and competitive risks
-        - Security and compliance risks
-        - Third-party dependency risks
-        - Contingency planning and response strategies`,
+      "Risk Management & Mitigation": `Develop risk management with assessment matrices:
+        - Risk probability/impact matrix
+        - Mitigation strategies table
+        - Risk timeline and monitoring
+        - Contingency planning flowchart
+        - Risk response procedures
+        - Escalation matrix`,
 
-      "Stakeholder Management": `Create stakeholder management plan. Include:
-        - Stakeholder identification and analysis
-        - Communication plan and reporting structure
-        - Change management and approval processes
-        - Conflict resolution procedures
-        - Progress tracking and transparency measures
-        - Feedback collection and integration methods`,
+      "Stakeholder Management": `Create stakeholder plan with communication matrices:
+        - Stakeholder analysis matrix
+        - Communication calendar
+        - Responsibility assignment table
+        - Escalation procedures flowchart
+        - Progress tracking dashboard
+        - Feedback collection system`,
 
-      "Post-Launch Strategy": `Develop post-launch strategy and maintenance plan. Include:
-        - Go-to-market strategy and launch plan
-        - User onboarding and support systems
-        - Performance monitoring and analytics
-        - Maintenance and update procedures
-        - Scale-up and growth strategies
-        - Long-term roadmap and evolution plan`
+      "Post-Launch Strategy": `Develop post-launch with roadmap visualization:
+        - Launch timeline with milestones
+        - User onboarding flow
+        - Analytics dashboard mockup
+        - Maintenance schedule table
+        - Growth metrics tracking
+        - Feature roadmap timeline`
     };
 
     const prompt = sectionPrompts[sectionTitle as keyof typeof sectionPrompts] || `Create a detailed section about ${sectionTitle} for this project.`;
@@ -215,7 +215,93 @@ export class EnhancedProjectPlanner {
 
 ${prompt}
 
-Please provide a comprehensive, well-structured response with clear headings, bullet points, and actionable recommendations. Focus on practical implementation details and industry best practices.`;
+CRITICAL: Format your response as a complete HTML section with rich visual elements. Use this exact structure:
+
+<section class="project-section">
+  <h1>${sectionTitle}</h1>
+  
+  <!-- Key metrics display -->
+  <div class="grid">
+    <div class="metric">
+      <span class="metric-value">42</span>
+      <span class="metric-label">Days Timeline</span>
+    </div>
+    <div class="metric">
+      <span class="metric-value">$50K</span>
+      <span class="metric-label">Budget Estimate</span>
+    </div>
+  </div>
+  
+  <!-- Data tables for comparisons -->
+  <table>
+    <thead>
+      <tr><th>Component</th><th>Technology</th><th>Priority</th><th>Timeline</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Frontend</td><td>React.js</td><td><span class="status-badge status-success">High</span></td><td>4 weeks</td></tr>
+      <tr><td>Backend</td><td>Node.js</td><td><span class="status-badge status-info">Medium</span></td><td>6 weeks</td></tr>
+    </tbody>
+  </table>
+  
+  <!-- Process flow diagrams -->
+  <div class="flowchart">
+    <div class="flow-step">Planning</div>
+    <div class="flow-step">Design</div>
+    <div class="flow-step">Development</div>
+    <div class="flow-step">Testing</div>
+    <div class="flow-step">Deployment</div>
+  </div>
+  
+  <!-- Timeline visualization -->
+  <div class="timeline">
+    <div class="timeline-item">
+      <h3>Phase 1: Requirements (Weeks 1-2)</h3>
+      <p>Gather requirements and define project scope</p>
+    </div>
+    <div class="timeline-item">
+      <h3>Phase 2: Development (Weeks 3-8)</h3>
+      <p>Core feature development and integration</p>
+    </div>
+  </div>
+  
+  <!-- Highlighted information boxes -->
+  <div class="highlight">
+    <h3>⚠️ Critical Consideration</h3>
+    <p>Important information that requires special attention</p>
+  </div>
+  
+  <!-- Organized content cards -->
+  <div class="card">
+    <h3>Technical Requirements</h3>
+    <ul>
+      <li>Modern web framework (React/Vue/Angular)</li>
+      <li>RESTful API with authentication</li>
+      <li>Database with ACID compliance</li>
+    </ul>
+  </div>
+  
+  <div class="card">
+    <h3>Success Criteria</h3>
+    <ol>
+      <li>User registration and authentication</li>
+      <li>Core functionality implementation</li>
+      <li>Performance benchmarks met</li>
+    </ol>
+  </div>
+</section>
+
+Requirements:
+- Use tables for data comparisons, specifications, and matrices
+- Use flowcharts for processes, workflows, and system architecture
+- Use timelines for project phases, milestones, and schedules
+- Use cards for grouping related information and features
+- Use status badges for priorities, states, and classifications
+- Use metrics for key performance indicators and measurements
+- Use highlight boxes for critical information and warnings
+- Include realistic, specific data relevant to the project
+- Structure content logically with proper HTML hierarchy
+
+Make the content comprehensive, visually organized, and easy to scan with proper HTML structure and semantic elements.`;
   }
 
   async generateSection(
