@@ -961,47 +961,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
     return sections;
   };
 
-  // Helper function to get section settings for icons and descriptions
-  const getSectionSettings = (sectionTitle: string, sectionId?: string) => {
-    return projectSectionsSettings.find(s => 
-      s.title.toLowerCase() === sectionTitle.toLowerCase() ||
-      s.id === sectionId ||
-      s.title.toLowerCase().includes(sectionTitle.toLowerCase().split(' ')[0]) ||
-      sectionTitle.toLowerCase().includes(s.title.toLowerCase().split(' ')[0])
-    );
-  };
-
-  // Enhanced TabsTrigger component with icons and descriptions
-  const EnhancedTabsTrigger = ({ section, index }: { section: any, index: number }) => {
-    const sectionSettings = getSectionSettings(section.title, section.id);
-    
-    return (
-      <TabsTrigger 
-        key={section.id} 
-        value={section.id} 
-        className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
-      >
-        <div className="flex flex-col items-center gap-1.5">
-          <div className="flex items-center gap-2">
-            <span className="text-lg">{sectionSettings?.icon || '📄'}</span>
-            <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
-          </div>
-          <span className="font-semibold text-center text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
-            {section.title}
-          </span>
-          {sectionSettings?.description && (
-            <span className="text-xs text-slate-500 group-data-[state=active]:text-blue-100 transition-colors duration-300 text-center leading-tight opacity-80">
-              {sectionSettings.description.length > 40 
-                ? sectionSettings.description.substring(0, 40) + '...' 
-                : sectionSettings.description}
-            </span>
-          )}
-        </div>
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
-      </TabsTrigger>
-    );
-  };
-
   const renderTabbedProjectPlan = () => {
     if (!projectPlan) return null;
 
@@ -3740,7 +3699,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   
                   
-                  
+                  <Button
+                    onClick={startEditingPlan}
+                    variant="outline"
+                    size="sm"
+                    disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
+                    className="border-blue-200 text-blue-600 hover:bg-blue-50 text-xs px-2 py-1"
+                  >
+                    <Edit className="h-3 w-3 mr-1" />
+                    Edit
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -3911,7 +3879,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
                       <div>
-                        
+                        <h2 className="text-lg font-semibold text-gray-900 mb-0.5">Project Sections</h2>
                         <p className="text-xs text-gray-500">
                           {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
                         </p>
