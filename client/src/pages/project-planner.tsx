@@ -14,6 +14,13 @@ import {
   ProjectPlanConfig,
   ProjectPlanResult 
 } from '@/lib/dynamic-project-planner';
+import { 
+  createEnhancedProjectPlanner,
+  ProjectPlanSection,
+  ProjectPlanProgress,
+  EnhancedProjectPlanConfig
+} from '@/lib/enhanced-project-planner';
+import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
 import { NavigationBar } from '@/components/navigation-bar';
@@ -86,6 +93,18 @@ export default function ProjectPlanner() {
   const [dynamicPlanResult, setDynamicPlanResult] = useState<ProjectPlanResult | null>(null);
   const [currentGeneratingSection, setCurrentGeneratingSection] = useState<string>('');
   const [sectionProgress, setSectionProgress] = useState<{current: number, total: number}>({current: 0, total: 0});
+
+  // Enhanced 10-section planner state
+  const [enhancedSections, setEnhancedSections] = useState<ProjectPlanSection[]>([]);
+  const [isGeneratingEnhanced, setIsGeneratingEnhanced] = useState(false);
+  const [enhancedProgress, setEnhancedProgress] = useState<ProjectPlanProgress>({
+    currentSection: 0,
+    totalSections: 10,
+    currentSectionTitle: '',
+    overallProgress: 0,
+    isGenerating: false
+  });
+  const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
 
   const [location, setLocation] = useLocation();
 
@@ -164,6 +183,11 @@ export default function ProjectPlanner() {
       return;
     }
 
+    if (useEnhancedPlanner) {
+      await handleGenerateEnhancedPlan();
+      return;
+    }
+
     // Generate plan directly using dynamic multi-call approach
     setIsGeneratingDynamic(true);
     setError('');
@@ -209,6 +233,73 @@ export default function ProjectPlanner() {
       setCurrentProgressStep('');
       setCurrentGeneratingSection('');
       setSectionProgress({current: 0, total: 0});
+    }
+  };
+
+  const handleGenerateEnhancedPlan = async () => {
+    if (!projectInput.trim()) {
+      setError('Please enter a project description');
+      return;
+    }
+
+    setIsGeneratingEnhanced(true);
+    setError('');
+    
+    try {
+      const planner = createEnhancedProjectPlanner();
+      
+      const config: EnhancedProjectPlanConfig = {
+        projectDescription: projectInput,
+        additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
+      };
+
+      const sections = await planner.generateCompletePlan(
+        config,
+        (progress: ProjectPlanProgress) => {
+          setEnhancedProgress(progress);
+          setEnhancedSections(currentSections => {
+            const updated = [...currentSections];
+            if (progress.currentSection > 0) {
+              // Update the current section status
+              const currentIndex = progress.currentSection - 1;
+              if (updated[currentIndex]) {
+                updated[currentIndex] = {
+                  ...updated[currentIndex],
+                  isGenerating: progress.isGenerating && progress.currentSection === currentIndex + 1,
+                  isCompleted: !progress.isGenerating && progress.currentSection > currentIndex + 1
+                };
+              }
+            }
+            return updated;
+          });
+        }
+      );
+
+      setEnhancedSections(sections);
+      
+      // Generate HTML report
+      const htmlReport = planner.generateHtmlReport(sections);
+      setProjectPlan(htmlReport);
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      localStorage.setItem('enhanced_plan_sections', JSON.stringify(sections));
+      
+      setCurrentStep('plan');
+      setLocation('/plan');
+    } catch (err) {
+      console.error('Enhanced plan generation error:', err);
+      setError('Failed to generate enhanced project plan. Please try again.');
+    } finally {
+      setIsGeneratingEnhanced(false);
+      setEnhancedProgress({
+        currentSection: 10,
+        totalSections: 10,
+        currentSectionTitle: 'Complete',
+        overallProgress: 100,
+        isGenerating: false
+      });
     }
   };
 
@@ -1268,9 +1359,19 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="font-medium text-purple-800 mb-1">Plan Generation Method</h4>
-                      <p className="text-sm text-purple-600">Choose between standard, comprehensive, or dynamic section-based planning</p>
+                      <p className="text-sm text-purple-600">Choose between standard, enhanced 10-section, or comprehensive planning</p>
                     </div>
                     <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="enhanced-planner"
+                          checked={useEnhancedPlanner}
+                          onCheckedChange={(checked) => setUseEnhancedPlanner(checked as boolean)}
+                        />
+                        <label htmlFor="enhanced-planner" className="text-sm font-medium text-purple-700 cursor-pointer">
+                          Enhanced 10-Section Plan
+                        </label>
+                      </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="advanced-agent"
@@ -1350,7 +1451,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   <div className="mt-3 p-3 bg-white/60 rounded border border-purple-100">
                     <div className="text-xs text-purple-700">
-                      {useAdvancedAgent ? (
+                      {useEnhancedPlanner ? (
+                        <div>
+                          <strong>Enhanced 10-Section Plan:</strong> Generates dedicated sections for Executive Summary, Technical Architecture, Feature Specifications, Development Methodology, UX Design, Quality Assurance, DevOps Strategy, Risk Management, Stakeholder Management, and Post-Launch Strategy with individual API calls for each section.
+                        </div>
+                      ) : useAdvancedAgent ? (
                         <div>
                           <strong>Advanced AI Agent:</strong> Generates comprehensive 18-section project plan including technical architecture, risk management, compliance, scalability, security framework, detailed timelines, cost estimates, and critical path analysis.
                         </div>
@@ -1363,6 +1468,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                 </div>
                 
+                {/* Enhanced Progress Tracker for 10-Section Plan */}
+                {isGeneratingEnhanced && (
+                  <div className="mb-6">
+                    <EnhancedProgressTracker 
+                      progress={enhancedProgress}
+                      sections={enhancedSections}
+                    />
+                  </div>
+                )}
+
                 {/* Progress Bar for Plan Generation */}
                 {(isGeneratingPlan || isGeneratingComprehensive) && (
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">

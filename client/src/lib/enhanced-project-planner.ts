@@ -334,17 +334,24 @@ Please provide a comprehensive, well-structured response with clear headings, bu
 
   private formatSectionContent(content: string): string {
     // Convert markdown-like formatting to HTML
-    return content
+    let formatted = content
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/^### (.*?)$/gm, '<h4>$1</h4>')
       .replace(/^## (.*?)$/gm, '<h3>$1</h3>')
       .replace(/^# (.*?)$/gm, '<h2>$1</h2>')
-      .replace(/^- (.*?)$/gm, '<li>$1</li>')
-      .replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>')
+      .replace(/^- (.*?)$/gm, '<li>$1</li>');
+    
+    // Wrap list items in ul tags
+    formatted = formatted.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+    
+    // Handle paragraphs
+    formatted = formatted
       .replace(/\n\n/g, '</p><p>')
       .replace(/^(.)/gm, '<p>$1')
       .replace(/(.*)$/gm, '$1</p>');
+      
+    return formatted;
   }
 }
 
