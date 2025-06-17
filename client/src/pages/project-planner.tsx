@@ -4446,45 +4446,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     </div>
                   )}
 
-                  {/* Generated Plan Content */}
-                  {projectPlan && (
-                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                      <div className="border-b border-gray-200 p-4">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">Generated Content</h3>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              onClick={downloadPDF}
-                              variant="outline"
-                              size="sm"
-                              disabled={isDownloadingPdf}
-                              className="text-xs"
-                            >
-                              {isDownloadingPdf ? (
-                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                              ) : (
-                                <Download className="h-3 w-3 mr-1" />
-                              )}
-                              PDF
-                            </Button>
-                            <Button
-                              onClick={startEditingPlan}
-                              variant="outline"
-                              size="sm"
-                              disabled={isEditingPlan}
-                              className="text-xs"
-                            >
-                              <Edit className="h-3 w-3 mr-1" />
-                              Edit
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-6">
-                        {renderTabbedProjectPlan()}
-                      </div>
-                    </div>
-                  )}
+
                 </div>
               )}
 
