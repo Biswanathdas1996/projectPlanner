@@ -2351,50 +2351,57 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
               {/* BPMN Script Section */}
               {showBpmnScript && generatedBpmnXml && (
-                <div className="mt-6 border-t border-gray-200 pt-6">
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-lg font-semibold text-purple-800 flex items-center gap-2">
-                        <Code className="h-5 w-5" />
-                        BPMN 2.0 Script
-                      </h3>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                  <div className="border-b border-gray-200 p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                          <Code className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">BPMN 2.0 Script</h3>
+                          <p className="text-sm text-gray-600">Export and manage your workflow script</p>
+                        </div>
+                      </div>
                       <div className="flex gap-2">
                         <Button
                           onClick={copyBpmnScript}
                           variant="outline"
                           size="sm"
-                          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
+                          className="text-xs"
                         >
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy Script
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
                         </Button>
                         <Button
                           onClick={downloadBpmnScript}
                           variant="outline"
                           size="sm"
-                          className="border-green-300 text-green-600 hover:bg-green-50"
+                          className="text-xs"
                         >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download JSON
+                          <Download className="h-3 w-3 mr-1" />
+                          Download
                         </Button>
                         <Button
                           onClick={startEditingBpmn}
                           variant="outline"
                           size="sm"
                           disabled={isEditingBpmn}
-                          className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                          className="text-xs"
                         >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Script
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
                         </Button>
                       </div>
                     </div>
-                    
+                  </div>
+                  
+                  <div className="p-6">
                     {isEditingBpmn ? (
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <p className="text-sm text-purple-700">
-                            Edit the BPMN JSON script. Ensure proper JSON syntax before saving.
+                          <p className="text-sm text-gray-600">
+                            Edit the BPMN XML script. Ensure proper XML syntax before saving.
                           </p>
                           <div className="flex gap-2">
                             <Button
@@ -2409,7 +2416,6 @@ Return the complete enhanced project plan as HTML with all existing content plus
                               onClick={cancelBpmnEditing}
                               variant="outline"
                               size="sm"
-                              className="border-gray-300"
                             >
                               <X className="h-4 w-4 mr-2" />
                               Cancel
@@ -2420,18 +2426,18 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         <Textarea
                           value={editedBpmnScript}
                           onChange={(e) => setEditedBpmnScript(e.target.value)}
-                          className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
-                          placeholder="Edit BPMN JSON script..."
+                          className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                          placeholder="Edit BPMN XML script..."
                         />
                         
                         <div className="text-sm text-gray-500">
-                          {editedBpmnScript.length} characters | Make sure to maintain valid JSON structure
+                          {editedBpmnScript.length} characters | Maintain valid BPMN XML structure
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        <p className="text-sm text-purple-700">
-                          This is the generated BPMN 2.0 script that powers your visual workflow diagram. You can copy, download, or edit this script.
+                        <p className="text-sm text-gray-600">
+                          Generated BPMN 2.0 script that powers your visual workflow diagram. Compatible with any BPMN editor.
                         </p>
                         
                         <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
@@ -2440,9 +2446,9 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           </pre>
                         </div>
                         
-                        <div className="text-sm text-gray-500 flex justify-between">
+                        <div className="flex justify-between items-center text-sm text-gray-500">
                           <span>BPMN 2.0 XML format with swimlanes</span>
-                          <span>{generatedBpmnXml.length} characters total</span>
+                          <span>{generatedBpmnXml.length} characters</span>
                         </div>
                       </div>
                     )}
@@ -2451,84 +2457,88 @@ Return the complete enhanced project plan as HTML with all existing content plus
               )}
               
               {/* Enhancement Section */}
-              <div className="border-t border-gray-200 p-6">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-blue-600" />
-                    Enhance Project Plan
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    Add specific requirements, features, or modifications to enhance your existing project plan.
-                  </p>
-                  
-                  <div className="space-y-3">
-                    <Textarea
-                      value={enhancementPrompt}
-                      onChange={(e) => setEnhancementPrompt(e.target.value)}
-                      placeholder="e.g., Add user authentication system, Include mobile app requirements, Add payment gateway integration, Include security audit section..."
-                      className="min-h-[100px] resize-y border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                      disabled={isEnhancing}
-                    />
-                    
-                    <Button
-                      onClick={enhanceProjectPlan}
-                      disabled={isEnhancing || !enhancementPrompt.trim()}
-                      className="w-full bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white"
-                    >
-                      {isEnhancing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Enhancing Plan...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-4 w-4 mr-2" />
-                          Enhance Project Plan
-                        </>
-                      )}
-                    </Button>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+                <div className="border-b border-gray-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                      <Plus className="h-4 w-4 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">Enhance Project Plan</h3>
+                      <p className="text-sm text-gray-600">Add features and requirements to your plan</p>
+                    </div>
                   </div>
+                </div>
+                
+                <div className="p-6 space-y-4">
+                  <Textarea
+                    value={enhancementPrompt}
+                    onChange={(e) => setEnhancementPrompt(e.target.value)}
+                    placeholder="e.g., Add user authentication system, Include mobile app requirements, Add payment gateway integration, Include security audit section..."
+                    className="min-h-[120px] resize-y border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
+                    disabled={isEnhancing}
+                  />
+                  
+                  <Button
+                    onClick={enhanceProjectPlan}
+                    disabled={isEnhancing || !enhancementPrompt.trim()}
+                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg"
+                  >
+                    {isEnhancing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Enhancing Plan...
+                      </>
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4 mr-2" />
+                        Enhance Project Plan
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
               
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-between p-6 border-t border-gray-200">
-                <Button
-                  variant="outline"
-                  onClick={resetPlanner}
-                  disabled={isGeneratingBpmn || isEnhancing}
-                  className="border-gray-300 hover:bg-gray-50"
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Start Over
-                </Button>
-                
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link href="/market-research">
-                    <Button
-                      variant="outline"
-                      className={`${hasMarketResearchData() 
-                        ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
-                        : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
-                      } text-white border-0 shadow-lg relative`}
-                    >
-                      <TrendingUp className="h-4 w-4 mr-2" />
-                      Market Research
-                      {hasMarketResearchData() && (
-                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
-                      )}
-                    </Button>
-                  </Link>
+              <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+                  <Button
+                    variant="outline"
+                    onClick={resetPlanner}
+                    disabled={isGeneratingBpmn || isEnhancing}
+                    className="border-gray-300 hover:bg-gray-50 w-full lg:w-auto"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Start Over
+                  </Button>
                   
-                  <Link href="/user-journey">
-                    <Button
-                      variant="outline"
-                      className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
-                    >
-                      <Users className="h-4 w-4 mr-2" />
-                      User Journey Flows
-                    </Button>
-                  </Link>
+                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <Link href="/market-research" className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className={`w-full ${hasMarketResearchData() 
+                          ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
+                          : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
+                        } text-white border-0 shadow-lg relative`}
+                      >
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Market Research
+                        {hasMarketResearchData() && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
+                        )}
+                      </Button>
+                    </Link>
+                    
+                    <Link href="/user-journey" className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        User Journey Flows
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
             </CardContent>
