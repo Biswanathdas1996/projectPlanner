@@ -71,8 +71,11 @@ import {
   Palette,
   TestTube,
   Cloud,
-  AlertCircle
+  AlertCircle,
+  Wand2,
+  RefreshCw
 } from 'lucide-react';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Helper function to get icon and description for section types
 const getSectionIconAndDescription = (title: string) => {
@@ -175,6 +178,12 @@ export default function ProjectPlanner() {
     overallProgress: 0,
     isGenerating: false
   });
+
+  // Custom prompt regeneration state
+  const [customPromptSectionId, setCustomPromptSectionId] = useState<string | null>(null);
+  const [customPrompt, setCustomPrompt] = useState('');
+  const [isRegeneratingSection, setIsRegeneratingSection] = useState(false);
+  const [showCustomPromptModal, setShowCustomPromptModal] = useState(false);
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
   const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(null);
 
@@ -945,6 +954,98 @@ Return the complete enhanced project plan as HTML with all existing content plus
     }
   };
 
+  // Custom prompt regeneration function for individual sections
+  const regenerateSectionWithCustomPrompt = async (sectionId: string, prompt: string) => {
+    if (!prompt.trim()) {
+      setError('Please enter a custom prompt');
+      return;
+    }
+
+    setIsRegeneratingSection(true);
+    setError('');
+
+    try {
+      // Initialize Google Gemini AI
+      const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      // Get current section info
+      const currentSections = parseProjectPlanSections(projectPlan);
+      const targetSection = currentSections.find(s => s.id === sectionId);
+      
+      if (!targetSection) {
+        setError('Section not found');
+        return;
+      }
+
+      // Build regeneration prompt
+      const regenerationPrompt = `
+You are an expert project planning assistant. I need you to regenerate a specific section of a project plan based on a custom prompt.
+
+ORIGINAL PROJECT DESCRIPTION:
+${projectInput}
+
+CURRENT SECTION TITLE: ${targetSection.title}
+CURRENT SECTION CONTENT:
+${targetSection.content}
+
+CUSTOM REGENERATION PROMPT:
+${prompt}
+
+INSTRUCTIONS:
+- Regenerate ONLY the "${targetSection.title}" section based on the custom prompt
+- Keep the section title exactly the same: "${targetSection.title}"
+- The new content should address the custom prompt while maintaining relevance to the overall project
+- Use professional, detailed language appropriate for project documentation
+- Include relevant technical details, implementation steps, and considerations
+- Format the response as clean, readable text with proper headings and structure
+- Do not include any HTML tags or code blocks in the response
+- Make sure the content is comprehensive and actionable
+
+Please provide the regenerated section content:`;
+
+      const result = await gemini.generateContent(regenerationPrompt);
+      const regeneratedContent = result.response.text();
+
+      // Update the specific section in the project plan
+      const updatedSections = currentSections.map(section => 
+        section.id === sectionId 
+          ? { ...section, content: regeneratedContent }
+          : section
+      );
+
+      // Rebuild the full project plan
+      const updatedPlan = updatedSections.map(section => section.content).join('\n\n');
+      setProjectPlan(updatedPlan);
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedPlan);
+      
+      // Close modal and reset state
+      setShowCustomPromptModal(false);
+      setCustomPrompt('');
+      setCustomPromptSectionId(null);
+      
+    } catch (error) {
+      console.error('Section regeneration error:', error);
+      setError('Failed to regenerate section. Please try again.');
+    } finally {
+      setIsRegeneratingSection(false);
+    }
+  };
+
+  const openCustomPromptModal = (sectionId: string) => {
+    setCustomPromptSectionId(sectionId);
+    setCustomPrompt('');
+    setShowCustomPromptModal(true);
+  };
+
+  const closeCustomPromptModal = () => {
+    setShowCustomPromptModal(false);
+    setCustomPrompt('');
+    setCustomPromptSectionId(null);
+  };
+
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
   };
@@ -1391,15 +1492,27 @@ Return the complete enhanced project plan as HTML with all existing content plus
                       <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
                       <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
                     </div>
-                    <Button
-                      onClick={() => startEditingSection(section.id, section.content, section.id)}
-                      size="sm"
-                      variant="outline"
-                      className="text-xs"
-                    >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => openCustomPromptModal(section.id)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200 hover:from-purple-100 hover:to-indigo-100"
+                        disabled={isRegeneratingSection}
+                      >
+                        <Wand2 className="h-3 w-3 mr-1" />
+                        Regenerate
+                      </Button>
+                      <Button
+                        onClick={() => startEditingSection(section.id, section.content, section.id)}
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-6">
@@ -4696,6 +4809,104 @@ Return the complete enhanced project plan as HTML with all existing content plus
           </Card>
         )}
       </div>
+
+      {/* Custom Prompt Regeneration Modal */}
+      {showCustomPromptModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-indigo-600 shadow-lg">
+                    <Wand2 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900">Regenerate Section</h3>
+                    <p className="text-sm text-gray-600">Use AI to regenerate content with custom instructions</p>
+                  </div>
+                </div>
+                <Button
+                  onClick={closeCustomPromptModal}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertCircle className="h-4 w-4 text-purple-600" />
+                  <span className="text-sm font-medium text-purple-800">Section Information</span>
+                </div>
+                <p className="text-sm text-purple-700">
+                  {customPromptSectionId && (() => {
+                    const sections = parseProjectPlanSections(projectPlan);
+                    const section = sections.find(s => s.id === customPromptSectionId);
+                    return section ? `Regenerating: "${section.title}"` : 'Section not found';
+                  })()}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="customPrompt" className="block text-sm font-medium text-gray-700">
+                  Custom Instructions
+                </label>
+                <Textarea
+                  id="customPrompt"
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Enter specific instructions for how you want this section to be regenerated..."
+                  className="min-h-[120px] border-gray-300 focus:border-purple-500 focus:ring-purple-500"
+                />
+                <p className="text-xs text-gray-500">
+                  Example: "Make this more technical and include code examples" or "Focus on cost analysis and budget breakdown"
+                </p>
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-800">Important</span>
+                </div>
+                <p className="text-sm text-yellow-700">
+                  This will completely replace the current section content. The regeneration will maintain the section title but recreate all content based on your instructions.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+              <Button
+                onClick={closeCustomPromptModal}
+                variant="outline"
+                disabled={isRegeneratingSection}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => customPromptSectionId && regenerateSectionWithCustomPrompt(customPromptSectionId, customPrompt)}
+                disabled={!customPrompt.trim() || isRegeneratingSection}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+              >
+                {isRegeneratingSection ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Regenerating...
+                  </>
+                ) : (
+                  <>
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Regenerate Section
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
