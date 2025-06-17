@@ -99,15 +99,17 @@
     border-radius: 3px;
   }
 
-  /* Modern Architecture Diagram Styling */
+  /* Modern Flowchart Architecture Diagram */
   .architecture-diagram {
-    @apply bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50;
-    @apply border-2 border-slate-200/60 rounded-2xl;
-    @apply p-8 my-8 shadow-xl shadow-blue-100/50;
-    @apply backdrop-blur-sm;
+    @apply bg-gradient-to-br from-gray-50 to-gray-100;
+    @apply border-2 border-gray-200 rounded-2xl;
+    @apply p-12 my-8 shadow-lg;
     position: relative;
     overflow: visible;
-    min-height: 400px;
+    min-height: 500px;
+    background-image: 
+      radial-gradient(circle at 1px 1px, rgba(156, 163, 175, 0.15) 1px, transparent 0);
+    background-size: 20px 20px;
   }
 
   .architecture-diagram::before {
@@ -117,55 +119,45 @@
     left: 0;
     right: 0;
     height: 4px;
-    background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+    background: linear-gradient(90deg, #f59e0b, #3b82f6, #8b5cf6);
     border-radius: 12px 12px 0 0;
     z-index: 1;
   }
 
-  .architecture-diagram::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: 
-      radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 40% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
-    border-radius: inherit;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  /* Layered Architecture Layout */
+  /* Flowchart Container with Complex Layout */
   .diagram-container {
-    @apply relative z-10;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
+    position: relative;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(8, 80px);
+    gap: 0;
     margin: 2rem 0;
-    padding: 1rem;
+    width: 100%;
+    height: 640px;
   }
 
-  /* Flow Layout for Connected Boxes */
+  /* Flow Layout for Simple Horizontal Flow */
   .diagram-container.flow-layout {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
-    gap: 3rem;
+    gap: 4rem;
     position: relative;
+    height: auto;
+    grid-template-columns: none;
+    grid-template-rows: none;
   }
 
-  /* Grid Layout for Layered Architecture */
+  /* Grid Layout for Standard Architecture */
   .diagram-container.grid-layout {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-rows: auto;
     gap: 2rem;
+    height: auto;
   }
 
   .diagram-layer {
@@ -215,221 +207,270 @@
     z-index: 10;
   }
 
+  /* Flowchart Process Box (Rectangle) */
   .diagram-box {
-    @apply relative overflow-hidden rounded-xl shadow-lg;
-    @apply transition-all duration-500 ease-out;
-    @apply hover:scale-105 hover:shadow-2xl hover:shadow-blue-200/30;
-    @apply cursor-pointer min-h-[120px];
-    @apply flex flex-col justify-center items-center text-center;
-    @apply border-2 border-white/20 backdrop-blur-sm;
-    position: relative;
-    transform-style: preserve-3d;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    z-index: 20;
+    width: 140px;
+    height: 60px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
   .diagram-box:hover {
-    transform: translateY(-8px) scale(1.05);
-    box-shadow: 
-      0 20px 40px -12px rgba(59, 130, 246, 0.2),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   }
 
-  .diagram-box::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05));
-    pointer-events: none;
-    border-radius: inherit;
-    z-index: 1;
+  /* Decision Diamond Shape */
+  .diagram-box.decision {
+    width: 80px;
+    height: 80px;
+    border-radius: 0;
+    transform: rotate(45deg);
+    clip-path: none;
   }
 
-  .diagram-box::after {
-    content: '';
-    position: absolute;
-    top: -2px;
-    left: -2px;
-    right: -2px;
-    bottom: -2px;
-    background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    z-index: -1;
+  .diagram-box.decision .diagram-title,
+  .diagram-box.decision .diagram-subtitle {
+    transform: rotate(-45deg);
+    font-size: 11px;
+    line-height: 1.2;
   }
 
-  .diagram-box:hover::after {
-    opacity: 1;
+  /* Start/End Terminal Shape */
+  .diagram-box.terminal {
+    border-radius: 30px;
+    width: 120px;
+    height: 50px;
   }
 
-  /* Enhanced Box Variants */
-  .diagram-box.primary {
-    @apply bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700;
-    @apply text-white shadow-blue-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(59, 130, 246, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* Process Rectangle Shape */
+  .diagram-box.process {
+    border-radius: 8px;
+    width: 140px;
+    height: 60px;
   }
 
-  .diagram-box.secondary {
-    @apply bg-gradient-to-br from-emerald-600 via-green-600 to-teal-700;
-    @apply text-white shadow-emerald-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(16, 185, 129, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  /* Flowchart Color Variants */
+  .diagram-box.primary,
+  .diagram-box.terminal {
+    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+    border: 2px solid #6d28d9;
+  }
+
+  .diagram-box.secondary,
+  .diagram-box.process {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: 2px solid #b45309;
   }
 
   .diagram-box.accent {
-    @apply bg-gradient-to-br from-amber-500 via-orange-600 to-red-600;
-    @apply text-white shadow-orange-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(245, 158, 11, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: 2px solid #b91c1c;
   }
 
-  .diagram-box.info {
-    @apply bg-gradient-to-br from-cyan-500 via-blue-500 to-indigo-600;
-    @apply text-white shadow-cyan-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(6, 182, 212, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  .diagram-box.info,
+  .diagram-box.decision {
+    background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    border: 2px solid #0369a1;
   }
 
   .diagram-box.warning {
-    @apply bg-gradient-to-br from-yellow-500 via-amber-600 to-orange-600;
-    @apply text-white shadow-yellow-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(234, 179, 8, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    border: 2px solid #b45309;
   }
 
   .diagram-box.success {
-    @apply bg-gradient-to-br from-green-500 via-emerald-600 to-teal-700;
-    @apply text-white shadow-green-400/30;
-    box-shadow: 
-      0 8px 32px -8px rgba(34, 197, 94, 0.3),
-      0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background: linear-gradient(135deg, #10b981, #059669);
+    border: 2px solid #047857;
   }
 
   .diagram-title {
-    @apply font-bold text-base mb-2 relative z-10;
-    @apply uppercase tracking-wide;
-    @apply drop-shadow-sm;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 1.3;
+    margin: 0;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
   .diagram-subtitle {
-    @apply text-sm opacity-90 font-medium relative z-10;
-    @apply drop-shadow-sm;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 10px;
+    font-weight: 400;
+    margin: 0;
+    opacity: 0.9;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
   }
 
-  /* Connection Lines for Architecture Diagrams */
-  .diagram-connection {
-    @apply absolute bg-gradient-to-r from-blue-400 to-indigo-500;
-    @apply h-0.5 z-10 shadow-sm;
+  /* Flowchart Connecting Lines */
+  .flowchart-line {
+    position: absolute;
+    background: #6b7280;
+    z-index: 10;
   }
 
-  .diagram-connection::after {
+  .flowchart-line.horizontal {
+    height: 2px;
+  }
+
+  .flowchart-line.vertical {
+    width: 2px;
+  }
+
+  /* Arrow Heads */
+  .flowchart-arrow {
+    position: absolute;
+    z-index: 11;
+  }
+
+  .flowchart-arrow.right::after {
     content: '';
     position: absolute;
     right: -6px;
-    top: -3px;
+    top: -4px;
     width: 0;
     height: 0;
-    border-left: 6px solid #6366f1;
-    border-top: 3px solid transparent;
-    border-bottom: 3px solid transparent;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    border-left: 8px solid #6b7280;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
   }
 
-  /* Enhanced Box Styling */
-  .diagram-container .diagram-box {
-    margin: 0;
-    position: relative;
-  }
-
-  /* Horizontal Flow Connections - Apply only in flow layout */
-  .diagram-container.flow-layout .diagram-box:not(:last-child)::after {
+  .flowchart-arrow.down::after {
     content: '';
     position: absolute;
-    right: -2.5rem;
-    top: 50%;
-    width: 4rem;
-    height: 3px;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    transform: translateY(-50%);
-    z-index: 5;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  }
-
-  .diagram-container.flow-layout .diagram-box:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    right: -2.8rem;
-    top: 50%;
+    bottom: -6px;
+    left: -4px;
     width: 0;
     height: 0;
-    border-top: 8px solid transparent;
-    border-bottom: 8px solid transparent;
-    border-left: 12px solid #8b5cf6;
-    transform: translateY(-50%);
-    z-index: 6;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+    border-top: 8px solid #6b7280;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
   }
 
-  /* Default flow arrows for standard layout */
-  .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::after {
-    content: '';
+  /* Decision Symbols */
+  .decision-symbol {
     position: absolute;
-    right: -2rem;
-    top: 50%;
-    width: 3rem;
-    height: 3px;
-    background: linear-gradient(90deg, #6366f1, #8b5cf6);
-    transform: translateY(-50%);
     z-index: 15;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
   }
 
-  .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::before {
-    content: '';
-    position: absolute;
-    right: -2.2rem;
-    top: 50%;
-    width: 0;
-    height: 0;
-    border-top: 7px solid transparent;
-    border-bottom: 7px solid transparent;
-    border-left: 10px solid #8b5cf6;
-    transform: translateY(-50%);
-    z-index: 16;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  .decision-symbol.yes {
+    background: #10b981;
+    color: white;
   }
 
-  /* Responsive arrow adjustments */
-  @media (max-width: 768px) {
-    .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::after,
-    .diagram-container.flow-layout .diagram-box:not(:last-child)::after {
-      display: none;
-    }
-    
-    .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::before,
-    .diagram-container.flow-layout .diagram-box:not(:last-child)::before {
-      display: none;
-    }
+  .decision-symbol.no {
+    background: #ef4444;
+    color: white;
   }
+
+  .decision-symbol.yes::after {
+    content: '✓';
+  }
+
+  .decision-symbol.no::after {
+    content: '✕';
+  }
+
+  /* Positioning helpers for complex flowcharts */
+  .pos-1-1 { grid-column: 1; grid-row: 1; }
+  .pos-2-1 { grid-column: 2; grid-row: 1; }
+  .pos-3-1 { grid-column: 3; grid-row: 1; }
+  .pos-4-1 { grid-column: 4; grid-row: 1; }
+  .pos-5-1 { grid-column: 5; grid-row: 1; }
+  .pos-6-1 { grid-column: 6; grid-row: 1; }
+  .pos-7-1 { grid-column: 7; grid-row: 1; }
+  .pos-8-1 { grid-column: 8; grid-row: 1; }
+  .pos-9-1 { grid-column: 9; grid-row: 1; }
+  .pos-10-1 { grid-column: 10; grid-row: 1; }
+  .pos-11-1 { grid-column: 11; grid-row: 1; }
+  .pos-12-1 { grid-column: 12; grid-row: 1; }
+  
+  .pos-1-2 { grid-column: 1; grid-row: 2; }
+  .pos-2-2 { grid-column: 2; grid-row: 2; }
+  .pos-3-2 { grid-column: 3; grid-row: 2; }
+  .pos-4-2 { grid-column: 4; grid-row: 2; }
+  .pos-5-2 { grid-column: 5; grid-row: 2; }
+  .pos-6-2 { grid-column: 6; grid-row: 2; }
+  .pos-7-2 { grid-column: 7; grid-row: 2; }
+  .pos-8-2 { grid-column: 8; grid-row: 2; }
+  .pos-9-2 { grid-column: 9; grid-row: 2; }
+  .pos-10-2 { grid-column: 10; grid-row: 2; }
+  .pos-11-2 { grid-column: 11; grid-row: 2; }
+  .pos-12-2 { grid-column: 12; grid-row: 2; }
+
+  .pos-1-3 { grid-column: 1; grid-row: 3; }
+  .pos-2-3 { grid-column: 2; grid-row: 3; }
+  .pos-3-3 { grid-column: 3; grid-row: 3; }
+  .pos-4-3 { grid-column: 4; grid-row: 3; }
+  .pos-5-3 { grid-column: 5; grid-row: 3; }
+  .pos-6-3 { grid-column: 6; grid-row: 3; }
+  .pos-7-3 { grid-column: 7; grid-row: 3; }
+  .pos-8-3 { grid-column: 8; grid-row: 3; }
+  .pos-9-3 { grid-column: 9; grid-row: 3; }
+  .pos-10-3 { grid-column: 10; grid-row: 3; }
+  .pos-11-3 { grid-column: 11; grid-row: 3; }
+  .pos-12-3 { grid-column: 12; grid-row: 3; }
+
+  .pos-1-4 { grid-column: 1; grid-row: 4; }
+  .pos-2-4 { grid-column: 2; grid-row: 4; }
+  .pos-3-4 { grid-column: 3; grid-row: 4; }
+  .pos-4-4 { grid-column: 4; grid-row: 4; }
+  .pos-5-4 { grid-column: 5; grid-row: 4; }
+  .pos-6-4 { grid-column: 6; grid-row: 4; }
+  .pos-7-4 { grid-column: 7; grid-row: 4; }
+  .pos-8-4 { grid-column: 8; grid-row: 4; }
+  .pos-9-4 { grid-column: 9; grid-row: 4; }
+  .pos-10-4 { grid-column: 10; grid-row: 4; }
+  .pos-11-4 { grid-column: 11; grid-row: 4; }
+  .pos-12-4 { grid-column: 12; grid-row: 4; }
+
+  .pos-1-5 { grid-column: 1; grid-row: 5; }
+  .pos-2-5 { grid-column: 2; grid-row: 5; }
+  .pos-3-5 { grid-column: 3; grid-row: 5; }
+  .pos-4-5 { grid-column: 4; grid-row: 5; }
+  .pos-5-5 { grid-column: 5; grid-row: 5; }
+  .pos-6-5 { grid-column: 6; grid-row: 5; }
+  .pos-7-5 { grid-column: 7; grid-row: 5; }
+  .pos-8-5 { grid-column: 8; grid-row: 5; }
+  .pos-9-5 { grid-column: 9; grid-row: 5; }
+  .pos-10-5 { grid-column: 10; grid-row: 5; }
+  .pos-11-5 { grid-column: 11; grid-row: 5; }
+  .pos-12-5 { grid-column: 12; grid-row: 5; }
+
+  .pos-1-6 { grid-column: 1; grid-row: 6; }
+  .pos-2-6 { grid-column: 2; grid-row: 6; }
+  .pos-3-6 { grid-column: 3; grid-row: 6; }
+  .pos-4-6 { grid-column: 4; grid-row: 6; }
+  .pos-5-6 { grid-column: 5; grid-row: 6; }
+  .pos-6-6 { grid-column: 6; grid-row: 6; }
+  .pos-7-6 { grid-column: 7; grid-row: 6; }
+  .pos-8-6 { grid-column: 8; grid-row: 6; }
+  .pos-9-6 { grid-column: 9; grid-row: 6; }
+  .pos-10-6 { grid-column: 10; grid-row: 6; }
+  .pos-11-6 { grid-column: 11; grid-row: 6; }
+  .pos-12-6 { grid-column: 12; grid-row: 6; }
 
   /* Modern Flowchart Styling */
   .flowchart {
