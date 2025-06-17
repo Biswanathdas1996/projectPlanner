@@ -1329,56 +1329,75 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                    line-height: 1.6;
-                    color: #374151;
-                    background: #ffffff;
-                    padding: 24px;
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+                    line-height: 1.7;
+                    color: #1e293b;
+                    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+                    padding: 32px;
+                    font-size: 15px;
+                    letter-spacing: -0.01em;
                   }
                   
                   h1, h2, h3, h4, h5, h6 {
-                    color: #1f2937;
-                    margin-bottom: 16px;
-                    font-weight: 600;
+                    color: #0f172a;
+                    margin-bottom: 20px;
+                    font-weight: 700;
+                    letter-spacing: -0.025em;
                   }
                   
                   h1 {
-                    font-size: 2rem;
-                    border-bottom: 2px solid #3b82f6;
-                    padding-bottom: 8px;
-                    margin-bottom: 24px;
-                  }
-                  
-                  h2 {
-                    font-size: 1.5rem;
+                    font-size: 2.5rem;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                    margin-bottom: 32px;
+                    padding-bottom: 16px;
+                    border-bottom: 3px solid transparent;
+                    border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
                     position: relative;
-                    padding-left: 16px;
                   }
                   
-                  h2:before {
+                  h1::after {
                     content: '';
                     position: absolute;
+                    bottom: -3px;
                     left: 0;
-                    top: 0;
-                    bottom: 0;
-                    width: 4px;
-                    background: linear-gradient(to bottom, #3b82f6, #6366f1);
+                    width: 60px;
+                    height: 3px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6);
                     border-radius: 2px;
                   }
                   
+                  h2 {
+                    font-size: 1.75rem;
+                    position: relative;
+                    padding: 16px 20px;
+                    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+                    border-radius: 16px;
+                    border-left: 5px solid #6366f1;
+                    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                    margin-bottom: 24px;
+                  }
+                  
                   h3 {
-                    font-size: 1.25rem;
+                    font-size: 1.375rem;
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 12px;
+                    padding: 12px 0;
+                    color: #475569;
+                    border-bottom: 1px solid #e2e8f0;
+                    margin-bottom: 16px;
                   }
                   
                   h3:before {
                     content: '';
-                    width: 8px;
-                    height: 8px;
-                    background: #3b82f6;
+                    width: 12px;
+                    height: 12px;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     border-radius: 50%;
+                    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
                   }
                   
                   p {
@@ -1436,79 +1455,146 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   table {
                     width: 100%;
-                    border-collapse: collapse;
-                    margin: 20px 0;
+                    border-collapse: separate;
+                    border-spacing: 0;
+                    margin: 24px 0;
                     background: white;
-                    border-radius: 8px;
+                    border-radius: 16px;
                     overflow: hidden;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    border: 1px solid #e2e8f0;
                   }
                   
                   th, td {
-                    padding: 12px 16px;
+                    padding: 16px 20px;
                     text-align: left;
-                    border-bottom: 1px solid #e5e7eb;
+                    border-bottom: 1px solid #f1f5f9;
+                    vertical-align: middle;
                   }
                   
                   th {
-                    background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    color: white;
                     font-weight: 600;
-                    color: #374151;
-                    font-size: 14px;
+                    font-size: 13px;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    position: relative;
+                  }
+                  
+                  th:first-child {
+                    border-top-left-radius: 16px;
+                  }
+                  
+                  th:last-child {
+                    border-top-right-radius: 16px;
                   }
                   
                   tr:hover {
-                    background: #f9fafb;
+                    background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+                    transform: scale(1.01);
+                    transition: all 0.2s ease;
+                  }
+                  
+                  tr:last-child td:first-child {
+                    border-bottom-left-radius: 16px;
+                  }
+                  
+                  tr:last-child td:last-child {
+                    border-bottom-right-radius: 16px;
+                  }
+                  
+                  tr:last-child td {
+                    border-bottom: none;
                   }
                   
                   .card {
                     background: white;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 12px;
-                    padding: 20px;
-                    margin: 16px 0;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 20px;
+                    padding: 24px;
+                    margin: 20px 0;
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  
+                  .card::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  .card:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
                   }
                   
                   .highlight {
-                    background: linear-gradient(135deg, #eff6ff, #dbeafe);
-                    border-left: 4px solid #3b82f6;
-                    padding: 16px;
-                    margin: 16px 0;
-                    border-radius: 0 8px 8px 0;
+                    background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+                    border: 1px solid #0ea5e9;
+                    border-radius: 16px;
+                    padding: 20px;
+                    margin: 20px 0;
+                    position: relative;
+                    box-shadow: 0 4px 6px -1px rgba(14, 165, 233, 0.1);
+                  }
+                  
+                  .highlight::before {
+                    content: '💡';
+                    position: absolute;
+                    top: -8px;
+                    left: 20px;
+                    background: white;
+                    padding: 4px 8px;
+                    border-radius: 50%;
+                    font-size: 16px;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                   }
                   
                   .flowchart {
                     display: flex;
                     flex-wrap: wrap;
-                    gap: 16px;
-                    margin: 20px 0;
+                    gap: 20px;
+                    margin: 24px 0;
                     justify-content: center;
+                    align-items: center;
                   }
                   
                   .flow-step {
-                    background: linear-gradient(135deg, #3b82f6, #6366f1);
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
-                    padding: 12px 20px;
-                    border-radius: 8px;
-                    font-weight: 500;
+                    padding: 16px 24px;
+                    border-radius: 16px;
+                    font-weight: 600;
                     position: relative;
-                    min-width: 120px;
+                    min-width: 140px;
                     text-align: center;
-                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+                    box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.3), 0 4px 6px -2px rgba(99, 102, 241, 0.1);
+                    transition: all 0.3s ease;
+                    backdrop-filter: blur(10px);
+                  }
+                  
+                  .flow-step:hover {
+                    transform: translateY(-2px) scale(1.05);
+                    box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4), 0 10px 10px -5px rgba(99, 102, 241, 0.2);
                   }
                   
                   .flow-step:not(:last-child):after {
                     content: '→';
                     position: absolute;
-                    right: -24px;
+                    right: -30px;
                     top: 50%;
                     transform: translateY(-50%);
-                    color: #6b7280;
-                    font-size: 18px;
+                    color: #6366f1;
+                    font-size: 24px;
                     font-weight: bold;
+                    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
                   }
                   
                   .grid {
@@ -1522,28 +1608,53 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   .metric {
-                    background: white;
-                    border: 1px solid #e5e7eb;
-                    border-radius: 8px;
-                    padding: 16px;
+                    background: linear-gradient(135deg, #ffffff, #f8fafc);
+                    border: 1px solid #e2e8f0;
+                    border-radius: 20px;
+                    padding: 24px;
                     text-align: center;
-                    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                     flex: 1;
-                    min-width: 150px;
-                    max-width: 200px;
+                    min-width: 160px;
+                    max-width: 220px;
+                    transition: all 0.3s ease;
+                    position: relative;
+                    overflow: hidden;
+                  }
+                  
+                  .metric::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 4px;
+                    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+                  }
+                  
+                  .metric:hover {
+                    transform: translateY(-4px);
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.08);
                   }
                   
                   .metric-value {
-                    font-size: 2rem;
-                    font-weight: bold;
-                    color: #3b82f6;
+                    font-size: 2.5rem;
+                    font-weight: 800;
+                    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
                     display: block;
+                    letter-spacing: -0.025em;
+                    margin-bottom: 8px;
                   }
                   
                   .metric-label {
-                    color: #6b7280;
+                    color: #64748b;
                     font-size: 14px;
-                    margin-top: 4px;
+                    font-weight: 500;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                   }
                   
                   .timeline {
@@ -1644,19 +1755,59 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   }
                   
                   .status-badge {
-                    display: inline-block;
-                    padding: 4px 12px;
-                    border-radius: 20px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 16px;
+                    border-radius: 24px;
                     font-size: 12px;
-                    font-weight: 500;
+                    font-weight: 600;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    border: 1px solid transparent;
+                    transition: all 0.2s ease;
+                    backdrop-filter: blur(10px);
                   }
                   
-                  .status-success { background: #dcfce7; color: #166534; }
-                  .status-warning { background: #fef3c7; color: #92400e; }
-                  .status-info { background: #dbeafe; color: #1e40af; }
-                  .status-danger { background: #fee2e2; color: #991b1b; }
+                  .status-badge:hover {
+                    transform: scale(1.05);
+                  }
+                  
+                  .status-success { 
+                    background: linear-gradient(135deg, #ecfdf5, #d1fae5); 
+                    color: #065f46; 
+                    border-color: #10b981;
+                    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+                  }
+                  
+                  .status-success::before { content: '✓'; }
+                  
+                  .status-warning { 
+                    background: linear-gradient(135deg, #fffbeb, #fef3c7); 
+                    color: #92400e; 
+                    border-color: #f59e0b;
+                    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
+                  }
+                  
+                  .status-warning::before { content: '⚠'; }
+                  
+                  .status-info { 
+                    background: linear-gradient(135deg, #eff6ff, #dbeafe); 
+                    color: #1e40af; 
+                    border-color: #3b82f6;
+                    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+                  }
+                  
+                  .status-info::before { content: 'ℹ'; }
+                  
+                  .status-danger { 
+                    background: linear-gradient(135deg, #fef2f2, #fee2e2); 
+                    color: #991b1b; 
+                    border-color: #ef4444;
+                    box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
+                  }
+                  
+                  .status-danger::before { content: '✕'; }
                 </style>
               </head>
               <body>
