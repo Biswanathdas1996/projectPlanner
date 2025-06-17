@@ -46,11 +46,9 @@ export class AIProjectPlannerAgent {
   private readonly retryDelay = 2000;
 
   constructor() {
-    if (!import.meta.env.VITE_GEMINI_API_KEY) {
-      throw new Error("GEMINI_API_KEY is required for AI project planning");
-    }
-
-    const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
+    );
     this.model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
@@ -168,25 +166,32 @@ Ensure realistic estimates based on project complexity.`;
     );
     const sections: ProjectSection[] = [];
 
-    for (let i = 0; i < sectionPrompts.length; i++) {
-      const progress = 20 + (i / sectionPrompts.length) * 70;
-      progressCallback?.(sectionPrompts[i].title, progress);
+    // Generate sections in batches to avoid rate limits and improve reliability
+    const batchSize = 3;
+    
+    for (let i = 0; i < sectionPrompts.length; i += batchSize) {
+      const batch = sectionPrompts.slice(i, i + batchSize);
+      const batchPromises = batch.map(async (sectionPrompt, batchIndex) => {
+        const globalIndex = i + batchIndex;
+        const progress = 20 + (globalIndex / sectionPrompts.length) * 70;
+        progressCallback?.(sectionPrompt.title, progress);
 
-      try {
-        const section = await this.generateSection(
-          sectionPrompts[i],
-          requirements
-        );
-        sections.push(section);
+        try {
+          const section = await this.generateSection(sectionPrompt, requirements);
+          return section;
+        } catch (error) {
+          console.warn(`Failed to generate section: ${sectionPrompt.title}`, error);
+          return this.getFallbackSection(sectionPrompt.title);
+        }
+      });
 
-        // Add small delay to prevent rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 200));
-      } catch (error) {
-        console.warn(
-          `Failed to generate section: ${sectionPrompts[i].title}`,
-          error
-        );
-        sections.push(this.getFallbackSection(sectionPrompts[i].title));
+      // Wait for current batch to complete
+      const batchResults = await Promise.all(batchPromises);
+      sections.push(...batchResults);
+
+      // Add delay between batches to prevent rate limiting
+      if (i + batchSize < sectionPrompts.length) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
