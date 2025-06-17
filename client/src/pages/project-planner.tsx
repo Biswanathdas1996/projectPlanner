@@ -1548,14 +1548,14 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   .timeline {
                     position: relative;
-                    padding-left: 30px;
-                    margin: 20px 0;
+                    padding-left: 25px;
+                    margin: 15px 0;
                   }
                   
                   .timeline:before {
                     content: '';
                     position: absolute;
-                    left: 15px;
+                    left: 12px;
                     top: 0;
                     bottom: 0;
                     width: 2px;
@@ -1564,20 +1564,33 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   .timeline-item {
                     position: relative;
-                    padding: 16px 0;
+                    padding: 8px 0;
+                    margin-bottom: 8px;
                   }
                   
                   .timeline-item:before {
                     content: '';
                     position: absolute;
-                    left: -23px;
-                    top: 20px;
-                    width: 12px;
-                    height: 12px;
+                    left: -19px;
+                    top: 12px;
+                    width: 8px;
+                    height: 8px;
                     background: #3b82f6;
                     border-radius: 50%;
-                    border: 3px solid white;
-                    box-shadow: 0 0 0 3px #3b82f6;
+                    border: 2px solid white;
+                    box-shadow: 0 0 0 2px #3b82f6;
+                  }
+                  
+                  .timeline-item h3 {
+                    font-size: 1rem;
+                    margin-bottom: 4px;
+                    font-weight: 600;
+                  }
+                  
+                  .timeline-item p {
+                    font-size: 0.9rem;
+                    margin-bottom: 0;
+                    color: #6b7280;
                   }
                   
                   code {
