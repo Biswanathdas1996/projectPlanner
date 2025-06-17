@@ -83,6 +83,7 @@ export default function ProjectPlanner() {
   const [editedBpmnScript, setEditedBpmnScript] = useState('');
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [editedSectionContent, setEditedSectionContent] = useState('');
+  const [activeTabId, setActiveTabId] = useState<string | null>(null);
   const [progressSteps, setProgressSteps] = useState<{step: string; completed: boolean; current: boolean}[]>([]);
   const [overallProgress, setOverallProgress] = useState(0);
   const [currentProgressStep, setCurrentProgressStep] = useState('');
@@ -1301,14 +1302,63 @@ Return the complete enhanced project plan as HTML with all existing content plus
             <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                    <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                      <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                    </div>
+                    <Button
+                      onClick={() => startEditingSection(section.id, section.content, section.id)}
+                      size="sm"
+                      variant="outline"
+                      className="text-xs"
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
                   </div>
                 </div>
                 <div className="p-6">
-                  <div className="prose prose-gray max-w-none">
-                    {section.content.split('\n').map((line, index) => {
+                  {editingSectionId === section.id && activeTabId === section.id ? (
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-gray-600">
+                          Edit the content for this section. You can use plain text or basic formatting.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={saveSectionEdit}
+                            size="sm"
+                            className="bg-green-600 hover:bg-green-700 text-white"
+                          >
+                            <Save className="h-4 w-4 mr-2" />
+                            Save Changes
+                          </Button>
+                          <Button
+                            onClick={cancelSectionEdit}
+                            variant="outline"
+                            size="sm"
+                          >
+                            <X className="h-4 w-4 mr-2" />
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <Textarea
+                        value={editedSectionContent}
+                        onChange={(e) => setEditedSectionContent(e.target.value)}
+                        className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                        placeholder="Enter content for this section..."
+                      />
+                      
+                      <div className="text-sm text-gray-500">
+                        {editedSectionContent.length} characters | Plain text and basic formatting supported
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="prose prose-gray max-w-none">
+                      {section.content.split('\n').map((line, index) => {
                       const cleanLine = line.trim();
 
                       if (!cleanLine) {
@@ -1380,7 +1430,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         </p>
                       );
                     })}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -1727,13 +1778,14 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setEditedBpmnScript('');
   };
 
-  const startEditingSection = (sectionId: string, content: string) => {
+  const startEditingSection = (sectionId: string, content: string, tabId: string) => {
     setEditingSectionId(sectionId);
     setEditedSectionContent(content);
+    setActiveTabId(tabId);
   };
 
   const saveSectionEdit = () => {
-    if (!editingSectionId) return;
+    if (!editingSectionId || !activeTabId) return;
 
     // Update the enhanced sections
     setEnhancedSections(prev => prev.map(section => 
@@ -1759,11 +1811,13 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
     setEditingSectionId(null);
     setEditedSectionContent('');
+    setActiveTabId(null);
   };
 
   const cancelSectionEdit = () => {
     setEditingSectionId(null);
     setEditedSectionContent('');
+    setActiveTabId(null);
   };
 
   const getStepStatus = (step: string) => {
@@ -3970,7 +4024,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                         </div>
                       </div>
                       <div className="p-6">
-                        <Tabs defaultValue={enhancedSections.filter(s => s.content)[0]?.id} className="w-full">
+                        <Tabs 
+                          defaultValue={enhancedSections.filter(s => s.content)[0]?.id} 
+                          className="w-full"
+                          onValueChange={(value) => {
+                            // Cancel any active editing when switching tabs
+                            if (editingSectionId && activeTabId !== value) {
+                              cancelSectionEdit();
+                            }
+                          }}
+                        >
                           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
                             {enhancedSections.filter(s => s.content).map((section, index) => (
                               <TabsTrigger 
@@ -3998,7 +4061,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                                       <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
                                     </div>
                                     <Button
-                                      onClick={() => startEditingSection(section.id, section.content)}
+                                      onClick={() => startEditingSection(section.id, section.content, section.id)}
                                       size="sm"
                                       variant="outline"
                                       className="text-xs"
@@ -4009,7 +4072,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
                                   </div>
                                 </div>
                                 <div className="p-6">
-                                  {editingSectionId === section.id ? (
+                                  {editingSectionId === section.id && activeTabId === section.id ? (
                                     <div className="space-y-4">
                                       <div className="flex items-center justify-between">
                                         <p className="text-sm text-gray-600">
