@@ -7,6 +7,13 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
+import { 
+  createDynamicProjectPlanner, 
+  DEFAULT_PROJECT_SECTIONS, 
+  ProjectSection, 
+  ProjectPlanConfig,
+  ProjectPlanResult 
+} from '@/lib/dynamic-project-planner';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
 import { NavigationBar } from '@/components/navigation-bar';
@@ -72,6 +79,13 @@ export default function ProjectPlanner() {
   const [comprehensivePlan, setComprehensivePlan] = useState<ComprehensiveProjectPlan | null>(null);
   const [projectRequirements, setProjectRequirements] = useState<Partial<ProjectRequirements>>({});
   const [isGeneratingComprehensive, setIsGeneratingComprehensive] = useState(false);
+
+  // Dynamic project planner state
+  const [projectSections, setProjectSections] = useState<ProjectSection[]>(DEFAULT_PROJECT_SECTIONS);
+  const [isGeneratingDynamic, setIsGeneratingDynamic] = useState(false);
+  const [dynamicPlanResult, setDynamicPlanResult] = useState<ProjectPlanResult | null>(null);
+  const [currentGeneratingSection, setCurrentGeneratingSection] = useState<string>('');
+  const [sectionProgress, setSectionProgress] = useState<{current: number, total: number}>({current: 0, total: 0});
 
   const [location, setLocation] = useLocation();
 
@@ -282,6 +296,64 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
       setIsGeneratingComprehensive(false);
       setOverallProgress(0);
       setCurrentProgressStep('');
+    }
+  };
+
+  const handleGenerateDynamicPlan = async () => {
+    setIsGeneratingDynamic(true);
+    setError('');
+    setShowSuggestions(false);
+    setCurrentGeneratingSection('');
+    setSectionProgress({current: 0, total: 0});
+
+    try {
+      const planner = createDynamicProjectPlanner();
+      
+      let enhancedInput = projectInput;
+      if (selectedSuggestions.length > 0) {
+        enhancedInput = `${projectInput}
+
+Additional Requirements:
+${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
+      }
+
+      const config: ProjectPlanConfig = {
+        sections: projectSections,
+        projectDescription: enhancedInput,
+        additionalContext: selectedSuggestions.length > 0 ? 
+          `Focus on: ${selectedSuggestions.join(', ')}` : undefined
+      };
+
+      const result = await planner.generateProjectPlan(
+        config,
+        (sectionTitle: string, current: number, total: number) => {
+          setCurrentGeneratingSection(sectionTitle);
+          setSectionProgress({current, total});
+          const progressPercentage = (current / total) * 100;
+          setOverallProgress(progressPercentage);
+        }
+      );
+
+      setDynamicPlanResult(result);
+      setProjectPlan(result.htmlContent);
+      
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, result.htmlContent);
+      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
+      localStorage.setItem('dynamic_plan_result', JSON.stringify(result));
+      localStorage.setItem('project_sections_config', JSON.stringify(projectSections));
+      
+      setCurrentStep('plan');
+      setLocation('/plan');
+    } catch (err) {
+      console.error('Dynamic plan generation error:', err);
+      setError('Failed to generate dynamic project plan. Please try again.');
+    } finally {
+      setIsGeneratingDynamic(false);
+      setOverallProgress(0);
+      setCurrentProgressStep('');
+      setCurrentGeneratingSection('');
+      setSectionProgress({current: 0, total: 0});
     }
   };
 
@@ -1173,17 +1245,19 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   <div className="flex items-center justify-between mb-3">
                     <div>
                       <h4 className="font-medium text-purple-800 mb-1">Plan Generation Method</h4>
-                      <p className="text-sm text-purple-600">Choose between standard or comprehensive AI-powered planning</p>
+                      <p className="text-sm text-purple-600">Choose between standard, comprehensive, or dynamic section-based planning</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="advanced-agent"
-                        checked={useAdvancedAgent}
-                        onCheckedChange={(checked) => setUseAdvancedAgent(checked as boolean)}
-                      />
-                      <label htmlFor="advanced-agent" className="text-sm font-medium text-purple-700 cursor-pointer">
-                        Use Advanced AI Agent
-                      </label>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="advanced-agent"
+                          checked={useAdvancedAgent}
+                          onCheckedChange={(checked) => setUseAdvancedAgent(checked as boolean)}
+                        />
+                        <label htmlFor="advanced-agent" className="text-sm font-medium text-purple-700 cursor-pointer">
+                          Advanced AI Agent
+                        </label>
+                      </div>
                     </div>
                   </div>
                   
@@ -1316,18 +1390,109 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   </div>
                 )}
                 
+                {/* Dynamic Section Configuration */}
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-medium text-green-800 mb-3">Dynamic Project Plan Sections</h4>
+                  <p className="text-sm text-green-600 mb-4">Configure which sections to include in your project plan. Each section will be generated with individual API calls for maximum quality.</p>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+                    {projectSections.map((section) => (
+                      <div key={section.id} className="flex items-center space-x-3 p-3 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
+                        <Checkbox
+                          id={section.id}
+                          checked={section.enabled}
+                          onCheckedChange={(checked) => {
+                            setProjectSections(prev => prev.map(s => 
+                              s.id === section.id ? { ...s, enabled: checked as boolean } : s
+                            ));
+                          }}
+                          className="h-4 w-4 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
+                        />
+                        <div className="flex-1">
+                          <label htmlFor={section.id} className="text-sm font-medium text-green-800 cursor-pointer block">
+                            {section.title}
+                          </label>
+                          <p className="text-xs text-green-600 mt-1">{section.description}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{section.estimatedHours}h</span>
+                            <span className={`text-xs px-2 py-0.5 rounded ${
+                              section.priority === 'critical' ? 'bg-red-100 text-red-700' :
+                              section.priority === 'high' ? 'bg-orange-100 text-orange-700' :
+                              section.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-700'
+                            }`}>
+                              {section.priority}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="bg-white/60 rounded border border-green-100 p-3">
+                    <div className="text-xs text-green-700">
+                      <strong>Selected:</strong> {projectSections.filter(s => s.enabled).length} sections 
+                      <span className="mx-2">•</span>
+                      <strong>Estimated:</strong> {projectSections.filter(s => s.enabled).reduce((total, s) => total + (s.estimatedHours || 0), 0)} hours
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress Bar for Dynamic Plan Generation */}
+                {isGeneratingDynamic && (
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-green-800">Generating Dynamic Project Plan</h4>
+                      <span className="text-sm text-green-600 font-medium">{Math.round(overallProgress)}%</span>
+                    </div>
+                    <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
+                      <div 
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
+                        style={{ width: `${overallProgress}%` }}
+                      ></div>
+                    </div>
+                    {currentGeneratingSection && (
+                      <div className="flex items-center text-sm text-green-700 mb-3 font-medium">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating: {currentGeneratingSection} ({sectionProgress.current}/{sectionProgress.total})
+                      </div>
+                    )}
+                    
+                    <div className="text-xs text-green-700 bg-green-50 p-2 rounded">
+                      Making individual API calls for each selected section to ensure maximum quality and detail.
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex flex-col sm:flex-row gap-3 justify-end">
                   <Button
                     variant="outline"
                     onClick={() => setShowSuggestions(false)}
                     className="border-gray-300 hover:bg-gray-50"
-                    disabled={isGeneratingPlan}
+                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic}
                   >
                     Cancel
                   </Button>
                   <Button
+                    onClick={handleGenerateDynamicPlan}
+                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic || projectSections.filter(s => s.enabled).length === 0}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                  >
+                    {isGeneratingDynamic ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating Sections...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Dynamic Plan ({projectSections.filter(s => s.enabled).length} sections)
+                      </>
+                    )}
+                  </Button>
+                  <Button
                     onClick={handleGenerateWithSuggestions}
-                    disabled={isGeneratingPlan || isGeneratingComprehensive}
+                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic}
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
                     {isGeneratingPlan || isGeneratingComprehensive ? (
