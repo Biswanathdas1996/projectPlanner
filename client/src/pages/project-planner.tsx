@@ -987,8 +987,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
       while ((match = sectionPattern.exec(cleanedContent)) !== null) {
         const sectionHtml = match[0];
         const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-        const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${sections.length + 1}`;
-        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const title: string = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${sections.length + 1}`;
+        const id: string = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
         
         sections.push({
           id,
@@ -1008,18 +1008,33 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
       return (
         <Tabs defaultValue={sections[0]?.id} className="w-full">
-          <TabsList className="grid w-full grid-cols-auto max-w-full overflow-x-auto" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(120px, 1fr))` }}>
-            {sections.map((section) => (
-              <TabsTrigger key={section.id} value={section.id} className="text-xs px-3 py-2 truncate">
-                {section.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="w-full overflow-x-auto scrollbar-hide mb-6">
+            <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-gradient-to-r from-slate-100 to-slate-200 p-1 text-slate-500 shadow-inner min-w-max">
+              {sections.map((section, index) => (
+                <TabsTrigger 
+                  key={section.id} 
+                  value={section.id} 
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-lg hover:bg-white/60 hover:text-slate-950 relative group min-w-[140px]"
+                >
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-60 group-data-[state=active]:opacity-100 transition-opacity duration-200"></div>
+                    <span className="max-w-[120px] truncate font-medium">{section.title}</span>
+                  </span>
+                  {index < sections.length - 1 && (
+                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-slate-300 border-y-[4px] border-y-transparent opacity-30"></div>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
           {sections.map((section) => (
-            <TabsContent key={section.id} value={section.id} className="mt-4">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="border-b border-gray-200 p-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                    <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                  </div>
                 </div>
                 <div className="p-0">
                   {(() => {
@@ -1157,43 +1172,48 @@ Return the complete enhanced project plan as HTML with all existing content plus
                           try {
                             const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
                             if (iframeDoc) {
-                              const resizeObserver = new ResizeObserver(() => {
-                                const body = iframeDoc.body;
-                                const html = iframeDoc.documentElement;
-                                const height = Math.max(
-                                  body?.scrollHeight || 0,
-                                  body?.offsetHeight || 0,
-                                  html?.scrollHeight || 0,
-                                  html?.offsetHeight || 0
-                                );
+                              let isResizing = false;
+                              
+                              const adjustHeight = () => {
+                                if (isResizing) return;
+                                isResizing = true;
                                 
-                                if (height > 100) {
-                                  iframe.style.height = `${height + 2}px`;
-                                  console.log(`Iframe height adjusted to: ${height + 2}px`);
-                                }
+                                requestAnimationFrame(() => {
+                                  const body = iframeDoc.body;
+                                  const html = iframeDoc.documentElement;
+                                  const height = Math.max(
+                                    body?.scrollHeight || 0,
+                                    body?.offsetHeight || 0,
+                                    html?.scrollHeight || 0,
+                                    html?.offsetHeight || 0
+                                  );
+                                  
+                                  if (height > 100 && height !== iframe.offsetHeight) {
+                                    iframe.style.height = `${height + 20}px`;
+                                  }
+                                  
+                                  isResizing = false;
+                                });
+                              };
+                              
+                              // Use MutationObserver instead of ResizeObserver
+                              const mutationObserver = new MutationObserver(adjustHeight);
+                              mutationObserver.observe(iframeDoc.body, {
+                                childList: true,
+                                subtree: true,
+                                attributes: true
                               });
                               
-                              resizeObserver.observe(iframeDoc.body);
-                              
                               // Initial height adjustment
-                              setTimeout(() => {
-                                const body = iframeDoc.body;
-                                const html = iframeDoc.documentElement;
-                                const height = Math.max(
-                                  body?.scrollHeight || 0,
-                                  body?.offsetHeight || 0,
-                                  html?.scrollHeight || 0,
-                                  html?.offsetHeight || 0
-                                );
-                                
-                                if (height > 100) {
-                                  iframe.style.height = `${height + 2}px`;
-                                  console.log(`Iframe height adjusted to: ${height + 2}px`);
-                                }
-                              }, 100);
+                              setTimeout(adjustHeight, 200);
+                              setTimeout(adjustHeight, 500);
+                              setTimeout(adjustHeight, 1000);
                             }
                           } catch (error) {
-                            console.log('Cross-origin iframe height adjustment skipped');
+                            // Fallback for cross-origin restrictions
+                            setTimeout(() => {
+                              iframe.style.height = '800px';
+                            }, 100);
                           }
                         }}
                       />
@@ -1221,18 +1241,33 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
       return (
         <Tabs defaultValue={sections[0]?.id} className="w-full">
-          <TabsList className="grid w-full grid-cols-auto max-w-full overflow-x-auto" style={{ gridTemplateColumns: `repeat(${sections.length}, minmax(120px, 1fr))` }}>
-            {sections.map((section) => (
-              <TabsTrigger key={section.id} value={section.id} className="text-xs px-3 py-2 truncate">
-                {section.title}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="w-full overflow-x-auto scrollbar-hide mb-6">
+            <TabsList className="inline-flex h-12 items-center justify-start rounded-xl bg-gradient-to-r from-slate-100 to-slate-200 p-1 text-slate-500 shadow-inner min-w-max">
+              {sections.map((section, index) => (
+                <TabsTrigger 
+                  key={section.id} 
+                  value={section.id} 
+                  className="inline-flex items-center justify-center whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium ring-offset-white transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-white data-[state=active]:text-slate-950 data-[state=active]:shadow-lg hover:bg-white/60 hover:text-slate-950 relative group min-w-[140px]"
+                >
+                  <span className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 opacity-60 group-data-[state=active]:opacity-100 transition-opacity duration-200"></div>
+                    <span className="max-w-[120px] truncate font-medium">{section.title}</span>
+                  </span>
+                  {index < sections.length - 1 && (
+                    <div className="absolute -right-1 top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-[6px] border-l-slate-300 border-y-[4px] border-y-transparent opacity-30"></div>
+                  )}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
           {sections.map((section) => (
-            <TabsContent key={section.id} value={section.id} className="mt-4">
-              <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                <div className="border-b border-gray-200 p-4">
-                  <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
+            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
+              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                    <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                  </div>
                 </div>
                 <div className="p-6">
                   <div className="prose prose-gray max-w-none">
@@ -2595,6 +2630,56 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   
                   .metric-trend.negative::before {
                     content: '↘';
+                  }
+                  
+                  /* Scrollbar Styling */
+                  .scrollbar-hide {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  }
+                  
+                  .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                  }
+                  
+                  /* Tab Animations */
+                  @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                  }
+                  
+                  .animate-in {
+                    animation: fadeIn 0.2s ease-out;
+                  }
+                  
+                  .fade-in-50 {
+                    animation-duration: 0.3s;
+                  }
+                  
+                  /* Mobile Tab Responsiveness */
+                  @media (max-width: 768px) {
+                    .tab-scroll-container {
+                      padding: 0 16px;
+                    }
+                    
+                    .tab-trigger-mobile {
+                      min-width: 100px !important;
+                      padding: 8px 12px !important;
+                      font-size: 13px !important;
+                    }
+                    
+                    .tab-trigger-mobile span {
+                      max-width: 80px !important;
+                    }
+                  }
+                  
+                  /* Enhanced Tab Shadows */
+                  .tab-content-shadow {
+                    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                  }
+                  
+                  .tab-content-shadow:hover {
+                    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
                   }
                 </style>
               </head>
