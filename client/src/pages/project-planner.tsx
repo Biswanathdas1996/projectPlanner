@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
 import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
 import { 
@@ -954,10 +955,27 @@ Return the complete enhanced project plan as HTML with all existing content plus
     }
   };
 
-  // Custom prompt regeneration function for individual sections
+
+
+  const openCustomPromptModal = (sectionId: string) => {
+    console.log('Opening modal for section ID:', sectionId);
+    console.log('Enhanced sections:', enhancedSections);
+    console.log('Project plan exists:', !!projectPlan);
+    
+    setCustomPromptSectionId(sectionId);
+    setCustomPrompt('');
+    setShowCustomPromptModal(true);
+  };
+
+  const closeCustomPromptModal = () => {
+    setShowCustomPromptModal(false);
+    setCustomPrompt('');
+    setCustomPromptSectionId(null);
+  };
+
   const regenerateSectionWithCustomPrompt = async (sectionId: string, prompt: string) => {
     if (!prompt.trim()) {
-      setError('Please enter a custom prompt');
+      setError('Please enter custom instructions for regeneration');
       return;
     }
 
@@ -965,42 +983,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
     setError('');
 
     try {
-      // Initialize Google Gemini AI
-      const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
-      const gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const gemini = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+      const model = gemini.getGenerativeModel({ model: "gemini-pro" });
 
-      // Get current section info - handle both enhanced and plain text sections
-      let targetSection = null;
-      let isEnhancedSection = false;
-      
-      // Check if content is HTML
-      if (projectPlan && (projectPlan.includes('<section') || projectPlan.includes('<!DOCTYPE html>'))) {
-        // Extract section from HTML content
-        const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
-        let match;
-        
-        while ((match = sectionPattern.exec(projectPlan)) !== null) {
-          const sectionHtml = match[0];
-          const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-          const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
-          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          
-          if (id === sectionId) {
-            targetSection = {
-              id,
-              title,
-              content: sectionHtml
-            };
-            isEnhancedSection = true;
-            break;
-          }
-        }
-      } else {
-        // Handle plain text sections
-        const currentSections = parseProjectPlanSections(projectPlan);
-        targetSection = currentSections.find(s => s.id === sectionId);
-      }
-      
+      // Find the target section
+      const targetSection = enhancedSections.find(s => s.id === sectionId);
       if (!targetSection) {
         setError(`Section not found: ${sectionId}`);
         return;
@@ -1026,56 +1013,45 @@ INSTRUCTIONS:
 - The new content should address the custom prompt while maintaining relevance to the overall project
 - Use professional, detailed language appropriate for project documentation
 - Include relevant technical details, implementation steps, and considerations
-- Format the response as clean, readable text with proper headings and structure
-- Do not include any HTML tags or code blocks in the response
+- Format the response as clean HTML content suitable for web display
+- Include proper headings, paragraphs, lists, and structure
 - Make sure the content is comprehensive and actionable
+- Consider the project context: ${projectInput}
 
-Please provide the regenerated section content:`;
+Please provide the regenerated section content as properly formatted HTML:`;
 
-      const result = await gemini.generateContent(regenerationPrompt);
+      const result = await model.generateContent(regenerationPrompt);
       const regeneratedContent = result.response.text();
 
-      if (isEnhancedSection) {
+      // Update the enhanced sections
+      setEnhancedSections(prev => prev.map(section => 
+        section.id === sectionId 
+          ? { ...section, content: regeneratedContent }
+          : section
+      ));
+
+      // Update the main project plan if it exists
+      if (projectPlan) {
         // For HTML content, replace the specific section in the HTML
         let updatedHtml = projectPlan;
-        const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
-        let replacementMade = false;
+        const sectionPattern = new RegExp(`<section[^>]*id="${sectionId}"[^>]*>(.*?)</section>`, 'gis');
         
-        updatedHtml = updatedHtml.replace(sectionPattern, (match) => {
-          const titleMatch = match.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-          const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
-          const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-          
-          if (id === sectionId && !replacementMade) {
-            replacementMade = true;
-            // Wrap the regenerated content in a section with proper formatting
-            return `<section class="project-section">
-              <h2>${targetSection.title}</h2>
-              <div class="section-content">
-                ${regeneratedContent.split('\n').map(line => line.trim() ? `<p>${line.trim()}</p>` : '').filter(Boolean).join('\n                ')}
-              </div>
-            </section>`;
-          }
-          return match;
-        });
+        const newSectionHtml = `<section class="project-section" id="${sectionId}">
+          <h2 class="section-title">${targetSection.title}</h2>
+          <div class="section-content">
+            ${regeneratedContent}
+          </div>
+        </section>`;
+        
+        if (sectionPattern.test(updatedHtml)) {
+          updatedHtml = updatedHtml.replace(sectionPattern, newSectionHtml);
+        } else {
+          // If pattern not found, append the section
+          updatedHtml += '\n' + newSectionHtml;
+        }
         
         setProjectPlan(updatedHtml);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
-      } else {
-        // Update plain text section
-        const currentSections = parseProjectPlanSections(projectPlan);
-        const updatedSections = currentSections.map((section: any) => 
-          section.id === sectionId 
-            ? { ...section, content: regeneratedContent }
-            : section
-        );
-
-        // Rebuild the full project plan
-        const updatedPlan = updatedSections.map((section: any) => section.content).join('\n\n');
-        setProjectPlan(updatedPlan);
-        
-        // Save to localStorage
-        localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedPlan);
       }
       
       // Close modal and reset state
@@ -1094,21 +1070,7 @@ Please provide the regenerated section content:`;
     }
   };
 
-  const openCustomPromptModal = (sectionId: string) => {
-    console.log('Opening modal for section ID:', sectionId);
-    console.log('Enhanced sections:', enhancedSections);
-    console.log('Project plan exists:', !!projectPlan);
-    
-    setCustomPromptSectionId(sectionId);
-    setCustomPrompt('');
-    setShowCustomPromptModal(true);
-  };
 
-  const closeCustomPromptModal = () => {
-    setShowCustomPromptModal(false);
-    setCustomPrompt('');
-    setCustomPromptSectionId(null);
-  };
 
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
