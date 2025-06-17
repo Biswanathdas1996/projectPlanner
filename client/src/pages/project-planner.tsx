@@ -3878,11 +3878,16 @@ Return the complete enhanced project plan as HTML with all existing content plus
                   {/* Modern Header with Actions */}
                   <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
-                      <div>
-                        <h2 className="text-lg font-semibold text-gray-900 mb-0.5">Project Sections</h2>
-                        <p className="text-xs text-gray-500">
-                          {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                          <FileText className="h-4 w-4 text-white" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Project Sections</h3>
+                          <p className="text-xs text-gray-500">
+                            {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
+                          </p>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
                         <ProjectSectionsSettings 
