@@ -142,9 +142,30 @@
   .diagram-container {
     @apply relative z-10;
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
     gap: 2rem;
     margin: 2rem 0;
+    padding: 1rem;
+  }
+
+  /* Flow Layout for Connected Boxes */
+  .diagram-container.flow-layout {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 3rem;
+    position: relative;
+  }
+
+  /* Grid Layout for Layered Architecture */
+  .diagram-container.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
   }
 
   .diagram-layer {
@@ -331,33 +352,83 @@
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
   }
 
-  /* Horizontal Flow Connections */
-  .diagram-box:not(:last-child)::after {
+  /* Enhanced Box Styling */
+  .diagram-container .diagram-box {
+    margin: 0;
+    position: relative;
+  }
+
+  /* Horizontal Flow Connections - Apply only in flow layout */
+  .diagram-container.flow-layout .diagram-box:not(:last-child)::after {
     content: '';
     position: absolute;
-    right: -1.5rem;
+    right: -2.5rem;
     top: 50%;
-    width: 3rem;
-    height: 2px;
-    background: linear-gradient(90deg, rgba(99, 102, 241, 0.6), rgba(139, 92, 246, 0.8));
+    width: 4rem;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
     transform: translateY(-50%);
     z-index: 5;
     border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
   }
 
-  .diagram-box:not(:last-child)::before {
+  .diagram-container.flow-layout .diagram-box:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    right: -2.8rem;
+    top: 50%;
+    width: 0;
+    height: 0;
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-left: 12px solid #8b5cf6;
+    transform: translateY(-50%);
+    z-index: 6;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+
+  /* Default flow arrows for standard layout */
+  .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::after {
     content: '';
     position: absolute;
     right: -2rem;
     top: 50%;
+    width: 3rem;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    transform: translateY(-50%);
+    z-index: 15;
+    border-radius: 2px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+
+  .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    right: -2.2rem;
+    top: 50%;
     width: 0;
     height: 0;
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    border-left: 10px solid rgba(139, 92, 246, 0.8);
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    border-left: 10px solid #8b5cf6;
     transform: translateY(-50%);
-    z-index: 6;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    z-index: 16;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  }
+
+  /* Responsive arrow adjustments */
+  @media (max-width: 768px) {
+    .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::after,
+    .diagram-container.flow-layout .diagram-box:not(:last-child)::after {
+      display: none;
+    }
+    
+    .diagram-container:not(.grid-layout) .diagram-box:not(:last-child)::before,
+    .diagram-container.flow-layout .diagram-box:not(:last-child)::before {
+      display: none;
+    }
   }
 
   /* Modern Flowchart Styling */

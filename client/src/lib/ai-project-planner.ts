@@ -263,21 +263,24 @@ Ensure realistic estimates based on project complexity.`;
         </div>
 
         <!-- Architecture Diagram Template -->
-        <div class="architecture-diagram" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 16px; padding: 24px; margin: 20px 0; box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1); position: relative; overflow: hidden;">
-          <div style="position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);"></div>
+        <div class="architecture-diagram">
           <h3 style="color: #6366f1; margin-bottom: 16px; font-weight: 700;">Architecture Overview</h3>
-          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
-            <div class="diagram-box primary" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: 2px solid #4f46e5; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
-              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Component</div>
-              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Description</div>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Frontend</div>
+              <div class="diagram-subtitle">User Interface</div>
             </div>
-            <div class="diagram-box secondary" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: 2px solid #047857; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
-              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Service</div>
-              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Type</div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Backend</div>
+              <div class="diagram-subtitle">API Services</div>
             </div>
-            <div class="diagram-box accent" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: 2px solid #b45309; border-radius: 12px; padding: 16px; text-align: center; box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; position: relative; min-height: 80px; display: flex; flex-direction: column; justify-content: center; align-items: center; margin: 8px;">
-              <div class="diagram-title" style="font-size: 14px; font-weight: 700; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Storage</div>
-              <div class="diagram-subtitle" style="font-size: 11px; opacity: 0.8; font-weight: 500;">Database</div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Database</div>
+              <div class="diagram-subtitle">Data Storage</div>
+            </div>
+            <div class="diagram-box info">
+              <div class="diagram-title">External APIs</div>
+              <div class="diagram-subtitle">Third-party Services</div>
             </div>
           </div>
         </div>
@@ -314,18 +317,25 @@ Ensure realistic estimates based on project complexity.`;
           <li>Success metrics and KPIs</li>
         </ul>
 
-        <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin: 20px 0;">
-          <div class="diagram-box primary">
-            <div class="diagram-title">Business Value</div>
-            <div class="diagram-subtitle">ROI & Impact</div>
-          </div>
-          <div class="diagram-box secondary">
-            <div class="diagram-title">Deliverables</div>
-            <div class="diagram-subtitle">Key Outputs</div>
-          </div>
-          <div class="diagram-box accent">
-            <div class="diagram-title">Timeline</div>
-            <div class="diagram-subtitle">${requirements.timeline}</div>
+        <div class="architecture-diagram">
+          <h3>Project Value Chain</h3>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Business Value</div>
+              <div class="diagram-subtitle">ROI & Impact</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Deliverables</div>
+              <div class="diagram-subtitle">Key Outputs</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Timeline</div>
+              <div class="diagram-subtitle">${requirements.timeline}</div>
+            </div>
+            <div class="diagram-box success">
+              <div class="diagram-title">Success Metrics</div>
+              <div class="diagram-subtitle">KPIs & Goals</div>
+            </div>
           </div>
         </div>
 
@@ -576,22 +586,25 @@ Ensure realistic estimates based on project complexity.`;
           <div class="section-divider-text">Infrastructure Components</div>
         </div>
 
-        <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 24px 0;">
-          <div class="diagram-box primary">
-            <div class="diagram-title">Development Tools</div>
-            <div class="diagram-subtitle">IDE, Git, CI/CD Pipeline</div>
-          </div>
-          <div class="diagram-box secondary">
-            <div class="diagram-title">Framework Setup</div>
-            <div class="diagram-subtitle">Core Libraries & Dependencies</div>
-          </div>
-          <div class="diagram-box accent">
-            <div class="diagram-title">Database Foundation</div>
-            <div class="diagram-subtitle">Schema & Migration Tools</div>
-          </div>
-          <div class="diagram-box primary">
-            <div class="diagram-title">Security Layer</div>
-            <div class="diagram-subtitle">Authentication & Authorization</div>
+        <div class="architecture-diagram">
+          <h3>Infrastructure Setup Flow</h3>
+          <div class="diagram-container">
+            <div class="diagram-box primary">
+              <div class="diagram-title">Development Tools</div>
+              <div class="diagram-subtitle">IDE, Git, CI/CD Pipeline</div>
+            </div>
+            <div class="diagram-box secondary">
+              <div class="diagram-title">Framework Setup</div>
+              <div class="diagram-subtitle">Core Libraries & Dependencies</div>
+            </div>
+            <div class="diagram-box accent">
+              <div class="diagram-title">Database Foundation</div>
+              <div class="diagram-subtitle">Schema & Migration Tools</div>
+            </div>
+            <div class="diagram-box info">
+              <div class="diagram-title">Security Layer</div>
+              <div class="diagram-subtitle">Authentication & Authorization</div>
+            </div>
           </div>
         </div>
 
@@ -676,7 +689,7 @@ Ensure realistic estimates based on project complexity.`;
           <h3>Core Development Pipeline</h3>
           <p>Build the main application features with robust architecture and scalable design patterns.</p>
           
-          <div class="diagram-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 24px 0;">
+          <div class="diagram-container">
             <div class="diagram-box primary">
               <div class="diagram-title">Feature Development</div>
               <div class="diagram-subtitle">Core Business Logic</div>
@@ -689,7 +702,7 @@ Ensure realistic estimates based on project complexity.`;
               <div class="diagram-title">Frontend Components</div>
               <div class="diagram-subtitle">User Interface</div>
             </div>
-            <div class="diagram-box primary">
+            <div class="diagram-box info">
               <div class="diagram-title">Data Management</div>
               <div class="diagram-subtitle">Database & Storage</div>
             </div>
