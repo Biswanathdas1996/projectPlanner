@@ -5085,27 +5085,37 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                   </div>
                                 </div>
 
-                                <div className="p-3">
+                                <div className="p-6 bg-gradient-to-br from-white via-gray-50 to-blue-50/30">
                                   {editingSectionId === section.id && activeTabId === section.id ? (
-                                    <div className="space-y-3">
-                                      <div className="flex items-center justify-between">
-                                        <p className="text-xs text-gray-600">
-                                          Edit the content for this section. You can use HTML or plain text.
-                                        </p>
+                                    <div className="space-y-4">
+                                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                            <Edit className="h-4 w-4 text-white" />
+                                          </div>
+                                          <div>
+                                            <p className="text-sm font-medium text-blue-800">
+                                              Editing Section Content
+                                            </p>
+                                            <p className="text-xs text-blue-600">
+                                              You can use HTML markup or plain text for rich formatting
+                                            </p>
+                                          </div>
+                                        </div>
                                         <div className="flex gap-2">
                                           <Button
                                             onClick={saveSectionEdit}
                                             size="sm"
-                                            className="bg-green-600 hover:bg-green-700 text-white text-xs"
+                                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs shadow-lg border-0"
                                           >
                                             <Save className="h-3 w-3 mr-1" />
-                                            Save
+                                            Save Changes
                                           </Button>
                                           <Button
                                             onClick={cancelSectionEdit}
                                             variant="outline"
                                             size="sm"
-                                            className="text-xs"
+                                            className="text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
                                           >
                                             <X className="h-3 w-3 mr-1" />
                                             Cancel
@@ -5113,22 +5123,70 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                         </div>
                                       </div>
                                       
-                                      <Textarea
-                                        value={editedSectionContent}
-                                        onChange={(e) => setEditedSectionContent(e.target.value)}
-                                        className="min-h-[300px] font-mono text-xs bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-                                        placeholder="Enter content for this section..."
-                                      />
+                                      <div className="relative">
+                                        <Textarea
+                                          value={editedSectionContent}
+                                          onChange={(e) => setEditedSectionContent(e.target.value)}
+                                          className="min-h-[400px] font-mono text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm transition-all duration-200 resize-y"
+                                          placeholder="Enter content for this section... You can use HTML tags for formatting."
+                                        />
+                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-gray-500 border border-gray-200">
+                                          HTML Supported
+                                        </div>
+                                      </div>
                                       
-                                      <div className="text-xs text-gray-500">
-                                        {editedSectionContent.length} characters | HTML and plain text supported
+                                      <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                          {editedSectionContent.length} characters
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          HTML markup and plain text supported
+                                        </div>
                                       </div>
                                     </div>
                                   ) : (
                                     <div className="modern-section-content">
                                       <div 
                                         dangerouslySetInnerHTML={{ __html: section.content }}
-                                        className="enhanced-content-display"
+                                        className="enhanced-content-display prose prose-sm max-w-none
+                                          prose-headings:text-gray-900 prose-headings:font-semibold
+                                          prose-p:text-gray-700 prose-p:leading-relaxed
+                                          prose-ul:text-gray-700 prose-ol:text-gray-700
+                                          prose-li:text-gray-700 prose-li:leading-relaxed
+                                          prose-strong:text-gray-900 prose-strong:font-semibold
+                                          prose-table:border-collapse prose-table:border-spacing-0
+                                          prose-th:bg-gradient-to-r prose-th:from-blue-600 prose-th:to-indigo-600
+                                          prose-th:text-white prose-th:font-semibold prose-th:text-left
+                                          prose-td:border-b prose-td:border-gray-200 prose-td:bg-white/50
+                                          prose-tr:transition-colors prose-tr:hover:bg-blue-50/30
+                                          [&_.section-divider]:my-8 [&_.section-divider]:flex [&_.section-divider]:items-center
+                                          [&_.section-divider-text]:bg-gradient-to-r [&_.section-divider-text]:from-blue-600 [&_.section-divider-text]:to-indigo-600
+                                          [&_.section-divider-text]:text-white [&_.section-divider-text]:px-4 [&_.section-divider-text]:py-2
+                                          [&_.section-divider-text]:rounded-full [&_.section-divider-text]:font-medium [&_.section-divider-text]:text-sm
+                                          [&_.modern-card]:bg-gradient-to-br [&_.modern-card]:from-white [&_.modern-card]:to-gray-50
+                                          [&_.modern-card]:border-2 [&_.modern-card]:border-gray-200 [&_.modern-card]:rounded-xl
+                                          [&_.modern-card]:p-6 [&_.modern-card]:my-6 [&_.modern-card]:shadow-lg [&_.modern-card]:hover:shadow-xl
+                                          [&_.modern-card]:transition-all [&_.modern-card]:duration-300
+                                          [&_.flowchart]:bg-gradient-to-br [&_.flowchart]:from-blue-50 [&_.flowchart]:to-indigo-50
+                                          [&_.flowchart]:border-2 [&_.flowchart]:border-blue-200 [&_.flowchart]:rounded-xl
+                                          [&_.flowchart]:p-6 [&_.flowchart]:my-6 [&_.flowchart]:shadow-md
+                                          [&_.flow-step]:bg-gradient-to-r [&_.flow-step]:from-blue-600 [&_.flow-step]:to-indigo-600
+                                          [&_.flow-step]:text-white [&_.flow-step]:font-semibold [&_.flow-step]:px-4 [&_.flow-step]:py-3
+                                          [&_.flow-step]:rounded-lg [&_.flow-step]:shadow-lg [&_.flow-step]:hover:shadow-xl
+                                          [&_.flow-step]:transition-all [&_.flow-step]:duration-200 [&_.flow-step]:hover:scale-105
+                                          [&_.architecture-diagram]:bg-gradient-to-br [&_.architecture-diagram]:from-gray-50 [&_.architecture-diagram]:to-blue-50
+                                          [&_.architecture-diagram]:border-2 [&_.architecture-diagram]:border-gray-200 [&_.architecture-diagram]:rounded-xl
+                                          [&_.architecture-diagram]:p-6 [&_.architecture-diagram]:my-6 [&_.architecture-diagram]:shadow-lg
+                                          [&_.diagram-box]:transition-all [&_.diagram-box]:duration-200 [&_.diagram-box]:hover:scale-105
+                                          [&_.diagram-box]:hover:shadow-xl [&_.diagram-box]:cursor-pointer
+                                          [&_.tree-structure]:bg-gradient-to-br [&_.tree-structure]:from-gray-50 [&_.tree-structure]:to-blue-50
+                                          [&_.tree-structure]:border-2 [&_.tree-structure]:border-gray-200 [&_.tree-structure]:rounded-xl
+                                          [&_.tree-structure]:p-6 [&_.tree-structure]:my-6 [&_.tree-structure]:shadow-md
+                                          [&_.tree-node]:transition-all [&_.tree-node]:duration-200 [&_.tree-node]:hover:scale-[1.02]
+                                          [&_.modern-list_li]:transition-all [&_.modern-list_li]:duration-200 [&_.modern-list_li]:hover:shadow-md
+                                          [&_.modern-list_li]:hover:scale-[1.01] [&_.modern-list_li]:hover:bg-blue-50/50
+                                        "
                                       />
                                     </div>
                                   )}
