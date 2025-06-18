@@ -35,6 +35,7 @@ import { generateCustomSuggestions } from '@/lib/gemini';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
+import { SectionFlowViewer } from '@/components/section-flow-viewer';
 
 interface UserStory {
   id: string;
