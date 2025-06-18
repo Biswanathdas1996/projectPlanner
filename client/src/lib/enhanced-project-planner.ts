@@ -155,7 +155,7 @@ export class EnhancedProjectPlanner {
 
       "Development Methodology & Timeline": `Develop methodology with ultra-compact HTML-based visual planning:
         - Modern agile methodology comparison using the agile-comparison class with methodology cards for Scrum, Kanban, SAFe, DevOps, and Lean
-        - Sprint timeline: Epic Planning → Sprint Planning → Daily Standups → Sprint Review → Retrospective → Next Sprint
+        - Modern sprint timeline using the sprint-timeline class with alternating timeline cards and center line visualization
         - Modern team structure: Product Owner → Scrum Master → Frontend Engineer → Backend Engineer → DevOps Engineer → QA Automation Engineer
         - Critical path flow: Requirements Gathering → System Design → API Development → Frontend Development → Integration Testing → UAT → Production Deployment
         - Resource allocation dashboard using the resource-allocation class with capacity cards and progress bars for team utilization
@@ -270,6 +270,137 @@ ADVANCED GRID FLOWS - Use precise positioning with connection arrows:
   <div class="flow-connection horizontal" style="grid-column: 4/6; grid-row: 2; width: 80%;"></div>
   <div class="decision-label yes" style="grid-column: 2; grid-row: 1; margin-top: -10px;">Yes</div>
   <div class="decision-label no" style="grid-column: 2; grid-row: 3; margin-bottom: -10px;">No</div>
+</div>
+
+MODERN SPRINT TIMELINE - Use alternating timeline cards with center line:
+<div class="sprint-timeline">
+  <h3>Sprint Development Timeline</h3>
+  <div class="timeline-container">
+    <div class="timeline-line"></div>
+    
+    <div class="timeline-item">
+      <div class="timeline-card planning">
+        <div class="timeline-arrow"></div>
+        <div class="timeline-header">
+          <div class="timeline-title">Sprint Planning</div>
+          <div class="timeline-date">Week 1</div>
+        </div>
+        <div class="timeline-description">Define sprint goals, select backlog items, and estimate effort required for upcoming sprint cycle.</div>
+        <div class="timeline-progress">
+          <div class="timeline-progress-bar planning" style="width: 100%;"></div>
+        </div>
+        <div class="timeline-tags">
+          <span class="timeline-tag duration">2 days</span>
+          <span class="timeline-tag participants">Team Lead, PO</span>
+        </div>
+      </div>
+      <div class="timeline-node planning"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-card development">
+        <div class="timeline-arrow"></div>
+        <div class="timeline-header">
+          <div class="timeline-title">Development Phase</div>
+          <div class="timeline-date">Week 1-2</div>
+        </div>
+        <div class="timeline-description">Active development of features with daily standups and continuous integration.</div>
+        <div class="timeline-progress">
+          <div class="timeline-progress-bar development" style="width: 75%;"></div>
+        </div>
+        <div class="timeline-tags">
+          <span class="timeline-tag duration">8 days</span>
+          <span class="timeline-tag participants">Dev Team</span>
+        </div>
+      </div>
+      <div class="timeline-node development"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-card testing">
+        <div class="timeline-arrow"></div>
+        <div class="timeline-header">
+          <div class="timeline-title">Testing & QA</div>
+          <div class="timeline-date">Week 2-3</div>
+        </div>
+        <div class="timeline-description">Comprehensive testing including unit tests, integration tests, and user acceptance testing.</div>
+        <div class="timeline-progress">
+          <div class="timeline-progress-bar testing" style="width: 60%;"></div>
+        </div>
+        <div class="timeline-tags">
+          <span class="timeline-tag duration">4 days</span>
+          <span class="timeline-tag participants">QA Team</span>
+        </div>
+      </div>
+      <div class="timeline-node testing"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-card review">
+        <div class="timeline-arrow"></div>
+        <div class="timeline-header">
+          <div class="timeline-title">Sprint Review</div>
+          <div class="timeline-date">Week 3</div>
+        </div>
+        <div class="timeline-description">Demonstrate completed work to stakeholders and gather feedback for future improvements.</div>
+        <div class="timeline-progress">
+          <div class="timeline-progress-bar review" style="width: 30%;"></div>
+        </div>
+        <div class="timeline-tags">
+          <span class="timeline-tag duration">1 day</span>
+          <span class="timeline-tag participants">Full Team</span>
+        </div>
+      </div>
+      <div class="timeline-node review"></div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-card retrospective">
+        <div class="timeline-arrow"></div>
+        <div class="timeline-header">
+          <div class="timeline-title">Retrospective</div>
+          <div class="timeline-date">Week 3</div>
+        </div>
+        <div class="timeline-description">Reflect on sprint process, identify improvements, and plan optimizations for next sprint.</div>
+        <div class="timeline-progress">
+          <div class="timeline-progress-bar retrospective" style="width: 0%;"></div>
+        </div>
+        <div class="timeline-tags">
+          <span class="timeline-tag duration">Half day</span>
+          <span class="timeline-tag participants">Dev Team</span>
+        </div>
+      </div>
+      <div class="timeline-node retrospective"></div>
+    </div>
+  </div>
+  
+  <div class="timeline-compact">
+    <div class="timeline-milestone">
+      <div class="milestone-node completed"></div>
+      <div class="milestone-title">Planning</div>
+      <div class="milestone-date">Jan 15</div>
+    </div>
+    <div class="timeline-milestone">
+      <div class="milestone-node current"></div>
+      <div class="milestone-title">Development</div>
+      <div class="milestone-date">Jan 22</div>
+    </div>
+    <div class="timeline-milestone">
+      <div class="milestone-node upcoming"></div>
+      <div class="milestone-title">Testing</div>
+      <div class="milestone-date">Jan 29</div>
+    </div>
+    <div class="timeline-milestone">
+      <div class="milestone-node upcoming"></div>
+      <div class="milestone-title">Review</div>
+      <div class="milestone-date">Feb 5</div>
+    </div>
+    <div class="timeline-milestone">
+      <div class="milestone-node upcoming"></div>
+      <div class="milestone-title">Retrospective</div>
+      <div class="milestone-date">Feb 6</div>
+    </div>
+  </div>
 </div>
 
 MODERN AGILE METHODOLOGY COMPARISON - Use methodology cards with ratings and metrics:
