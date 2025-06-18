@@ -77,41 +77,64 @@ function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFl
   }
 
   return (
-    <div className={`w-full h-full ${className}`}>
-      <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-        <p className="text-sm text-gray-600">Interactive flow diagram with {nodes.length} nodes</p>
+    <>
+      <div className={`w-full h-full ${className}`}>
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+            <p className="text-sm text-gray-600">Interactive flow diagram with {nodes.length} nodes</p>
+          </div>
+          <Button
+            onClick={() => setIsEditorOpen(true)}
+            variant="outline"
+            size="sm"
+            className="flex items-center gap-2"
+          >
+            <Maximize2 className="h-4 w-4" />
+            Edit Fullscreen
+          </Button>
+        </div>
+        
+        <div className="w-full h-96 border border-gray-200 rounded-lg overflow-hidden bg-white">
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onConnect={onConnect}
+            nodeTypes={nodeTypes}
+            proOptions={proOptions}
+            fitView
+            fitViewOptions={{ padding: 0.2 }}
+            attributionPosition="bottom-left"
+          >
+            <Controls />
+            <MiniMap 
+              nodeColor={nodeColor}
+              nodeStrokeWidth={3}
+              zoomable
+              pannable
+            />
+            <Background 
+              variant={BackgroundVariant.Dots} 
+              gap={12} 
+              size={1}
+              color="#e5e7eb"
+            />
+          </ReactFlow>
+        </div>
       </div>
       
-      <div className="w-full h-96 border border-gray-200 rounded-lg overflow-hidden bg-white">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onConnect={onConnect}
-          nodeTypes={nodeTypes}
-          proOptions={proOptions}
-          fitView
-          fitViewOptions={{ padding: 0.2 }}
-          attributionPosition="bottom-left"
-        >
-          <Controls />
-          <MiniMap 
-            nodeColor={nodeColor}
-            nodeStrokeWidth={3}
-            zoomable
-            pannable
-          />
-          <Background 
-            variant={BackgroundVariant.Dots} 
-            gap={12} 
-            size={1}
-            color="#e5e7eb"
-          />
-        </ReactFlow>
-      </div>
-    </div>
+      {/* Fullscreen Flow Editor Modal */}
+      <FlowDiagramEditor
+        isOpen={isEditorOpen}
+        onClose={() => setIsEditorOpen(false)}
+        flowData={flowData}
+        title={title}
+        flowKey={flowKey}
+        onSave={handleFlowSave}
+      />
+    </>
   );
 }
 

@@ -3534,6 +3534,13 @@ Data Objects: Request form, User profile`,
                                         flowData={flowDiagrams[flowKey]}
                                         title={`${stakeholder} - ${flowType} Flow`}
                                         className="p-4"
+                                        flowKey={flowKey}
+                                        onFlowUpdate={(updatedFlowData) => {
+                                          setFlowDiagrams(prev => ({
+                                            ...prev,
+                                            [flowKey]: updatedFlowData
+                                          }));
+                                        }}
                                       />
                                     </div>
                                   </div>
@@ -3628,6 +3635,13 @@ Data Objects: Request form, User profile`,
                                               flowData={flowDiagrams[flowKey]}
                                               title={`${stakeholder} - ${flowType}`}
                                               className="p-4"
+                                              flowKey={flowKey}
+                                              onFlowUpdate={(updatedFlowData) => {
+                                                setFlowDiagrams(prev => ({
+                                                  ...prev,
+                                                  [flowKey]: updatedFlowData
+                                                }));
+                                              }}
                                             />
                                           ) : (
                                             <div className="p-8 text-center text-gray-500">
