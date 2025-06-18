@@ -154,11 +154,11 @@ export class EnhancedProjectPlanner {
         - API specifications table`,
 
       "Development Methodology & Timeline": `Develop methodology with ultra-compact HTML-based visual planning:
-        - Agile methodology comparison: Scrum → Kanban → SAFe → DevOps → Lean with complexity metrics
+        - Modern agile methodology comparison using the agile-comparison class with methodology cards for Scrum, Kanban, SAFe, DevOps, and Lean
         - Sprint timeline: Epic Planning → Sprint Planning → Daily Standups → Sprint Review → Retrospective → Next Sprint
         - Modern team structure: Product Owner → Scrum Master → Frontend Engineer → Backend Engineer → DevOps Engineer → QA Automation Engineer
         - Critical path flow: Requirements Gathering → System Design → API Development → Frontend Development → Integration Testing → UAT → Production Deployment
-        - Resource allocation dashboard using display: flex with capacity cards (Frontend: 80%, Backend: 95%, QA: 60%, DevOps: 70%)
+        - Resource allocation dashboard using the resource-allocation class with capacity cards and progress bars for team utilization
         - Delivery pipeline: Feature Branch → Pull Request → Code Review → Automated Testing → Staging Deployment → Production Release`,
 
       "User Experience & Interface Design": `Design UX strategy with ultra-compact HTML visual elements:
@@ -270,6 +270,218 @@ ADVANCED GRID FLOWS - Use precise positioning with connection arrows:
   <div class="flow-connection horizontal" style="grid-column: 4/6; grid-row: 2; width: 80%;"></div>
   <div class="decision-label yes" style="grid-column: 2; grid-row: 1; margin-top: -10px;">Yes</div>
   <div class="decision-label no" style="grid-column: 2; grid-row: 3; margin-bottom: -10px;">No</div>
+</div>
+
+MODERN AGILE METHODOLOGY COMPARISON - Use methodology cards with ratings and metrics:
+<div class="agile-comparison">
+  <h3>Agile Methodology Comparison</h3>
+  <div class="methodology-grid">
+    <div class="methodology-card scrum">
+      <div class="methodology-header">
+        <div class="methodology-title">Scrum</div>
+        <div class="methodology-icon">🏃</div>
+      </div>
+      <div class="methodology-description">Sprint-based framework with defined roles and ceremonies</div>
+      <div class="methodology-rating">
+        <span class="rating-label">Complexity:</span>
+        <div class="rating-stars">
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star"></div>
+          <div class="rating-star"></div>
+        </div>
+      </div>
+      <div class="methodology-metrics">
+        <span class="methodology-metric">2-4 week sprints</span>
+        <span class="methodology-metric">Daily standups</span>
+        <span class="methodology-metric">Sprint reviews</span>
+      </div>
+    </div>
+    <div class="methodology-card kanban">
+      <div class="methodology-header">
+        <div class="methodology-title">Kanban</div>
+        <div class="methodology-icon">📋</div>
+      </div>
+      <div class="methodology-description">Visual workflow management with continuous delivery</div>
+      <div class="methodology-rating">
+        <span class="rating-label">Complexity:</span>
+        <div class="rating-stars">
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star"></div>
+          <div class="rating-star"></div>
+          <div class="rating-star"></div>
+        </div>
+      </div>
+      <div class="methodology-metrics">
+        <span class="methodology-metric">Continuous flow</span>
+        <span class="methodology-metric">WIP limits</span>
+        <span class="methodology-metric">Pull system</span>
+      </div>
+    </div>
+    <div class="methodology-card safe">
+      <div class="methodology-header">
+        <div class="methodology-title">SAFe</div>
+        <div class="methodology-icon">🏢</div>
+      </div>
+      <div class="methodology-description">Scaled agile framework for enterprise organizations</div>
+      <div class="methodology-rating">
+        <span class="rating-label">Complexity:</span>
+        <div class="rating-stars">
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+        </div>
+      </div>
+      <div class="methodology-metrics">
+        <span class="methodology-metric">PI planning</span>
+        <span class="methodology-metric">ART structure</span>
+        <span class="methodology-metric">Lean portfolio</span>
+      </div>
+    </div>
+    <div class="methodology-card devops">
+      <div class="methodology-header">
+        <div class="methodology-title">DevOps</div>
+        <div class="methodology-icon">⚙️</div>
+      </div>
+      <div class="methodology-description">Culture and practices for development and operations collaboration</div>
+      <div class="methodology-rating">
+        <span class="rating-label">Complexity:</span>
+        <div class="rating-stars">
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star filled"></div>
+          <div class="rating-star"></div>
+        </div>
+      </div>
+      <div class="methodology-metrics">
+        <span class="methodology-metric">CI/CD</span>
+        <span class="methodology-metric">Automation</span>
+        <span class="methodology-metric">Monitoring</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+MODERN RESOURCE ALLOCATION DASHBOARD - Use capacity cards with progress bars:
+<div class="resource-allocation">
+  <h3>Team Resource Allocation</h3>
+  <div class="resource-grid">
+    <div class="resource-card frontend">
+      <div class="resource-header">
+        <div class="resource-title">Frontend Team</div>
+        <div class="resource-capacity high">85%</div>
+      </div>
+      <div class="capacity-bar">
+        <div class="capacity-fill frontend" style="width: 85%;"></div>
+      </div>
+      <div class="resource-details">
+        <div class="resource-detail">
+          <span class="resource-label">Developers:</span>
+          <span class="resource-value">3 people</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Sprint Capacity:</span>
+          <span class="resource-value">120 hours</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Committed:</span>
+          <span class="resource-value">102 hours</span>
+        </div>
+      </div>
+    </div>
+    <div class="resource-card backend">
+      <div class="resource-header">
+        <div class="resource-title">Backend Team</div>
+        <div class="resource-capacity high">92%</div>
+      </div>
+      <div class="capacity-bar">
+        <div class="capacity-fill backend" style="width: 92%;"></div>
+      </div>
+      <div class="resource-details">
+        <div class="resource-detail">
+          <span class="resource-label">Developers:</span>
+          <span class="resource-value">4 people</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Sprint Capacity:</span>
+          <span class="resource-value">160 hours</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Committed:</span>
+          <span class="resource-value">147 hours</span>
+        </div>
+      </div>
+    </div>
+    <div class="resource-card qa">
+      <div class="resource-header">
+        <div class="resource-title">QA Team</div>
+        <div class="resource-capacity medium">65%</div>
+      </div>
+      <div class="capacity-bar">
+        <div class="capacity-fill qa" style="width: 65%;"></div>
+      </div>
+      <div class="resource-details">
+        <div class="resource-detail">
+          <span class="resource-label">Engineers:</span>
+          <span class="resource-value">2 people</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Sprint Capacity:</span>
+          <span class="resource-value">80 hours</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Committed:</span>
+          <span class="resource-value">52 hours</span>
+        </div>
+      </div>
+    </div>
+    <div class="resource-card devops">
+      <div class="resource-header">
+        <div class="resource-title">DevOps Team</div>
+        <div class="resource-capacity medium">70%</div>
+      </div>
+      <div class="capacity-bar">
+        <div class="capacity-fill devops" style="width: 70%;"></div>
+      </div>
+      <div class="resource-details">
+        <div class="resource-detail">
+          <span class="resource-label">Engineers:</span>
+          <span class="resource-value">2 people</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Sprint Capacity:</span>
+          <span class="resource-value">80 hours</span>
+        </div>
+        <div class="resource-detail">
+          <span class="resource-label">Committed:</span>
+          <span class="resource-value">56 hours</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="resource-summary">
+    <div class="summary-chip">
+      <span class="value">78%</span>
+      <span class="label">Overall Utilization</span>
+    </div>
+    <div class="summary-chip">
+      <span class="value">11</span>
+      <span class="label">Team Members</span>
+    </div>
+    <div class="summary-chip">
+      <span class="value">440h</span>
+      <span class="label">Total Capacity</span>
+    </div>
+    <div class="summary-chip">
+      <span class="value">357h</span>
+      <span class="label">Committed Hours</span>
+    </div>
+  </div>
 </div>
 
 MODERN UX METRICS DASHBOARD - Use comprehensive metric cards with progress indicators:

@@ -1157,6 +1157,326 @@
     @apply text-gray-600;
   }
 
+  /* Modern Agile Comparison Dashboard */
+  .agile-comparison {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-50;
+    @apply border border-blue-200 rounded-xl;
+    @apply p-6 my-6 shadow-lg;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .agile-comparison::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+
+  .agile-comparison h3 {
+    @apply text-lg font-semibold text-gray-800 mb-6;
+    margin: 0 0 1.5rem 0;
+  }
+
+  /* Methodology Comparison Grid */
+  .methodology-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 16px;
+    margin-top: 1rem;
+  }
+
+  .methodology-card {
+    @apply bg-white/90 backdrop-blur-sm;
+    @apply border border-slate-200 rounded-lg;
+    @apply p-5 shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:border-blue-300;
+    @apply hover:transform hover:-translate-y-1;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .methodology-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 1;
+  }
+
+  .methodology-card.scrum::before {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  }
+
+  .methodology-card.kanban::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+
+  .methodology-card.safe::before {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+  }
+
+  .methodology-card.devops::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+  }
+
+  .methodology-card.lean::before {
+    background: linear-gradient(90deg, #ec4899, #db2777);
+  }
+
+  .methodology-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .methodology-title {
+    @apply text-base font-bold text-gray-900;
+    margin: 0;
+  }
+
+  .methodology-icon {
+    @apply w-6 h-6 text-gray-400;
+    flex-shrink: 0;
+  }
+
+  .methodology-description {
+    @apply text-sm text-gray-600 mb-4;
+    line-height: 1.5;
+  }
+
+  .methodology-metrics {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .methodology-metric {
+    @apply bg-gray-100 text-gray-700;
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+    white-space: nowrap;
+  }
+
+  .methodology-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .rating-label {
+    @apply text-xs text-gray-500 font-medium;
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 2px;
+  }
+
+  .rating-star {
+    width: 12px;
+    height: 12px;
+    background: #d1d5db;
+    border-radius: 50%;
+  }
+
+  .rating-star.filled {
+    background: #fbbf24;
+  }
+
+  /* Modern Resource Allocation Dashboard */
+  .resource-allocation {
+    @apply bg-gradient-to-br from-emerald-50 to-teal-50;
+    @apply border border-emerald-200 rounded-xl;
+    @apply p-6 my-6 shadow-lg;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resource-allocation::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981, #059669, #047857);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+
+  .resource-allocation h3 {
+    @apply text-lg font-semibold text-gray-800 mb-6;
+    margin: 0 0 1.5rem 0;
+  }
+
+  /* Resource Grid Layout */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 1rem;
+  }
+
+  .resource-card {
+    @apply bg-white/90 backdrop-blur-sm;
+    @apply border border-slate-200 rounded-lg;
+    @apply p-5 shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:border-emerald-300;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .resource-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 1;
+  }
+
+  .resource-card.frontend::before {
+    background: linear-gradient(90deg, #ec4899, #db2777);
+  }
+
+  .resource-card.backend::before {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  }
+
+  .resource-card.qa::before {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+  }
+
+  .resource-card.devops::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+  }
+
+  .resource-card.design::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+  }
+
+  .resource-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .resource-title {
+    @apply text-base font-bold text-gray-900;
+    margin: 0;
+  }
+
+  .resource-capacity {
+    @apply text-lg font-bold;
+    margin: 0;
+  }
+
+  .resource-capacity.high {
+    @apply text-red-600;
+  }
+
+  .resource-capacity.medium {
+    @apply text-amber-600;
+  }
+
+  .resource-capacity.low {
+    @apply text-green-600;
+  }
+
+  /* Capacity Progress Bar */
+  .capacity-bar {
+    @apply w-full bg-gray-200 rounded-full h-3 mb-4;
+    overflow: hidden;
+  }
+
+  .capacity-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+    position: relative;
+  }
+
+  .capacity-fill.frontend {
+    @apply bg-gradient-to-r from-pink-500 to-rose-600;
+  }
+
+  .capacity-fill.backend {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600;
+  }
+
+  .capacity-fill.qa {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600;
+  }
+
+  .capacity-fill.devops {
+    @apply bg-gradient-to-r from-amber-500 to-orange-600;
+  }
+
+  .capacity-fill.design {
+    @apply bg-gradient-to-r from-emerald-500 to-green-600;
+  }
+
+  .resource-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .resource-detail {
+    display: flex;
+    justify-content: between;
+    align-items: center;
+    @apply text-sm text-gray-600;
+  }
+
+  .resource-label {
+    font-weight: 500;
+  }
+
+  .resource-value {
+    @apply text-gray-900 font-medium;
+    margin-left: auto;
+  }
+
+  /* Resource Summary Cards */
+  .resource-summary {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 1.5rem 0;
+  }
+
+  .summary-chip {
+    @apply bg-white/90 backdrop-blur-sm;
+    @apply border border-slate-200 rounded-full;
+    @apply px-4 py-2 shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:border-emerald-300;
+    @apply flex items-center gap-2;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .summary-chip .value {
+    @apply text-emerald-600 font-bold;
+  }
+
+  .summary-chip .label {
+    @apply text-gray-600;
+  }
+
   /* Modern Flowchart Styling */
   .flowchart {
     @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50;
