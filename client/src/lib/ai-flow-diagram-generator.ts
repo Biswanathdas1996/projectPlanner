@@ -37,10 +37,7 @@ export class AIFlowDiagramGenerator {
   private model: any;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error("Google AI API key not found in environment variables");
-    }
+    const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }

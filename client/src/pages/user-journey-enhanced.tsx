@@ -1912,6 +1912,46 @@ Data Objects: Request form, User profile`,
     }
   };
 
+  // Generate flow diagram using AI
+  const generateFlowDiagram = async (stakeholder: string, flowType: string) => {
+    const flowKey = `${stakeholder}-${flowType}`;
+    const details = flowDetails[flowKey];
+
+    if (!details) {
+      setError("Flow details not found. Please generate flow details first.");
+      return;
+    }
+
+    setIsGeneratingFlowDiagram((prev) => ({ ...prev, [flowKey]: true }));
+    setError("");
+
+    try {
+      const flowDiagramGenerator = createAIFlowDiagramGenerator();
+      const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
+        details,
+        stakeholder,
+        flowType
+      );
+
+      // Update flow diagrams state
+      const updatedFlowDiagrams = {
+        ...flowDiagrams,
+        [flowKey]: flowDiagramData,
+      };
+      
+      setFlowDiagrams(updatedFlowDiagrams);
+      
+      // Save to localStorage
+      localStorage.setItem("flowDiagrams", JSON.stringify(updatedFlowDiagrams));
+      
+    } catch (error) {
+      console.error(`Error generating flow diagram for ${stakeholder} ${flowType}:`, error);
+      setError(`Failed to generate flow diagram. Please try again.`);
+    } finally {
+      setIsGeneratingFlowDiagram((prev) => ({ ...prev, [flowKey]: false }));
+    }
+  };
+
   if (isLoadingFromStorage) {
     return (
       <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
@@ -2700,6 +2740,26 @@ Data Objects: Request form, User profile`,
                                       )}
                                       Template
                                     </Button>
+                                    <Button
+                                      onClick={() =>
+                                        generateFlowDiagram(
+                                          stakeholder,
+                                          flowType
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingFlowDiagram[flowKey] || !details
+                                      }
+                                      size="sm"
+                                      className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white"
+                                    >
+                                      {isGeneratingFlowDiagram[flowKey] ? (
+                                        <Loader2 className="h-2.5 w-2.5 animate-spin mr-1" />
+                                      ) : (
+                                        <Navigation className="h-2.5 w-2.5 mr-1" />
+                                      )}
+                                      Flow
+                                    </Button>
 
                                     {existingFlow?.bpmnXml && (
                                       <>
@@ -3485,12 +3545,18 @@ Data Objects: Request form, User profile`,
                                       defaultValue="diagram"
                                       className="w-full"
                                     >
-                                      <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3">
+                                      <TabsList className="grid w-full grid-cols-3 bg-gray-100 mb-3">
                                         <TabsTrigger
                                           value="diagram"
                                           className="text-xs"
                                         >
-                                          📊 Visual Diagram
+                                          📊 BPMN Diagram
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                          value="flow"
+                                          className="text-xs"
+                                        >
+                                          🔄 Flow Diagram
                                         </TabsTrigger>
                                         <TabsTrigger
                                           value="script"
@@ -3510,6 +3576,29 @@ Data Objects: Request form, User profile`,
                                             title={`${stakeholder} - ${flowType}`}
                                             height="450px"
                                           />
+                                        </div>
+                                      </TabsContent>
+
+                                      <TabsContent
+                                        value="flow"
+                                        className="mt-0"
+                                      >
+                                        <div className="bg-white rounded-lg border w-full">
+                                          {flowDiagrams[flowKey] ? (
+                                            <FlowDiagramViewer
+                                              flowData={flowDiagrams[flowKey]}
+                                              title={`${stakeholder} - ${flowType}`}
+                                              className="p-4"
+                                            />
+                                          ) : (
+                                            <div className="p-8 text-center text-gray-500">
+                                              <Navigation className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                              <p className="text-sm mb-2">No flow diagram generated yet</p>
+                                              <p className="text-xs text-gray-400">
+                                                Click "Flow" button to generate an interactive flow diagram
+                                              </p>
+                                            </div>
+                                          )}
                                         </div>
                                       </TabsContent>
 
