@@ -22,7 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw } from 'lucide-react';
+import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw, Settings, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowDiagramEditorProps {
@@ -53,6 +53,7 @@ function FlowDiagramEditorInner({
   const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [newNodeLabel, setNewNodeLabel] = useState('');
   const [newNodeType, setNewNodeType] = useState('default');
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
   const reactFlowInstance = useReactFlow();
 
   // Track changes
@@ -344,48 +345,34 @@ function FlowDiagramEditorInner({
               color="#e5e7eb"
             />
             
+            {/* Panel Toggle Button */}
+            <Panel position="top-right" className="bg-white shadow-lg border rounded-lg p-2">
+              <Button
+                onClick={() => setIsPanelVisible(!isPanelVisible)}
+                variant="outline"
+                size="sm"
+                className="h-8 w-8 p-0"
+                title={isPanelVisible ? "Hide Editor Panel" : "Show Editor Panel"}
+              >
+                {isPanelVisible ? <EyeOff className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
+              </Button>
+            </Panel>
+            
             {/* Editing Panel */}
-            <Panel position="top-left" className="bg-white shadow-lg border rounded-lg p-4 min-w-80">
-              <h3 className="font-semibold text-sm mb-3">Flow Editor</h3>
-              
-              {/* Add Node Section */}
-              <div className="space-y-2 mb-4">
-                <Label className="text-xs font-medium">Add New Node</Label>
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Node label"
-                    value={newNodeLabel}
-                    onChange={(e) => setNewNodeLabel(e.target.value)}
-                    className="text-xs h-8"
-                    onKeyPress={(e) => e.key === 'Enter' && addNode()}
-                  />
-                  <Select value={newNodeType} onValueChange={setNewNodeType}>
-                    <SelectTrigger className="w-24 h-8 text-xs">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="input">Start</SelectItem>
-                      <SelectItem value="default">Process</SelectItem>
-                      <SelectItem value="output">End</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button onClick={addNode} size="sm" className="h-8 px-2">
-                    <Plus className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Edit Node Section */}
-              {editingNode && (
-                <div className="space-y-2 mb-4 p-2 bg-blue-50 rounded border">
-                  <Label className="text-xs font-medium">Edit Node: {editingNode.id}</Label>
+            {isPanelVisible && (
+              <Panel position="top-left" className="bg-white shadow-lg border rounded-lg p-4 min-w-80">
+                <h3 className="font-semibold text-sm mb-3">Flow Editor</h3>
+                
+                {/* Add Node Section */}
+                <div className="space-y-2 mb-4">
+                  <Label className="text-xs font-medium">Add New Node</Label>
                   <div className="flex gap-2">
                     <Input
                       placeholder="Node label"
                       value={newNodeLabel}
                       onChange={(e) => setNewNodeLabel(e.target.value)}
                       className="text-xs h-8"
-                      onKeyPress={(e) => e.key === 'Enter' && saveNodeEdit()}
+                      onKeyPress={(e) => e.key === 'Enter' && addNode()}
                     />
                     <Select value={newNodeType} onValueChange={setNewNodeType}>
                       <SelectTrigger className="w-24 h-8 text-xs">
@@ -397,59 +384,88 @@ function FlowDiagramEditorInner({
                         <SelectItem value="output">End</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button onClick={saveNodeEdit} size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700">
-                      <Save className="h-3 w-3" />
-                    </Button>
-                    <Button onClick={cancelEdit} size="sm" variant="outline" className="h-8 px-2">
-                      <X className="h-3 w-3" />
+                    <Button onClick={addNode} size="sm" className="h-8 px-2">
+                      <Plus className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
-              )}
 
-              {/* Selection Actions */}
-              <div className="space-y-2 mb-4">
-                <Label className="text-xs font-medium">
-                  Selected: {selectedNodes.length} nodes, {selectedEdges.length} edges
-                </Label>
-                <div className="flex gap-2">
-                  <Button
-                    onClick={deleteSelected}
-                    variant="destructive"
-                    size="sm"
-                    className="h-8 px-2"
-                    disabled={selectedNodes.length === 0 && selectedEdges.length === 0}
-                  >
-                    <Trash2 className="h-3 w-3 mr-1" />
-                    Delete
-                  </Button>
-                  {selectedNodes.length === 1 && (
+                {/* Edit Node Section */}
+                {editingNode && (
+                  <div className="space-y-2 mb-4 p-2 bg-blue-50 rounded border">
+                    <Label className="text-xs font-medium">Edit Node: {editingNode.id}</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="Node label"
+                        value={newNodeLabel}
+                        onChange={(e) => setNewNodeLabel(e.target.value)}
+                        className="text-xs h-8"
+                        onKeyPress={(e) => e.key === 'Enter' && saveNodeEdit()}
+                      />
+                      <Select value={newNodeType} onValueChange={setNewNodeType}>
+                        <SelectTrigger className="w-24 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="input">Start</SelectItem>
+                          <SelectItem value="default">Process</SelectItem>
+                          <SelectItem value="output">End</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button onClick={saveNodeEdit} size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700">
+                        <Save className="h-3 w-3" />
+                      </Button>
+                      <Button onClick={cancelEdit} size="sm" variant="outline" className="h-8 px-2">
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selection Actions */}
+                <div className="space-y-2 mb-4">
+                  <Label className="text-xs font-medium">
+                    Selected: {selectedNodes.length} nodes, {selectedEdges.length} edges
+                  </Label>
+                  <div className="flex gap-2">
                     <Button
-                      onClick={() => startEditNode(selectedNodes[0])}
-                      variant="outline"
+                      onClick={deleteSelected}
+                      variant="destructive"
                       size="sm"
                       className="h-8 px-2"
+                      disabled={selectedNodes.length === 0 && selectedEdges.length === 0}
                     >
-                      <Edit className="h-3 w-3 mr-1" />
-                      Edit
+                      <Trash2 className="h-3 w-3 mr-1" />
+                      Delete
                     </Button>
-                  )}
+                    {selectedNodes.length === 1 && (
+                      <Button
+                        onClick={() => startEditNode(selectedNodes[0])}
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2"
+                      >
+                        <Edit className="h-3 w-3 mr-1" />
+                        Edit
+                      </Button>
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Instructions */}
-              <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
-                <p className="font-medium mb-1">Instructions:</p>
-                <ul className="space-y-1 text-xs">
-                  <li>• Click nodes/edges to select</li>
-                  <li>• Hold Shift for multi-select</li>
-                  <li>• Drag nodes to reposition</li>
-                  <li>• Connect nodes by dragging handles</li>
-                  <li>• Use controls to zoom and fit view</li>
-                  <li>• Click Save to update the flow</li>
-                </ul>
-              </div>
-            </Panel>
+                {/* Instructions */}
+                <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
+                  <p className="font-medium mb-1">Instructions:</p>
+                  <ul className="space-y-1 text-xs">
+                    <li>• Click nodes/edges to select</li>
+                    <li>• Hold Shift for multi-select</li>
+                    <li>• Drag nodes to reposition</li>
+                    <li>• Connect nodes by dragging handles</li>
+                    <li>• Use controls to zoom and fit view</li>
+                    <li>• Click Save to update the flow</li>
+                  </ul>
+                </div>
+              </Panel>
+            )}
           </ReactFlow>
         </div>
       </DialogContent>
