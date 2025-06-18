@@ -11,13 +11,18 @@ import ReactFlow, {
   BackgroundVariant,
   ReactFlowProvider,
   Panel,
+  Node,
+  useReactFlow,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { X, Save, Download, Maximize2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowDiagramEditorProps {
@@ -43,6 +48,12 @@ function FlowDiagramEditorInner({
   const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges || []);
   const [hasChanges, setHasChanges] = useState(false);
+  const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
+  const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
+  const [newNodeLabel, setNewNodeLabel] = useState('');
+  const [newNodeType, setNewNodeType] = useState('default');
+  const reactFlowInstance = useReactFlow();
 
   // Track changes
   useEffect(() => {
@@ -66,10 +77,114 @@ function FlowDiagramEditorInner({
     }
   }, [isOpen, flowData, setNodes, setEdges]);
 
+  // Track selected elements
+  const onSelectionChange = useCallback(({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[], edges: Edge[] }) => {
+    setSelectedNodes(selectedNodes);
+    setSelectedEdges(selectedEdges);
+  }, []);
+
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
     [setEdges]
   );
+
+  // Add new node
+  const addNode = useCallback(() => {
+    if (!newNodeLabel.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a node label",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const newNode: Node = {
+      id: `node-${Date.now()}`,
+      position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
+      data: { label: newNodeLabel.trim() },
+      type: newNodeType,
+      style: getNodeStyle(newNodeType)
+    };
+
+    setNodes((nds) => [...nds, newNode]);
+    setNewNodeLabel('');
+    toast({
+      title: "Success",
+      description: "Node added successfully"
+    });
+  }, [newNodeLabel, newNodeType, setNodes, toast]);
+
+  // Delete selected elements
+  const deleteSelected = useCallback(() => {
+    if (selectedNodes.length === 0 && selectedEdges.length === 0) {
+      toast({
+        title: "No Selection",
+        description: "Please select nodes or edges to delete",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const nodeIds = selectedNodes.map(node => node.id);
+    const edgeIds = selectedEdges.map(edge => edge.id);
+
+    setNodes((nds) => nds.filter(node => !nodeIds.includes(node.id)));
+    setEdges((eds) => eds.filter(edge => !edgeIds.includes(edge.id)));
+
+    toast({
+      title: "Success",
+      description: `Deleted ${nodeIds.length} nodes and ${edgeIds.length} edges`
+    });
+  }, [selectedNodes, selectedEdges, setNodes, setEdges, toast]);
+
+  // Edit node
+  const startEditNode = useCallback((node: Node) => {
+    setEditingNode(node);
+    setNewNodeLabel(node.data.label || '');
+    setNewNodeType(node.type || 'default');
+  }, []);
+
+  const saveNodeEdit = useCallback(() => {
+    if (!editingNode || !newNodeLabel.trim()) return;
+
+    setNodes((nds) => nds.map(node => 
+      node.id === editingNode.id 
+        ? { 
+            ...node, 
+            data: { ...node.data, label: newNodeLabel.trim() },
+            type: newNodeType,
+            style: getNodeStyle(newNodeType)
+          }
+        : node
+    ));
+
+    setEditingNode(null);
+    setNewNodeLabel('');
+    toast({
+      title: "Success",
+      description: "Node updated successfully"
+    });
+  }, [editingNode, newNodeLabel, newNodeType, setNodes, toast]);
+
+  const cancelEdit = useCallback(() => {
+    setEditingNode(null);
+    setNewNodeLabel('');
+    setNewNodeType('default');
+  }, []);
+
+  // Get node style based on type
+  const getNodeStyle = (type: string) => {
+    switch (type) {
+      case 'input':
+        return { backgroundColor: '#10B981', color: 'white', border: '2px solid #059669' };
+      case 'output':
+        return { backgroundColor: '#EF4444', color: 'white', border: '2px solid #DC2626' };
+      case 'default':
+      default:
+        return { backgroundColor: '#3B82F6', color: 'white', border: '2px solid #2563EB' };
+    }
+  };
 
   const handleSave = useCallback(() => {
     // Convert ReactFlow edges to FlowEdge format
@@ -206,11 +321,13 @@ function FlowDiagramEditorInner({
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onSelectionChange={onSelectionChange}
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{ padding: 0.1 }}
             attributionPosition="bottom-left"
             className="bg-gray-50"
+            multiSelectionKeyCode="Shift"
           >
             <Controls className="bg-white shadow-lg border" />
             <MiniMap 
@@ -227,15 +344,111 @@ function FlowDiagramEditorInner({
               color="#e5e7eb"
             />
             
-            {/* Custom Panel with Instructions */}
-            <Panel position="top-left" className="bg-white shadow-lg border rounded-lg p-4 max-w-xs">
-              <h4 className="font-semibold text-sm mb-2">Editor Instructions</h4>
-              <ul className="text-xs text-gray-600 space-y-1">
-                <li>• Drag nodes to reposition</li>
-                <li>• Connect nodes by dragging from node handles</li>
-                <li>• Use controls to zoom and fit view</li>
-                <li>• Click Save to update the flow</li>
-              </ul>
+            {/* Editing Panel */}
+            <Panel position="top-left" className="bg-white shadow-lg border rounded-lg p-4 min-w-80">
+              <h3 className="font-semibold text-sm mb-3">Flow Editor</h3>
+              
+              {/* Add Node Section */}
+              <div className="space-y-2 mb-4">
+                <Label className="text-xs font-medium">Add New Node</Label>
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Node label"
+                    value={newNodeLabel}
+                    onChange={(e) => setNewNodeLabel(e.target.value)}
+                    className="text-xs h-8"
+                    onKeyPress={(e) => e.key === 'Enter' && addNode()}
+                  />
+                  <Select value={newNodeType} onValueChange={setNewNodeType}>
+                    <SelectTrigger className="w-24 h-8 text-xs">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="input">Start</SelectItem>
+                      <SelectItem value="default">Process</SelectItem>
+                      <SelectItem value="output">End</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={addNode} size="sm" className="h-8 px-2">
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Edit Node Section */}
+              {editingNode && (
+                <div className="space-y-2 mb-4 p-2 bg-blue-50 rounded border">
+                  <Label className="text-xs font-medium">Edit Node: {editingNode.id}</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Node label"
+                      value={newNodeLabel}
+                      onChange={(e) => setNewNodeLabel(e.target.value)}
+                      className="text-xs h-8"
+                      onKeyPress={(e) => e.key === 'Enter' && saveNodeEdit()}
+                    />
+                    <Select value={newNodeType} onValueChange={setNewNodeType}>
+                      <SelectTrigger className="w-24 h-8 text-xs">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="input">Start</SelectItem>
+                        <SelectItem value="default">Process</SelectItem>
+                        <SelectItem value="output">End</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button onClick={saveNodeEdit} size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700">
+                      <Save className="h-3 w-3" />
+                    </Button>
+                    <Button onClick={cancelEdit} size="sm" variant="outline" className="h-8 px-2">
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Selection Actions */}
+              <div className="space-y-2 mb-4">
+                <Label className="text-xs font-medium">
+                  Selected: {selectedNodes.length} nodes, {selectedEdges.length} edges
+                </Label>
+                <div className="flex gap-2">
+                  <Button
+                    onClick={deleteSelected}
+                    variant="destructive"
+                    size="sm"
+                    className="h-8 px-2"
+                    disabled={selectedNodes.length === 0 && selectedEdges.length === 0}
+                  >
+                    <Trash2 className="h-3 w-3 mr-1" />
+                    Delete
+                  </Button>
+                  {selectedNodes.length === 1 && (
+                    <Button
+                      onClick={() => startEditNode(selectedNodes[0])}
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2"
+                    >
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
+                <p className="font-medium mb-1">Instructions:</p>
+                <ul className="space-y-1 text-xs">
+                  <li>• Click nodes/edges to select</li>
+                  <li>• Hold Shift for multi-select</li>
+                  <li>• Drag nodes to reposition</li>
+                  <li>• Connect nodes by dragging handles</li>
+                  <li>• Use controls to zoom and fit view</li>
+                  <li>• Click Save to update the flow</li>
+                </ul>
+              </div>
             </Panel>
           </ReactFlow>
         </div>
