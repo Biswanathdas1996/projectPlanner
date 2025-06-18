@@ -220,18 +220,18 @@ CRITICAL: Return ONLY clean HTML content without any markdown formatting, code b
 
 Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES. For technical diagrams use dense, modern layouts with NO overlapping elements:
 
-COMPACT ARCHITECTURE DIAGRAMS - Use precise grid positioning:
+COMPACT ARCHITECTURE DIAGRAMS - Use precise layered positioning:
 <div class="architecture-diagram">
   <div class="diagram-layer">
-    <div class="diagram-component frontend">Frontend</div>
+    <div class="diagram-component frontend">Frontend App</div>
     <div class="diagram-component api">API Gateway</div>
-    <div class="diagram-component database">Database</div>
-    <div class="diagram-component cache">Cache Layer</div>
+    <div class="diagram-component cache">Redis Cache</div>
   </div>
   <div class="diagram-layer">
     <div class="diagram-component load-balancer">Load Balancer</div>
-    <div class="diagram-component microservice">Service A</div>
-    <div class="diagram-component microservice">Service B</div>
+    <div class="diagram-component microservice">User Service</div>
+    <div class="diagram-component microservice">Auth Service</div>
+    <div class="diagram-component database">PostgreSQL</div>
   </div>
 </div>
 

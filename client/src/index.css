@@ -623,6 +623,147 @@
     font-size: 9px;
   }
 
+  /* Modern Compact Diagram Components */
+  .diagram-component {
+    @apply bg-gradient-to-br from-white to-slate-50;
+    @apply border-2 border-slate-200 rounded-lg;
+    @apply px-3 py-2 text-center shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply cursor-pointer relative overflow-hidden;
+    min-width: 85px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+    backdrop-filter: blur(10px);
+  }
+
+  .diagram-component::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    z-index: 1;
+  }
+
+  .diagram-component:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    border-color: #6366f1;
+  }
+
+  /* Component Type Variants */
+  .diagram-component.frontend {
+    @apply bg-gradient-to-br from-pink-50 to-rose-100;
+    @apply border-pink-300 text-pink-800;
+  }
+
+  .diagram-component.frontend::before {
+    background: linear-gradient(90deg, #ec4899, #f43f5e);
+  }
+
+  .diagram-component.api {
+    @apply bg-gradient-to-br from-amber-50 to-yellow-100;
+    @apply border-amber-300 text-amber-800;
+  }
+
+  .diagram-component.api::before {
+    background: linear-gradient(90deg, #f59e0b, #eab308);
+  }
+
+  .diagram-component.database {
+    @apply bg-gradient-to-br from-emerald-50 to-green-100;
+    @apply border-emerald-300 text-emerald-800;
+  }
+
+  .diagram-component.database::before {
+    background: linear-gradient(90deg, #10b981, #22c55e);
+  }
+
+  .diagram-component.cache {
+    @apply bg-gradient-to-br from-violet-50 to-purple-100;
+    @apply border-violet-300 text-violet-800;
+  }
+
+  .diagram-component.cache::before {
+    background: linear-gradient(90deg, #8b5cf6, #a855f7);
+  }
+
+  .diagram-component.load-balancer {
+    @apply bg-gradient-to-br from-blue-50 to-cyan-100;
+    @apply border-blue-300 text-blue-800;
+  }
+
+  .diagram-component.load-balancer::before {
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  }
+
+  .diagram-component.microservice {
+    @apply bg-gradient-to-br from-indigo-50 to-blue-100;
+    @apply border-indigo-300 text-indigo-800;
+  }
+
+  .diagram-component.microservice::before {
+    background: linear-gradient(90deg, #6366f1, #3b82f6);
+  }
+
+  /* Compact Layer Structure */
+  .diagram-layer {
+    @apply relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+  }
+
+  .diagram-layer:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 12px;
+    background: #94a3b8;
+    z-index: 5;
+  }
+
+  /* Arrow Connectors */
+  .diagram-arrow {
+    position: absolute;
+    color: #6366f1;
+    font-size: 16px;
+    font-weight: bold;
+    z-index: 10;
+  }
+
+  .diagram-arrow.down {
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .diagram-arrow.right {
+    right: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  /* Compact Architecture Container */
+  .architecture-diagram .diagram-layer {
+    margin: 8px 0;
+  }
+
+  .architecture-diagram .diagram-component {
+    min-width: 90px;
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+
   /* Modern Flowchart Styling */
   .flowchart {
     @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50;
