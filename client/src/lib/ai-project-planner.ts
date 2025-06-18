@@ -318,59 +318,52 @@ Ensure realistic estimates based on project complexity.`;
         </ul>
 
         <div class="architecture-diagram">
-          <h3>Project Value Chain</h3>
+          <h3>Project Value Flow</h3>
           <div class="diagram-container">
-            <!-- Start Process -->
-            <div class="diagram-box terminal primary pos-1-1">
+            <!-- Start -->
+            <div class="diagram-box terminal primary" style="grid-column: 1; grid-row: 2;">
               <div class="diagram-title">Start</div>
             </div>
             
-            <!-- Business Analysis -->
-            <div class="diagram-box process secondary pos-3-1">
-              <div class="diagram-title">Business Analysis</div>
-              <div class="diagram-subtitle">Value Assessment</div>
+            <!-- Analysis -->
+            <div class="diagram-box process secondary" style="grid-column: 3; grid-row: 2;">
+              <div class="diagram-title">Analysis</div>
+              <div class="diagram-subtitle">Requirements</div>
             </div>
             
-            <!-- Decision Point -->
-            <div class="diagram-box decision info pos-5-2">
+            <!-- Decision -->
+            <div class="diagram-box decision info" style="grid-column: 5; grid-row: 2;">
               <div class="diagram-title">Approved?</div>
             </div>
             
-            <!-- Development Path -->
-            <div class="diagram-box process secondary pos-7-1">
-              <div class="diagram-title">Development</div>
-              <div class="diagram-subtitle">Build Solution</div>
+            <!-- Development -->
+            <div class="diagram-box process secondary" style="grid-column: 7; grid-row: 2;">
+              <div class="diagram-title">Build</div>
+              <div class="diagram-subtitle">Development</div>
             </div>
             
-            <!-- Testing -->
-            <div class="diagram-box process warning pos-9-1">
-              <div class="diagram-title">Testing</div>
-              <div class="diagram-subtitle">Quality Check</div>
-            </div>
-            
-            <!-- End Process -->
-            <div class="diagram-box terminal primary pos-11-1">
+            <!-- Deploy -->
+            <div class="diagram-box terminal success" style="grid-column: 9; grid-row: 2;">
               <div class="diagram-title">Deploy</div>
             </div>
             
-            <!-- Rejection Path -->
-            <div class="diagram-box process accent pos-7-3">
-              <div class="diagram-title">Revise Plan</div>
-              <div class="diagram-subtitle">Update Requirements</div>
+            <!-- Revision Path -->
+            <div class="diagram-box process accent" style="grid-column: 5; grid-row: 4;">
+              <div class="diagram-title">Revise</div>
+              <div class="diagram-subtitle">Update Plan</div>
             </div>
             
-            <!-- Connecting Lines -->
-            <div class="flowchart-line horizontal pos-2-1" style="grid-column: 2; grid-row: 1; align-self: center;"></div>
-            <div class="flowchart-line horizontal pos-4-1" style="grid-column: 4; grid-row: 1; align-self: center;"></div>
-            <div class="flowchart-line vertical pos-5-1" style="grid-column: 5; grid-row: 1; grid-row-end: 3; justify-self: center;"></div>
-            <div class="flowchart-line horizontal pos-6-1" style="grid-column: 6; grid-row: 1; align-self: center;"></div>
-            <div class="flowchart-line horizontal pos-8-1" style="grid-column: 8; grid-row: 1; align-self: center;"></div>
-            <div class="flowchart-line horizontal pos-10-1" style="grid-column: 10; grid-row: 1; align-self: center;"></div>
-            <div class="flowchart-line horizontal pos-6-3" style="grid-column: 6; grid-row: 3; align-self: center;"></div>
+            <!-- Lines -->
+            <div class="flowchart-line horizontal" style="grid-column: 2; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 4; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 6; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 8; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line vertical" style="grid-column: 5; grid-row: 3; justify-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 3; grid-row: 4; grid-column-end: 6; align-self: center;"></div>
             
             <!-- Decision Symbols -->
-            <div class="decision-symbol yes pos-6-1" style="grid-column: 6; grid-row: 1; justify-self: center; align-self: center;"></div>
-            <div class="decision-symbol no pos-6-3" style="grid-column: 6; grid-row: 3; justify-self: center; align-self: center;"></div>
+            <div class="decision-symbol yes" style="grid-column: 6; grid-row: 2; justify-self: start; align-self: center;"></div>
+            <div class="decision-symbol no" style="grid-column: 5; grid-row: 3; justify-self: center; align-self: start;"></div>
           </div>
         </div>
 
@@ -622,69 +615,47 @@ Ensure realistic estimates based on project complexity.`;
         </div>
 
         <div class="architecture-diagram">
-          <h3>Infrastructure Setup Flow</h3>
+          <h3>Setup Process</h3>
           <div class="diagram-container">
-            <!-- Environment Setup -->
-            <div class="diagram-box terminal primary pos-1-2">
-              <div class="diagram-title">Start Setup</div>
+            <!-- Setup Flow -->
+            <div class="diagram-box terminal primary" style="grid-column: 1; grid-row: 2;">
+              <div class="diagram-title">Start</div>
             </div>
             
-            <!-- Tools Installation -->
-            <div class="diagram-box process secondary pos-3-2">
-              <div class="diagram-title">Install Tools</div>
-              <div class="diagram-subtitle">IDE, Git, Docker</div>
+            <div class="diagram-box process secondary" style="grid-column: 3; grid-row: 2;">
+              <div class="diagram-title">Install</div>
+              <div class="diagram-subtitle">Tools & Deps</div>
             </div>
             
-            <!-- Framework Decision -->
-            <div class="diagram-box decision info pos-5-2">
-              <div class="diagram-title">Framework Ready?</div>
+            <div class="diagram-box decision info" style="grid-column: 5; grid-row: 2;">
+              <div class="diagram-title">Valid?</div>
             </div>
             
-            <!-- Database Setup -->
-            <div class="diagram-box process warning pos-7-2">
-              <div class="diagram-title">Database Setup</div>
-              <div class="diagram-subtitle">Schema & Migrations</div>
+            <div class="diagram-box process warning" style="grid-column: 7; grid-row: 2;">
+              <div class="diagram-title">Configure</div>
+              <div class="diagram-subtitle">Database</div>
             </div>
             
-            <!-- Security Check -->
-            <div class="diagram-box decision info pos-9-2">
-              <div class="diagram-title">Security OK?</div>
-            </div>
-            
-            <!-- Complete -->
-            <div class="diagram-box terminal success pos-11-2">
+            <div class="diagram-box terminal success" style="grid-column: 9; grid-row: 2;">
               <div class="diagram-title">Ready</div>
             </div>
             
-            <!-- Error Handling -->
-            <div class="diagram-box process accent pos-5-4">
-              <div class="diagram-title">Fix Dependencies</div>
-              <div class="diagram-subtitle">Resolve Issues</div>
+            <!-- Error Path -->
+            <div class="diagram-box process accent" style="grid-column: 5; grid-row: 4;">
+              <div class="diagram-title">Fix Issues</div>
+              <div class="diagram-subtitle">Debug</div>
             </div>
             
-            <div class="diagram-box process accent pos-9-4">
-              <div class="diagram-title">Update Security</div>
-              <div class="diagram-subtitle">Configure Auth</div>
-            </div>
-            
-            <!-- Connecting Lines -->
+            <!-- Connections -->
             <div class="flowchart-line horizontal" style="grid-column: 2; grid-row: 2; align-self: center;"></div>
             <div class="flowchart-line horizontal" style="grid-column: 4; grid-row: 2; align-self: center;"></div>
             <div class="flowchart-line horizontal" style="grid-column: 6; grid-row: 2; align-self: center;"></div>
             <div class="flowchart-line horizontal" style="grid-column: 8; grid-row: 2; align-self: center;"></div>
-            <div class="flowchart-line horizontal" style="grid-column: 10; grid-row: 2; align-self: center;"></div>
-            
-            <!-- Decision Lines -->
-            <div class="flowchart-line vertical" style="grid-column: 5; grid-row: 3; grid-row-end: 5; justify-self: center;"></div>
-            <div class="flowchart-line vertical" style="grid-column: 9; grid-row: 3; grid-row-end: 5; justify-self: center;"></div>
+            <div class="flowchart-line vertical" style="grid-column: 5; grid-row: 3; justify-self: center;"></div>
             <div class="flowchart-line horizontal" style="grid-column: 3; grid-row: 4; grid-column-end: 6; align-self: center;"></div>
-            <div class="flowchart-line horizontal" style="grid-column: 7; grid-row: 4; grid-column-end: 10; align-self: center;"></div>
             
-            <!-- Decision Symbols -->
-            <div class="decision-symbol yes" style="grid-column: 6; grid-row: 2; justify-self: center; align-self: center;"></div>
-            <div class="decision-symbol no" style="grid-column: 5; grid-row: 3; justify-self: center; align-self: center;"></div>
-            <div class="decision-symbol yes" style="grid-column: 10; grid-row: 2; justify-self: center; align-self: center;"></div>
-            <div class="decision-symbol no" style="grid-column: 9; grid-row: 3; justify-self: center; align-self: center;"></div>
+            <div class="decision-symbol yes" style="grid-column: 6; grid-row: 2; justify-self: start; align-self: center;"></div>
+            <div class="decision-symbol no" style="grid-column: 5; grid-row: 3; justify-self: center; align-self: start;"></div>
           </div>
         </div>
 
