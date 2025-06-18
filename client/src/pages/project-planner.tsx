@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, Fragment } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,6 +24,7 @@ import {
 } from '@/lib/enhanced-project-planner';
 import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker';
 import { ProjectSectionsSettings, loadProjectSectionsSettings, ProjectSection as SettingsProjectSection } from '@/components/project-sections-settings';
+import { SectionFlowViewer } from '@/components/section-flow-viewer';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
 
@@ -1705,80 +1706,92 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </div>
                     </div>
                   ) : (
-                    <div className="prose prose-gray max-w-none">
-                      {section.content.split('\n').map((line, index) => {
-                      const cleanLine = line.trim();
+                    <>
+                      <div className="prose prose-gray max-w-none">
+                        {section.content.split('\n').map((line, index) => {
+                        const cleanLine = line.trim();
 
-                      if (!cleanLine) {
-                        return <div key={index} className="h-4"></div>;
-                      }
+                        if (!cleanLine) {
+                          return <div key={index} className="h-4"></div>;
+                        }
 
-                      if (cleanLine.startsWith('# ')) {
+                        if (cleanLine.startsWith('# ')) {
+                          return (
+                            <h1
+                              key={index}
+                              className="text-2xl font-bold text-gray-900 mb-4 mt-6 border-b-2 border-blue-200 pb-2"
+                            >
+                              {cleanLine.substring(2).trim()}
+                            </h1>
+                          );
+                        }
+
+                        if (cleanLine.startsWith('## ')) {
+                          return (
+                            <h2
+                              key={index}
+                              className="text-xl font-semibold text-gray-800 mb-3 mt-5"
+                            >
+                              {cleanLine.substring(3).trim()}
+                            </h2>
+                          );
+                        }
+
+                        if (cleanLine.startsWith('### ')) {
+                          return (
+                            <h3
+                              key={index}
+                              className="text-lg font-medium text-gray-700 mb-2 mt-4"
+                            >
+                              {cleanLine.substring(4).trim()}
+                            </h3>
+                          );
+                        }
+
+                        if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
+                          return (
+                            <li
+                              key={index}
+                              className="text-gray-700 mb-2 ml-4 list-disc list-inside"
+                            >
+                              {cleanLine.substring(2).trim()}
+                            </li>
+                          );
+                        }
+
+                        if (cleanLine.match(/^\d+\.\s/)) {
+                          return (
+                            <li
+                              key={index}
+                              className="text-gray-700 mb-2 ml-4 list-decimal list-inside"
+                            >
+                              {cleanLine.replace(/^\d+\.\s/, '').trim()}
+                            </li>
+                          );
+                        }
+
+                        // Regular paragraphs
                         return (
-                          <h1
+                          <p
                             key={index}
-                            className="text-2xl font-bold text-gray-900 mb-4 mt-6 border-b-2 border-blue-200 pb-2"
+                            className="text-gray-700 mb-4 leading-relaxed text-justify"
                           >
-                            {cleanLine.substring(2).trim()}
-                          </h1>
+                            {cleanLine}
+                          </p>
                         );
-                      }
-
-                      if (cleanLine.startsWith('## ')) {
-                        return (
-                          <h2
-                            key={index}
-                            className="text-xl font-semibold text-gray-800 mb-3 mt-5"
-                          >
-                            {cleanLine.substring(3).trim()}
-                          </h2>
-                        );
-                      }
-
-                      if (cleanLine.startsWith('### ')) {
-                        return (
-                          <h3
-                            key={index}
-                            className="text-lg font-medium text-gray-700 mb-2 mt-4"
-                          >
-                            {cleanLine.substring(4).trim()}
-                          </h3>
-                        );
-                      }
-
-                      if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
-                        return (
-                          <li
-                            key={index}
-                            className="text-gray-700 mb-2 ml-4 list-disc list-inside"
-                          >
-                            {cleanLine.substring(2).trim()}
-                          </li>
-                        );
-                      }
-
-                      if (cleanLine.match(/^\d+\.\s/)) {
-                        return (
-                          <li
-                            key={index}
-                            className="text-gray-700 mb-2 ml-4 list-decimal list-inside"
-                          >
-                            {cleanLine.replace(/^\d+\.\s/, '').trim()}
-                          </li>
-                        );
-                      }
-
-                      // Regular paragraphs
-                      return (
-                        <p
-                          key={index}
-                          className="text-gray-700 mb-4 leading-relaxed text-justify"
-                        >
-                          {cleanLine}
-                        </p>
-                      );
-                    })}
-                    </div>
+                      })}
+                      </div>
+                      
+                      {/* Section Flow Diagram */}
+                      <div className="mt-6 pt-6 border-t border-gray-200">
+                        <SectionFlowViewer
+                          sectionTitle={section.title}
+                          sectionContent={section.content}
+                          sectionId={section.id}
+                          className="mt-4"
+                        />
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
