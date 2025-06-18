@@ -471,6 +471,123 @@ export default function CodeGenerator() {
           </Card>
         )}
 
+        {/* Standalone Development Environment */}
+        {!generatedProject && !isGenerating && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Code className="h-5 w-5 text-blue-600" />
+                Start Development
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                  <p className="text-gray-700 mb-4">
+                    Jump straight into development with the integrated Replit environment below. 
+                    Create a new project and start coding immediately.
+                  </p>
+                  <div className="flex gap-3 mb-4">
+                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                      <Server className="h-3 w-3 mr-1" />
+                      Live Environment
+                    </Badge>
+                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                      <GitBranch className="h-3 w-3 mr-1" />
+                      Version Control
+                    </Badge>
+                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                      <Zap className="h-3 w-3 mr-1" />
+                      Instant Deploy
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-lg">
+                  <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
+                      <a 
+                        href="https://replit.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                      >
+                        Open in New Tab ↗
+                      </a>
+                    </div>
+                  </div>
+                  <iframe
+                    height="500px"
+                    width="100%"
+                    src="https://replit.com?embed=true"
+                    frameBorder="0"
+                    allowFullScreen
+                    className="w-full"
+                    title="Replit Development Environment"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <FolderTree className="h-4 w-4" />
+                        Getting Started
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-2">
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">1</div>
+                        <span>Choose your preferred framework and stack</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">2</div>
+                        <span>Create a new Repl from templates</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">3</div>
+                        <span>Start coding with live preview</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">4</div>
+                        <span>Deploy with one click</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Sparkles className="h-4 w-4" />
+                        Pro Tips
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm space-y-2">
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                        <span>Use project plans from the planning phase</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                        <span>Implement user stories and wireframes</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                        <span>Test features as you build them</span>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                        <span>Share and collaborate in real-time</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Generated Project */}
         {generatedProject && (
           <Card>
@@ -488,7 +605,7 @@ export default function CodeGenerator() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="structure" className="w-full">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-7">
                   <TabsTrigger value="structure">
                     <FolderTree className="h-4 w-4 mr-1" />
                     Structure
@@ -512,6 +629,10 @@ export default function CodeGenerator() {
                   <TabsTrigger value="docs">
                     <FileText className="h-4 w-4 mr-1" />
                     Docs
+                  </TabsTrigger>
+                  <TabsTrigger value="development">
+                    <Code className="h-4 w-4 mr-1" />
+                    Development
                   </TabsTrigger>
                 </TabsList>
 
@@ -634,6 +755,118 @@ export default function CodeGenerator() {
                     <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-auto text-sm">
                       {generatedProject.readme}
                     </pre>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="development" className="mt-4">
+                  <div className="space-y-6">
+                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600">
+                          <Code className="h-5 w-5 text-white" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900">Start Development</h3>
+                      </div>
+                      <p className="text-gray-600 mb-4">
+                        Use the integrated Replit environment below to start developing your project. 
+                        You can create a new Repl and copy the generated code structure.
+                      </p>
+                      <div className="flex gap-3 mb-4">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          <Server className="h-3 w-3 mr-1" />
+                          Live Environment
+                        </Badge>
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          <GitBranch className="h-3 w-3 mr-1" />
+                          Version Control
+                        </Badge>
+                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                          <Zap className="h-3 w-3 mr-1" />
+                          Instant Deploy
+                        </Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-lg">
+                      <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
+                          <a 
+                            href="https://replit.com" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            Open in New Tab ↗
+                          </a>
+                        </div>
+                      </div>
+                      <iframe
+                        height="500px"
+                        width="100%"
+                        src="https://replit.com?embed=true"
+                        frameBorder="0"
+                        allowFullScreen
+                        className="w-full"
+                        title="Replit Development Environment"
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <FolderTree className="h-4 w-4" />
+                            Quick Start Guide
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm space-y-2">
+                          <div className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">1</div>
+                            <span>Create a new Repl with your chosen framework</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">2</div>
+                            <span>Copy the generated project structure</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">3</div>
+                            <span>Install dependencies from package.json</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">4</div>
+                            <span>Start coding and deploy instantly</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <BookOpen className="h-4 w-4" />
+                            Development Tips
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-sm space-y-2">
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                            <span>Use the generated database schema for setup</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                            <span>Follow the folder structure recommendations</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                            <span>Implement features from your project plan</span>
+                          </div>
+                          <div className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                            <span>Test deployment early and iterate</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </TabsContent>
               </Tabs>
