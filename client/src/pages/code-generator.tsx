@@ -562,22 +562,52 @@ export default function CodeGenerator() {
                       </div>
                     </div>
                   </div>
-                  <div className="relative bg-black">
-                    <iframe
-                      src="https://replit.com/@daspapun21/projectPlanner?embed=true&output=1"
-                      width="100%"
-                      height="500"
-                      frameBorder="0"
-                      scrolling="no"
-                      allowFullScreen
-                      title="Project Planner - Replit Development Environment"
-                      className="w-full"
-                      sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
-                    />
-                    <div className="absolute inset-0 pointer-events-none">
-                      <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        Start coding immediately - if embed doesn't load, click
-                        "Generate Code" above
+                  <div className="p-8 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-lg border border-blue-200">
+                    <div className="text-center space-y-6">
+                      <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                        <Code className="h-10 w-10 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Open Your Project Planner</h3>
+                        <p className="text-gray-600 max-w-lg mx-auto">
+                          Due to security restrictions, Replit cannot be embedded. Click below to open your projectPlanner in a new tab and continue development.
+                        </p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a 
+                          href="https://replit.com/@daspapun21/projectPlanner" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                          <Code className="h-5 w-5 mr-3" />
+                          Open Project Planner
+                        </a>
+                        <a 
+                          href="https://replit.com/new/nodejs" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center px-8 py-4 border-2 border-blue-600 text-blue-600 font-semibold rounded-lg hover:bg-blue-50 transition-all duration-200"
+                        >
+                          <Sparkles className="h-5 w-5 mr-3" />
+                          Create New Project
+                        </a>
+                      </div>
+                      <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-blue-200">
+                        <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span>Live Development</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span>Version Control</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <span>Instant Deploy</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -919,22 +949,68 @@ export default function CodeGenerator() {
                           </div>
                         </div>
                       </div>
-                      <div className="relative bg-black">
-                        <iframe
-                          src="https://replit.com/@daspapun21/projectPlanner?embed=true&output=1"
-                          width="100%"
-                          height="500"
-                          frameBorder="0"
-                          scrolling="no"
-                          allowFullScreen
-                          title="Project Planner - Replit Development Environment"
-                          className="w-full"
-                          sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
-                        />
-                        <div className="absolute inset-0 pointer-events-none">
-                          <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                            Copy your code above, then create files in the
-                            embedded editor
+                      <div className="p-8 bg-gradient-to-br from-green-50 via-blue-50 to-indigo-50 rounded-lg border border-green-200">
+                        <div className="text-center space-y-6">
+                          <div className="w-20 h-20 bg-gradient-to-r from-green-500 to-blue-600 rounded-full flex items-center justify-center mx-auto shadow-lg">
+                            <Code className="h-10 w-10 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Start Development with Generated Code</h3>
+                            <p className="text-gray-600 max-w-lg mx-auto">
+                              Your project code is ready! Copy the generated structure and start developing in your projectPlanner environment.
+                            </p>
+                          </div>
+                          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <a 
+                              href="https://replit.com/@daspapun21/projectPlanner" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                            >
+                              <Code className="h-5 w-5 mr-3" />
+                              Open Project Planner
+                            </a>
+                            <Button
+                              onClick={() => {
+                                // Copy all generated code to clipboard for easy pasting in Replit
+                                const allCode = [
+                                  "=== FOLDER STRUCTURE ===",
+                                  generatedProject?.folderStructure || "",
+                                  "\n=== FRONTEND FILES ===",
+                                  Object.entries(generatedProject?.frontendFiles || {}).map(([name, content]) => 
+                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  "\n=== BACKEND FILES ===",
+                                  Object.entries(generatedProject?.backendFiles || {}).map(([name, content]) => 
+                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  "\n=== DATABASE SCHEMA ===",
+                                  generatedProject?.databaseSchema || "",
+                                  "\n=== PACKAGE.JSON ===",
+                                  generatedProject?.packageJson || ""
+                                ].join('\n\n');
+                                
+                                navigator.clipboard.writeText(allCode);
+                              }}
+                              className="inline-flex items-center justify-center px-8 py-4 border-2 border-green-600 text-green-600 font-semibold rounded-lg hover:bg-green-50 transition-all duration-200"
+                            >
+                              <Copy className="h-5 w-5 mr-3" />
+                              Copy All Generated Code
+                            </Button>
+                          </div>
+                          <div className="bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-green-200">
+                            <div className="flex items-center justify-center gap-4 text-sm text-gray-600">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Code Ready</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Project Structure</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-500" />
+                                <span>Dependencies Listed</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
