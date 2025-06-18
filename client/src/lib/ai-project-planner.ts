@@ -1934,20 +1934,215 @@ Ensure realistic estimates based on project complexity.`;
       },
       {
         title: "Team Structure",
-        prompt: `Design optimal team structure for: "${description}"
-        
-        Include:
-        - Role definitions
-        - Skill requirements
-        - Team composition
-        - Reporting structure
-        - Communication protocols
-        - Performance metrics
-        
-        Team Size: ${requirements.teamSize}
-        Technical Complexity: ${requirements.technicalComplexity}
-        
-        Match team structure to project needs.`,
+        prompt: `Design optimal team structure for: "${description}" with modern organizational chart and team hierarchy visualization.
+
+        Generate HTML with modern team structure design:
+
+        <div class="section-divider">
+          <div class="section-divider-text">Team Structure & Organization</div>
+        </div>
+
+        <div class="org-chart">
+          <h3>Project Team Hierarchy</h3>
+          
+          <!-- Executive Level -->
+          <div class="org-level">
+            <div class="org-role manager lead">Project Manager</div>
+          </div>
+          
+          <!-- Leadership Level -->
+          <div class="org-level">
+            <div class="org-role manager">Tech Lead</div>
+            <div class="org-role designer lead">Design Lead</div>
+            <div class="org-role analyst">Product Owner</div>
+          </div>
+          
+          <!-- Development Team -->
+          <div class="org-level">
+            <div class="org-role developer">Senior Developer</div>
+            <div class="org-role developer">Frontend Dev</div>
+            <div class="org-role developer">Backend Dev</div>
+            <div class="org-role designer">UI/UX Designer</div>
+            <div class="org-role tester">QA Engineer</div>
+          </div>
+          
+          <!-- Support Team -->
+          <div class="org-level">
+            <div class="org-role analyst">DevOps Engineer</div>
+            <div class="org-role tester">Automation Tester</div>
+            <div class="org-role developer">Junior Developer</div>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <div class="section-divider-text">Team Composition Matrix</div>
+        </div>
+
+        <div class="team-compact">
+          <div class="team-member">
+            <div class="role-title">Project Manager</div>
+            <div class="role-level">Leadership</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">Technical Lead</div>
+            <div class="role-level">Senior</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">Senior Developer</div>
+            <div class="role-level">Senior</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">Frontend Developer</div>
+            <div class="role-level">Mid-Level</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">Backend Developer</div>
+            <div class="role-level">Mid-Level</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">UI/UX Designer</div>
+            <div class="role-level">Mid-Level</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">QA Engineer</div>
+            <div class="role-level">Mid-Level</div>
+          </div>
+          <div class="team-member">
+            <div class="role-title">DevOps Engineer</div>
+            <div class="role-level">Senior</div>
+          </div>
+        </div>
+
+        <h3>Team Responsibilities Matrix</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Role</th>
+              <th>Key Responsibilities</th>
+              <th>Skills Required</th>
+              <th>Experience Level</th>
+              <th>Reporting Structure</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Project Manager</td>
+              <td>Planning, Coordination, Stakeholder Management</td>
+              <td>Agile, Communication, Risk Management</td>
+              <td>5+ years</td>
+              <td>Reports to Stakeholders</td>
+            </tr>
+            <tr>
+              <td>Technical Lead</td>
+              <td>Architecture, Code Review, Technical Decisions</td>
+              <td>Full-stack Development, System Design</td>
+              <td>7+ years</td>
+              <td>Reports to Project Manager</td>
+            </tr>
+            <tr>
+              <td>Senior Developer</td>
+              <td>Complex Features, Mentoring, Code Quality</td>
+              <td>Advanced Programming, Design Patterns</td>
+              <td>5+ years</td>
+              <td>Reports to Technical Lead</td>
+            </tr>
+            <tr>
+              <td>Frontend Developer</td>
+              <td>UI Implementation, User Experience</td>
+              <td>React, TypeScript, CSS, Responsive Design</td>
+              <td>3+ years</td>
+              <td>Reports to Technical Lead</td>
+            </tr>
+            <tr>
+              <td>Backend Developer</td>
+              <td>API Development, Database Design</td>
+              <td>Node.js, Database, Cloud Services</td>
+              <td>3+ years</td>
+              <td>Reports to Technical Lead</td>
+            </tr>
+            <tr>
+              <td>UI/UX Designer</td>
+              <td>Design System, User Research, Prototyping</td>
+              <td>Figma, Design Thinking, User Research</td>
+              <td>3+ years</td>
+              <td>Reports to Design Lead</td>
+            </tr>
+            <tr>
+              <td>QA Engineer</td>
+              <td>Testing Strategy, Quality Assurance</td>
+              <td>Test Automation, Manual Testing</td>
+              <td>3+ years</td>
+              <td>Reports to Project Manager</td>
+            </tr>
+            <tr>
+              <td>DevOps Engineer</td>
+              <td>CI/CD, Infrastructure, Monitoring</td>
+              <td>AWS/Azure, Docker, Kubernetes</td>
+              <td>4+ years</td>
+              <td>Reports to Technical Lead</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-divider">
+          <div class="section-divider-text">Communication & Collaboration</div>
+        </div>
+
+        <div class="architecture-diagram">
+          <h3>Team Communication Flow</h3>
+          <div class="diagram-container">
+            <!-- Daily Standup -->
+            <div class="diagram-box terminal primary" style="grid-column: 1; grid-row: 2;">
+              <div class="diagram-title">Daily Standup</div>
+            </div>
+            
+            <!-- Sprint Planning -->
+            <div class="diagram-box process secondary" style="grid-column: 3; grid-row: 2;">
+              <div class="diagram-title">Sprint Planning</div>
+              <div class="diagram-subtitle">Bi-weekly</div>
+            </div>
+            
+            <!-- Code Review -->
+            <div class="diagram-box process warning" style="grid-column: 5; grid-row: 2;">
+              <div class="diagram-title">Code Review</div>
+              <div class="diagram-subtitle">Continuous</div>
+            </div>
+            
+            <!-- Team Sync -->
+            <div class="diagram-box process info" style="grid-column: 7; grid-row: 2;">
+              <div class="diagram-title">Team Sync</div>
+              <div class="diagram-subtitle">Weekly</div>
+            </div>
+            
+            <!-- Retrospective -->
+            <div class="diagram-box terminal success" style="grid-column: 9; grid-row: 2;">
+              <div class="diagram-title">Retrospective</div>
+            </div>
+            
+            <!-- Connections -->
+            <div class="flowchart-line horizontal" style="grid-column: 2; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 4; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 6; grid-row: 2; align-self: center;"></div>
+            <div class="flowchart-line horizontal" style="grid-column: 8; grid-row: 2; align-self: center;"></div>
+          </div>
+        </div>
+
+        Include comprehensive details for:
+        - Role definitions with clear responsibilities and accountability
+        - Skill requirements matrix with technical and soft skills
+        - Team composition optimization for project complexity
+        - Reporting structure with clear communication channels
+        - Collaboration protocols and meeting cadences
+        - Performance metrics and team success indicators
+        - Onboarding process for new team members
+        - Escalation procedures and conflict resolution
+
+        Team Configuration:
+        - Size: ${requirements.teamSize}
+        - Technical Complexity: ${requirements.technicalComplexity}
+        - Project Scope: ${requirements.scope}
+
+        Design team structure for optimal collaboration and delivery efficiency.`,
       },
       {
         title: "Stakeholder Matrix",

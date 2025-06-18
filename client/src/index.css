@@ -479,6 +479,150 @@
   .pos-11-6 { grid-column: 11; grid-row: 6; }
   .pos-12-6 { grid-column: 12; grid-row: 6; }
 
+  /* Modern Compact Organizational Chart */
+  .org-chart {
+    @apply bg-gradient-to-br from-slate-50 to-blue-50;
+    @apply border border-slate-200 rounded-xl;
+    @apply p-4 my-4 shadow-sm;
+    position: relative;
+    overflow: visible;
+  }
+
+  .org-chart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+
+  .org-level,
+  .org-level-compact {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .org-level::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1px;
+    height: 8px;
+    background: #6b7280;
+    z-index: 5;
+  }
+
+  .org-level:last-child::after {
+    display: none;
+  }
+
+  .org-role {
+    @apply bg-white border border-slate-300 rounded-lg;
+    @apply px-3 py-2 text-center shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply cursor-pointer;
+    min-width: 80px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #374151;
+    position: relative;
+  }
+
+  .org-role:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Role Type Variants */
+  .org-role.manager {
+    @apply bg-gradient-to-br from-blue-50 to-indigo-100;
+    @apply border-blue-300 text-blue-800;
+  }
+
+  .org-role.developer {
+    @apply bg-gradient-to-br from-emerald-50 to-green-100;
+    @apply border-emerald-300 text-emerald-800;
+  }
+
+  .org-role.designer {
+    @apply bg-gradient-to-br from-purple-50 to-pink-100;
+    @apply border-purple-300 text-purple-800;
+  }
+
+  .org-role.analyst {
+    @apply bg-gradient-to-br from-amber-50 to-yellow-100;
+    @apply border-amber-300 text-amber-800;
+  }
+
+  .org-role.tester {
+    @apply bg-gradient-to-br from-orange-50 to-red-100;
+    @apply border-orange-300 text-orange-800;
+  }
+
+  .org-role.lead {
+    @apply bg-gradient-to-br from-indigo-100 to-blue-200;
+    @apply border-indigo-400 text-indigo-900;
+    font-weight: 700;
+  }
+
+  /* Connecting Lines */
+  .org-connection {
+    position: absolute;
+    background: #6b7280;
+    z-index: 10;
+  }
+
+  .org-connection.horizontal {
+    height: 1px;
+    top: 50%;
+  }
+
+  .org-connection.vertical {
+    width: 1px;
+    left: 50%;
+  }
+
+  /* Compact Team Structure */
+  .team-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin: 1rem 0;
+  }
+
+  .team-member {
+    @apply bg-white border border-slate-200 rounded-lg;
+    @apply p-3 text-center shadow-sm;
+    @apply transition-all duration-200;
+    font-size: 10px;
+  }
+
+  .team-member:hover {
+    @apply shadow-md border-blue-300;
+  }
+
+  .team-member .role-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 4px;
+  }
+
+  .team-member .role-level {
+    color: #6b7280;
+    font-size: 9px;
+  }
+
   /* Modern Flowchart Styling */
   .flowchart {
     @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50;
