@@ -198,6 +198,7 @@ export default function ProjectPlanner() {
     const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+    const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
@@ -207,6 +208,16 @@ export default function ProjectPlanner() {
     }
     if (savedDiagram) {
       setGeneratedBpmnXml(savedDiagram);
+    }
+
+    // Load enhanced plan sections if available
+    if (savedEnhancedSections) {
+      try {
+        const parsedSections = JSON.parse(savedEnhancedSections);
+        setEnhancedSections(parsedSections);
+      } catch (error) {
+        console.error('Failed to parse enhanced plan sections:', error);
+      }
     }
 
     // Load project sections settings
@@ -785,7 +796,23 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
   };
 
   const handleGenerateBpmnDiagram = async () => {
-    if (!projectPlan.trim()) {
+    // Use enhanced_plan_sections from localStorage if available, otherwise fallback to projectPlan
+    const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
+    let planContent = projectPlan;
+
+    if (savedEnhancedSections) {
+      try {
+        const parsedSections = JSON.parse(savedEnhancedSections);
+        // Convert enhanced sections to text format for BPMN generation
+        planContent = parsedSections.map((section: any) => 
+          `${section.title}:\n${section.content.replace(/<[^>]*>/g, ' ').trim()}`
+        ).join('\n\n');
+      } catch (error) {
+        console.error('Failed to parse enhanced plan sections for BPMN:', error);
+      }
+    }
+
+    if (!planContent.trim()) {
       setError('No project plan available to convert');
       return;
     }
@@ -794,7 +821,7 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
     setError('');
 
     try {
-      const bpmnXml = await generateBpmnXml(projectPlan);
+      const bpmnXml = await generateBpmnXml(planContent);
       setGeneratedBpmnXml(bpmnXml);
       setCurrentStep('diagram');
       
@@ -824,13 +851,28 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
     setError('');
 
     try {
+      // Use enhanced_plan_sections from localStorage if available
+      const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
+      let existingPlan = projectPlan;
+
+      if (savedEnhancedSections) {
+        try {
+          const parsedSections = JSON.parse(savedEnhancedSections);
+          existingPlan = parsedSections.map((section: any) => 
+            `${section.title}:\n${section.content}`
+          ).join('\n\n');
+        } catch (error) {
+          console.error('Failed to parse enhanced plan sections for enhancement:', error);
+        }
+      }
+
       const enhancementRequest = `
 Based on the existing project plan below, enhance it by adding the following requirements:
 
 ENHANCEMENT REQUEST: "${enhancementPrompt}"
 
 EXISTING PROJECT PLAN:
-${projectPlan}
+${existingPlan}
 
 INSTRUCTIONS:
 - Keep all existing content and structure
@@ -940,11 +982,15 @@ Return the complete enhanced project plan as HTML with all existing content plus
         order: section.order
       });
       
-      if (allSections.length > 0) {
+      const sortedSections = allSections.sort((a, b) => a.order - b.order);
+      
+      if (sortedSections.length > 0) {
         const planner = createEnhancedProjectPlanner();
-        const htmlReport = planner.generateHtmlReport(allSections.sort((a, b) => a.order - b.order));
+        const htmlReport = planner.generateHtmlReport(sortedSections);
         setProjectPlan(htmlReport);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
+        // Save enhanced sections to localStorage
+        localStorage.setItem('enhanced_plan_sections', JSON.stringify(sortedSections));
       }
 
     } catch (err) {
@@ -1064,6 +1110,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
         setProjectPlan(updatedHtml);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
       }
+
+      // Save updated enhanced sections to localStorage
+      const updatedSections = enhancedSections.map(section => 
+        section.id === sectionId 
+          ? { ...section, content: cleanedContent }
+          : section
+      );
+      localStorage.setItem('enhanced_plan_sections', JSON.stringify(updatedSections));
 
       // Force a re-render by updating the active tab
       const currentActiveTab = document.querySelector('[data-state="active"][data-orientation="horizontal"]');
