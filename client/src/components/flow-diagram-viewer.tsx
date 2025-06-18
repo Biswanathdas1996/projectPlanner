@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useMemo, useEffect, useState } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,25 +13,40 @@ import ReactFlow, {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
+import { Button } from '@/components/ui/button';
+import { Maximize2 } from 'lucide-react';
+import { FlowDiagramEditor } from '@/components/flow-diagram-editor';
 
 interface FlowDiagramViewerProps {
   flowData: FlowDiagramData;
   title: string;
   className?: string;
+  flowKey?: string;
+  onFlowUpdate?: (updatedFlowData: FlowDiagramData) => void;
 }
 
 // Custom node styles for different types
 const nodeTypes = {};
 
-function FlowDiagramViewerInner({ flowData, title, className = "" }: FlowDiagramViewerProps) {
+function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFlowUpdate }: FlowDiagramViewerProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges || []);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
 
   useEffect(() => {
     console.log('FlowDiagramViewer received data:', flowData);
     console.log('Nodes:', flowData.nodes);
     console.log('Edges:', flowData.edges);
   }, [flowData]);
+
+  const handleFlowSave = useCallback((updatedFlowData: FlowDiagramData) => {
+    setNodes(updatedFlowData.nodes);
+    setEdges(updatedFlowData.edges);
+    if (onFlowUpdate) {
+      onFlowUpdate(updatedFlowData);
+    }
+    setIsEditorOpen(false);
+  }, [setNodes, setEdges, onFlowUpdate]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),

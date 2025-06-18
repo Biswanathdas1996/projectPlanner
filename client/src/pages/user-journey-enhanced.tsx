@@ -3517,10 +3517,6 @@ Data Objects: Request form, User profile`,
                                           onClick={() => {
                                             const jsonString = JSON.stringify(flowDiagrams[flowKey], null, 2);
                                             navigator.clipboard.writeText(jsonString);
-                                            toast({
-                                              title: "JSON Copied",
-                                              description: "Flow diagram JSON copied to clipboard",
-                                            });
                                           }}
                                           variant="outline"
                                           size="sm"
