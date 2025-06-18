@@ -32,17 +32,35 @@ const getEnhancedPlanSections = (): ProjectPlanSection[] => {
   const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
   if (savedEnhancedSections) {
     try {
-      return JSON.parse(savedEnhancedSections);
+      const parsed = JSON.parse(savedEnhancedSections);
+      console.log('✅ Successfully loaded enhanced plan sections from localStorage:', parsed.length, 'sections');
+      return parsed;
     } catch (error) {
-      console.error('Failed to parse enhanced plan sections:', error);
+      console.error('❌ Failed to parse enhanced plan sections:', error);
     }
+  } else {
+    console.log('ℹ️ No enhanced plan sections found in localStorage');
   }
   return [];
 };
 
 // Helper function to save enhanced plan sections to localStorage
 const saveEnhancedPlanSections = (sections: ProjectPlanSection[]) => {
-  localStorage.setItem('enhanced_plan_sections', JSON.stringify(sections));
+  try {
+    const jsonString = JSON.stringify(sections);
+    localStorage.setItem('enhanced_plan_sections', jsonString);
+    console.log('✅ Successfully saved enhanced plan sections to localStorage:', sections.length, 'sections');
+    
+    // Verify the save worked
+    const verification = localStorage.getItem('enhanced_plan_sections');
+    if (verification) {
+      console.log('✅ Verification: Data exists in localStorage');
+    } else {
+      console.error('❌ Verification failed: No data found in localStorage');
+    }
+  } catch (error) {
+    console.error('❌ Failed to save enhanced plan sections:', error);
+  }
 };
 
 // Helper function to get plan content for external use (BPMN, etc.)
@@ -242,7 +260,10 @@ export default function ProjectPlanner() {
     // Load enhanced plan sections if available
     const savedSections = getEnhancedPlanSections();
     if (savedSections.length > 0) {
+      console.log('🔄 Setting enhanced sections from localStorage:', savedSections.length, 'sections');
       setEnhancedSections(savedSections);
+    } else {
+      console.log('🔄 No saved sections found, keeping empty state');
     }
 
     // Load project sections settings
