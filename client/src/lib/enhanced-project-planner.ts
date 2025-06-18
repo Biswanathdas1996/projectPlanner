@@ -166,7 +166,7 @@ export class EnhancedProjectPlanner {
         - User journey mapping: Brand Discovery → Product Research → Comparison → Add to Cart → Checkout → Post-Purchase → Loyalty
         - Information architecture: Landing Page → Product Categories → Search Results → Product Details → Shopping Cart → Payment Gateway → Order Confirmation
         - Design system components: Atomic Design → Design Tokens → Component Library → Pattern Library → Style Guide
-        - UX metrics dashboard using display: flex layout (Conversion Rate, Bounce Rate, Session Duration, User Satisfaction, Task Completion)
+        - Modern UX metrics dashboard with gradient cards and progress bars using the ux-metrics class structure
         - Responsive design flow: Mobile-First → Progressive Enhancement → Breakpoint Optimization → Cross-Device Testing`,
 
       "Quality Assurance & Testing Strategy": `Create testing strategy with detailed matrices:
@@ -270,6 +270,75 @@ ADVANCED GRID FLOWS - Use precise positioning with connection arrows:
   <div class="flow-connection horizontal" style="grid-column: 4/6; grid-row: 2; width: 80%;"></div>
   <div class="decision-label yes" style="grid-column: 2; grid-row: 1; margin-top: -10px;">Yes</div>
   <div class="decision-label no" style="grid-column: 2; grid-row: 3; margin-bottom: -10px;">No</div>
+</div>
+
+MODERN UX METRICS DASHBOARD - Use comprehensive metric cards with progress indicators:
+<div class="ux-metrics">
+  <h3>User Experience Metrics Dashboard</h3>
+  <div class="metrics-grid">
+    <div class="metric-card conversion">
+      <div class="metric-header">
+        <div class="metric-title">Conversion Rate</div>
+        <div class="metric-icon">📈</div>
+      </div>
+      <div class="metric-value">3.2%</div>
+      <div class="metric-change positive">+0.5% vs last month</div>
+      <div class="metric-progress">
+        <div class="metric-progress-bar conversion" style="width: 65%;"></div>
+      </div>
+    </div>
+    <div class="metric-card engagement">
+      <div class="metric-header">
+        <div class="metric-title">Session Duration</div>
+        <div class="metric-icon">⏱️</div>
+      </div>
+      <div class="metric-value">4:32</div>
+      <div class="metric-change positive">+15s vs last month</div>
+      <div class="metric-progress">
+        <div class="metric-progress-bar engagement" style="width: 76%;"></div>
+      </div>
+    </div>
+    <div class="metric-card satisfaction">
+      <div class="metric-header">
+        <div class="metric-title">User Satisfaction</div>
+        <div class="metric-icon">😊</div>
+      </div>
+      <div class="metric-value">4.7/5</div>
+      <div class="metric-change positive">+0.2 vs last month</div>
+      <div class="metric-progress">
+        <div class="metric-progress-bar satisfaction" style="width: 94%;"></div>
+      </div>
+    </div>
+    <div class="metric-card performance">
+      <div class="metric-header">
+        <div class="metric-title">Page Load Time</div>
+        <div class="metric-icon">⚡</div>
+      </div>
+      <div class="metric-value">1.8s</div>
+      <div class="metric-change negative">+0.3s vs last month</div>
+      <div class="metric-progress">
+        <div class="metric-progress-bar performance" style="width: 72%;"></div>
+      </div>
+    </div>
+  </div>
+  <div class="metrics-row">
+    <div class="metric-chip">
+      <span class="value">89%</span>
+      <span class="label">Task Completion</span>
+    </div>
+    <div class="metric-chip">
+      <span class="value">2.3%</span>
+      <span class="label">Bounce Rate</span>
+    </div>
+    <div class="metric-chip">
+      <span class="value">67%</span>
+      <span class="label">Feature Adoption</span>
+    </div>
+    <div class="metric-chip">
+      <span class="value">78%</span>
+      <span class="label">Mobile Usage</span>
+    </div>
+  </div>
 </div>
 
 Use tables, flowcharts, timelines, cards, metrics, and status badges. Never suggest images or external diagrams. All visualizations must be HTML/CSS based.`;

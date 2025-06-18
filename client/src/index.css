@@ -952,6 +952,211 @@
     border-color: #dc2626;
   }
 
+  /* Modern UX Metrics Dashboard */
+  .ux-metrics {
+    @apply bg-gradient-to-br from-indigo-50 to-purple-50;
+    @apply border border-indigo-200 rounded-xl;
+    @apply p-6 my-6 shadow-lg;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .ux-metrics::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+
+  .ux-metrics h3 {
+    @apply text-lg font-semibold text-gray-800 mb-4;
+    margin: 0 0 1rem 0;
+  }
+
+  /* Metrics Grid Layout */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 1rem;
+  }
+
+  /* Individual Metric Card */
+  .metric-card {
+    @apply bg-white/80 backdrop-blur-sm;
+    @apply border border-slate-200 rounded-lg;
+    @apply p-4 shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:border-indigo-300;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 1;
+  }
+
+  .metric-card.conversion::before {
+    background: linear-gradient(90deg, #10b981, #22c55e);
+  }
+
+  .metric-card.engagement::before {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  }
+
+  .metric-card.satisfaction::before {
+    background: linear-gradient(90deg, #8b5cf6, #7c3aed);
+  }
+
+  .metric-card.performance::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+  }
+
+  .metric-card.retention::before {
+    background: linear-gradient(90deg, #ec4899, #db2777);
+  }
+
+  /* Metric Header */
+  .metric-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .metric-title {
+    @apply text-sm font-medium text-gray-700;
+    margin: 0;
+  }
+
+  .metric-icon {
+    @apply w-5 h-5 text-gray-400;
+    flex-shrink: 0;
+  }
+
+  /* Metric Value */
+  .metric-value {
+    @apply text-2xl font-bold text-gray-900 mb-2;
+    line-height: 1;
+  }
+
+  .metric-value.large {
+    @apply text-3xl;
+  }
+
+  .metric-value.small {
+    @apply text-xl;
+  }
+
+  /* Metric Change Indicator */
+  .metric-change {
+    @apply text-xs font-medium flex items-center;
+    gap: 4px;
+  }
+
+  .metric-change.positive {
+    @apply text-green-600;
+  }
+
+  .metric-change.negative {
+    @apply text-red-600;
+  }
+
+  .metric-change.neutral {
+    @apply text-gray-500;
+  }
+
+  .metric-change::before {
+    content: '';
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+  }
+
+  .metric-change.positive::before {
+    border-bottom: 6px solid #10b981;
+  }
+
+  .metric-change.negative::before {
+    border-top: 6px solid #ef4444;
+  }
+
+  .metric-change.neutral::before {
+    width: 6px;
+    height: 2px;
+    background: #6b7280;
+    border: none;
+  }
+
+  /* Progress Bars */
+  .metric-progress {
+    @apply w-full bg-gray-200 rounded-full h-2 mt-3;
+    overflow: hidden;
+  }
+
+  .metric-progress-bar {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+
+  .metric-progress-bar.conversion {
+    @apply bg-gradient-to-r from-green-500 to-emerald-600;
+  }
+
+  .metric-progress-bar.engagement {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600;
+  }
+
+  .metric-progress-bar.satisfaction {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600;
+  }
+
+  .metric-progress-bar.performance {
+    @apply bg-gradient-to-r from-amber-500 to-orange-600;
+  }
+
+  .metric-progress-bar.retention {
+    @apply bg-gradient-to-r from-pink-500 to-rose-600;
+  }
+
+  /* Compact Metrics Row */
+  .metrics-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 1rem 0;
+  }
+
+  .metric-chip {
+    @apply bg-white/90 backdrop-blur-sm;
+    @apply border border-slate-200 rounded-full;
+    @apply px-4 py-2 shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply hover:shadow-md hover:border-indigo-300;
+    @apply flex items-center gap-2;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .metric-chip .value {
+    @apply text-indigo-600 font-bold;
+  }
+
+  .metric-chip .label {
+    @apply text-gray-600;
+  }
+
   /* Modern Flowchart Styling */
   .flowchart {
     @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50;
