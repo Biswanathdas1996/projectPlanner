@@ -146,9 +146,11 @@ export default function CodeGenerator() {
         error instanceof Error
           ? error.message
           : "Failed to generate project code";
-      
+
       if (errorMessage.includes("API key")) {
-        alert("Gemini API key is required for code generation. Please check your environment variables.");
+        alert(
+          "Gemini API key is required for code generation. Please check your environment variables.",
+        );
       } else {
         alert(`Code generation failed: ${errorMessage}`);
       }
@@ -187,8 +189,11 @@ export default function CodeGenerator() {
 
       <div className="container mx-auto px-4 py-6 max-w-7xl">
         {/* Workflow Progress */}
-        <WorkflowProgress currentStep="code" completedSteps={['input', 'plan', 'diagram', 'stories']} />
-        
+        <WorkflowProgress
+          currentStep="code"
+          completedSteps={["input", "plan", "diagram", "stories"]}
+        />
+
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
@@ -253,7 +258,10 @@ export default function CodeGenerator() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Project Name */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="projectName" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="projectName"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <FileText className="h-4 w-4 text-blue-600" />
                   Project Name
                 </Label>
@@ -270,7 +278,10 @@ export default function CodeGenerator() {
 
               {/* Frontend Framework */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="framework" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="framework"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <Globe className="h-4 w-4 text-green-600" />
                   Frontend Framework
                 </Label>
@@ -293,7 +304,10 @@ export default function CodeGenerator() {
 
               {/* Backend */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="backend" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="backend"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <Server className="h-4 w-4 text-orange-600" />
                   Backend
                 </Label>
@@ -316,7 +330,10 @@ export default function CodeGenerator() {
 
               {/* Database */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="database" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="database"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <Database className="h-4 w-4 text-purple-600" />
                   Database
                 </Label>
@@ -339,7 +356,10 @@ export default function CodeGenerator() {
 
               {/* Styling */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="styling" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="styling"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <Layers className="h-4 w-4 text-pink-600" />
                   Styling
                 </Label>
@@ -362,7 +382,10 @@ export default function CodeGenerator() {
 
               {/* Deployment */}
               <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
-                <Label htmlFor="deployment" className="flex items-center gap-2 text-gray-700 font-medium mb-2">
+                <Label
+                  htmlFor="deployment"
+                  className="flex items-center gap-2 text-gray-700 font-medium mb-2"
+                >
                   <Zap className="h-4 w-4 text-indigo-600" />
                   Deployment
                 </Label>
@@ -484,41 +507,53 @@ export default function CodeGenerator() {
               <div className="space-y-6">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
                   <p className="text-gray-700 mb-4">
-                    Jump straight into development with the integrated Replit environment below. 
-                    Create a new project and start coding immediately.
+                    Jump straight into development with the integrated Replit
+                    environment below. Create a new project and start coding
+                    immediately.
                   </p>
                   <div className="flex gap-3 mb-4">
-                    <Badge variant="secondary" className="bg-green-100 text-green-700">
+                    <Badge
+                      variant="secondary"
+                      className="bg-green-100 text-green-700"
+                    >
                       <Server className="h-3 w-3 mr-1" />
                       Live Environment
                     </Badge>
-                    <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    <Badge
+                      variant="secondary"
+                      className="bg-blue-100 text-blue-700"
+                    >
                       <GitBranch className="h-3 w-3 mr-1" />
                       Version Control
                     </Badge>
-                    <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                    <Badge
+                      variant="secondary"
+                      className="bg-purple-100 text-purple-700"
+                    >
                       <Zap className="h-3 w-3 mr-1" />
                       Instant Deploy
                     </Badge>
                   </div>
                 </div>
-                
+
                 <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-lg">
                   <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
+                      <h4 className="font-medium text-gray-900">
+                        Replit Development Environment
+                      </h4>
                       <div className="flex gap-2">
-                        <a 
-                          href="https://replit.com/new/nodejs" 
-                          target="_blank" 
+                        <a
+                          href="https://replit.com/new/nodejs"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                         >
                           Generate Code ↗
                         </a>
-                        <a 
-                          href="https://replit.com" 
-                          target="_blank" 
+                        <a
+                          href="https://replit.com"
+                          target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
                         >
@@ -529,24 +564,25 @@ export default function CodeGenerator() {
                   </div>
                   <div className="relative bg-black">
                     <iframe
-                      src="https://replit.com/@templates/Nodejs?embed=true&output=1"
+                      src="https://replit.com/@daspapun21/projectPlanner?embed=true&output=1"
                       width="100%"
                       height="500"
                       frameBorder="0"
                       scrolling="no"
                       allowFullScreen
-                      title="Replit Code Generation Environment"
+                      title="Project Planner - Replit Development Environment"
                       className="w-full"
                       sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
                     />
                     <div className="absolute inset-0 pointer-events-none">
                       <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        Start coding immediately - if embed doesn't load, click "Generate Code" above
+                        Start coding immediately - if embed doesn't load, click
+                        "Generate Code" above
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Card>
                     <CardHeader className="pb-3">
@@ -557,24 +593,32 @@ export default function CodeGenerator() {
                     </CardHeader>
                     <CardContent className="text-sm space-y-2">
                       <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">1</div>
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                          1
+                        </div>
                         <span>Choose your preferred framework and stack</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">2</div>
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                          2
+                        </div>
                         <span>Create a new Repl from templates</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">3</div>
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                          3
+                        </div>
                         <span>Start coding with live preview</span>
                       </div>
                       <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">4</div>
+                        <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                          4
+                        </div>
                         <span>Deploy with one click</span>
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader className="pb-3">
                       <CardTitle className="text-base flex items-center gap-2">
@@ -784,32 +828,46 @@ export default function CodeGenerator() {
                         <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600">
                           <Code className="h-5 w-5 text-white" />
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900">Start Development</h3>
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Start Development
+                        </h3>
                       </div>
                       <p className="text-gray-600 mb-4">
-                        Use the integrated Replit environment below to start developing your project. 
-                        You can create a new Repl and copy the generated code structure.
+                        Use the integrated Replit environment below to start
+                        developing your project. You can create a new Repl and
+                        copy the generated code structure.
                       </p>
                       <div className="flex gap-3 mb-4">
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                        <Badge
+                          variant="secondary"
+                          className="bg-green-100 text-green-700"
+                        >
                           <Server className="h-3 w-3 mr-1" />
                           Live Environment
                         </Badge>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        <Badge
+                          variant="secondary"
+                          className="bg-blue-100 text-blue-700"
+                        >
                           <GitBranch className="h-3 w-3 mr-1" />
                           Version Control
                         </Badge>
-                        <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                        <Badge
+                          variant="secondary"
+                          className="bg-purple-100 text-purple-700"
+                        >
                           <Zap className="h-3 w-3 mr-1" />
                           Instant Deploy
                         </Badge>
                       </div>
                     </div>
-                    
+
                     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-lg">
                       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
+                          <h4 className="font-medium text-gray-900">
+                            Replit Development Environment
+                          </h4>
                           <div className="flex gap-2">
                             <Button
                               onClick={() => {
@@ -818,17 +876,29 @@ export default function CodeGenerator() {
                                   "=== FOLDER STRUCTURE ===",
                                   generatedProject?.folderStructure || "",
                                   "\n=== FRONTEND FILES ===",
-                                  Object.entries(generatedProject?.frontendFiles || {}).map(([name, content]) => 
-                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  Object.entries(
+                                    generatedProject?.frontendFiles || {},
+                                  )
+                                    .map(
+                                      ([name, content]) =>
+                                        `--- ${name} ---\n${content}`,
+                                    )
+                                    .join("\n\n"),
                                   "\n=== BACKEND FILES ===",
-                                  Object.entries(generatedProject?.backendFiles || {}).map(([name, content]) => 
-                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  Object.entries(
+                                    generatedProject?.backendFiles || {},
+                                  )
+                                    .map(
+                                      ([name, content]) =>
+                                        `--- ${name} ---\n${content}`,
+                                    )
+                                    .join("\n\n"),
                                   "\n=== DATABASE SCHEMA ===",
                                   generatedProject?.databaseSchema || "",
                                   "\n=== PACKAGE.JSON ===",
-                                  generatedProject?.packageJson || ""
-                                ].join('\n\n');
-                                
+                                  generatedProject?.packageJson || "",
+                                ].join("\n\n");
+
                                 navigator.clipboard.writeText(allCode);
                               }}
                               size="sm"
@@ -838,9 +908,9 @@ export default function CodeGenerator() {
                               <Copy className="h-3 w-3 mr-1" />
                               Copy All Code
                             </Button>
-                            <a 
-                              href="https://replit.com/new/nodejs" 
-                              target="_blank" 
+                            <a
+                              href="https://replit.com/new/nodejs"
+                              target="_blank"
                               rel="noopener noreferrer"
                               className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                             >
@@ -851,24 +921,25 @@ export default function CodeGenerator() {
                       </div>
                       <div className="relative bg-black">
                         <iframe
-                          src="https://replit.com/@templates/Nodejs?embed=true&output=1"
+                          src="https://replit.com/@daspapun21/projectPlanner?embed=true&output=1"
                           width="100%"
                           height="500"
                           frameBorder="0"
                           scrolling="no"
                           allowFullScreen
-                          title="Replit Code Generation Environment"
+                          title="Project Planner - Replit Development Environment"
                           className="w-full"
                           sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
                         />
                         <div className="absolute inset-0 pointer-events-none">
                           <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                            Copy your code above, then create files in the embedded editor
+                            Copy your code above, then create files in the
+                            embedded editor
                           </div>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Card>
                         <CardHeader className="pb-3">
@@ -879,24 +950,34 @@ export default function CodeGenerator() {
                         </CardHeader>
                         <CardContent className="text-sm space-y-2">
                           <div className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">1</div>
-                            <span>Create a new Repl with your chosen framework</span>
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                              1
+                            </div>
+                            <span>
+                              Create a new Repl with your chosen framework
+                            </span>
                           </div>
                           <div className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">2</div>
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                              2
+                            </div>
                             <span>Copy the generated project structure</span>
                           </div>
                           <div className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">3</div>
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                              3
+                            </div>
                             <span>Install dependencies from package.json</span>
                           </div>
                           <div className="flex items-start gap-2">
-                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">4</div>
+                            <div className="w-5 h-5 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center mt-0.5">
+                              4
+                            </div>
                             <span>Start coding and deploy instantly</span>
                           </div>
                         </CardContent>
                       </Card>
-                      
+
                       <Card>
                         <CardHeader className="pb-3">
                           <CardTitle className="text-base flex items-center gap-2">
@@ -907,15 +988,21 @@ export default function CodeGenerator() {
                         <CardContent className="text-sm space-y-2">
                           <div className="flex items-start gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                            <span>Use the generated database schema for setup</span>
+                            <span>
+                              Use the generated database schema for setup
+                            </span>
                           </div>
                           <div className="flex items-start gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                            <span>Follow the folder structure recommendations</span>
+                            <span>
+                              Follow the folder structure recommendations
+                            </span>
                           </div>
                           <div className="flex items-start gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                            <span>Implement features from your project plan</span>
+                            <span>
+                              Implement features from your project plan
+                            </span>
                           </div>
                           <div className="flex items-start gap-2">
                             <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
