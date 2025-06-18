@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -9,6 +9,7 @@ import ReactFlow, {
   Connection,
   Edge,
   BackgroundVariant,
+  ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
@@ -22,9 +23,15 @@ interface FlowDiagramViewerProps {
 // Custom node styles for different types
 const nodeTypes = {};
 
-export function FlowDiagramViewer({ flowData, title, className = "" }: FlowDiagramViewerProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges);
+function FlowDiagramViewerInner({ flowData, title, className = "" }: FlowDiagramViewerProps) {
+  const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges || []);
+
+  useEffect(() => {
+    console.log('FlowDiagramViewer received data:', flowData);
+    console.log('Nodes:', flowData.nodes);
+    console.log('Edges:', flowData.edges);
+  }, [flowData]);
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -40,11 +47,25 @@ export function FlowDiagramViewer({ flowData, title, className = "" }: FlowDiagr
     return '#3B82F6';
   };
 
+  if (!flowData.nodes || flowData.nodes.length === 0) {
+    return (
+      <div className={`w-full h-full ${className}`}>
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+          <p className="text-sm text-gray-600">No flow data available</p>
+        </div>
+        <div className="w-full h-96 border border-gray-200 rounded-lg flex items-center justify-center bg-gray-50">
+          <p className="text-gray-500">No nodes to display</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`w-full h-full ${className}`}>
       <div className="mb-4">
         <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
-        <p className="text-sm text-gray-600">Interactive flow diagram visualization</p>
+        <p className="text-sm text-gray-600">Interactive flow diagram with {nodes.length} nodes</p>
       </div>
       
       <div className="w-full h-96 border border-gray-200 rounded-lg overflow-hidden bg-white">
@@ -57,6 +78,7 @@ export function FlowDiagramViewer({ flowData, title, className = "" }: FlowDiagr
           nodeTypes={nodeTypes}
           proOptions={proOptions}
           fitView
+          fitViewOptions={{ padding: 0.2 }}
           attributionPosition="bottom-left"
         >
           <Controls />
@@ -75,5 +97,13 @@ export function FlowDiagramViewer({ flowData, title, className = "" }: FlowDiagr
         </ReactFlow>
       </div>
     </div>
+  );
+}
+
+export function FlowDiagramViewer(props: FlowDiagramViewerProps) {
+  return (
+    <ReactFlowProvider>
+      <FlowDiagramViewerInner {...props} />
+    </ReactFlowProvider>
   );
 }

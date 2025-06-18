@@ -125,53 +125,94 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
 
   private parseFlowDiagramResponse(response: string): FlowDiagramData {
     try {
+      console.log("Raw AI response:", response);
+      
       // Clean the response to extract JSON
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      let cleanedResponse = response.trim();
+      
+      // Remove markdown code blocks if present
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+      } else if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      }
+      
+      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
+        console.error("No JSON found in response");
         throw new Error("No JSON found in response");
       }
 
       const jsonString = jsonMatch[0];
+      console.log("Extracted JSON string:", jsonString);
+      
       const flowData = JSON.parse(jsonString);
+      console.log("Parsed flow data:", flowData);
 
       // Validate the structure
       if (!flowData.nodes || !Array.isArray(flowData.nodes)) {
+        console.error("Invalid nodes structure:", flowData.nodes);
         throw new Error("Invalid nodes structure");
       }
       if (!flowData.edges || !Array.isArray(flowData.edges)) {
+        console.error("Invalid edges structure:", flowData.edges);
         throw new Error("Invalid edges structure");
       }
 
+      console.log("Successfully parsed flow diagram with", flowData.nodes.length, "nodes and", flowData.edges.length, "edges");
       return flowData as FlowDiagramData;
     } catch (error) {
       console.error("Error parsing flow diagram response:", error);
+      console.log("Using fallback diagram");
       // Return a fallback structure
       return this.createFallbackDiagram();
     }
   }
 
   private createFallbackDiagram(): FlowDiagramData {
-    return {
+    console.log("Creating fallback diagram");
+    const fallbackData = {
       nodes: [
         {
           id: "start",
-          position: { x: 50, y: 50 },
+          position: { x: 100, y: 100 },
           data: { label: "Start Process" },
           type: "input",
-          style: { backgroundColor: "#10B981", color: "white", border: "2px solid #059669" }
+          style: { 
+            backgroundColor: "#10B981", 
+            color: "white", 
+            border: "2px solid #059669",
+            borderRadius: "8px",
+            padding: "10px",
+            minWidth: "120px"
+          }
         },
         {
           id: "activity-1",
-          position: { x: 300, y: 50 },
+          position: { x: 300, y: 100 },
           data: { label: "Process Activity" },
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #1D4ED8" }
+          style: { 
+            backgroundColor: "#3B82F6", 
+            color: "white", 
+            border: "2px solid #1D4ED8",
+            borderRadius: "8px",
+            padding: "10px",
+            minWidth: "120px"
+          }
         },
         {
           id: "end",
-          position: { x: 550, y: 50 },
+          position: { x: 500, y: 100 },
           data: { label: "End Process" },
           type: "output",
-          style: { backgroundColor: "#EF4444", color: "white", border: "2px solid #DC2626" }
+          style: { 
+            backgroundColor: "#EF4444", 
+            color: "white", 
+            border: "2px solid #DC2626",
+            borderRadius: "8px",
+            padding: "10px",
+            minWidth: "120px"
+          }
         }
       ],
       edges: [
@@ -179,16 +220,20 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
           id: "edge-1",
           source: "start",
           target: "activity-1",
-          animated: true
+          animated: true,
+          style: { stroke: "#6B7280", strokeWidth: 2 }
         },
         {
           id: "edge-2",
           source: "activity-1",
           target: "end",
-          animated: true
+          animated: true,
+          style: { stroke: "#6B7280", strokeWidth: 2 }
         }
       ]
     };
+    console.log("Fallback diagram created:", fallbackData);
+    return fallbackData;
   }
 }
 
