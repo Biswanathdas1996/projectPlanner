@@ -3500,6 +3500,49 @@ Data Objects: Request form, User profile`,
                                     )}
                                   </div>
                                 )}
+                                
+                                {/* Flow Diagram Standalone Display */}
+                                {flowDiagrams[flowKey] && (
+                                  <div className="space-y-3 mt-4">
+                                    <div className="flex items-center justify-between">
+                                      <Badge
+                                        variant="secondary"
+                                        className="text-xs bg-emerald-100 text-emerald-700"
+                                      >
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        ReactFlow Diagram Generated
+                                      </Badge>
+                                      <div className="flex items-center gap-1">
+                                        <Button
+                                          onClick={() => {
+                                            const jsonString = JSON.stringify(flowDiagrams[flowKey], null, 2);
+                                            navigator.clipboard.writeText(jsonString);
+                                            toast({
+                                              title: "JSON Copied",
+                                              description: "Flow diagram JSON copied to clipboard",
+                                            });
+                                          }}
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-2 py-1 h-6 border-gray-300"
+                                        >
+                                          <Copy className="h-3 w-3 mr-1" />
+                                          Copy JSON
+                                        </Button>
+                                      </div>
+                                    </div>
+
+                                    {/* ReactFlow Visualization */}
+                                    <div className="bg-white rounded-lg border w-full">
+                                      <FlowDiagramViewer
+                                        flowData={flowDiagrams[flowKey]}
+                                        title={`${stakeholder} - ${flowType} Flow`}
+                                        className="p-4"
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+
                                 {/* BPMN Script Display */}
                                 {existingFlow?.bpmnXml && (
                                   <div className="space-y-3">
