@@ -509,12 +509,12 @@ export default function CodeGenerator() {
                       <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
                       <div className="flex gap-2">
                         <a 
-                          href="https://replit.com/new" 
+                          href="https://replit.com/new/nodejs" 
                           target="_blank" 
                           rel="noopener noreferrer"
                           className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                         >
-                          Create New Repl ↗
+                          Generate Code ↗
                         </a>
                         <a 
                           href="https://replit.com" 
@@ -529,19 +529,19 @@ export default function CodeGenerator() {
                   </div>
                   <div className="relative bg-black">
                     <iframe
-                      src="https://replit.com/@replit/Nodejs?embed=true&output=1"
+                      src="https://replit.com/@templates/Nodejs?embed=true&output=1"
                       width="100%"
                       height="500"
                       frameBorder="0"
                       scrolling="no"
                       allowFullScreen
-                      title="Replit Development Environment"
+                      title="Replit Code Generation Environment"
                       className="w-full"
                       sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
                     />
                     <div className="absolute inset-0 pointer-events-none">
                       <div className="absolute bottom-4 right-4 bg-black/70 text-white text-xs px-2 py-1 rounded">
-                        If embed doesn't load, click "Create New Repl" above
+                        Start coding immediately - if embed doesn't load, click "Generate Code" above
                       </div>
                     </div>
                   </div>
@@ -839,25 +839,25 @@ export default function CodeGenerator() {
                               Copy All Code
                             </Button>
                             <a 
-                              href="https://replit.com/new" 
+                              href="https://replit.com/new/nodejs" 
                               target="_blank" 
                               rel="noopener noreferrer"
                               className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
                             >
-                              Create New Repl ↗
+                              Generate Code ↗
                             </a>
                           </div>
                         </div>
                       </div>
                       <div className="relative bg-black">
                         <iframe
-                          src="https://replit.com/@replit/Nodejs?embed=true&output=1"
+                          src="https://replit.com/@templates/Nodejs?embed=true&output=1"
                           width="100%"
                           height="500"
                           frameBorder="0"
                           scrolling="no"
                           allowFullScreen
-                          title="Replit Development Environment"
+                          title="Replit Code Generation Environment"
                           className="w-full"
                           sandbox="allow-forms allow-pointer-lock allow-popups allow-same-origin allow-scripts allow-top-navigation"
                         />
