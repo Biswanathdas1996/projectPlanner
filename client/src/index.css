@@ -764,6 +764,194 @@
     padding: 6px 8px;
   }
 
+  /* Modern Advanced Flow Grid */
+  .advanced-flow-grid {
+    @apply bg-gradient-to-br from-slate-50 to-blue-50;
+    @apply border border-slate-200 rounded-xl;
+    @apply p-6 my-6 shadow-sm;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    grid-template-rows: repeat(3, 80px);
+    gap: 16px;
+    overflow: visible;
+    min-height: 280px;
+  }
+
+  .advanced-flow-grid::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+    border-radius: 8px 8px 0 0;
+    z-index: 1;
+  }
+
+  /* Flow Node Styles */
+  .flow-node {
+    @apply bg-gradient-to-br from-white to-slate-50;
+    @apply border-2 border-slate-300 rounded-lg;
+    @apply px-3 py-2 text-center shadow-sm;
+    @apply transition-all duration-200 ease-out;
+    @apply cursor-pointer relative overflow-hidden;
+    @apply flex items-center justify-center;
+    min-width: 100px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #374151;
+    backdrop-filter: blur(10px);
+  }
+
+  .flow-node::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    z-index: 1;
+  }
+
+  .flow-node:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    border-color: #6366f1;
+  }
+
+  /* Flow Node Variants */
+  .flow-node.start {
+    @apply bg-gradient-to-br from-emerald-50 to-green-100;
+    @apply border-emerald-300 text-emerald-800;
+    border-radius: 50px;
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  .flow-node.start::before {
+    background: linear-gradient(90deg, #10b981, #22c55e);
+  }
+
+  .flow-node.decision {
+    @apply bg-gradient-to-br from-amber-50 to-yellow-100;
+    @apply border-amber-300 text-amber-800;
+    transform: rotate(45deg);
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .flow-node.decision::before {
+    background: linear-gradient(90deg, #f59e0b, #eab308);
+  }
+
+  .flow-node.decision span {
+    transform: rotate(-45deg);
+  }
+
+  .flow-node.process-a {
+    @apply bg-gradient-to-br from-blue-50 to-cyan-100;
+    @apply border-blue-300 text-blue-800;
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .flow-node.process-a::before {
+    background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  }
+
+  .flow-node.process-b {
+    @apply bg-gradient-to-br from-purple-50 to-pink-100;
+    @apply border-purple-300 text-purple-800;
+    grid-column: 3;
+    grid-row: 3;
+  }
+
+  .flow-node.process-b::before {
+    background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  }
+
+  .flow-node.end {
+    @apply bg-gradient-to-br from-rose-50 to-red-100;
+    @apply border-rose-300 text-rose-800;
+    border-radius: 50px;
+    grid-column: 5;
+    grid-row: 2;
+  }
+
+  .flow-node.end::before {
+    background: linear-gradient(90deg, #f43f5e, #ef4444);
+  }
+
+  /* Flow Connections */
+  .flow-connection {
+    position: absolute;
+    background: #94a3b8;
+    z-index: 5;
+  }
+
+  .flow-connection.horizontal {
+    height: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .flow-connection.vertical {
+    width: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Connection Arrows */
+  .flow-connection.horizontal::after {
+    content: '';
+    position: absolute;
+    right: -6px;
+    top: -3px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid #94a3b8;
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+  }
+
+  .flow-connection.vertical::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: -3px;
+    width: 0;
+    height: 0;
+    border-top: 8px solid #94a3b8;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+  }
+
+  /* Compact Decision Labels */
+  .decision-label {
+    position: absolute;
+    font-size: 8px;
+    font-weight: 600;
+    color: #6b7280;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    z-index: 10;
+  }
+
+  .decision-label.yes {
+    color: #059669;
+    border-color: #059669;
+  }
+
+  .decision-label.no {
+    color: #dc2626;
+    border-color: #dc2626;
+  }
+
   /* Modern Flowchart Styling */
   .flowchart {
     @apply bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50;

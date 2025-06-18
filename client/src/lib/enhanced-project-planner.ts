@@ -259,13 +259,17 @@ COMPACT CONNECTED FLOWS - Use tight horizontal layout with arrows:
 
 ADVANCED GRID FLOWS - Use precise positioning with connection arrows:
 <div class="advanced-flow-grid">
-  <div class="flow-node start">Start</div>
-  <div class="flow-node decision">Validate?</div>
-  <div class="flow-node process-a">Process A</div>
-  <div class="flow-node process-b">Process B</div>
-  <div class="flow-node end">Complete</div>
-  <div class="flow-connection horizontal" style="left: 25%;"></div>
-  <div class="flow-connection horizontal" style="left: 50%;"></div>
+  <div class="flow-node start"><span>Start</span></div>
+  <div class="flow-node decision"><span>Validate?</span></div>
+  <div class="flow-node process-a"><span>Process A</span></div>
+  <div class="flow-node process-b"><span>Process B</span></div>
+  <div class="flow-node end"><span>Complete</span></div>
+  <div class="flow-connection horizontal" style="grid-column: 1/3; grid-row: 2; width: 80%;"></div>
+  <div class="flow-connection horizontal" style="grid-column: 2/4; grid-row: 1; width: 80%;"></div>
+  <div class="flow-connection horizontal" style="grid-column: 2/4; grid-row: 3; width: 80%;"></div>
+  <div class="flow-connection horizontal" style="grid-column: 4/6; grid-row: 2; width: 80%;"></div>
+  <div class="decision-label yes" style="grid-column: 2; grid-row: 1; margin-top: -10px;">Yes</div>
+  <div class="decision-label no" style="grid-column: 2; grid-row: 3; margin-bottom: -10px;">No</div>
 </div>
 
 Use tables, flowcharts, timelines, cards, metrics, and status badges. Never suggest images or external diagrams. All visualizations must be HTML/CSS based.`;
