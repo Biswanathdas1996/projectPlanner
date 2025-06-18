@@ -98,14 +98,32 @@ Create a ReactFlow diagram with the following requirements:
 - Use different Y positions for different participants (swimlanes)
 - Make decision nodes diamond-shaped with appropriate styling
 
-**Response Format:**
-Return ONLY a valid JSON object with this exact structure:
+**CRITICAL: Response Format Requirements:**
+Return ONLY a valid JSON object. Do NOT include any extra properties beyond these allowed fields:
+
+For nodes, ONLY use these properties:
+- id (string, required)
+- position (object with x, y numbers, required)
+- data (object with label string, required)
+- type (string, optional: "input", "output", "default")
+- style (object, optional)
+
+For edges, ONLY use these properties:
+- id (string, required)
+- source (string, required)
+- target (string, required)
+- animated (boolean, optional)
+- style (object, optional)
+
+DO NOT ADD: participant, description, or any other custom properties.
+
+Example structure:
 {
   "nodes": [
     {
       "id": "node-1",
       "position": { "x": 50, "y": 50 },
-      "data": { "label": "Start: [trigger description]" },
+      "data": { "label": "Start: User submits form" },
       "type": "input",
       "style": { "backgroundColor": "#10B981", "color": "white", "border": "2px solid #059669" }
     }
@@ -159,8 +177,31 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
         throw new Error("Invalid edges structure");
       }
 
-      console.log("Successfully parsed flow diagram with", flowData.nodes.length, "nodes and", flowData.edges.length, "edges");
-      return flowData as FlowDiagramData;
+      // Clean up nodes - remove non-ReactFlow properties
+      const cleanedNodes = flowData.nodes.map((node: any) => ({
+        id: node.id,
+        position: node.position || { x: 0, y: 0 },
+        data: node.data || { label: "Node" },
+        type: node.type,
+        style: node.style
+      }));
+
+      // Clean up edges - ensure all required properties are present
+      const cleanedEdges = flowData.edges.map((edge: any) => ({
+        id: edge.id,
+        source: edge.source,
+        target: edge.target,
+        animated: edge.animated || false,
+        style: edge.style
+      }));
+
+      const cleanedFlowData = {
+        nodes: cleanedNodes,
+        edges: cleanedEdges
+      };
+
+      console.log("Successfully parsed and cleaned flow diagram with", cleanedNodes.length, "nodes and", cleanedEdges.length, "edges");
+      return cleanedFlowData as FlowDiagramData;
     } catch (error) {
       console.error("Error parsing flow diagram response:", error);
       console.log("Using fallback diagram");
