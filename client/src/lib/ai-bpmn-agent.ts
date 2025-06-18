@@ -66,7 +66,10 @@ export class AIBpmnAgent {
       // Apply post-processing enhancements
       bpmnXml = this.enhanceBpmnStructure(bpmnXml, data, options);
 
-      console.log("✅ AI BPMN Agent: Generated comprehensive BPMN 2.0 process");
+      console.log(
+        "✅ AI BPMN Agent: Generated comprehensive BPMN 2.0 process",
+        bpmnXml
+      );
       console.log(`📊 Process complexity: ${options.complexity}`);
       console.log(`🏊 Participants: ${data.participants.length}`);
       console.log(`⚡ Activities: ${data.activities.length}`);
@@ -88,7 +91,7 @@ export class AIBpmnAgent {
     );
     const layoutInstructions = this.getLayoutInstructions(options);
 
-    return `You are an expert BPMN 2.0 architect specializing in large-scale enterprise process modeling. Generate a comprehensive, production-ready BPMN 2.0 XML diagram based on this structured workflow specification.
+    return `You are an expert BPMN 2.0 architect specializing in large-scale enterprise process modeling. Generate a comprehensive, production-ready BPMN 2.0 XML diagram XML script based on this structured workflow specification.
 
 ## WORKFLOW SPECIFICATION
 
@@ -115,48 +118,6 @@ ${data.endEvent}
 ${data.additionalElements
   .map((element, i) => `${i + 1}. ${element}`)
   .join("\n")}
-
-## GENERATION REQUIREMENTS
-
-### COMPLEXITY LEVEL: ${options.complexity.toUpperCase()}
-${complexityInstructions}
-
-### LAYOUT & STRUCTURE:
-${layoutInstructions}
-
-### TECHNICAL SPECIFICATIONS:
-- Generate complete BPMN 2.0 XML with all required namespaces
-- Use proper namespace prefixes: bpmn2, bpmndi, dc, di, xsi
-- Create collaboration element with participant pools/swimlanes
-- Include comprehensive visual positioning (BPMNDiagram, BPMNPlane, BPMNShape, BPMNEdge)
-- Generate unique IDs for all elements using descriptive naming
-- Ensure all sequence flows have proper source/target references
-- Include proper BPMN element types (userTask, exclusiveGateway, startEvent, endEvent)
-- Add conditional expressions for decision gateways with Yes/No labels
-- Create message flows between participants where logical
-- Position elements with professional spacing and alignment
-
-### ADVANCED FEATURES:
-${
-  options.includeSubProcesses
-    ? "- Include collapsed sub-processes for complex activity groups"
-    : ""
-}
-${
-  options.includeMessageFlows
-    ? "- Add message flows between participant pools"
-    : ""
-}
-${
-  options.includeTimerEvents
-    ? "- Include timer boundary events for time-sensitive activities"
-    : ""
-}
-${
-  options.includeErrorHandling
-    ? "- Add error boundary events and exception flows"
-    : ""
-}
 
 ### OUTPUT REQUIREMENTS:
 - Return ONLY valid BPMN 2.0 XML
@@ -195,7 +156,9 @@ Generate the complete BPMN 2.0 XML:`;
 - Add multiple levels of sub-processes and call activities
 - Implement comprehensive governance and compliance patterns
 - Include advanced event handling, compensation, and transaction boundaries
-- Create realistic enterprise integration patterns`;
+- Create realistic enterprise integration patterns
+- make sure you are closing each tag of the script , also close <?xml version="1.0" encoding="UTF-8"?>
+`;
 
       default:
         return "- Create standard business process with appropriate complexity";

@@ -19,7 +19,7 @@ export function SimpleBpmnViewer({
   const viewerRef = useRef<BpmnJS | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  console.log(bpmnXml);
+  console.log("=====================>", bpmnXml);
   useEffect(() => {
     if (!containerRef.current || !bpmnXml) return;
 
@@ -53,7 +53,7 @@ export function SimpleBpmnViewer({
       } catch (err) {
         console.error("BPMN rendering error:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to render BPMN diagram",
+          err instanceof Error ? err.message : "Failed to render BPMN diagram"
         );
         setIsLoading(false);
       }

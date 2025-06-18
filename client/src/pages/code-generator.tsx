@@ -78,7 +78,7 @@ export default function CodeGenerator() {
       localStorage.getItem("project-plan"),
     ];
     const savedProjectPlan = projectPlanSources.find(
-      (plan) => plan && plan.trim(),
+      (plan) => plan && plan.trim()
     );
 
     // Load stakeholder flows from multiple possible sources
@@ -90,7 +90,7 @@ export default function CodeGenerator() {
       localStorage.getItem("flow_details"),
     ];
     const savedStakeholderData = stakeholderFlowSources.find(
-      (data) => data && data.trim(),
+      (data) => data && data.trim()
     );
 
     if (savedProjectPlan) {
@@ -106,7 +106,7 @@ export default function CodeGenerator() {
   const generateProjectCode = async () => {
     if (!projectPlan.trim()) {
       alert(
-        "Please ensure you have a project plan. Visit the Project Planner page first.",
+        "Please ensure you have a project plan. Visit the Project Planner page first."
       );
       return;
     }
@@ -136,7 +136,7 @@ export default function CodeGenerator() {
         config,
         (progress: GenerationProgress) => {
           setGenerationProgress(progress);
-        },
+        }
       );
 
       setGeneratedProject(projectStructure);
@@ -149,7 +149,7 @@ export default function CodeGenerator() {
 
       if (errorMessage.includes("API key")) {
         alert(
-          "Gemini API key is required for code generation. Please check your environment variables.",
+          "Gemini API key is required for code generation. Please check your environment variables."
         );
       } else {
         alert(`Code generation failed: ${errorMessage}`);
@@ -481,7 +481,11 @@ export default function CodeGenerator() {
                   <div
                     className="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full transition-all duration-300"
                     style={{
-                      width: `${(generationProgress.current / generationProgress.total) * 100}%`,
+                      width: `${
+                        (generationProgress.current /
+                          generationProgress.total) *
+                        100
+                      }%`,
                     }}
                   />
                 </div>
@@ -564,7 +568,7 @@ export default function CodeGenerator() {
                   </div>
                   <div className="relative bg-black">
                     <iframe
-                      src="https://replit.com/@daspapun21/projectPlanner?embed=true&output=1"
+                      src="https://replit.com/@cvbiswanath/vivek?embed=true&output=1"
                       width="100%"
                       height="500"
                       frameBorder="0"
@@ -738,7 +742,7 @@ export default function CodeGenerator() {
                             {content}
                           </pre>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </TabsContent>
@@ -764,7 +768,7 @@ export default function CodeGenerator() {
                             {content}
                           </pre>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </TabsContent>
@@ -877,20 +881,20 @@ export default function CodeGenerator() {
                                   generatedProject?.folderStructure || "",
                                   "\n=== FRONTEND FILES ===",
                                   Object.entries(
-                                    generatedProject?.frontendFiles || {},
+                                    generatedProject?.frontendFiles || {}
                                   )
                                     .map(
                                       ([name, content]) =>
-                                        `--- ${name} ---\n${content}`,
+                                        `--- ${name} ---\n${content}`
                                     )
                                     .join("\n\n"),
                                   "\n=== BACKEND FILES ===",
                                   Object.entries(
-                                    generatedProject?.backendFiles || {},
+                                    generatedProject?.backendFiles || {}
                                   )
                                     .map(
                                       ([name, content]) =>
-                                        `--- ${name} ---\n${content}`,
+                                        `--- ${name} ---\n${content}`
                                     )
                                     .join("\n\n"),
                                   "\n=== DATABASE SCHEMA ===",
