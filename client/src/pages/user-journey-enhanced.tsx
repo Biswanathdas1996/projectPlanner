@@ -13,7 +13,10 @@ import {
 } from "@/lib/gemini";
 import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { generateStructuredBpmn } from "@/lib/structured-bpmn-generator";
-import { BPMN_GENERATION_STRATEGIES, RECOMMENDED_STRATEGY } from "@/lib/bpmn-best-practices";
+import {
+  BPMN_GENERATION_STRATEGIES,
+  RECOMMENDED_STRATEGY,
+} from "@/lib/bpmn-best-practices";
 import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
@@ -77,7 +80,7 @@ export default function UserJourneyEnhanced() {
   const [projectDescription, setProjectDescription] = useState("");
   const [userJourneyFlows, setUserJourneyFlows] = useState<string>("");
   const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>(
-    [],
+    []
   );
   const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<
@@ -90,7 +93,7 @@ export default function UserJourneyEnhanced() {
   const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>("");
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
   const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>(
-    [],
+    []
   );
   const [personaFlowTypes, setPersonaFlowTypes] = useState<
     Record<string, string[]>
@@ -99,7 +102,7 @@ export default function UserJourneyEnhanced() {
   // Stakeholder management state
   const [newStakeholderName, setNewStakeholderName] = useState("");
   const [editingStakeholder, setEditingStakeholder] = useState<string | null>(
-    null,
+    null
   );
   const [editedStakeholderName, setEditedStakeholderName] = useState("");
 
@@ -111,7 +114,7 @@ export default function UserJourneyEnhanced() {
   // Flow details generation state
   const [isGeneratingFlowDetails, setIsGeneratingFlowDetails] = useState(false);
   const [flowDetails, setFlowDetails] = useState<Record<string, FlowDetails>>(
-    {},
+    {}
   );
   const [flowGenerationProgress, setFlowGenerationProgress] = useState<{
     current: number;
@@ -122,14 +125,14 @@ export default function UserJourneyEnhanced() {
   }>({
     current: 0,
     total: 0,
-    currentFlow: '',
+    currentFlow: "",
     completedFlows: [],
-    status: ''
+    status: "",
   });
 
   // Flow details editing state
   const [editingFlowDetails, setEditingFlowDetails] = useState<string | null>(
-    null,
+    null
   );
   const [editedFlowDetails, setEditedFlowDetails] =
     useState<FlowDetails | null>(null);
@@ -137,20 +140,20 @@ export default function UserJourneyEnhanced() {
   // Load data from localStorage when component mounts
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(
-      STORAGE_KEYS.PROJECT_DESCRIPTION,
+      STORAGE_KEYS.PROJECT_DESCRIPTION
     );
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedUserJourneyFlows = localStorage.getItem(
-      STORAGE_KEYS.USER_JOURNEY_FLOWS,
+      STORAGE_KEYS.USER_JOURNEY_FLOWS
     );
     const savedStakeholders = localStorage.getItem(
-      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS
     );
     const savedFlowTypes = localStorage.getItem(
-      STORAGE_KEYS.PERSONA_FLOW_TYPES,
+      STORAGE_KEYS.PERSONA_FLOW_TYPES
     );
     const savedStakeholderFlows = localStorage.getItem(
-      STORAGE_KEYS.STAKEHOLDER_FLOWS,
+      STORAGE_KEYS.STAKEHOLDER_FLOWS
     );
 
     if (savedProjectDescription) {
@@ -211,7 +214,7 @@ export default function UserJourneyEnhanced() {
     try {
       localStorage.setItem(
         STORAGE_KEYS.STAKEHOLDER_FLOWS,
-        JSON.stringify(flows),
+        JSON.stringify(flows)
       );
     } catch (error) {
       console.error("Error saving stakeholder flows to localStorage:", error);
@@ -226,10 +229,10 @@ export default function UserJourneyEnhanced() {
 
   // Extract stakeholders from project plan
   const extractProjectStakeholders = async () => {
-    const planContent = projectPlan || projectDescription;
+    const planContent = projectDescription;
     if (!planContent.trim()) {
       setError(
-        "No project plan available. Please generate a project plan first.",
+        "No project plan available. Please generate a project plan first."
       );
       return;
     }
@@ -238,8 +241,9 @@ export default function UserJourneyEnhanced() {
     setError("");
 
     try {
-      const { stakeholders, flowTypes } =
-        await extractStakeholdersFromProject(planContent);
+      const { stakeholders, flowTypes } = await extractStakeholdersFromProject(
+        planContent
+      );
       setExtractedStakeholders(stakeholders);
       setPersonaFlowTypes(flowTypes);
 
@@ -259,16 +263,16 @@ export default function UserJourneyEnhanced() {
 
       localStorage.setItem(
         STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
-        JSON.stringify(stakeholders),
+        JSON.stringify(stakeholders)
       );
       localStorage.setItem(
         STORAGE_KEYS.PERSONA_FLOW_TYPES,
-        JSON.stringify(flowTypes),
+        JSON.stringify(flowTypes)
       );
     } catch (error) {
       console.error("Error extracting stakeholders:", error);
       setError(
-        "Failed to extract stakeholders from project plan. Please try again.",
+        "Failed to extract stakeholders from project plan. Please try again."
       );
     } finally {
       setIsExtractingStakeholders(false);
@@ -280,7 +284,7 @@ export default function UserJourneyEnhanced() {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
       setError(
-        "No project plan available. Please generate a project plan first.",
+        "No project plan available. Please generate a project plan first."
       );
       return;
     }
@@ -304,12 +308,12 @@ export default function UserJourneyEnhanced() {
   const generateStakeholderBpmn = async (
     stakeholder: string,
     flowType: string,
-    customPrompt?: string,
+    customPrompt?: string
   ) => {
     const planContent = projectPlan || projectDescription;
     if (!planContent.trim()) {
       setError(
-        "No project plan available. Please generate a project plan first.",
+        "No project plan available. Please generate a project plan first."
       );
       return;
     }
@@ -323,13 +327,13 @@ export default function UserJourneyEnhanced() {
         planContent,
         stakeholder,
         flowType,
-        customPrompt,
+        customPrompt
       );
 
       const updatedFlows = stakeholderFlows.map((flow) =>
         flow.stakeholder === stakeholder && flow.flowType === flowType
           ? { ...flow, bpmnXml: bpmn }
-          : flow,
+          : flow
       );
       updateStakeholderFlows(updatedFlows);
 
@@ -340,7 +344,7 @@ export default function UserJourneyEnhanced() {
     } catch (error) {
       console.error(`Error generating ${stakeholder} ${flowType} BPMN:`, error);
       setError(
-        `Failed to generate ${stakeholder} ${flowType} BPMN diagram. Please try again.`,
+        `Failed to generate ${stakeholder} ${flowType} BPMN diagram. Please try again.`
       );
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
@@ -353,7 +357,7 @@ export default function UserJourneyEnhanced() {
       await generateStakeholderBpmn(
         flow.stakeholder,
         flow.flowType,
-        flow.customPrompt,
+        flow.customPrompt
       );
       // Add delay to avoid rate limiting
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -377,10 +381,14 @@ export default function UserJourneyEnhanced() {
 
   // Remove a flow with confirmation
   const removeFlow = (stakeholder: string, flowType: string) => {
-    if (window.confirm(`Are you sure you want to delete the BPMN flow for "${stakeholder} - ${flowType}"? This action cannot be undone.`)) {
+    if (
+      window.confirm(
+        `Are you sure you want to delete the BPMN flow for "${stakeholder} - ${flowType}"? This action cannot be undone.`
+      )
+    ) {
       const updatedFlows = stakeholderFlows.filter(
         (flow) =>
-          !(flow.stakeholder === stakeholder && flow.flowType === flowType),
+          !(flow.stakeholder === stakeholder && flow.flowType === flowType)
       );
       updateStakeholderFlows(updatedFlows);
     }
@@ -390,12 +398,12 @@ export default function UserJourneyEnhanced() {
   const updateCustomPrompt = (
     stakeholder: string,
     flowType: string,
-    prompt: string,
+    prompt: string
   ) => {
     const updatedFlows = stakeholderFlows.map((flow) =>
       flow.stakeholder === stakeholder && flow.flowType === flowType
         ? { ...flow, customPrompt: prompt }
-        : flow,
+        : flow
     );
     updateStakeholderFlows(updatedFlows);
   };
@@ -466,14 +474,14 @@ export default function UserJourneyEnhanced() {
 
   // Navigate to editor with specific diagram
   const openInEditor = (stakeholderOrXml: string, flowType?: string) => {
-    let bpmnXml = '';
-    
+    let bpmnXml = "";
+
     if (flowType) {
       // Called with stakeholder and flowType
       const existingFlow = stakeholderFlows.find(
-        (f) => f.stakeholder === stakeholderOrXml && f.flowType === flowType,
+        (f) => f.stakeholder === stakeholderOrXml && f.flowType === flowType
       );
-      bpmnXml = existingFlow?.bpmnXml || '';
+      bpmnXml = existingFlow?.bpmnXml || "";
     } else {
       // Called with just bpmnXml
       bpmnXml = stakeholderOrXml;
@@ -483,11 +491,13 @@ export default function UserJourneyEnhanced() {
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
-      
+
       // Navigate to BPMN editor
-      window.location.href = '/bpmn-editor';
+      window.location.href = "/bpmn-editor";
     } else {
-      setError("No BPMN diagram found to edit. Please generate a diagram first.");
+      setError(
+        "No BPMN diagram found to edit. Please generate a diagram first."
+      );
     }
   };
 
@@ -508,7 +518,7 @@ export default function UserJourneyEnhanced() {
     setExtractedStakeholders(updatedStakeholders);
     localStorage.setItem(
       STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
-      JSON.stringify(updatedStakeholders),
+      JSON.stringify(updatedStakeholders)
     );
 
     // Add default flow types for new stakeholder
@@ -523,7 +533,7 @@ export default function UserJourneyEnhanced() {
     setPersonaFlowTypes(updatedFlowTypes);
     localStorage.setItem(
       STORAGE_KEYS.PERSONA_FLOW_TYPES,
-      JSON.stringify(updatedFlowTypes),
+      JSON.stringify(updatedFlowTypes)
     );
 
     setNewStakeholderName("");
@@ -553,12 +563,12 @@ export default function UserJourneyEnhanced() {
     if (editingStakeholder) {
       // Update stakeholders list
       const updatedStakeholders = extractedStakeholders.map((s) =>
-        s === editingStakeholder ? trimmedName : s,
+        s === editingStakeholder ? trimmedName : s
       );
       setExtractedStakeholders(updatedStakeholders);
       localStorage.setItem(
         STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
-        JSON.stringify(updatedStakeholders),
+        JSON.stringify(updatedStakeholders)
       );
 
       // Update flow types
@@ -572,14 +582,14 @@ export default function UserJourneyEnhanced() {
       setPersonaFlowTypes(updatedFlowTypes);
       localStorage.setItem(
         STORAGE_KEYS.PERSONA_FLOW_TYPES,
-        JSON.stringify(updatedFlowTypes),
+        JSON.stringify(updatedFlowTypes)
       );
 
       // Update stakeholder flows
       const updatedFlows = stakeholderFlows.map((flow) =>
         flow.stakeholder === editingStakeholder
           ? { ...flow, stakeholder: trimmedName }
-          : flow,
+          : flow
       );
       updateStakeholderFlows(updatedFlows);
     }
@@ -597,12 +607,12 @@ export default function UserJourneyEnhanced() {
   const deleteStakeholder = (stakeholder: string) => {
     // Remove from stakeholders list
     const updatedStakeholders = extractedStakeholders.filter(
-      (s) => s !== stakeholder,
+      (s) => s !== stakeholder
     );
     setExtractedStakeholders(updatedStakeholders);
     localStorage.setItem(
       STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
-      JSON.stringify(updatedStakeholders),
+      JSON.stringify(updatedStakeholders)
     );
 
     // Remove from flow types
@@ -611,12 +621,12 @@ export default function UserJourneyEnhanced() {
     setPersonaFlowTypes(updatedFlowTypes);
     localStorage.setItem(
       STORAGE_KEYS.PERSONA_FLOW_TYPES,
-      JSON.stringify(updatedFlowTypes),
+      JSON.stringify(updatedFlowTypes)
     );
 
     // Remove from stakeholder flows
     const updatedFlows = stakeholderFlows.filter(
-      (flow) => flow.stakeholder !== stakeholder,
+      (flow) => flow.stakeholder !== stakeholder
     );
     updateStakeholderFlows(updatedFlows);
   };
@@ -642,7 +652,7 @@ export default function UserJourneyEnhanced() {
     setPersonaFlowTypes(updatedFlowTypes);
     localStorage.setItem(
       STORAGE_KEYS.PERSONA_FLOW_TYPES,
-      JSON.stringify(updatedFlowTypes),
+      JSON.stringify(updatedFlowTypes)
     );
 
     setNewFlowType((prev) => ({ ...prev, [stakeholder]: "" }));
@@ -674,20 +684,20 @@ export default function UserJourneyEnhanced() {
     const updatedFlowTypes = {
       ...personaFlowTypes,
       [stakeholder]: currentFlowTypes.map((ft) =>
-        ft === originalFlowType ? trimmedName : ft,
+        ft === originalFlowType ? trimmedName : ft
       ),
     };
     setPersonaFlowTypes(updatedFlowTypes);
     localStorage.setItem(
       STORAGE_KEYS.PERSONA_FLOW_TYPES,
-      JSON.stringify(updatedFlowTypes),
+      JSON.stringify(updatedFlowTypes)
     );
 
     // Update stakeholder flows with new flow type name
     const updatedFlows = stakeholderFlows.map((flow) =>
       flow.stakeholder === stakeholder && flow.flowType === originalFlowType
         ? { ...flow, flowType: trimmedName }
-        : flow,
+        : flow
     );
     updateStakeholderFlows(updatedFlows);
 
@@ -705,19 +715,19 @@ export default function UserJourneyEnhanced() {
     const updatedFlowTypes = {
       ...personaFlowTypes,
       [stakeholder]: (personaFlowTypes[stakeholder] || []).filter(
-        (ft) => ft !== flowType,
+        (ft) => ft !== flowType
       ),
     };
     setPersonaFlowTypes(updatedFlowTypes);
     localStorage.setItem(
       STORAGE_KEYS.PERSONA_FLOW_TYPES,
-      JSON.stringify(updatedFlowTypes),
+      JSON.stringify(updatedFlowTypes)
     );
 
     // Remove from stakeholder flows
     const updatedFlows = stakeholderFlows.filter(
       (flow) =>
-        !(flow.stakeholder === stakeholder && flow.flowType === flowType),
+        !(flow.stakeholder === stakeholder && flow.flowType === flowType)
     );
     updateStakeholderFlows(updatedFlows);
   };
@@ -746,9 +756,9 @@ export default function UserJourneyEnhanced() {
       setFlowGenerationProgress({
         current: 0,
         total: allFlows.length,
-        currentFlow: '',
+        currentFlow: "",
         completedFlows: [],
-        status: 'Preparing flow analysis...'
+        status: "Preparing flow analysis...",
       });
 
       const details: Record<string, FlowDetails> = {};
@@ -759,18 +769,24 @@ export default function UserJourneyEnhanced() {
         const key = `${flow.stakeholder}-${flow.flowType}`;
 
         // Update progress
-        setFlowGenerationProgress(prev => ({
+        setFlowGenerationProgress((prev) => ({
           ...prev,
           current: i + 1,
           currentFlow: `${flow.stakeholder} - ${flow.flowType}`,
-          status: `Analyzing ${flow.stakeholder} ${flow.flowType} process...`
+          status: `Analyzing ${flow.stakeholder} ${flow.flowType} process...`,
         }));
 
         try {
           console.log(
-            `Generating flow details for ${flow.stakeholder} - ${flow.flowType} (${i + 1}/${allFlows.length})`,
+            `Generating flow details for ${flow.stakeholder} - ${
+              flow.flowType
+            } (${i + 1}/${allFlows.length})`
           );
-          const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${flow.stakeholder} - ${flow.flowType} with fine granular details for perfect BPMN diagram generation:
+          const prompt = `Generate comprehensive BPMN 2.0 flow analysis for ${
+            flow.stakeholder
+          } - ${
+            flow.flowType
+          } with fine granular details for perfect BPMN diagram generation:
 
 PROJECT CONTEXT:
 ${projectPlan || projectDescription}
@@ -838,14 +854,16 @@ Include SHORT, specific BPMN elements (1-2 words each):
 - "Authentication flow", "Payment process", "Approval workflow"
 
 Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
-{"description": "✅ 1. Process Name and Description\\n[short process name and brief description]\\n\\n✅ 2. Participants (Swimlanes)\\n[participant list]\\n\\n✅ 3. Trigger (Start Event)\\n[brief trigger description]\\n\\n✅ 4. Sequence of Activities\\n[short activity names]\\n\\n✅ 5. Decision Points (Gateways)\\n[brief decision points]\\n\\n✅ 6. End Event\\n[short end event description]\\n\\n✅ 7. Additional Elements\\n[short element descriptions]", "participants": ["${flow.stakeholder}", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Brief trigger with event source", "decisionPoints": ["If valid, approve; else reject", "If urgent, escalate; else normal flow"], "endEvent": "Process completed successfully", "additionalElements": ["Messages: Notification sent", "Timers: Wait 24 hours", "Data: Request form", "Errors: Validation error"]}`;
+{"description": "✅ 1. Process Name and Description\\n[short process name and brief description]\\n\\n✅ 2. Participants (Swimlanes)\\n[participant list]\\n\\n✅ 3. Trigger (Start Event)\\n[brief trigger description]\\n\\n✅ 4. Sequence of Activities\\n[short activity names]\\n\\n✅ 5. Decision Points (Gateways)\\n[brief decision points]\\n\\n✅ 6. End Event\\n[short end event description]\\n\\n✅ 7. Additional Elements\\n[short element descriptions]", "participants": ["${
+            flow.stakeholder
+          }", "System Administrator", "Database System", "External API", "Notification Service", "Additional Role"], "activities": ["Submit Request", "Validate Data", "Process Transaction", "Update Records", "Send Notification", "Generate Report"], "trigger": "Brief trigger with event source", "decisionPoints": ["If valid, approve; else reject", "If urgent, escalate; else normal flow"], "endEvent": "Process completed successfully", "additionalElements": ["Messages: Notification sent", "Timers: Wait 24 hours", "Data: Request form", "Errors: Validation error"]}`;
 
           // Call Gemini API directly from client-side only
           console.log(`Starting flow analysis for ${key}...`);
           const { generateFlowAnalysis } = await import("../lib/gemini");
 
           console.log(
-            `Calling Gemini API with prompt length: ${prompt.length}`,
+            `Calling Gemini API with prompt length: ${prompt.length}`
           );
           const result = await generateFlowAnalysis(prompt);
           console.log(`Raw Gemini response for ${key}:`, result);
@@ -938,23 +956,23 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
               const desc = flowData.description;
 
               const processDescMatch = desc.match(
-                /✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/,
+                /✅ 1\. Process Name and Description[^✅]*\n([^✅]*)/
               );
               const participantsMatch = desc.match(
-                /✅ 2\. Participants[^✅]*\n([^✅]*)/,
+                /✅ 2\. Participants[^✅]*\n([^✅]*)/
               );
               const triggerMatch = desc.match(/✅ 3\. Trigger[^✅]*\n([^✅]*)/);
               const activitiesMatch = desc.match(
-                /✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/,
+                /✅ 4\. Sequence of Activities[^✅]*\n([^✅]*)/
               );
               const decisionMatch = desc.match(
-                /✅ 5\. Decision Points[^✅]*\n([^✅]*)/,
+                /✅ 5\. Decision Points[^✅]*\n([^✅]*)/
               );
               const endEventMatch = desc.match(
-                /✅ 6\. End Event[^✅]*\n([^✅]*)/,
+                /✅ 6\. End Event[^✅]*\n([^✅]*)/
               );
               const additionalMatch = desc.match(
-                /✅ 7\. Additional Elements[^$]*/,
+                /✅ 7\. Additional Elements[^$]*/
               );
 
               // Override with parsed content if found
@@ -970,7 +988,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                   .filter(
                     (p: string) =>
                       p.trim() &&
-                      (p.includes("-") || p.includes("*") || p.includes(":")),
+                      (p.includes("-") || p.includes("*") || p.includes(":"))
                   )
                   .map((p: string) =>
                     p
@@ -979,7 +997,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                       .replace(/^Supporting Roles:\s*/i, "")
                       .replace(/^IT Systems:\s*/i, "")
                       .replace(/^External Entities:\s*/i, "")
-                      .trim(),
+                      .trim()
                   )
                   .filter((p: string) => p.length > 0);
                 if (parsedParticipants.length > 0)
@@ -995,7 +1013,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                     a
                       .replace(/^[-*\d.]\s*/, "")
                       .replace(/^Activity \d+:\s*/i, "")
-                      .trim(),
+                      .trim()
                   )
                   .filter((a: string) => a.length > 0);
                 if (parsedActivities.length > 0)
@@ -1011,7 +1029,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                       d.trim() &&
                       (d.includes("Gateway") ||
                         d.includes("If") ||
-                        d.includes("condition")),
+                        d.includes("condition"))
                   )
                   .map((d: string) => d.replace(/^[-*]\s*/, "").trim())
                   .filter((d: string) => d.length > 0);
@@ -1030,7 +1048,7 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
                       (e.includes("Messages:") ||
                         e.includes("Timers:") ||
                         e.includes("Data:") ||
-                        e.includes("Errors:")),
+                        e.includes("Errors:"))
                   )
                   .map((e: string) => e.replace(/^[-*]\s*/, "").trim())
                   .filter((e: string) => e.length > 0);
@@ -1040,20 +1058,21 @@ Respond with ONLY valid JSON in this exact format (no markdown, no extra text):
             }
 
             details[key] = flowDetails;
-            
+
             // Update progress with completion
-            setFlowGenerationProgress(prev => ({
+            setFlowGenerationProgress((prev) => ({
               ...prev,
               completedFlows: [...prev.completedFlows, key],
-              status: `Completed ${flow.stakeholder} ${flow.flowType} - ${prev.completedFlows.length + 1}/${allFlows.length} flows done`
+              status: `Completed ${flow.stakeholder} ${flow.flowType} - ${
+                prev.completedFlows.length + 1
+              }/${allFlows.length} flows done`,
             }));
-            
           } catch (parseError) {
             console.error(
               `Failed to parse response for ${key}:`,
               parseError,
               "Raw response:",
-              result,
+              result
             );
             console.error("Cleaned result that failed:", cleanedResult);
 
@@ -1110,7 +1129,11 @@ Process completed successfully.
 Messages: Notification sent
 Timers: Wait 24 hours
 Data Objects: Request form, User profile`,
-              processDescription: `${flow.flowType} Process for ${flow.stakeholder}. This process starts when ${flow.stakeholder} initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
+              processDescription: `${flow.flowType} Process for ${
+                flow.stakeholder
+              }. This process starts when ${
+                flow.stakeholder
+              } initiates ${flow.flowType.toLowerCase()} and ends when all ${mainAction} activities are completed successfully.`,
               participants: [
                 flow.stakeholder,
                 "System Backend",
@@ -1139,29 +1162,35 @@ Data Objects: Request form, User profile`,
                 `Data Objects: Request form, User profile`,
               ],
             };
-            
+
             // Update progress with fallback completion
-            setFlowGenerationProgress(prev => ({
+            setFlowGenerationProgress((prev) => ({
               ...prev,
               completedFlows: [...prev.completedFlows, key],
-              status: `Completed ${flow.stakeholder} ${flow.flowType} (fallback) - ${prev.completedFlows.length + 1}/${allFlows.length} flows done`
+              status: `Completed ${flow.stakeholder} ${
+                flow.flowType
+              } (fallback) - ${prev.completedFlows.length + 1}/${
+                allFlows.length
+              } flows done`,
             }));
           }
         } catch (err) {
           console.error(`Failed to generate details for ${key}:`, err);
           // Even on error, mark as attempted
-          setFlowGenerationProgress(prev => ({
+          setFlowGenerationProgress((prev) => ({
             ...prev,
             completedFlows: [...prev.completedFlows, key],
-            status: `Error in ${flow.stakeholder} ${flow.flowType} - ${prev.completedFlows.length + 1}/${allFlows.length} flows processed`
+            status: `Error in ${flow.stakeholder} ${flow.flowType} - ${
+              prev.completedFlows.length + 1
+            }/${allFlows.length} flows processed`,
           }));
         }
       }
 
       // Final completion status
-      setFlowGenerationProgress(prev => ({
+      setFlowGenerationProgress((prev) => ({
         ...prev,
-        status: `All flow details generated successfully! ${allFlows.length} flows completed.`
+        status: `All flow details generated successfully! ${allFlows.length} flows completed.`,
       }));
 
       setFlowDetails(details);
@@ -1169,9 +1198,9 @@ Data Objects: Request form, User profile`,
     } catch (err) {
       console.error("Error generating flow details:", err);
       setError("Failed to generate flow details. Please try again.");
-      setFlowGenerationProgress(prev => ({
+      setFlowGenerationProgress((prev) => ({
         ...prev,
-        status: "Error occurred during flow generation"
+        status: "Error occurred during flow generation",
       }));
     } finally {
       setIsGeneratingFlowDetails(false);
@@ -1180,9 +1209,9 @@ Data Objects: Request form, User profile`,
         setFlowGenerationProgress({
           current: 0,
           total: 0,
-          currentFlow: '',
+          currentFlow: "",
           completedFlows: [],
-          status: ''
+          status: "",
         });
       }, 3000);
     }
@@ -1194,26 +1223,28 @@ Data Objects: Request form, User profile`,
     if (details) {
       console.log("🔧 Starting edit for flow:", flowKey);
       console.log("📋 Flow details:", details);
-      
+
       setEditingFlowDetails(flowKey);
-      
+
       // Extract processDescription and trigger from description if not directly available
       let processDescription = details.processDescription || "";
       let trigger = details.trigger || "";
-      
+
       console.log("🔍 Initial processDescription:", processDescription);
       console.log("🔍 Initial trigger:", trigger);
-      
+
       if (!processDescription && details.description) {
-        console.log("🔍 Trying to extract processDescription from description...");
-        
+        console.log(
+          "🔍 Trying to extract processDescription from description..."
+        );
+
         // Try multiple patterns for process description
         const patterns = [
           /✅ 1\. Process Name and Description[\s\S]*?\n([\s\S]+?)(?=\n\n✅|$)/,
           /✅ 1\. Process Name and Description\s*\n([\s\S]+?)(?=\n✅|$)/,
-          /Process Name and Description[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/
+          /Process Name and Description[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/,
         ];
-        
+
         for (const pattern of patterns) {
           const match = details.description.match(pattern);
           if (match) {
@@ -1222,28 +1253,28 @@ Data Objects: Request form, User profile`,
             break;
           }
         }
-        
+
         // Final fallback: extract everything before section 2
         if (!processDescription) {
           const sections = details.description.split(/\n\n?✅ 2\./);
           if (sections.length > 1) {
             processDescription = sections[0]
-              .replace(/✅ 1\. Process Name and Description\s*\n?/i, '')
+              .replace(/✅ 1\. Process Name and Description\s*\n?/i, "")
               .trim();
             console.log("🔄 Fallback processDescription:", processDescription);
           }
         }
       }
-      
+
       if (!trigger && details.description) {
         console.log("🔍 Trying to extract trigger from description...");
-        
+
         const triggerPatterns = [
           /✅ 3\. Trigger \(Start Event\)\s*\n([\s\S]+?)(?=\n\n?✅|$)/,
           /✅ 3\. Trigger[\s\S]*?\n([\s\S]+?)(?=\n\n?✅|$)/,
-          /Trigger[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/
+          /Trigger[^:]*:?\s*\n([\s\S]+?)(?=\n✅|$)/,
         ];
-        
+
         for (const pattern of triggerPatterns) {
           const match = details.description.match(pattern);
           if (match) {
@@ -1253,7 +1284,7 @@ Data Objects: Request form, User profile`,
           }
         }
       }
-      
+
       const editData = {
         description: details.description,
         processDescription: processDescription,
@@ -1264,7 +1295,7 @@ Data Objects: Request form, User profile`,
         endEvent: details.endEvent || "",
         additionalElements: [...(details.additionalElements || [])],
       };
-      
+
       console.log("📝 Final edit data:", editData);
       setEditedFlowDetails(editData);
     }
@@ -1309,7 +1340,7 @@ Data Objects: Request form, User profile`,
       | "activities"
       | "decisionPoints"
       | "additionalElements",
-    defaultValue: string,
+    defaultValue: string
   ) => {
     if (!editedFlowDetails) return;
     setEditedFlowDetails((prev) => ({
@@ -1325,7 +1356,7 @@ Data Objects: Request form, User profile`,
       | "decisionPoints"
       | "additionalElements",
     index: number,
-    value: string,
+    value: string
   ) => {
     if (!editedFlowDetails) return;
     setEditedFlowDetails((prev) => {
@@ -1344,7 +1375,7 @@ Data Objects: Request form, User profile`,
       | "activities"
       | "decisionPoints"
       | "additionalElements",
-    index: number,
+    index: number
   ) => {
     if (!editedFlowDetails) return;
     setEditedFlowDetails((prev) => ({
@@ -1356,7 +1387,7 @@ Data Objects: Request form, User profile`,
   // Generate swimlane BPMN from flow details using client-side Gemini API
   const generateSwimlaneFromDetails = async (
     stakeholder: string,
-    flowType: string,
+    flowType: string
   ) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
@@ -1377,8 +1408,7 @@ Data Objects: Request form, User profile`,
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        (flow) =>
-          flow.stakeholder === stakeholder && flow.flowType === flowType,
+        (flow) => flow.stakeholder === stakeholder && flow.flowType === flowType
       );
 
       if (existingFlowIndex >= 0) {
@@ -1405,8 +1435,7 @@ Data Objects: Request form, User profile`,
 
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        (flow) =>
-          flow.stakeholder === stakeholder && flow.flowType === flowType,
+        (flow) => flow.stakeholder === stakeholder && flow.flowType === flowType
       );
 
       if (existingFlowIndex >= 0) {
@@ -1430,10 +1459,7 @@ Data Objects: Request form, User profile`,
   };
 
   // Generate large-scale BPMN XML using advanced AI agent
-  const generateBpmnWithAI = async (
-    stakeholder: string,
-    flowType: string,
-  ) => {
+  const generateBpmnWithAI = async (stakeholder: string, flowType: string) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
 
@@ -1470,31 +1496,37 @@ Data Objects: Request form, User profile`,
 
       // Determine complexity based on workflow characteristics
       const complexity = determineComplexity(workflowData);
-      
+
       // Configure AI agent options
       const agentOptions = {
         complexity,
         includeSubProcesses: workflowData.activities.length > 8,
         includeMessageFlows: workflowData.participants.length > 2,
-        includeTimerEvents: workflowData.additionalElements.some(el => 
-          el.toLowerCase().includes('timer') || el.toLowerCase().includes('timeout')
+        includeTimerEvents: workflowData.additionalElements.some(
+          (el) =>
+            el.toLowerCase().includes("timer") ||
+            el.toLowerCase().includes("timeout")
         ),
         includeErrorHandling: workflowData.decisionPoints.length > 1,
-        swimlaneLayout: 'horizontal' as const
+        swimlaneLayout: "horizontal" as const,
       };
 
-      console.log(`AI Agent configuration: ${complexity} complexity with advanced features`);
+      console.log(
+        `AI Agent configuration: ${complexity} complexity with advanced features`
+      );
 
       // Initialize and run AI BPMN agent
       const { createAIBpmnAgent } = await import("../lib/ai-bpmn-agent");
       const aiAgent = createAIBpmnAgent();
-      const bpmnXml = await aiAgent.generateLargeBpmn(workflowData, agentOptions);
+      const bpmnXml = await aiAgent.generateLargeBpmn(
+        workflowData,
+        agentOptions
+      );
 
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        (flow) =>
-          flow.stakeholder === stakeholder && flow.flowType === flowType,
+        (flow) => flow.stakeholder === stakeholder && flow.flowType === flowType
       );
 
       if (existingFlowIndex >= 0) {
@@ -1518,7 +1550,10 @@ Data Objects: Request form, User profile`,
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error(`Error generating AI BPMN for ${stakeholder} ${flowType}:`, error);
+      console.error(
+        `Error generating AI BPMN for ${stakeholder} ${flowType}:`,
+        error
+      );
       setError(`Failed to generate AI BPMN diagram. Please try again.`);
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
@@ -1526,24 +1561,30 @@ Data Objects: Request form, User profile`,
   };
 
   // Helper function to determine process complexity
-  const determineComplexity = (data: any): 'simple' | 'standard' | 'complex' | 'enterprise' => {
+  const determineComplexity = (
+    data: any
+  ): "simple" | "standard" | "complex" | "enterprise" => {
     const activityCount = data.activities.length;
     const participantCount = data.participants.length;
     const decisionCount = data.decisionPoints.length;
     const additionalCount = data.additionalElements.length;
-    
-    const complexityScore = activityCount + (participantCount * 2) + (decisionCount * 3) + additionalCount;
-    
-    if (complexityScore >= 25) return 'enterprise';
-    if (complexityScore >= 15) return 'complex';
-    if (complexityScore >= 8) return 'standard';
-    return 'simple';
+
+    const complexityScore =
+      activityCount +
+      participantCount * 2 +
+      decisionCount * 3 +
+      additionalCount;
+
+    if (complexityScore >= 25) return "enterprise";
+    if (complexityScore >= 15) return "complex";
+    if (complexityScore >= 8) return "standard";
+    return "simple";
   };
 
   // Generate BPMN XML directly from structured data (No AI)
   const generateStructuredBpmn = async (
     stakeholder: string,
-    flowType: string,
+    flowType: string
   ) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
@@ -1572,7 +1613,9 @@ Data Objects: Request form, User profile`,
       console.log("Generating BPMN using structured data converter...");
 
       // Generate BPMN XML using structured generator (no AI required)
-      const { generateStructuredBpmn } = await import("../lib/structured-bpmn-generator");
+      const { generateStructuredBpmn } = await import(
+        "../lib/structured-bpmn-generator"
+      );
 
       // Generate BPMN directly from structured content without AI
       const bpmnXml = generateStructuredBpmn(structuredContent);
@@ -1582,8 +1625,7 @@ Data Objects: Request form, User profile`,
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        (flow) =>
-          flow.stakeholder === stakeholder && flow.flowType === flowType,
+        (flow) => flow.stakeholder === stakeholder && flow.flowType === flowType
       );
 
       if (existingFlowIndex >= 0) {
@@ -1607,7 +1649,10 @@ Data Objects: Request form, User profile`,
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error(`Error generating structured BPMN for ${stakeholder} ${flowType}:`, error);
+      console.error(
+        `Error generating structured BPMN for ${stakeholder} ${flowType}:`,
+        error
+      );
       setError(`Failed to generate structured BPMN diagram. Please try again.`);
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
@@ -1617,7 +1662,7 @@ Data Objects: Request form, User profile`,
   // Generate BPMN using best practices (Hybrid Validation Strategy)
   const generateBestPracticeBpmn = async (
     stakeholder: string,
-    flowType: string,
+    flowType: string
   ) => {
     const flowKey = `${stakeholder}-${flowType}`;
     const details = flowDetails[flowKey];
@@ -1643,12 +1688,16 @@ Data Objects: Request form, User profile`,
         additionalElements: details.additionalElements || [],
       };
 
-      console.log("Generating BPMN using best practice hybrid validation strategy...");
+      console.log(
+        "Generating BPMN using best practice hybrid validation strategy..."
+      );
 
       // Use the recommended best practice strategy
       const strategies = BPMN_GENERATION_STRATEGIES;
-      const bestStrategy = strategies.find(s => s.name === "Hybrid Validation");
-      
+      const bestStrategy = strategies.find(
+        (s) => s.name === "Hybrid Validation"
+      );
+
       if (!bestStrategy) {
         throw new Error("Best practice strategy not found");
       }
@@ -1658,8 +1707,7 @@ Data Objects: Request form, User profile`,
       // Update stakeholder flows with generated BPMN
       const updatedFlows = [...stakeholderFlows];
       const existingFlowIndex = updatedFlows.findIndex(
-        (flow) =>
-          flow.stakeholder === stakeholder && flow.flowType === flowType,
+        (flow) => flow.stakeholder === stakeholder && flow.flowType === flowType
       );
 
       if (existingFlowIndex >= 0) {
@@ -1683,14 +1731,17 @@ Data Objects: Request form, User profile`,
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
     } catch (error) {
-      console.error(`Error generating best practice BPMN for ${stakeholder} ${flowType}:`, error);
-      setError(`Failed to generate best practice BPMN diagram. Please try again.`);
+      console.error(
+        `Error generating best practice BPMN for ${stakeholder} ${flowType}:`,
+        error
+      );
+      setError(
+        `Failed to generate best practice BPMN diagram. Please try again.`
+      );
     } finally {
       setIsGeneratingBpmn((prev) => ({ ...prev, [flowKey]: false }));
     }
   };
-
-
 
   // Generate fallback BPMN when API fails
   const generateFallbackBpmn = (
@@ -1700,7 +1751,7 @@ Data Objects: Request form, User profile`,
       description: string;
       participants: string[];
       activities: string[];
-    },
+    }
   ) => {
     // Create valid XML IDs by removing special characters
     const cleanStakeholder = stakeholder
@@ -1727,13 +1778,19 @@ Data Objects: Request form, User profile`,
       .map((_, index) => {
         if (index === 0) {
           return `
-    <bpmn:sequenceFlow id="Flow_start_${index + 1}" sourceRef="StartEvent_1" targetRef="Activity_${index + 1}" />`;
+    <bpmn:sequenceFlow id="Flow_start_${
+      index + 1
+    }" sourceRef="StartEvent_1" targetRef="Activity_${index + 1}" />`;
         } else if (index === details.activities.length - 1) {
           return `
-    <bpmn:sequenceFlow id="Flow_${index}_end" sourceRef="Activity_${index + 1}" targetRef="EndEvent_1" />`;
+    <bpmn:sequenceFlow id="Flow_${index}_end" sourceRef="Activity_${
+            index + 1
+          }" targetRef="EndEvent_1" />`;
         } else {
           return `
-    <bpmn:sequenceFlow id="Flow_${index}_${index + 1}" sourceRef="Activity_${index + 1}" targetRef="Activity_${index + 2}" />`;
+    <bpmn:sequenceFlow id="Flow_${index}_${index + 1}" sourceRef="Activity_${
+            index + 1
+          }" targetRef="Activity_${index + 2}" />`;
         }
       })
       .join("");
@@ -1763,13 +1820,17 @@ Data Objects: Request form, User profile`,
       ${details.activities
         .map(
           (activity, index) => `
-      <bpmndi:BPMNShape id="Activity_${index + 1}_di" bpmnElement="Activity_${index + 1}">
+      <bpmndi:BPMNShape id="Activity_${index + 1}_di" bpmnElement="Activity_${
+            index + 1
+          }">
         <dc:Bounds x="${300 + index * 150}" y="140" width="100" height="80" />
-      </bpmndi:BPMNShape>`,
+      </bpmndi:BPMNShape>`
         )
         .join("")}
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="${320 + details.activities.length * 150}" y="162" width="36" height="36" />
+        <dc:Bounds x="${
+          320 + details.activities.length * 150
+        }" y="162" width="36" height="36" />
         <bpmndi:BPMNLabel>
           <dc:Bounds x="324" y="205" width="28" height="14" />
         </bpmndi:BPMNLabel>
@@ -1778,7 +1839,9 @@ Data Objects: Request form, User profile`,
         .map((_, index) => {
           if (index === 0) {
             return `
-      <bpmndi:BPMNEdge id="Flow_start_${index + 1}_di" bpmnElement="Flow_start_${index + 1}">
+      <bpmndi:BPMNEdge id="Flow_start_${
+        index + 1
+      }_di" bpmnElement="Flow_start_${index + 1}">
         <di:waypoint x="248" y="180" />
         <di:waypoint x="${300 + index * 150}" y="180" />
       </bpmndi:BPMNEdge>`;
@@ -1790,7 +1853,9 @@ Data Objects: Request form, User profile`,
       </bpmndi:BPMNEdge>`;
           } else {
             return `
-      <bpmndi:BPMNEdge id="Flow_${index}_${index + 1}_di" bpmnElement="Flow_${index}_${index + 1}">
+      <bpmndi:BPMNEdge id="Flow_${index}_${
+              index + 1
+            }_di" bpmnElement="Flow_${index}_${index + 1}">
         <di:waypoint x="${400 + index * 150}" y="180" />
         <di:waypoint x="${300 + (index + 1) * 150}" y="180" />
       </bpmndi:BPMNEdge>`;
@@ -1818,7 +1883,7 @@ Data Objects: Request form, User profile`,
 
     if (allFlows.length === 0) {
       setError(
-        "No flow details available. Please generate flow details first.",
+        "No flow details available. Please generate flow details first."
       );
       return;
     }
@@ -1848,8 +1913,6 @@ Data Objects: Request form, User profile`,
       <div className="max-w-[1400px] mx-auto p-6">
         <WorkflowProgress />
 
-        
-
         {/* Auto-generation Status */}
         {autoGenerationStatus && (
           <Card className="mb-6 border-blue-200 bg-blue-50">
@@ -1873,8 +1936,6 @@ Data Objects: Request form, User profile`,
             </div>
           </Card>
         )}
-
-        
 
         {/* Stakeholder Extraction Section */}
         <Card className="mb-6">
@@ -1923,7 +1984,7 @@ Data Objects: Request form, User profile`,
                       Stakeholders ({extractedStakeholders.length})
                     </h4>
                   </div>
-                  
+
                   {/* Add Stakeholder Input */}
                   <div className="flex gap-2">
                     <Input
@@ -1950,9 +2011,17 @@ Data Objects: Request form, User profile`,
                   {/* Enhanced Stakeholder Tags */}
                   <div className="flex flex-wrap gap-2">
                     {extractedStakeholders.map((stakeholder, index) => {
-                      const stakeholderIcons = [User, Shield, Star, Target, Activity, Settings];
-                      const StakeholderIcon = stakeholderIcons[index % stakeholderIcons.length];
-                      
+                      const stakeholderIcons = [
+                        User,
+                        Shield,
+                        Star,
+                        Target,
+                        Activity,
+                        Settings,
+                      ];
+                      const StakeholderIcon =
+                        stakeholderIcons[index % stakeholderIcons.length];
+
                       return (
                         <div key={index} className="group">
                           {editingStakeholder === stakeholder ? (
@@ -1960,7 +2029,9 @@ Data Objects: Request form, User profile`,
                               <User className="h-3 w-3 text-blue-500" />
                               <Input
                                 value={editedStakeholderName}
-                                onChange={(e) => setEditedStakeholderName(e.target.value)}
+                                onChange={(e) =>
+                                  setEditedStakeholderName(e.target.value)
+                                }
                                 className="text-sm h-5 w-28 border-0 p-0 focus:ring-0"
                                 onKeyDown={(e) => {
                                   if (e.key === "Enter") {
@@ -1996,7 +2067,9 @@ Data Objects: Request form, User profile`,
                               <span className="mr-2">{stakeholder}</span>
                               <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
-                                  onClick={() => startEditingStakeholder(stakeholder)}
+                                  onClick={() =>
+                                    startEditingStakeholder(stakeholder)
+                                  }
                                   size="sm"
                                   variant="ghost"
                                   className="h-4 w-4 p-0 hover:bg-blue-200 rounded"
@@ -2025,32 +2098,72 @@ Data Objects: Request form, User profile`,
                       <Workflow className="h-4 w-4 text-indigo-600" />
                       Flow Types Management
                     </h4>
-                    <Badge variant="outline" className="text-xs bg-indigo-50 text-indigo-700">
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-indigo-50 text-indigo-700"
+                    >
                       {Object.keys(personaFlowTypes).length} stakeholders
                     </Badge>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {Object.entries(personaFlowTypes).map(
                       ([stakeholder, flowTypes], stakeholderIndex) => {
                         const colors = [
-                          { bg: "bg-blue-50", border: "border-blue-200", accent: "bg-blue-500", text: "text-blue-700", icon: "User" },
-                          { bg: "bg-emerald-50", border: "border-emerald-200", accent: "bg-emerald-500", text: "text-emerald-700", icon: "Shield" },
-                          { bg: "bg-purple-50", border: "border-purple-200", accent: "bg-purple-500", text: "text-purple-700", icon: "Star" },
-                          { bg: "bg-orange-50", border: "border-orange-200", accent: "bg-orange-500", text: "text-orange-700", icon: "Crown" },
-                          { bg: "bg-cyan-50", border: "border-cyan-200", accent: "bg-cyan-500", text: "text-cyan-700", icon: "Target" },
-                          { bg: "bg-green-50", border: "border-green-200", accent: "bg-green-500", text: "text-green-700", icon: "Briefcase" },
+                          {
+                            bg: "bg-blue-50",
+                            border: "border-blue-200",
+                            accent: "bg-blue-500",
+                            text: "text-blue-700",
+                            icon: "User",
+                          },
+                          {
+                            bg: "bg-emerald-50",
+                            border: "border-emerald-200",
+                            accent: "bg-emerald-500",
+                            text: "text-emerald-700",
+                            icon: "Shield",
+                          },
+                          {
+                            bg: "bg-purple-50",
+                            border: "border-purple-200",
+                            accent: "bg-purple-500",
+                            text: "text-purple-700",
+                            icon: "Star",
+                          },
+                          {
+                            bg: "bg-orange-50",
+                            border: "border-orange-200",
+                            accent: "bg-orange-500",
+                            text: "text-orange-700",
+                            icon: "Crown",
+                          },
+                          {
+                            bg: "bg-cyan-50",
+                            border: "border-cyan-200",
+                            accent: "bg-cyan-500",
+                            text: "text-cyan-700",
+                            icon: "Target",
+                          },
+                          {
+                            bg: "bg-green-50",
+                            border: "border-green-200",
+                            accent: "bg-green-500",
+                            text: "text-green-700",
+                            icon: "Briefcase",
+                          },
                         ];
                         const color = colors[stakeholderIndex % colors.length];
-                        
-                        const IconComponent = {
-                          User: User,
-                          Shield: Shield,
-                          Star: Star,
-                          Crown: User, // Crown not available, using User as fallback
-                          Target: Target,
-                          Briefcase: User, // Briefcase not available, using User as fallback
-                        }[color.icon] || User;
+
+                        const IconComponent =
+                          {
+                            User: User,
+                            Shield: Shield,
+                            Star: Star,
+                            Crown: User, // Crown not available, using User as fallback
+                            Target: Target,
+                            Briefcase: User, // Briefcase not available, using User as fallback
+                          }[color.icon] || User;
 
                         return (
                           <div
@@ -2060,15 +2173,22 @@ Data Objects: Request form, User profile`,
                             {/* Enhanced Header */}
                             <div className="flex items-center justify-between mb-4">
                               <div className="flex items-center gap-3">
-                                <div className={`w-8 h-8 ${color.accent} rounded-lg flex items-center justify-center shadow-sm`}>
+                                <div
+                                  className={`w-8 h-8 ${color.accent} rounded-lg flex items-center justify-center shadow-sm`}
+                                >
                                   <IconComponent className="h-4 w-4 text-white" />
                                 </div>
                                 <div>
-                                  <span className={`font-semibold text-base ${color.text}`}>
+                                  <span
+                                    className={`font-semibold text-base ${color.text}`}
+                                  >
                                     {stakeholder}
                                   </span>
                                   <div className="flex items-center gap-2 mt-1">
-                                    <Badge variant="outline" className="text-xs h-5 px-2 bg-white/80 border-white/60">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs h-5 px-2 bg-white/80 border-white/60"
+                                    >
                                       <Activity className="h-2.5 w-2.5 mr-1" />
                                       {flowTypes.length} flows
                                     </Badge>
@@ -2130,11 +2250,18 @@ Data Objects: Request form, User profile`,
                                       <div className="flex items-center gap-2 bg-white border-2 border-blue-300 rounded-lg px-3 py-2">
                                         <Input
                                           value={editedFlowTypeName}
-                                          onChange={(e) => setEditedFlowTypeName(e.target.value)}
+                                          onChange={(e) =>
+                                            setEditedFlowTypeName(
+                                              e.target.value
+                                            )
+                                          }
                                           className="text-sm h-5 w-28 border-0 p-0 focus:ring-0"
                                           onKeyDown={(e) => {
                                             if (e.key === "Enter") {
-                                              saveFlowTypeEdit(stakeholder, flowType);
+                                              saveFlowTypeEdit(
+                                                stakeholder,
+                                                flowType
+                                              );
                                             } else if (e.key === "Escape") {
                                               cancelFlowTypeEdit();
                                             }
@@ -2142,7 +2269,12 @@ Data Objects: Request form, User profile`,
                                           autoFocus
                                         />
                                         <Button
-                                          onClick={() => saveFlowTypeEdit(stakeholder, flowType)}
+                                          onClick={() =>
+                                            saveFlowTypeEdit(
+                                              stakeholder,
+                                              flowType
+                                            )
+                                          }
                                           size="sm"
                                           className="h-5 w-5 p-0 bg-green-500"
                                         >
@@ -2166,7 +2298,12 @@ Data Objects: Request form, User profile`,
                                         <span className="mr-2">{flowType}</span>
                                         <div className="inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <Button
-                                            onClick={() => startEditingFlowType(stakeholder, flowType)}
+                                            onClick={() =>
+                                              startEditingFlowType(
+                                                stakeholder,
+                                                flowType
+                                              )
+                                            }
                                             size="sm"
                                             variant="ghost"
                                             className="h-4 w-4 p-0 hover:bg-blue-100 rounded"
@@ -2174,7 +2311,12 @@ Data Objects: Request form, User profile`,
                                             <Edit3 className="h-2.5 w-2.5" />
                                           </Button>
                                           <Button
-                                            onClick={() => deleteFlowType(stakeholder, flowType)}
+                                            onClick={() =>
+                                              deleteFlowType(
+                                                stakeholder,
+                                                flowType
+                                              )
+                                            }
                                             size="sm"
                                             variant="ghost"
                                             className="h-4 w-4 p-0 hover:bg-red-100 text-red-500 rounded"
@@ -2187,7 +2329,7 @@ Data Objects: Request form, User profile`,
                                   </div>
                                 );
                               })}
-                              
+
                               {/* Quick Add Flow Button */}
                               {flowTypes.length === 0 && (
                                 <div className="flex items-center gap-2 text-gray-400 text-sm">
@@ -2198,7 +2340,7 @@ Data Objects: Request form, User profile`,
                             </div>
                           </div>
                         );
-                      },
+                      }
                     )}
                   </div>
                 </div>
@@ -2234,8 +2376,6 @@ Data Objects: Request form, User profile`,
             )}
           </CardContent>
         </Card>
-
-        
 
         {/* Generate Flow Details Button */}
         {Object.keys(personaFlowTypes).length > 0 &&
@@ -2280,57 +2420,75 @@ Data Objects: Request form, User profile`,
                     <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
                       <Loader2 className="h-3 w-3 text-white animate-spin" />
                     </div>
-                    <h3 className="font-semibold text-gray-800">Generating Flow Details</h3>
+                    <h3 className="font-semibold text-gray-800">
+                      Generating Flow Details
+                    </h3>
                   </div>
                   <div className="text-sm font-medium text-gray-600">
-                    {flowGenerationProgress.current} / {flowGenerationProgress.total}
+                    {flowGenerationProgress.current} /{" "}
+                    {flowGenerationProgress.total}
                   </div>
                 </div>
-                
+
                 {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ 
-                      width: `${(flowGenerationProgress.current / flowGenerationProgress.total) * 100}%` 
+                    style={{
+                      width: `${
+                        (flowGenerationProgress.current /
+                          flowGenerationProgress.total) *
+                        100
+                      }%`,
                     }}
                   ></div>
                 </div>
-                
+
                 {/* Current Flow and Status */}
                 <div className="space-y-1">
                   {flowGenerationProgress.currentFlow && (
                     <div className="flex items-center gap-2 text-sm">
                       <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                      <span className="font-medium text-blue-700">Current:</span>
-                      <span className="text-gray-700">{flowGenerationProgress.currentFlow}</span>
+                      <span className="font-medium text-blue-700">
+                        Current:
+                      </span>
+                      <span className="text-gray-700">
+                        {flowGenerationProgress.currentFlow}
+                      </span>
                     </div>
                   )}
                   <div className="text-sm text-gray-600">
                     {flowGenerationProgress.status}
                   </div>
                 </div>
-                
+
                 {/* Completed Flows List */}
                 {flowGenerationProgress.completedFlows.length > 0 && (
                   <div className="space-y-1">
                     <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                      Completed Flows ({flowGenerationProgress.completedFlows.length})
+                      Completed Flows (
+                      {flowGenerationProgress.completedFlows.length})
                     </div>
                     <div className="flex flex-wrap gap-1">
-                      {flowGenerationProgress.completedFlows.slice(-6).map((flowKey, index) => (
-                        <Badge 
-                          key={index}
-                          variant="outline" 
-                          className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200"
-                        >
-                          <CheckCircle className="h-2.5 w-2.5 mr-1" />
-                          {flowKey.replace('-', ' - ')}
-                        </Badge>
-                      ))}
+                      {flowGenerationProgress.completedFlows
+                        .slice(-6)
+                        .map((flowKey, index) => (
+                          <Badge
+                            key={index}
+                            variant="outline"
+                            className="text-xs px-2 py-0.5 bg-green-50 text-green-700 border-green-200"
+                          >
+                            <CheckCircle className="h-2.5 w-2.5 mr-1" />
+                            {flowKey.replace("-", " - ")}
+                          </Badge>
+                        ))}
                       {flowGenerationProgress.completedFlows.length > 6 && (
-                        <Badge variant="outline" className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600">
-                          +{flowGenerationProgress.completedFlows.length - 6} more
+                        <Badge
+                          variant="outline"
+                          className="text-xs px-2 py-0.5 bg-gray-50 text-gray-600"
+                        >
+                          +{flowGenerationProgress.completedFlows.length - 6}{" "}
+                          more
                         </Badge>
                       )}
                     </div>
@@ -2459,7 +2617,7 @@ Data Objects: Request form, User profile`,
                             const existingFlow = stakeholderFlows.find(
                               (f) =>
                                 f.stakeholder === stakeholder &&
-                                f.flowType === flowType,
+                                f.flowType === flowType
                             );
 
                             return (
@@ -2473,19 +2631,29 @@ Data Objects: Request form, User profile`,
                                     {flowType}
                                   </h4>
                                   <div className="flex items-center gap-1">
-                                    {details && editingFlowDetails !== flowKey && (
-                                      <Button
-                                        onClick={() => startEditingFlowDetails(flowKey)}
-                                        variant="outline"
-                                        size="sm"
-                                        className="text-xs px-1 py-0.5 h-5 border-gray-300 hover:bg-blue-50"
-                                      >
-                                        <Edit3 className="h-2.5 w-2.5" />
-                                      </Button>
-                                    )}
+                                    {details &&
+                                      editingFlowDetails !== flowKey && (
+                                        <Button
+                                          onClick={() =>
+                                            startEditingFlowDetails(flowKey)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          className="text-xs px-1 py-0.5 h-5 border-gray-300 hover:bg-blue-50"
+                                        >
+                                          <Edit3 className="h-2.5 w-2.5" />
+                                        </Button>
+                                      )}
                                     <Button
-                                      onClick={() => generateBpmnWithAI(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
+                                      onClick={() =>
+                                        generateBpmnWithAI(
+                                          stakeholder,
+                                          flowType
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingBpmn[flowKey] || !details
+                                      }
                                       size="sm"
                                       className={`text-xs px-2 py-0.5 h-5 bg-gradient-to-r ${colorClass} hover:opacity-90 text-white`}
                                     >
@@ -2497,8 +2665,15 @@ Data Objects: Request form, User profile`,
                                       AI
                                     </Button>
                                     <Button
-                                      onClick={() => generateStructuredBpmn(stakeholder, flowType)}
-                                      disabled={isGeneratingBpmn[flowKey] || !details}
+                                      onClick={() =>
+                                        generateStructuredBpmn(
+                                          stakeholder,
+                                          flowType
+                                        )
+                                      }
+                                      disabled={
+                                        isGeneratingBpmn[flowKey] || !details
+                                      }
                                       size="sm"
                                       className="text-xs px-2 py-0.5 h-5 bg-gradient-to-r from-gray-600 to-gray-700 hover:opacity-90 text-white"
                                     >
@@ -2509,11 +2684,13 @@ Data Objects: Request form, User profile`,
                                       )}
                                       Template
                                     </Button>
-                                    
+
                                     {existingFlow?.bpmnXml && (
                                       <>
                                         <Button
-                                          onClick={() => openInEditor(stakeholder, flowType)}
+                                          onClick={() =>
+                                            openInEditor(stakeholder, flowType)
+                                          }
                                           variant="outline"
                                           size="sm"
                                           className="text-xs px-2 py-0.5 h-5 border-purple-300 hover:bg-purple-50 text-purple-600"
@@ -2531,7 +2708,7 @@ Data Objects: Request form, User profile`,
                                     {editingFlowDetails === flowKey &&
                                     editedFlowDetails ? (
                                       /* Edit Mode - Compact */
-                                      (<div className="space-y-2 p-2 bg-blue-50/50 rounded border border-blue-200">
+                                      <div className="space-y-2 p-2 bg-blue-50/50 rounded border border-blue-200">
                                         <div className="flex items-center justify-between">
                                           <h5 className="text-xs font-medium text-blue-800">
                                             Edit Details
@@ -2562,8 +2739,15 @@ Data Objects: Request form, User profile`,
                                               Description
                                             </label>
                                             <Textarea
-                                              value={editedFlowDetails.processDescription}
-                                              onChange={(e) => updateEditedField("processDescription", e.target.value)}
+                                              value={
+                                                editedFlowDetails.processDescription
+                                              }
+                                              onChange={(e) =>
+                                                updateEditedField(
+                                                  "processDescription",
+                                                  e.target.value
+                                                )
+                                              }
                                               className="text-xs h-16 resize-none"
                                             />
                                           </div>
@@ -2573,7 +2757,12 @@ Data Objects: Request form, User profile`,
                                             </label>
                                             <Textarea
                                               value={editedFlowDetails.trigger}
-                                              onChange={(e) => updateEditedField("trigger", e.target.value)}
+                                              onChange={(e) =>
+                                                updateEditedField(
+                                                  "trigger",
+                                                  e.target.value
+                                                )
+                                              }
                                               className="text-xs h-16 resize-none"
                                             />
                                           </div>
@@ -2581,9 +2770,16 @@ Data Objects: Request form, User profile`,
                                         {/* Participants - Compact */}
                                         <div>
                                           <div className="flex items-center justify-between mb-0.5">
-                                            <label className="text-xs font-medium text-gray-600">Participants</label>
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Participants
+                                            </label>
                                             <Button
-                                              onClick={() => addItemToField("participants", "New Participant")}
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "participants",
+                                                  "New Participant"
+                                                )
+                                              }
                                               size="sm"
                                               variant="outline"
                                               className="h-4 px-1 text-xs"
@@ -2592,31 +2788,54 @@ Data Objects: Request form, User profile`,
                                             </Button>
                                           </div>
                                           <div className="flex flex-wrap gap-1">
-                                            {editedFlowDetails.participants.map((participant, idx) => (
-                                              <div key={idx} className="flex items-center gap-0.5 bg-gray-100 rounded px-1 py-0.5">
-                                                <Input
-                                                  value={participant}
-                                                  onChange={(e) => updateItemInField("participants", idx, e.target.value)}
-                                                  className="text-xs h-4 w-20 border-0 bg-transparent p-0"
-                                                />
-                                                <Button
-                                                  onClick={() => removeItemFromField("participants", idx)}
-                                                  size="sm"
-                                                  variant="ghost"
-                                                  className="h-3 w-3 p-0 text-red-500 hover:bg-red-100"
+                                            {editedFlowDetails.participants.map(
+                                              (participant, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-0.5 bg-gray-100 rounded px-1 py-0.5"
                                                 >
-                                                  <X className="h-2 w-2" />
-                                                </Button>
-                                              </div>
-                                            ))}
+                                                  <Input
+                                                    value={participant}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "participants",
+                                                        idx,
+                                                        e.target.value
+                                                      )
+                                                    }
+                                                    className="text-xs h-4 w-20 border-0 bg-transparent p-0"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "participants",
+                                                        idx
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    className="h-3 w-3 p-0 text-red-500 hover:bg-red-100"
+                                                  >
+                                                    <X className="h-2 w-2" />
+                                                  </Button>
+                                                </div>
+                                              )
+                                            )}
                                           </div>
                                         </div>
                                         {/* Activities - Compact */}
                                         <div>
                                           <div className="flex items-center justify-between mb-0.5">
-                                            <label className="text-xs font-medium text-gray-600">Activities</label>
+                                            <label className="text-xs font-medium text-gray-600">
+                                              Activities
+                                            </label>
                                             <Button
-                                              onClick={() => addItemToField("activities", "New Activity")}
+                                              onClick={() =>
+                                                addItemToField(
+                                                  "activities",
+                                                  "New Activity"
+                                                )
+                                              }
                                               size="sm"
                                               variant="outline"
                                               className="h-4 px-1 text-xs"
@@ -2625,23 +2844,39 @@ Data Objects: Request form, User profile`,
                                             </Button>
                                           </div>
                                           <div className="space-y-0.5">
-                                            {editedFlowDetails.activities.map((activity, idx) => (
-                                              <div key={idx} className="flex items-center gap-1">
-                                                <Input
-                                                  value={activity}
-                                                  onChange={(e) => updateItemInField("activities", idx, e.target.value)}
-                                                  className="text-xs h-5 flex-1"
-                                                />
-                                                <Button
-                                                  onClick={() => removeItemFromField("activities", idx)}
-                                                  size="sm"
-                                                  variant="outline"
-                                                  className="h-5 w-5 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                            {editedFlowDetails.activities.map(
+                                              (activity, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1"
                                                 >
-                                                  <X className="h-2 w-2" />
-                                                </Button>
-                                              </div>
-                                            ))}
+                                                  <Input
+                                                    value={activity}
+                                                    onChange={(e) =>
+                                                      updateItemInField(
+                                                        "activities",
+                                                        idx,
+                                                        e.target.value
+                                                      )
+                                                    }
+                                                    className="text-xs h-5 flex-1"
+                                                  />
+                                                  <Button
+                                                    onClick={() =>
+                                                      removeItemFromField(
+                                                        "activities",
+                                                        idx
+                                                      )
+                                                    }
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-5 w-5 p-0 border-red-300 hover:bg-red-50 text-red-600"
+                                                  >
+                                                    <X className="h-2 w-2" />
+                                                  </Button>
+                                                </div>
+                                              )
+                                            )}
                                           </div>
                                         </div>
                                         {/* Edit Additional Elements */}
@@ -2654,7 +2889,7 @@ Data Objects: Request form, User profile`,
                                               onClick={() =>
                                                 addItemToField(
                                                   "additionalElements",
-                                                  "Messages: New notification",
+                                                  "Messages: New notification"
                                                 )
                                               }
                                               size="sm"
@@ -2677,7 +2912,7 @@ Data Objects: Request form, User profile`,
                                                       updateItemInField(
                                                         "additionalElements",
                                                         idx,
-                                                        e.target.value,
+                                                        e.target.value
                                                       )
                                                     }
                                                     className="text-xs h-6 flex-1"
@@ -2686,7 +2921,7 @@ Data Objects: Request form, User profile`,
                                                     onClick={() =>
                                                       removeItemFromField(
                                                         "additionalElements",
-                                                        idx,
+                                                        idx
                                                       )
                                                     }
                                                     size="sm"
@@ -2696,14 +2931,14 @@ Data Objects: Request form, User profile`,
                                                     <X className="h-2.5 w-2.5" />
                                                   </Button>
                                                 </div>
-                                              ),
+                                              )
                                             )}
                                           </div>
                                         </div>
-                                      </div>)
+                                      </div>
                                     ) : (
                                       /* Display Mode */
-                                      (<>
+                                      <>
                                         {/* BPMN Flow Analysis - 7 Section Structure */}
                                         <div className="space-y-3">
                                           {/* Section 1: Process Description */}
@@ -2716,7 +2951,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2732,7 +2967,7 @@ Data Objects: Request form, User profile`,
                                                   .split("\n\n✅ 2.")[0]
                                                   .replace(
                                                     "✅ 1. Process Name and Description\n",
-                                                    "",
+                                                    ""
                                                   )}
                                             </p>
                                           </div>
@@ -2747,7 +2982,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2767,7 +3002,7 @@ Data Objects: Request form, User profile`,
                                                   >
                                                     {participant}
                                                   </Badge>
-                                                ),
+                                                )
                                               )}
                                             </div>
                                           </div>
@@ -2782,7 +3017,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2797,7 +3032,7 @@ Data Objects: Request form, User profile`,
                                                 (() => {
                                                   const triggerSection =
                                                     details.description.match(
-                                                      /✅ 3\. Trigger \(Start Event\)\n([^✅]*)/,
+                                                      /✅ 3\. Trigger \(Start Event\)\n([^✅]*)/
                                                     );
                                                   return triggerSection
                                                     ? triggerSection[1].trim()
@@ -2816,7 +3051,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2838,7 +3073,7 @@ Data Objects: Request form, User profile`,
                                                       {activity}
                                                     </span>
                                                   </div>
-                                                ),
+                                                )
                                               )}
                                             </div>
                                           </div>
@@ -2853,7 +3088,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2877,12 +3112,12 @@ Data Objects: Request form, User profile`,
                                                           {decision.trim()}
                                                         </span>
                                                       </div>
-                                                    ),
+                                                    )
                                                   )
                                                 : (() => {
                                                     const decisionSection =
                                                       details.description.match(
-                                                        /✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/,
+                                                        /✅ 5\. Decision Points \(Gateways\)\n([^✅]*)/
                                                       );
                                                     if (decisionSection) {
                                                       return decisionSection[1]
@@ -2899,7 +3134,7 @@ Data Objects: Request form, User profile`,
                                                                 {decision.trim()}
                                                               </span>
                                                             </div>
-                                                          ),
+                                                          )
                                                         );
                                                     }
                                                     return (
@@ -2922,7 +3157,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2937,7 +3172,7 @@ Data Objects: Request form, User profile`,
                                                 (() => {
                                                   const endSection =
                                                     details.description.match(
-                                                      /✅ 6\. End Event\n([^✅]*)/,
+                                                      /✅ 6\. End Event\n([^✅]*)/
                                                     );
                                                   return endSection
                                                     ? endSection[1].trim()
@@ -2956,7 +3191,7 @@ Data Objects: Request form, User profile`,
                                               <Button
                                                 onClick={() =>
                                                   startEditingFlowDetails(
-                                                    flowKey,
+                                                    flowKey
                                                   )
                                                 }
                                                 variant="ghost"
@@ -2975,7 +3210,7 @@ Data Objects: Request form, User profile`,
                                                       (element, idx) => {
                                                         if (
                                                           element.includes(
-                                                            "Messages:",
+                                                            "Messages:"
                                                           )
                                                         ) {
                                                           return (
@@ -2993,7 +3228,7 @@ Data Objects: Request form, User profile`,
                                                                 {element
                                                                   .replace(
                                                                     "Messages:",
-                                                                    "",
+                                                                    ""
                                                                   )
                                                                   .trim()}
                                                               </span>
@@ -3001,7 +3236,7 @@ Data Objects: Request form, User profile`,
                                                           );
                                                         } else if (
                                                           element.includes(
-                                                            "Timers:",
+                                                            "Timers:"
                                                           )
                                                         ) {
                                                           return (
@@ -3019,7 +3254,7 @@ Data Objects: Request form, User profile`,
                                                                 {element
                                                                   .replace(
                                                                     "Timers:",
-                                                                    "",
+                                                                    ""
                                                                   )
                                                                   .trim()}
                                                               </span>
@@ -3027,7 +3262,7 @@ Data Objects: Request form, User profile`,
                                                           );
                                                         } else if (
                                                           element.includes(
-                                                            "Data",
+                                                            "Data"
                                                           )
                                                         ) {
                                                           return (
@@ -3045,7 +3280,7 @@ Data Objects: Request form, User profile`,
                                                                 {element
                                                                   .replace(
                                                                     "Data Objects:",
-                                                                    "",
+                                                                    ""
                                                                   )
                                                                   .trim()}
                                                               </span>
@@ -3068,12 +3303,12 @@ Data Objects: Request form, User profile`,
                                                             </span>
                                                           </div>
                                                         );
-                                                      },
+                                                      }
                                                     )
                                                   : (() => {
                                                       const additionalSection =
                                                         details.description.match(
-                                                          /✅ 7\. Additional Elements\n([^$]*)/,
+                                                          /✅ 7\. Additional Elements\n([^$]*)/
                                                         );
                                                       if (additionalSection) {
                                                         const elements =
@@ -3084,7 +3319,7 @@ Data Objects: Request form, User profile`,
                                                           (element, idx) => {
                                                             if (
                                                               element.includes(
-                                                                "Messages:",
+                                                                "Messages:"
                                                               )
                                                             ) {
                                                               return (
@@ -3102,7 +3337,7 @@ Data Objects: Request form, User profile`,
                                                                     {element
                                                                       .replace(
                                                                         "Messages:",
-                                                                        "",
+                                                                        ""
                                                                       )
                                                                       .trim()}
                                                                   </span>
@@ -3110,7 +3345,7 @@ Data Objects: Request form, User profile`,
                                                               );
                                                             } else if (
                                                               element.includes(
-                                                                "Timers:",
+                                                                "Timers:"
                                                               )
                                                             ) {
                                                               return (
@@ -3128,7 +3363,7 @@ Data Objects: Request form, User profile`,
                                                                     {element
                                                                       .replace(
                                                                         "Timers:",
-                                                                        "",
+                                                                        ""
                                                                       )
                                                                       .trim()}
                                                                   </span>
@@ -3136,7 +3371,7 @@ Data Objects: Request form, User profile`,
                                                               );
                                                             } else if (
                                                               element.includes(
-                                                                "Data",
+                                                                "Data"
                                                               )
                                                             ) {
                                                               return (
@@ -3154,7 +3389,7 @@ Data Objects: Request form, User profile`,
                                                                     {element
                                                                       .replace(
                                                                         "Data Objects:",
-                                                                        "",
+                                                                        ""
                                                                       )
                                                                       .trim()}
                                                                   </span>
@@ -3162,7 +3397,7 @@ Data Objects: Request form, User profile`,
                                                               );
                                                             }
                                                             return null;
-                                                          },
+                                                          }
                                                         );
                                                       }
                                                       return (
@@ -3185,7 +3420,7 @@ Data Objects: Request form, User profile`,
                                             </div>
                                           </div>
                                         </div>
-                                      </>)
+                                      </>
                                     )}
                                   </div>
                                 )}
@@ -3204,7 +3439,7 @@ Data Objects: Request form, User profile`,
                                         <Button
                                           onClick={() =>
                                             copyXmlToClipboard(
-                                              existingFlow.bpmnXml,
+                                              existingFlow.bpmnXml
                                             )
                                           }
                                           variant="outline"
@@ -3228,19 +3463,31 @@ Data Objects: Request form, User profile`,
                                         </Link>
                                       </div>
                                     </div>
-                                    
+
                                     {/* BPMN Tabbed View */}
-                                    <Tabs defaultValue="diagram" className="w-full">
+                                    <Tabs
+                                      defaultValue="diagram"
+                                      className="w-full"
+                                    >
                                       <TabsList className="grid w-full grid-cols-2 bg-gray-100 mb-3">
-                                        <TabsTrigger value="diagram" className="text-xs">
+                                        <TabsTrigger
+                                          value="diagram"
+                                          className="text-xs"
+                                        >
                                           📊 Visual Diagram
                                         </TabsTrigger>
-                                        <TabsTrigger value="script" className="text-xs">
+                                        <TabsTrigger
+                                          value="script"
+                                          className="text-xs"
+                                        >
                                           📄 XML Script
                                         </TabsTrigger>
                                       </TabsList>
 
-                                      <TabsContent value="diagram" className="mt-0">
+                                      <TabsContent
+                                        value="diagram"
+                                        className="mt-0"
+                                      >
                                         <div className="bg-white rounded-lg border w-full">
                                           <SimpleBpmnViewer
                                             bpmnXml={existingFlow.bpmnXml}
@@ -3250,22 +3497,27 @@ Data Objects: Request form, User profile`,
                                         </div>
                                       </TabsContent>
 
-                                      <TabsContent value="script" className="mt-0">
+                                      <TabsContent
+                                        value="script"
+                                        className="mt-0"
+                                      >
                                         <div className="bg-gray-50 rounded-lg border">
                                           <div className="px-3 py-2 border-b bg-gray-100 rounded-t-lg">
                                             <div className="flex items-center justify-between">
                                               <div>
                                                 <p className="text-xs font-medium text-gray-700">
-                                                  BPMN 2.0 XML Script - {stakeholder} {flowType}
+                                                  BPMN 2.0 XML Script -{" "}
+                                                  {stakeholder} {flowType}
                                                 </p>
                                                 <p className="text-xs text-gray-500">
-                                                  {existingFlow.bpmnXml.length} characters
+                                                  {existingFlow.bpmnXml.length}{" "}
+                                                  characters
                                                 </p>
                                               </div>
                                               <Button
                                                 onClick={() =>
                                                   copyXmlToClipboard(
-                                                    existingFlow.bpmnXml,
+                                                    existingFlow.bpmnXml
                                                   )
                                                 }
                                                 variant="outline"
@@ -3293,7 +3545,7 @@ Data Objects: Request form, User profile`,
                         </div>
                       </div>
                     );
-                  },
+                  }
                 )}
               </div>
             </CardContent>

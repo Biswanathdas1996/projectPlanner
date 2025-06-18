@@ -13,31 +13,36 @@ export const DEFAULT_BPMN_DIAGRAM = `<?xml version="1.0" encoding="UTF-8"?>
 </bpmn2:definitions>`;
 
 export const STORAGE_KEYS = {
-  DIAGRAM: 'bpmn-diagram',
-  TIMESTAMP: 'bpmn-diagram-timestamp',
-  CURRENT_DIAGRAM: 'bpmn-current-diagram',
-  PROJECT_PLAN: 'bpmn-project-plan',
-  PROJECT_DESCRIPTION: 'bpmn-project-description',
-  USER_JOURNEY_FLOWS: 'bpmn-user-journey-flows',
-  PERSONA_BPMN_FLOWS: 'bpmn-persona-flows',
-  PERSONA_PROMPTS: 'bpmn-persona-prompts',
-  EXTRACTED_STAKEHOLDERS: 'bpmn-extracted-stakeholders',
-  PERSONA_FLOW_TYPES: 'bpmn-persona-flow-types',
-  GENERATED_BPMN_XML: 'bpmn-generated-xml',
-  STAKEHOLDER_FLOWS: 'bpmn-stakeholder-flows',
-  STAKEHOLDER_FLOW_DATA: 'bpmn-stakeholder-flow-data',
-  MARKET_RESEARCH_DATA: 'bpmn-market-research-data',
-  MARKET_RESEARCH_TIMESTAMP: 'bpmn-market-research-timestamp',
+  DIAGRAM: "bpmn-diagram",
+  TIMESTAMP: "bpmn-diagram-timestamp",
+  CURRENT_DIAGRAM: "bpmn-current-diagram",
+  // PROJECT_PLAN: "bpmn-project-plan",
+  PROJECT_PLAN: "enhanced_plan_sections",
+  PROJECT_DESCRIPTION: "bpmn-project-description",
+  USER_JOURNEY_FLOWS: "bpmn-user-journey-flows",
+  PERSONA_BPMN_FLOWS: "bpmn-persona-flows",
+  PERSONA_PROMPTS: "bpmn-persona-prompts",
+  EXTRACTED_STAKEHOLDERS: "bpmn-extracted-stakeholders",
+  PERSONA_FLOW_TYPES: "bpmn-persona-flow-types",
+  GENERATED_BPMN_XML: "bpmn-generated-xml",
+  STAKEHOLDER_FLOWS: "bpmn-stakeholder-flows",
+  STAKEHOLDER_FLOW_DATA: "bpmn-stakeholder-flow-data",
+  MARKET_RESEARCH_DATA: "bpmn-market-research-data",
+  MARKET_RESEARCH_TIMESTAMP: "bpmn-market-research-timestamp",
 } as const;
 
 export function generateId(): string {
   return Math.random().toString(36).substr(2, 9);
 }
 
-export function downloadFile(content: string, filename: string, type: string = 'application/xml'): void {
+export function downloadFile(
+  content: string,
+  filename: string,
+  type: string = "application/xml"
+): void {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
@@ -51,55 +56,67 @@ export function xmlToJson(xml: string): string {
     // This is a simplified conversion for display purposes
     // In a real implementation, you'd want a proper XML to JSON parser
     const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(xml, 'text/xml');
-    
-    const processElements = xmlDoc.getElementsByTagName('bpmn2:process')[0];
+    const xmlDoc = parser.parseFromString(xml, "text/xml");
+
+    const processElements = xmlDoc.getElementsByTagName("bpmn2:process")[0];
     const elements: any[] = [];
-    
+
     if (processElements) {
       Array.from(processElements.children).forEach((child) => {
         elements.push({
-          type: child.tagName.replace('bpmn2:', ''),
-          id: child.getAttribute('id'),
-          name: child.getAttribute('name') || ''
+          type: child.tagName.replace("bpmn2:", ""),
+          id: child.getAttribute("id"),
+          name: child.getAttribute("name") || "",
         });
       });
     }
-    
-    return JSON.stringify({
-      definitions: {
-        id: xmlDoc.documentElement.getAttribute('id') || 'process_001',
-        name: "Current Process",
-        lastModified: new Date().toISOString(),
-        elements: elements
-      }
-    }, null, 2);
+
+    return JSON.stringify(
+      {
+        definitions: {
+          id: xmlDoc.documentElement.getAttribute("id") || "process_001",
+          name: "Current Process",
+          lastModified: new Date().toISOString(),
+          elements: elements,
+        },
+      },
+      null,
+      2
+    );
   } catch (error) {
-    console.error('Error converting XML to JSON:', error);
-    return JSON.stringify({
-      error: 'Failed to parse BPMN XML',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    }, null, 2);
+    console.error("Error converting XML to JSON:", error);
+    return JSON.stringify(
+      {
+        error: "Failed to parse BPMN XML",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      null,
+      2
+    );
   }
 }
 
 export function validateBpmnFile(file: File): Promise<boolean> {
   return new Promise((resolve) => {
-    if (!file.name.endsWith('.bpmn') && !file.name.endsWith('.xml') && !file.name.endsWith('.json')) {
+    if (
+      !file.name.endsWith(".bpmn") &&
+      !file.name.endsWith(".xml") &&
+      !file.name.endsWith(".json")
+    ) {
       resolve(false);
       return;
     }
-    
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        if (file.name.endsWith('.json')) {
+        if (file.name.endsWith(".json")) {
           JSON.parse(content);
         } else {
           const parser = new DOMParser();
-          const xmlDoc = parser.parseFromString(content, 'text/xml');
-          const errorNode = xmlDoc.querySelector('parsererror');
+          const xmlDoc = parser.parseFromString(content, "text/xml");
+          const errorNode = xmlDoc.querySelector("parsererror");
           resolve(!errorNode);
         }
         resolve(true);

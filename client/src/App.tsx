@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import BpmnEditor from "@/pages/bpmn-editor";
 import ProjectPlanner from "@/pages/project-planner";
-import UserJourney from "@/pages/user-journey";
 import UserJourneyEnhanced from "@/pages/user-journey-enhanced";
 import UserStoryGenerator from "@/pages/user-story-generator";
 import CodeGenerator from "@/pages/code-generator";
@@ -25,7 +24,6 @@ function Router() {
       <Route path="/landing" component={Landing} />
       <Route path="/user-journey" component={UserJourneyEnhanced} />
       <Route path="/user-journey-enhanced" component={UserJourneyEnhanced} />
-      <Route path="/user-journey-legacy" component={UserJourney} />
       <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
       <Route path="/user-stories" component={UserStoryGenerator} />
       <Route path="/stories" component={UserStoryGenerator} />
