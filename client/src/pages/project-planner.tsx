@@ -26,6 +26,35 @@ import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker'
 import { ProjectSectionsSettings, loadProjectSectionsSettings, ProjectSection as SettingsProjectSection } from '@/components/project-sections-settings';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
+
+// Helper function to get enhanced plan sections from localStorage
+const getEnhancedPlanSections = (): ProjectPlanSection[] => {
+  const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
+  if (savedEnhancedSections) {
+    try {
+      return JSON.parse(savedEnhancedSections);
+    } catch (error) {
+      console.error('Failed to parse enhanced plan sections:', error);
+    }
+  }
+  return [];
+};
+
+// Helper function to save enhanced plan sections to localStorage
+const saveEnhancedPlanSections = (sections: ProjectPlanSection[]) => {
+  localStorage.setItem('enhanced_plan_sections', JSON.stringify(sections));
+};
+
+// Helper function to get plan content for external use (BPMN, etc.)
+const getPlanContentForExternalUse = (projectPlan: string): string => {
+  const savedSections = getEnhancedPlanSections();
+  if (savedSections.length > 0) {
+    return savedSections.map(section => 
+      `${section.title}:\n${section.content.replace(/<[^>]*>/g, ' ').trim()}`
+    ).join('\n\n');
+  }
+  return projectPlan;
+};
 import { NavigationBar } from '@/components/navigation-bar';
 import { WorkflowProgress } from '@/components/workflow-progress';
 import { Link, useLocation } from 'wouter';
@@ -211,13 +240,9 @@ export default function ProjectPlanner() {
     }
 
     // Load enhanced plan sections if available
-    if (savedEnhancedSections) {
-      try {
-        const parsedSections = JSON.parse(savedEnhancedSections);
-        setEnhancedSections(parsedSections);
-      } catch (error) {
-        console.error('Failed to parse enhanced plan sections:', error);
-      }
+    const savedSections = getEnhancedPlanSections();
+    if (savedSections.length > 0) {
+      setEnhancedSections(savedSections);
     }
 
     // Load project sections settings
@@ -452,7 +477,7 @@ export default function ProjectPlanner() {
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      localStorage.setItem('enhanced_plan_sections', JSON.stringify(generatedSections));
+      saveEnhancedPlanSections(generatedSections);
       
       // Final progress update
       setEnhancedProgress({
@@ -796,21 +821,7 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
   };
 
   const handleGenerateBpmnDiagram = async () => {
-    // Use enhanced_plan_sections from localStorage if available, otherwise fallback to projectPlan
-    const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
-    let planContent = projectPlan;
-
-    if (savedEnhancedSections) {
-      try {
-        const parsedSections = JSON.parse(savedEnhancedSections);
-        // Convert enhanced sections to text format for BPMN generation
-        planContent = parsedSections.map((section: any) => 
-          `${section.title}:\n${section.content.replace(/<[^>]*>/g, ' ').trim()}`
-        ).join('\n\n');
-      } catch (error) {
-        console.error('Failed to parse enhanced plan sections for BPMN:', error);
-      }
-    }
+    const planContent = getPlanContentForExternalUse(projectPlan);
 
     if (!planContent.trim()) {
       setError('No project plan available to convert');
@@ -851,20 +862,7 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
     setError('');
 
     try {
-      // Use enhanced_plan_sections from localStorage if available
-      const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
-      let existingPlan = projectPlan;
-
-      if (savedEnhancedSections) {
-        try {
-          const parsedSections = JSON.parse(savedEnhancedSections);
-          existingPlan = parsedSections.map((section: any) => 
-            `${section.title}:\n${section.content}`
-          ).join('\n\n');
-        } catch (error) {
-          console.error('Failed to parse enhanced plan sections for enhancement:', error);
-        }
-      }
+      const existingPlan = getPlanContentForExternalUse(projectPlan);
 
       const enhancementRequest = `
 Based on the existing project plan below, enhance it by adding the following requirements:
@@ -989,8 +987,8 @@ Return the complete enhanced project plan as HTML with all existing content plus
         const htmlReport = planner.generateHtmlReport(sortedSections);
         setProjectPlan(htmlReport);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
-        // Save enhanced sections to localStorage
-        localStorage.setItem('enhanced_plan_sections', JSON.stringify(sortedSections));
+        // Save enhanced sections to localStorage using helper function
+        saveEnhancedPlanSections(sortedSections);
       }
 
     } catch (err) {
@@ -1111,13 +1109,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
       }
 
-      // Save updated enhanced sections to localStorage
+      // Save updated enhanced sections to localStorage using helper function
       const updatedSections = enhancedSections.map(section => 
         section.id === sectionId 
           ? { ...section, content: cleanedContent }
           : section
       );
-      localStorage.setItem('enhanced_plan_sections', JSON.stringify(updatedSections));
+      saveEnhancedPlanSections(updatedSections);
 
       // Force a re-render by updating the active tab
       const currentActiveTab = document.querySelector('[data-state="active"][data-orientation="horizontal"]');
@@ -1179,6 +1177,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
     localStorage.removeItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
+    localStorage.removeItem('enhanced_plan_sections');
     setLocation('/');
   };
 
