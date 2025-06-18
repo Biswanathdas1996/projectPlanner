@@ -507,25 +507,57 @@ export default function CodeGenerator() {
                   <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                     <div className="flex items-center justify-between">
                       <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
-                      <a 
-                        href="https://replit.com" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                      >
-                        Open in New Tab ↗
-                      </a>
+                      <div className="flex gap-2">
+                        <a 
+                          href="https://replit.com/new" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                        >
+                          Create New Repl ↗
+                        </a>
+                        <a 
+                          href="https://replit.com" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                        >
+                          Open Replit ↗
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  <iframe
-                    height="500px"
-                    width="100%"
-                    src="https://replit.com?embed=true"
-                    frameBorder="0"
-                    allowFullScreen
-                    className="w-full"
-                    title="Replit Development Environment"
-                  />
+                  <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
+                    <div className="text-center space-y-4">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                        <Code className="h-8 w-8 text-blue-600" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-900">Start Your Development Journey</h3>
+                      <p className="text-gray-600 max-w-md mx-auto">
+                        Due to security restrictions, please click the button above to open Replit in a new tab and start coding your project.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <a 
+                          href="https://replit.com/new" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          <Code className="h-4 w-4 mr-2" />
+                          Create New Project
+                        </a>
+                        <a 
+                          href="https://replit.com/@templates" 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center px-6 py-3 border border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors"
+                        >
+                          <Layers className="h-4 w-4 mr-2" />
+                          Browse Templates
+                        </a>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -791,25 +823,74 @@ export default function CodeGenerator() {
                       <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium text-gray-900">Replit Development Environment</h4>
-                          <a 
-                            href="https://replit.com" 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
-                          >
-                            Open in New Tab ↗
-                          </a>
+                          <div className="flex gap-2">
+                            <a 
+                              href="https://replit.com/new" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors"
+                            >
+                              Create New Repl ↗
+                            </a>
+                            <a 
+                              href="https://replit.com" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-sm text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              Open Replit ↗
+                            </a>
+                          </div>
                         </div>
                       </div>
-                      <iframe
-                        height="500px"
-                        width="100%"
-                        src="https://replit.com?embed=true"
-                        frameBorder="0"
-                        allowFullScreen
-                        className="w-full"
-                        title="Replit Development Environment"
-                      />
+                      <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50">
+                        <div className="text-center space-y-4">
+                          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
+                            <Code className="h-8 w-8 text-blue-600" />
+                          </div>
+                          <h3 className="text-lg font-semibold text-gray-900">Ready to Code Your Project</h3>
+                          <p className="text-gray-600 max-w-md mx-auto">
+                            Copy your generated code structure and start developing in Replit. Click the button above to create a new project.
+                          </p>
+                          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                            <a 
+                              href="https://replit.com/new" 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              <Code className="h-4 w-4 mr-2" />
+                              Start Development
+                            </a>
+                            <Button
+                              onClick={() => {
+                                // Copy all generated code to clipboard for easy pasting in Replit
+                                const allCode = [
+                                  "=== FOLDER STRUCTURE ===",
+                                  generatedProject?.folderStructure || "",
+                                  "\n=== FRONTEND FILES ===",
+                                  Object.entries(generatedProject?.frontendFiles || {}).map(([name, content]) => 
+                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  "\n=== BACKEND FILES ===",
+                                  Object.entries(generatedProject?.backendFiles || {}).map(([name, content]) => 
+                                    `--- ${name} ---\n${content}`).join('\n\n'),
+                                  "\n=== DATABASE SCHEMA ===",
+                                  generatedProject?.databaseSchema || "",
+                                  "\n=== PACKAGE.JSON ===",
+                                  generatedProject?.packageJson || ""
+                                ].join('\n\n');
+                                
+                                navigator.clipboard.writeText(allCode);
+                              }}
+                              variant="outline"
+                              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                            >
+                              <Copy className="h-4 w-4 mr-2" />
+                              Copy All Code
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
