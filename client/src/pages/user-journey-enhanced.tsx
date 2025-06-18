@@ -20,6 +20,8 @@ import {
 import { SimpleBpmnViewer } from "@/components/simple-bpmn-viewer";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
+import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
+import { createAIFlowDiagramGenerator, FlowDiagramData } from "@/lib/ai-flow-diagram-generator";
 import { Link } from "wouter";
 import {
   Users,
@@ -137,6 +139,10 @@ export default function UserJourneyEnhanced() {
   const [editedFlowDetails, setEditedFlowDetails] =
     useState<FlowDetails | null>(null);
 
+  // Flow diagram state
+  const [flowDiagrams, setFlowDiagrams] = useState<Record<string, FlowDiagramData>>({});
+  const [isGeneratingFlowDiagram, setIsGeneratingFlowDiagram] = useState<Record<string, boolean>>({});
+
   // Load data from localStorage when component mounts
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(
@@ -194,6 +200,16 @@ export default function UserJourneyEnhanced() {
         setFlowDetails(JSON.parse(savedFlowDetails));
       } catch (error) {
         console.error("Error parsing saved flow details:", error);
+      }
+    }
+
+    // Load saved flow diagrams
+    const savedFlowDiagrams = localStorage.getItem("flowDiagrams");
+    if (savedFlowDiagrams) {
+      try {
+        setFlowDiagrams(JSON.parse(savedFlowDiagrams));
+      } catch (error) {
+        console.error("Error parsing saved flow diagrams:", error);
       }
     }
 
