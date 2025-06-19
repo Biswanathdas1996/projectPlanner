@@ -1539,8 +1539,7 @@ export default function WireframeDesigner() {
         keyHighlights: finalReport.keyFindings.designPrinciples,
         complianceNotes: finalReport.keyFindings.complianceNotes,
         specifications: [...finalReport.brandGuidelines.colors.primary, ...finalReport.brandGuidelines.typography.fonts],
-        usageRules: finalReport.brandGuidelines.logos.usage,
-        complianceNotes: finalReport.keyFindings.complianceNotes
+        usageRules: finalReport.brandGuidelines.logos.usage
       };
       
       setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
@@ -5318,26 +5317,26 @@ ${selectedPageCode.jsCode}
                 )}
 
                 {/* MongoDB Vector Search Key Points */}
-                {enhancedBrandAnalysis && enhancedBrandAnalysis.enhancedKeyPoints && (
+                {finalBrandReport && finalBrandReport.keyFindings && (
                   <Card className="mt-6">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-blue-500 animate-pulse"></div>
-                        MongoDB Vector Search Key Points
+                        Multimodal Analysis Key Points
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Brand Clauses */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.length > 0 && (
+                        {/* Critical Requirements */}
+                        {finalBrandReport.keyFindings.criticalRequirements.length > 0 && (
                           <div>
-                            <h4 className="font-medium text-sm mb-2 text-amber-700">Brand Clauses ({enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.length})</h4>
+                            <h4 className="font-medium text-sm mb-2 text-amber-700">Critical Requirements ({finalBrandReport.keyFindings.criticalRequirements.length})</h4>
                             <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.slice(0, 5).map((point, index) => (
+                              {finalBrandReport.keyFindings.criticalRequirements.slice(0, 5).map((requirement, index) => (
                                 <div key={index} className="text-xs text-amber-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
                                   <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                    <span>{requirement}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
                                   </div>
                                 </div>
                               ))}
@@ -5345,16 +5344,16 @@ ${selectedPageCode.jsCode}
                           </div>
                         )}
 
-                        {/* Design Guidelines */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.length > 0 && (
+                        {/* Design Principles */}
+                        {finalBrandReport.keyFindings.designPrinciples.length > 0 && (
                           <div>
-                            <h4 className="font-medium text-sm mb-2 text-blue-700">Design Guidelines ({enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.length})</h4>
+                            <h4 className="font-medium text-sm mb-2 text-blue-700">Design Principles ({finalBrandReport.keyFindings.designPrinciples.length})</h4>
                             <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.slice(0, 5).map((point, index) => (
+                              {finalBrandReport.keyFindings.designPrinciples.slice(0, 5).map((principle, index) => (
                                 <div key={index} className="text-xs text-blue-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
                                   <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                    <span>{principle}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
                                   </div>
                                 </div>
                               ))}
@@ -5362,16 +5361,16 @@ ${selectedPageCode.jsCode}
                           </div>
                         )}
 
-                        {/* Color Specifications */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.length > 0 && (
+                        {/* Brand Themes */}
+                        {finalBrandReport.keyFindings.brandThemes.length > 0 && (
                           <div>
-                            <h4 className="font-medium text-sm mb-2 text-green-700">Color Specifications ({enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.length})</h4>
+                            <h4 className="font-medium text-sm mb-2 text-green-700">Brand Themes ({finalBrandReport.keyFindings.brandThemes.length})</h4>
                             <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.slice(0, 5).map((point, index) => (
+                              {finalBrandReport.keyFindings.brandThemes.slice(0, 5).map((theme, index) => (
                                 <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded border-l-3 border-green-400">
                                   <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                    <span>{theme}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
                                   </div>
                                 </div>
                               ))}
@@ -5379,12 +5378,12 @@ ${selectedPageCode.jsCode}
                           </div>
                         )}
 
-                        {/* Typography Rules */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.length > 0 && (
+                        {/* Compliance Notes */}
+                        {finalBrandReport.keyFindings.complianceNotes.length > 0 && (
                           <div>
-                            <h4 className="font-medium text-sm mb-2 text-purple-700">Typography Rules ({enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.length})</h4>
+                            <h4 className="font-medium text-sm mb-2 text-purple-700">Compliance Notes ({finalBrandReport.keyFindings.complianceNotes.length})</h4>
                             <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.slice(0, 5).map((point, index) => (
+                              {finalBrandReport.keyFindings.complianceNotes.slice(0, 5).map((note, index) => (
                                 <div key={index} className="text-xs text-purple-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
                                   <div className="flex justify-between items-start">
                                     <span>{point.content}</span>
