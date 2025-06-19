@@ -4738,6 +4738,34 @@ ${selectedPageCode.jsCode}
               </div>
               
               <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+                {/* Brand Analysis Summary */}
+                {comprehensiveBrandAnalysis && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                    <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                      Comprehensive Analysis Results
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{comprehensiveBrandAnalysis.totalPages}</div>
+                        <div className="text-xs text-gray-600">Pages Analyzed</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{Math.round(comprehensiveBrandAnalysis.extractionMetadata.averageConfidence * 100)}%</div>
+                        <div className="text-xs text-gray-600">Confidence</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{comprehensiveBrandAnalysis.consolidatedFindings.allKeyBrandClauses.length}</div>
+                        <div className="text-xs text-gray-600">Brand Clauses</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{Math.round(comprehensiveBrandAnalysis.extractionMetadata.processingTime / 1000)}s</div>
+                        <div className="text-xs text-gray-600">Processing Time</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Colors Section */}
                   <Card>
@@ -5121,6 +5149,196 @@ ${selectedPageCode.jsCode}
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Key Brand Clauses Section */}
+                {(brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Clauses
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {brandGuidelines.keyClauses.map((clause, index) => (
+                          <div key={index} className="text-sm text-gray-700 bg-amber-50 p-3 rounded border-l-4 border-amber-400">
+                            <strong>Clause {index + 1}:</strong> {clause}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Key Points and Highlights */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  {(brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-400 to-indigo-500"></div>
+                          Key Points
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyPoints.map((point, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                              • {point}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {(brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-yellow-400 to-amber-500"></div>
+                          Key Highlights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyHighlights.map((highlight, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                              ⭐ {highlight}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Brand Values and Design Principles */}
+                {(brandGuidelines.brandValues && brandGuidelines.brandValues.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Brand Values & Design Principles
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Values</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandValues.map((value, index) => (
+                              <div key={index} className="text-sm text-purple-700 bg-purple-50 px-3 py-2 rounded">
+                                {value}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                            <div className="space-y-1">
+                              {brandGuidelines.designPrinciples.map((principle, index) => (
+                                <div key={index} className="text-sm text-indigo-700 bg-indigo-50 px-3 py-2 rounded">
+                                  {principle}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Comprehensive Analysis Data */}
+                {comprehensiveBrandAnalysis && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-teal-500 animate-pulse"></div>
+                        Detailed Analysis Results
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-emerald-700">Color Specifications ({comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length})</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.slice(0, 10).map((spec, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-emerald-50 p-1 rounded">
+                                {spec}
+                              </div>
+                            ))}
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length > 10 && (
+                              <div className="text-xs text-emerald-600 font-medium">
+                                +{comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length - 10} more...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-blue-700">Typography Rules ({comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length})</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.slice(0, 10).map((rule, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-blue-50 p-1 rounded">
+                                {rule}
+                              </div>
+                            ))}
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length > 10 && (
+                              <div className="text-xs text-blue-600 font-medium">
+                                +{comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length - 10} more...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-purple-700">Logo Guidelines ({comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length})</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.slice(0, 10).map((rule, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-purple-50 p-1 rounded">
+                                {rule}
+                              </div>
+                            ))}
+                            {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length > 10 && (
+                              <div className="text-xs text-purple-600 font-medium">
+                                +{comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length - 10} more...
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Dos and Don'ts from Analysis */}
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-green-700">Dos ({comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.length})</h4>
+                          <div className="max-h-24 overflow-y-auto space-y-1">
+                            {comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.slice(0, 5).map((item, index) => (
+                              <div key={index} className="text-xs text-green-700 bg-green-50 p-1 rounded">
+                                ✓ {item}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-red-700">Don'ts ({comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.length})</h4>
+                          <div className="max-h-24 overflow-y-auto space-y-1">
+                            {comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.slice(0, 5).map((item, index) => (
+                              <div key={index} className="text-xs text-red-700 bg-red-50 p-1 rounded">
+                                ✗ {item}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Compliance & Usage Guidelines */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
