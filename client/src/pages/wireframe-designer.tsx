@@ -18,8 +18,8 @@ import { createPageContentAgent, type PageContentCard } from "@/lib/page-content
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
-import { createAgenticPDFRAGAgent, type ComprehensiveBrandAnalysis } from "@/lib/agentic-pdf-rag-agent";
-import { createEnhancedRAGExtractor, type EnhancedBrandAnalysis } from "@/lib/enhanced-rag-extractor";
+import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
+import { createChunkedBrandAnalyzer, type FinalBrandReport } from "@/lib/chunked-brand-analyzer";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -248,11 +248,11 @@ export default function WireframeDesigner() {
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
   const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{ html: string; css: string; js: string } | null>(null);
   
-  // Comprehensive brand analysis state
-  const [comprehensiveBrandAnalysis, setComprehensiveBrandAnalysis] = useState<ComprehensiveBrandAnalysis | null>(null);
-  const [enhancedBrandAnalysis, setEnhancedBrandAnalysis] = useState<EnhancedBrandAnalysis | null>(null);
-  const [isPerformingRAGAnalysis, setIsPerformingRAGAnalysis] = useState(false);
-  const [ragAnalysisProgress, setRAGAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
+  // Multimodal brand analysis state
+  const [multimodalBrandReport, setMultimodalBrandReport] = useState<ComprehensiveBrandReport | null>(null);
+  const [finalBrandReport, setFinalBrandReport] = useState<FinalBrandReport | null>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
 
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
@@ -1477,7 +1477,7 @@ export default function WireframeDesigner() {
     }
   };
 
-  // Brand guideline extraction handler
+  // Multimodal brand guideline extraction handler
   const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || file.type !== 'application/pdf') {
@@ -1486,60 +1486,75 @@ export default function WireframeDesigner() {
     }
 
     setIsExtractingBrand(true);
-    setIsPerformingRAGAnalysis(true);
+    setIsPerformingMultimodalAnalysis(true);
     setBrandExtractionError('');
-    setRAGAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing PDF analysis..." });
+    setMultimodalAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing multimodal PDF analysis..." });
 
     try {
-      console.log('🤖 Starting enhanced RAG analysis for:', file.name);
-      setRAGAnalysisProgress({ current: 10, total: 100, currentStep: "Initializing enhanced RAG extraction..." });
+      console.log('🚀 Starting multimodal PDF extraction for:', file.name);
+      setMultimodalAnalysisProgress({ current: 10, total: 100, currentStep: "Step 1: Converting PDF pages to images..." });
       
-      // Use enhanced RAG extractor with MongoDB Vector Search
-      const enhancedExtractor = createEnhancedRAGExtractor();
+      // Step 1: Extract content using multimodal PDF extractor
+      const multimodalExtractor = createMultimodalPDFExtractor();
       
-      setRAGAnalysisProgress({ current: 30, total: 100, currentStep: "Performing agentic PDF analysis..." });
+      setMultimodalAnalysisProgress({ current: 30, total: 100, currentStep: "Step 2: Analyzing pages with Gemini vision..." });
       
-      const { brandGuidelines: guidelines, enhancedAnalysis } = await enhancedExtractor.performEnhancedBrandAnalysis(file);
+      const multimodalReport = await multimodalExtractor.extractFromPDF(file);
+      setMultimodalBrandReport(multimodalReport);
       
-      setRAGAnalysisProgress({ current: 70, total: 100, currentStep: "Processing MongoDB vector search results..." });
+      setMultimodalAnalysisProgress({ current: 60, total: 100, currentStep: "Step 3: Processing content through chunked analysis..." });
       
-      // Store both comprehensive and enhanced analysis results
-      setComprehensiveBrandAnalysis(enhancedAnalysis);
-      setEnhancedBrandAnalysis(enhancedAnalysis);
+      // Step 2: Process through chunked brand analyzer
+      const chunkedAnalyzer = createChunkedBrandAnalyzer();
+      const finalReport = await chunkedAnalyzer.analyzeExtractedContent(multimodalReport);
+      setFinalBrandReport(finalReport);
       
-      setRAGAnalysisProgress({ current: 90, total: 100, currentStep: "Saving brand guidelines..." });
+      setMultimodalAnalysisProgress({ current: 85, total: 100, currentStep: "Step 4: Creating comprehensive brand guidelines..." });
+      
+      // Convert to BrandGuideline format for compatibility
+      const brandGuidelines: BrandGuideline = {
+        colors: finalReport.brandGuidelines.colors,
+        typography: finalReport.brandGuidelines.typography,
+        logos: finalReport.brandGuidelines.logos,
+        layout: finalReport.brandGuidelines.layout,
+        accessibility: finalReport.brandGuidelines.accessibility,
+        tone: finalReport.brandGuidelines.tone,
+        components: finalReport.brandGuidelines.components
+      };
+      
+      setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
       
       // Generate a name for the brand guidelines based on file name
       const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       
       // Save to local storage with proper metadata
-      const storedGuideline = BrandGuidelinesStorage.save(guidelines, guidelineName, file.name);
+      const storedGuideline = BrandGuidelinesStorage.save(brandGuidelines, guidelineName, file.name);
       
       // Update state
-      setBrandGuidelines(guidelines);
+      setBrandGuidelines(brandGuidelines);
       setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
       setSelectedStoredGuideline(storedGuideline.id);
       
       // Keep legacy localStorage for backward compatibility
-      localStorage.setItem('brand_guidelines', JSON.stringify(guidelines));
+      localStorage.setItem('brand_guidelines', JSON.stringify(brandGuidelines));
       
-      setRAGAnalysisProgress({ current: 100, total: 100, currentStep: "Enhanced analysis complete!" });
+      setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Multimodal analysis complete!" });
       
-      console.log('✅ Enhanced RAG analysis completed:', {
-        totalTime: enhancedAnalysis.analysisMetadata.totalProcessingTime,
-        keyPoints: enhancedAnalysis.analysisMetadata.keyPointsExtracted,
-        confidence: Math.round(enhancedAnalysis.analysisMetadata.confidenceScore * 100) + '%',
-        vectorChunks: enhancedAnalysis.vectorSearchResults.totalChunks
+      console.log('✅ Multimodal brand analysis completed:', {
+        totalPages: finalReport.documentInfo.totalPages,
+        totalChunks: finalReport.documentInfo.totalChunks,
+        confidence: Math.round(finalReport.documentInfo.averageConfidence * 100) + '%',
+        processingTime: Math.round(finalReport.documentInfo.processingTime / 1000) + 's'
       });
       
       toast({
-        title: "Enhanced Brand Analysis Complete",
-        description: `Extracted ${enhancedAnalysis.analysisMetadata.keyPointsExtracted} key points using MongoDB Vector Search with ${Math.round(enhancedAnalysis.analysisMetadata.confidenceScore * 100)}% confidence.`,
+        title: "Multimodal Brand Analysis Complete",
+        description: `Analyzed ${finalReport.documentInfo.totalPages} pages through ${finalReport.documentInfo.totalChunks} content chunks with ${Math.round(finalReport.documentInfo.averageConfidence * 100)}% confidence.`,
       });
       
       setShowBrandModal(true);
     } catch (error) {
-      console.error('Brand extraction error:', error);
+      console.error('Multimodal brand extraction error:', error);
       setBrandExtractionError('Failed to extract brand guidelines. Please try again.');
       toast({
         title: "Extraction Failed",
@@ -1548,8 +1563,8 @@ export default function WireframeDesigner() {
       });
     } finally {
       setIsExtractingBrand(false);
-      setIsPerformingRAGAnalysis(false);
-      setRAGAnalysisProgress({ current: 0, total: 0, currentStep: "" });
+      setIsPerformingMultimodalAnalysis(false);
+      setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "" });
     }
   };
 
@@ -4418,27 +4433,27 @@ ${selectedPageCode.jsCode}
                       )}
                     </div>
                     
-                    {/* Comprehensive RAG Analysis Progress */}
-                    {isPerformingRAGAnalysis && ragAnalysisProgress.total > 0 && (
+                    {/* Multimodal Analysis Progress */}
+                    {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
                       <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
                             <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
-                            Comprehensive PDF Analysis
+                            Multimodal PDF Analysis
                           </span>
                           <span className="text-xs text-indigo-600">
-                            {Math.round((ragAnalysisProgress.current / ragAnalysisProgress.total) * 100)}%
+                            {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
                           </span>
                         </div>
                         <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
                           <div 
                             className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
-                            style={{ width: `${(ragAnalysisProgress.current / ragAnalysisProgress.total) * 100}%` }}
+                            style={{ width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%` }}
                           ></div>
                         </div>
-                        {ragAnalysisProgress.currentStep && (
+                        {multimodalAnalysisProgress.currentStep && (
                           <p className="text-xs text-indigo-600">
-                            {ragAnalysisProgress.currentStep}
+                            {multimodalAnalysisProgress.currentStep}
                           </p>
                         )}
                       </div>
