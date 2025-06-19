@@ -403,6 +403,15 @@ Return HTML and CSS in this exact format:
         const secondaryTextColor = getContrastColor(secondaryColor);
         const neutralTextColor = getContrastColor(neutralColor);
 
+        // Use corporate layout pattern from brand guidelines (blue header + left sidebar)
+        const layoutPattern = brandGuidelines?.layout?.layoutPatterns || {};
+        const pageStructure = brandGuidelines?.layout?.pageStructure || {};
+        
+        // Corporate blue color scheme based on attached example
+        const headerColor = primaryColor.includes("#") ? primaryColor : "#3C4E9E";
+        const sidebarWidth = "250px";
+        const headerHeight = layoutPattern.headerHeight || "70px";
+        
         // Determine page type and create appropriate layout structure
         const isAppointmentPage =
             pageContent.pageName.toLowerCase().includes("appointment") ||
