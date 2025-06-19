@@ -523,6 +523,11 @@ Return this exact JSON structure with enhanced design system information:
       },
       typography: {
         fonts: ["Inter", "system-ui", "sans-serif"],
+        fontFamilies: {
+          primary: "Inter, system-ui, sans-serif",
+          heading: "Inter, system-ui, sans-serif",
+          body: "Inter, system-ui, sans-serif"
+        },
         headingStyles: ["Bold", "Clean", "High Contrast"],
         bodyStyles: ["Regular", "Readable", "Professional"],
         weights: ["400", "500", "600", "700"],
@@ -539,10 +544,38 @@ Return this exact JSON structure with enhanced design system information:
         padding: ["16px", "24px", "32px"]
       },
       components: {
-        buttons: ["rounded corners", "solid backgrounds", "hover states"],
-        cards: ["subtle shadows", "clean borders", "good spacing"],
-        forms: ["clean inputs", "focus states", "validation styling"],
-        navigation: ["horizontal layout", "clear hierarchy"],
+        buttons: {
+          primary: "Solid background with brand colors, rounded corners",
+          secondary: "Outlined style with brand color borders",
+          borderRadius: "8px",
+          fontWeight: "500",
+          states: ["hover: darker shade", "active: pressed", "disabled: opacity 50%"]
+        },
+        cards: {
+          design: "Subtle shadows with clean borders and good spacing",
+          shadows: ["0 1px 3px rgba(0,0,0,0.1)", "0 4px 6px rgba(0,0,0,0.1)"],
+          borderRadius: "8px",
+          spacing: "16px internal padding"
+        },
+        forms: {
+          inputStyles: "Clean inputs with focus states and validation styling",
+          labelStyles: "Clear labels with medium font weight",
+          focusStates: "Brand color outline with 2px focus ring"
+        },
+        navigation: {
+          primaryNav: "Horizontal layout with clear hierarchy",
+          states: "Active, hover, and current page indicators",
+          mobileNav: "Hamburger menu with slide-out panel"
+        },
+        sections: {
+          headerDesign: "Brand logo with navigation menu",
+          footerDesign: "Multi-column layout with links and contact info",
+          contentAreas: "Proper margins and readable layouts"
+        },
+        contactUs: {
+          design: "Form layout with contact information display",
+          layout: "Two-column or single column based on space"
+        },
         modals: ["centered overlay", "smooth animations"],
         tables: ["striped rows", "hover states"],
         badges: ["solid fill", "outline variants"]

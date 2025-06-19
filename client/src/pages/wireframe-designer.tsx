@@ -1596,7 +1596,7 @@ export default function WireframeDesigner() {
         pageName: pageName,
         htmlCode: result.html,
         cssCode: result.css,
-        jsCode: result.js || '',
+        jsCode: '',
         brandNotes: result.brandNotes || []
       };
 
