@@ -726,12 +726,28 @@ Return HTML and CSS in this exact format:
             pageContent.lists && pageContent.lists.length > 0
                 ? `
         <section class="content-section">
-            <h2>Data & Lists</h2>
+            <h2>📋 Data & Lists</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number">${pageContent.lists.length}</span>
+                    <div class="stat-label">Data Sets</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">${pageContent.lists.reduce((total: number, list: any) => total + (list.items ? list.items.length : 0), 0)}</span>
+                    <div class="stat-label">Total Items</div>
+                </div>
+            </div>
+            <div class="visual-separator"></div>
             ${pageContent.lists
                 .map(
-                    (list: any) => `
+                    (list: any, idx: number) => `
                 <div class="list-container">
-                    <h3 style="margin-bottom: 15px;">${list.title || list}</h3>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div class="info-icon" style="background: ${primaryColor}; color: white; width: 30px; height: 30px; font-size: 0.9rem;">
+                            ${idx + 1}
+                        </div>
+                        <h3 style="margin: 0;">${list.title || list}</h3>
+                    </div>
                     ${list.items ? `<ul>${list.items.map((item: string) => `<li>${item}</li>`).join("")}</ul>` : ""}
                 </div>
             `,
