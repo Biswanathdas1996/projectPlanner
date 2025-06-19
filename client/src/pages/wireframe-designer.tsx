@@ -1555,6 +1555,76 @@ export default function WireframeDesigner() {
     }
   };
 
+  // Regenerate single wireframe with enhanced logo variants
+  const regenerateWireframe = async (pageName: string) => {
+    if (!brandGuidelines) {
+      toast({
+        title: "Brand Guidelines Required",
+        description: "Please load brand guidelines first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pageCard = pageContentCards.find(card => card.pageName === pageName);
+    if (!pageCard) {
+      toast({
+        title: "Page Not Found",
+        description: "Could not find the page content to regenerate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 1, total: 1, currentPage: pageName });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const request: BrandedWireframeRequest = {
+        pageContent: pageCard,
+        designStyle: selectedDesignType,
+        deviceType: selectedDeviceType,
+        brandGuidelines
+      };
+
+      console.log('Regenerating wireframe with logo variants for:', pageName);
+      const result = await brandGenerator.generateBrandedWireframe(request);
+      
+      const newWireframe = {
+        id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        pageName: pageName,
+        htmlCode: result.html,
+        cssCode: result.css,
+        jsCode: result.js || '',
+        brandNotes: result.brandNotes || []
+      };
+
+      // Replace existing wireframe with same page name
+      const updatedWireframes = generatedWireframes.filter(w => w.pageName !== pageName);
+      updatedWireframes.push(newWireframe);
+      setGeneratedWireframes(updatedWireframes);
+      
+      // Save to storage
+      storage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      
+      toast({
+        title: "Wireframe Regenerated",
+        description: `${pageName} has been regenerated with enhanced logo variants.`,
+      });
+    } catch (error) {
+      console.error('Error regenerating wireframe:', error);
+      toast({
+        title: "Regeneration Failed",
+        description: "Could not regenerate the wireframe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
   // Generate brand-aware wireframes
   const generateBrandAwareWireframes = async () => {
     if (!brandGuidelines || pageContentCards.length === 0) {
