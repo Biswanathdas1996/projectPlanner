@@ -145,6 +145,9 @@ REQUIREMENTS:
 4. Make it responsive and modern 
 5. Ensure all interactive elements are styled with brand colors
 6. Include proper spacing and layout following brand guidelines
+7. Ensure the design is brand compliant and follows all brand guidelines
+8. color gradient should not be used for any elemnts like buttons, cards etc.
+9. use infographics to make the design more engaging
 
 Return HTML and CSS in this exact format:
 
@@ -266,7 +269,7 @@ Return HTML and CSS in this exact format:
             font-family: '${brandFont}', Arial, sans-serif;
             line-height: 1.6;
             color: #333333;
-            background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
+            background: ${neutralColor};
             min-height: 100vh;
         }
         
@@ -375,7 +378,7 @@ Return HTML and CSS in this exact format:
         }
         
         .btn {
-            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+            background: ${primaryColor};
             color: white;
             padding: 12px 24px;
             border: none;
@@ -389,9 +392,19 @@ Return HTML and CSS in this exact format:
         }
         
         .btn:hover {
+            background: ${secondaryColor};
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
-            filter: brightness(1.1);
+        }
+        
+        .btn-secondary {
+            background: ${accentColor};
+            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+        }
+        
+        .btn-secondary:hover {
+            background: ${secondaryColor};
+            color: white;
         }
         
         .form-container {
@@ -478,6 +491,104 @@ Return HTML and CSS in this exact format:
             transform: translateY(-1px);
         }
         
+        .infographic-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .info-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid ${accentColor};
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .progress-indicator {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.8s ease;
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: ${neutralColor};
+            border-radius: 8px;
+            border: 1px solid ${accentColor};
+            min-width: 120px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: ${primaryColor};
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-top: 5px;
+        }
+        
+        .visual-separator {
+            height: 4px;
+            background: ${accentColor};
+            border-radius: 2px;
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .visual-separator::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: -8px;
+            transform: translateX(-50%);
+            width: 16px;
+            height: 16px;
+            background: ${primaryColor};
+            border-radius: 50%;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -492,6 +603,12 @@ Return HTML and CSS in this exact format:
                 padding: 20px;
             }
             .nav-links {
+                flex-direction: column;
+            }
+            .infographic-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-container {
                 flex-direction: column;
             }
         }
@@ -517,8 +634,20 @@ Return HTML and CSS in this exact format:
             pageContent.headers && pageContent.headers.length > 0
                 ? `
         <section class="content-section">
-            <h2>Content Headers</h2>
-            ${pageContent.headers.map((header: string) => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join("")}
+            <h2>📊 Key Sections</h2>
+            <div class="infographic-grid">
+                ${pageContent.headers.map((header: string, idx: number) => `
+                    <div class="info-card">
+                        <div class="info-icon" style="background: ${accentColor}; color: ${primaryColor};">
+                            ${idx + 1}
+                        </div>
+                        <h3 style="color: ${primaryColor}; margin-bottom: 8px;">${header}</h3>
+                        <div class="progress-indicator">
+                            <div class="progress-bar" style="width: ${85 - (idx * 5)}%; background: ${primaryColor};"></div>
+                        </div>
+                    </div>
+                `).join("")}
+            </div>
         </section>
         `
                 : ""
@@ -539,9 +668,20 @@ Return HTML and CSS in this exact format:
             pageContent.buttons && pageContent.buttons.length > 0
                 ? `
         <section class="content-section">
-            <h2>Actions</h2>
+            <h2>🎯 Available Actions</h2>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span class="stat-number">${pageContent.buttons.length}</span>
+                    <div class="stat-label">Total Actions</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <div class="stat-label">Functionality</div>
+                </div>
+            </div>
+            <div class="visual-separator"></div>
             <div class="button-group">
-                ${pageContent.buttons.map((button: any) => `<button class="btn">${button.label || button}</button>`).join("")}
+                ${pageContent.buttons.map((button: any, idx: number) => `<button class="btn ${idx % 2 === 0 ? '' : 'btn-secondary'}">${button.label || button}</button>`).join("")}
             </div>
         </section>
         `
