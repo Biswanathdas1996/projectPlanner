@@ -28,14 +28,22 @@ export class BrandAwareWireframeGenerator {
 
   async generateBrandedWireframe(request: BrandedWireframeRequest): Promise<BrandedWireframeResponse> {
     try {
+      console.log('Generating branded wireframe for:', request.pageContent.pageName);
+      
       const prompt = this.buildBrandedPrompt(request);
+      console.log('Prompt length:', prompt.length);
+      
       const result = await this.model.generateContent(prompt);
       const response = result.response.text();
       
-      return this.parseResponse(response, request.brandGuidelines);
-    } catch (error) {
-      console.error('Error generating branded wireframe:', error);
+      console.log('AI response received, length:', response.length);
       
+      return this.parseResponse(response, request.brandGuidelines);
+    } catch (error: any) {
+      console.error('Error generating branded wireframe:', error);
+      console.error('Error details:', error?.message || 'Unknown error', error?.stack || 'No stack trace');
+      
+      // Return fallback with brand-compliant styling
       return {
         html: this.generateFallbackHTML(),
         css: this.generateBrandCSS(request.brandGuidelines),
@@ -47,83 +55,41 @@ export class BrandAwareWireframeGenerator {
   private buildBrandedPrompt(request: BrandedWireframeRequest): string {
     const { pageContent, designStyle, deviceType, brandGuidelines } = request;
 
-    return `You are a professional UI/UX designer specializing in brand-compliant wireframe generation. Create a modern, sophisticated wireframe that strictly follows the provided brand guidelines.
+    return `Create a professional wireframe for ${pageContent.pageName} using the following brand guidelines.
 
-PAGE CONTENT ANALYSIS:
-Page Name: ${pageContent.pageName}
-Page Type: ${pageContent.pageType}
-Purpose: ${pageContent.purpose}
-Target Users: ${pageContent.stakeholders.join(', ')}
+BRAND COLORS:
+Primary: ${brandGuidelines.colors.primary[0] || '#2563eb'}
+Accent: ${brandGuidelines.colors.accent[0] || '#dc2626'}
+Typography: ${brandGuidelines.typography.fonts[0] || 'Inter'}
 
-CONTENT ELEMENTS:
-Headers: ${pageContent.headers.join(', ')}
-Buttons: ${pageContent.buttons.map((b: any) => `${b.label} (${b.style})`).join(', ')}
-Forms: ${pageContent.forms.map((f: any) => `${f.title} with fields: ${f.fields.join(', ')}`).join(' | ')}
-Navigation: ${pageContent.navigation.join(', ')}
+PAGE CONTENT:
+- Title: ${pageContent.pageName}
+- Purpose: ${pageContent.purpose}
+- Headers: ${pageContent.headers.slice(0, 3).join(', ')}
+- Buttons: ${pageContent.buttons.slice(0, 3).map((b: any) => b.label).join(', ')}
 
-DESIGN REQUIREMENTS: ${designStyle} style for ${deviceType}
-
-BRAND GUIDELINES TO FOLLOW EXACTLY:
-Colors:
-- Primary: ${brandGuidelines.colors.primary.join(', ')}
-- Secondary: ${brandGuidelines.colors.secondary.join(', ')}
-- Accent: ${brandGuidelines.colors.accent.join(', ')}
-- Neutral: ${brandGuidelines.colors.neutral.join(', ')}
-
-Typography:
-- Fonts: ${brandGuidelines.typography.fonts.join(', ')}
-- Weights: ${brandGuidelines.typography.weights.join(', ')}
-
-Layout:
-- Spacing: ${brandGuidelines.layout.spacing.join(', ')}
-- Grid: ${brandGuidelines.layout.grid.join(', ')}
-
-Components:
-- Buttons: ${brandGuidelines.components.buttons.join(', ')}
-- Cards: ${brandGuidelines.components.cards.join(', ')}
-
-Brand Tone: ${brandGuidelines.tone.personality.join(', ')}
-
-WIREFRAME GENERATION REQUIREMENTS:
-
-1. STRICT BRAND COMPLIANCE:
-- Use EXACT brand colors (no approximations)
-- Apply specified typography with correct fonts and weights
-- Follow spacing and grid guidelines precisely
-- Implement component styles as specified
-
-2. MODERN PROFESSIONAL DESIGN:
-- Clean, sophisticated layout with modern CSS techniques
-- Professional gradients, shadows, and transitions
-- Responsive grid systems and flexible layouts
-- Advanced typography with proper hierarchy
-
-3. COMPREHENSIVE STYLING:
-- Modern CSS variables for brand consistency
-- Professional button styles with hover effects
-- Sophisticated card designs with subtle shadows
-- Advanced navigation with smooth animations
-- Responsive breakpoints for all devices
-
-4. ADVANCED COMPONENTS:
-- Hero sections with gradient backgrounds
-- Feature grids with icon placeholders
-- Statistics sections with large numbers
-- Professional forms with proper validation styling
-- Modern navigation bars with brand logos
-
-Provide your response in this exact format:
+Generate a modern, responsive wireframe. Return HTML and CSS only in this format:
 
 ===HTML===
-[Complete HTML structure with semantic elements, proper accessibility, and brand-specific classes]
+<!DOCTYPE html>
+<html>
+<head>
+    <title>${pageContent.pageName}</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    [Your HTML content here]
+</body>
+</html>
 
 ===CSS===
-[Complete CSS with modern techniques, exact brand colors, sophisticated styling, and responsive design]
+[Your CSS styles here using the brand colors]
 
 ===BRAND_NOTES===
-[Detailed list of how brand guidelines were applied in the design]
-
-IMPORTANT: Use exact brand colors from the guidelines. Create a professional, modern design that would be suitable for enterprise use. Include advanced CSS features like gradients, animations, and modern layout techniques.`;
+- Applied primary brand color: ${brandGuidelines.colors.primary[0]}
+- Used brand typography: ${brandGuidelines.typography.fonts[0]}
+- Implemented responsive design`;
   }
 
   private parseResponse(response: string, brandGuidelines: BrandGuideline): BrandedWireframeResponse {
