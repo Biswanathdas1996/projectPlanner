@@ -1681,7 +1681,7 @@ export default function WireframeDesigner() {
           designStyle: selectedDesignType,
           deviceType: selectedDeviceType,
           brandGuidelines,
-          comprehensiveBrandAnalysis
+          comprehensiveBrandAnalysis: comprehensiveBrandAnalysis ?? undefined
         };
 
         const result = await brandGenerator.generateBrandedWireframe(request);
