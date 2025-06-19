@@ -4839,7 +4839,7 @@ ${selectedPageCode.jsCode}
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
-                        {brandGuidelines.brandValues.map((value, index) => (
+                        {(brandGuidelines.brandValues || []).map((value, index) => (
                           <Badge key={index} className="bg-green-100 text-green-800">{value}</Badge>
                         ))}
                       </div>
@@ -4847,7 +4847,7 @@ ${selectedPageCode.jsCode}
                         <div className="mt-3">
                           <h4 className="font-medium text-sm mb-2">Design Principles</h4>
                           <div className="space-y-1">
-                            {brandGuidelines.designPrinciples.map((principle, index) => (
+                            {(brandGuidelines.designPrinciples || []).map((principle, index) => (
                               <div key={index} className="text-xs text-gray-600">• {principle}</div>
                             ))}
                           </div>
@@ -4867,7 +4867,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Contrast Requirements</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.accessibility.contrast.map((contrast, index) => (
+                          {(brandGuidelines.accessibility?.contrast || []).map((contrast, index) => (
                             <Badge key={index} variant="secondary">{contrast}</Badge>
                           ))}
                         </div>
@@ -4875,7 +4875,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Compliance Standards</h4>
                         <div className="space-y-1">
-                          {brandGuidelines.accessibility.compliance.map((standard, index) => (
+                          {(brandGuidelines.accessibility?.compliance || []).map((standard, index) => (
                             <div key={index} className="text-xs text-gray-600">• {standard}</div>
                           ))}
                         </div>
@@ -4888,8 +4888,8 @@ ${selectedPageCode.jsCode}
                   <h4 className="font-medium text-green-800 mb-2">Enhanced Brand Integration Status</h4>
                   <p className="text-sm text-green-700">
                     Comprehensive brand guidelines extracted including text colors, logo specifications, accessibility requirements, 
-                    and brand values. The AI will use all extracted elements including {brandGuidelines.colors.text.length} text colors, 
-                    {brandGuidelines.logos.variations.length} logo variations, and {brandGuidelines.accessibility.contrast.length} contrast requirements 
+                    and brand values. The AI will use all extracted elements including {brandGuidelines.colors?.text?.length || 0} text colors, 
+                    {brandGuidelines.logos?.variations?.length || 0} logo variations, and {brandGuidelines.accessibility?.contrast?.length || 0} contrast requirements 
                     to create wireframes that perfectly match your brand identity.
                   </p>
                 </div>
