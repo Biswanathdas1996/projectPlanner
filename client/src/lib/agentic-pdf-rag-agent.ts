@@ -394,7 +394,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicGuidelines(text: string): string[] {
-    const guidelines = [];
+    const guidelines: string[] = [];
     const patterns = [
       /design\s+[^.!?]*[.!?]/gi,
       /layout\s+[^.!?]*[.!?]/gi,
@@ -410,7 +410,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicColors(text: string): string[] {
-    const colors = [];
+    const colors: string[] = [];
     const colorPatterns = [
       /#[0-9a-fA-F]{6}/g,
       /#[0-9a-fA-F]{3}/g,
@@ -427,7 +427,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicTypography(text: string): string[] {
-    const typography = [];
+    const typography: string[] = [];
     const patterns = [
       /font[^.!?]*[.!?]/gi,
       /text[^.!?]*[.!?]/gi,
@@ -444,7 +444,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicLogoRules(text: string): string[] {
-    const logoRules = [];
+    const logoRules: string[] = [];
     const patterns = [
       /logo[^.!?]*[.!?]/gi,
       /brand\s+mark[^.!?]*[.!?]/gi
@@ -459,7 +459,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicSpacing(text: string): string[] {
-    const spacing = [];
+    const spacing: string[] = [];
     const patterns = [
       /\d+px\s+spacing/gi,
       /margin[^.!?]*[.!?]/gi,
@@ -475,7 +475,7 @@ Return ONLY a JSON object:
   }
 
   private extractBasicCompliance(text: string): string[] {
-    const compliance = [];
+    const compliance: string[] = [];
     const patterns = [
       /accessibility[^.!?]*[.!?]/gi,
       /comply[^.!?]*[.!?]/gi,
@@ -491,8 +491,8 @@ Return ONLY a JSON object:
   }
 
   private extractBasicDosAndDonts(text: string): {dos: string[], donts: string[]} {
-    const dos = [];
-    const donts = [];
+    const dos: string[] = [];
+    const donts: string[] = [];
     
     const doPatterns = [
       /do\s+[^.!?]*[.!?]/gi,

@@ -246,6 +246,11 @@ export default function WireframeDesigner() {
   const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
   const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{ html: string; css: string; js: string } | null>(null);
+  
+  // Comprehensive brand analysis state
+  const [comprehensiveBrandAnalysis, setComprehensiveBrandAnalysis] = useState<ComprehensiveBrandAnalysis | null>(null);
+  const [isPerformingRAGAnalysis, setIsPerformingRAGAnalysis] = useState(false);
+  const [ragAnalysisProgress, setRAGAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
 
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
@@ -1479,11 +1484,147 @@ export default function WireframeDesigner() {
     }
 
     setIsExtractingBrand(true);
+    setIsPerformingRAGAnalysis(true);
     setBrandExtractionError('');
+    setRAGAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing PDF analysis..." });
 
     try {
-      const extractor = createBrandGuidelineExtractor();
-      const guidelines = await extractor.extractFromPDF(file);
+      // Step 1: Perform comprehensive agentic RAG analysis
+      console.log('🤖 Starting comprehensive RAG analysis for brand guidelines');
+      setRAGAnalysisProgress({ current: 10, total: 100, currentStep: "Analyzing PDF structure..." });
+      
+      const ragAgent = createAgenticPDFRAGAgent();
+      const comprehensiveAnalysis = await ragAgent.performComprehensiveRAGAnalysis(file);
+      
+      console.log('✅ Comprehensive RAG analysis completed:', comprehensiveAnalysis);
+      setComprehensiveBrandAnalysis(comprehensiveAnalysis);
+      setRAGAnalysisProgress({ current: 70, total: 100, currentStep: "Converting analysis to brand guidelines..." });
+
+      // Step 2: Convert comprehensive analysis to brand guidelines format
+      const guidelines: BrandGuideline = {
+        brandName: file.name.replace('.pdf', '').replace(/[-_]/g, ' '),
+        
+        // Core brand information from consolidated findings
+        keyClauses: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
+        keyPoints: comprehensiveAnalysis.consolidatedFindings.criticalRequirements,
+        keyHighlights: comprehensiveAnalysis.consolidatedFindings.brandThemes,
+        
+        // Colors from detailed analysis - matching expected interface
+        colors: {
+          primary: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(0, 3),
+          secondary: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(3, 6),
+          accent: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(6, 8),
+          neutral: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(8, 10),
+          text: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.filter(color => 
+            color.toLowerCase().includes('text') || color.toLowerCase().includes('font')
+          ),
+          background: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.filter(color => 
+            color.toLowerCase().includes('background') || color.toLowerCase().includes('bg')
+          ),
+          error: [],
+          success: [],
+          warning: []
+        },
+        
+        // Typography from analysis - matching expected interface
+        typography: {
+          fonts: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
+            rule.toLowerCase().includes('font') || rule.toLowerCase().includes('typeface')
+          ),
+          fontFamilies: {
+            primary: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
+              rule.toLowerCase().includes('primary') || rule.toLowerCase().includes('main')
+            ),
+            secondary: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
+              rule.toLowerCase().includes('secondary') || rule.toLowerCase().includes('sub')
+            ),
+            heading: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
+              rule.toLowerCase().includes('heading') || rule.toLowerCase().includes('title')
+            ),
+            body: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
+              rule.toLowerCase().includes('body') || rule.toLowerCase().includes('text')
+            )
+          },
+          headingStyles: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
+            rule.toLowerCase().includes('heading') || rule.toLowerCase().includes('title')
+          ),
+          bodyStyles: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
+            rule.toLowerCase().includes('body') || rule.toLowerCase().includes('text')
+          ),
+          weights: [],
+          sizes: [],
+          lineHeights: [],
+          letterSpacing: []
+        },
+        
+        // Layout from spacing specifications
+        layout: {
+          spacing: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs,
+          gridSystems: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
+            spec.toLowerCase().includes('grid')
+          ),
+          breakpoints: [],
+          containers: [],
+          margins: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
+            spec.toLowerCase().includes('margin')
+          ),
+          padding: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
+            spec.toLowerCase().includes('padding')
+          )
+        },
+        
+        // Components section
+        components: {},
+        
+        // Logo usage rules - matching expected interface
+        logos: {
+          primary: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules[0] || '',
+          variations: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules,
+          usage: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules.filter(rule => 
+            rule.toLowerCase().includes('usage') || rule.toLowerCase().includes('placement')
+          ),
+          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.filter(dont => 
+            dont.toLowerCase().includes('logo')
+          ),
+          spacing: [],
+          colors: [],
+          sizes: [],
+          formats: [],
+          images: {}
+        },
+        
+        // Compliance matching expected interface
+        compliance: {
+          requirements: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes,
+          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
+          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines
+        },
+        
+        // Usage guidelines
+        usage: {
+          dos: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
+          donts: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
+          examples: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5)
+        },
+        
+        // Voice and tone
+        voiceAndTone: {
+          personality: comprehensiveAnalysis.consolidatedFindings.brandThemes,
+          language: [],
+          examples: []
+        },
+        
+        // Additional metadata
+        extractionMetadata: {
+          totalPages: comprehensiveAnalysis.totalPages,
+          successfulPages: comprehensiveAnalysis.extractionMetadata.successfulPages,
+          processingTime: comprehensiveAnalysis.extractionMetadata.processingTime,
+          averageConfidence: comprehensiveAnalysis.extractionMetadata.averageConfidence,
+          extractionMethod: 'Agentic RAG Analysis'
+        }
+      };
+
+      setRAGAnalysisProgress({ current: 90, total: 100, currentStep: "Saving brand guidelines..." });
       
       // Generate a name for the brand guidelines based on file name
       const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -1499,9 +1640,11 @@ export default function WireframeDesigner() {
       // Keep legacy localStorage for backward compatibility
       localStorage.setItem('brand_guidelines', JSON.stringify(guidelines));
       
+      setRAGAnalysisProgress({ current: 100, total: 100, currentStep: "Analysis complete!" });
+      
       toast({
-        title: "Brand Guidelines Saved",
-        description: `Successfully extracted and saved "${guidelineName}" brand guidelines. They are now available for future use.`,
+        title: "Comprehensive Brand Analysis Complete",
+        description: `Successfully analyzed ${comprehensiveAnalysis.totalPages} pages and extracted detailed "${guidelineName}" brand guidelines with ${Math.round(comprehensiveAnalysis.extractionMetadata.averageConfidence * 100)}% confidence.`,
       });
       
       setShowBrandModal(true);
@@ -1515,6 +1658,8 @@ export default function WireframeDesigner() {
       });
     } finally {
       setIsExtractingBrand(false);
+      setIsPerformingRAGAnalysis(false);
+      setRAGAnalysisProgress({ current: 0, total: 0, currentStep: "" });
     }
   };
 
@@ -4381,6 +4526,70 @@ ${selectedPageCode.jsCode}
                         </div>
                       )}
                     </div>
+                    
+                    {/* Comprehensive RAG Analysis Progress */}
+                    {isPerformingRAGAnalysis && ragAnalysisProgress.total > 0 && (
+                      <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                            Comprehensive PDF Analysis
+                          </span>
+                          <span className="text-xs text-indigo-600">
+                            {Math.round((ragAnalysisProgress.current / ragAnalysisProgress.total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                          <div 
+                            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                            style={{ width: `${(ragAnalysisProgress.current / ragAnalysisProgress.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        {ragAnalysisProgress.currentStep && (
+                          <p className="text-xs text-indigo-600">
+                            {ragAnalysisProgress.currentStep}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Comprehensive Brand Analysis Results */}
+                    {comprehensiveBrandAnalysis && (
+                      <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-emerald-700">
+                            Page-by-Page Analysis Complete
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Pages Analyzed:</strong> {comprehensiveBrandAnalysis.totalPages}
+                            </div>
+                            <div className="text-emerald-600">
+                              <strong>Success Rate:</strong> {Math.round((comprehensiveBrandAnalysis.extractionMetadata.successfulPages / comprehensiveBrandAnalysis.totalPages) * 100)}%
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Confidence:</strong> {Math.round(comprehensiveBrandAnalysis.extractionMetadata.averageConfidence * 100)}%
+                            </div>
+                            <div className="text-emerald-600">
+                              <strong>Processing Time:</strong> {Math.round(comprehensiveBrandAnalysis.extractionMetadata.processingTime / 1000)}s
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-emerald-200">
+                          <div className="text-xs text-emerald-600 space-y-1">
+                            <div><strong>Brand Clauses:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allKeyBrandClauses.length}</div>
+                            <div><strong>Color Specs:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length}</div>
+                            <div><strong>Typography Rules:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length}</div>
+                            <div><strong>Logo Guidelines:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {brandExtractionError && (
                       <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
                     )}
