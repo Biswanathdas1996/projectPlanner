@@ -4372,23 +4372,23 @@ ${selectedPageCode.jsCode}
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Colors</div>
-                      <div className="text-sm font-medium">{brandGuidelines.colors.primary.length + brandGuidelines.colors.text.length}</div>
+                      <div className="text-sm font-medium">{(brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)}</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Typography</div>
-                      <div className="text-sm font-medium">{brandGuidelines.typography.fonts.length} fonts</div>
+                      <div className="text-sm font-medium">{brandGuidelines.typography?.fonts?.length || 0} fonts</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Components</div>
-                      <div className="text-sm font-medium">{Object.keys(brandGuidelines.components).length} types</div>
+                      <div className="text-sm font-medium">{Object.keys(brandGuidelines.components || {}).length} types</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Logo Info</div>
-                      <div className="text-sm font-medium">{brandGuidelines.logos.variations.length} variants</div>
+                      <div className="text-sm font-medium">{brandGuidelines.logos?.variations?.length || 0} variants</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Brand Voice</div>
-                      <div className="text-sm font-medium">{brandGuidelines.tone.personality.length} traits</div>
+                      <div className="text-sm font-medium">{brandGuidelines.tone?.personality?.length || 0} traits</div>
                     </div>
                   </div>
                 )}
@@ -4618,7 +4618,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Text Colors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.colors.text.map((color, index) => (
+                          {(brandGuidelines.colors?.text || []).map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border"
@@ -4646,7 +4646,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Background Colors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.colors.background.map((color, index) => (
+                          {(brandGuidelines.colors?.background || []).map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border border-gray-300"
@@ -4752,7 +4752,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Variations</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.logos.variations.map((variation, index) => (
+                          {(brandGuidelines.logos?.variations || []).map((variation, index) => (
                             <Badge key={index} variant="outline">{variation}</Badge>
                           ))}
                         </div>
@@ -4760,7 +4760,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Usage Rules</h4>
                         <div className="space-y-1">
-                          {brandGuidelines.logos.usage.map((rule, index) => (
+                          {(brandGuidelines.logos?.usage || []).map((rule, index) => (
                             <div key={index} className="text-xs text-gray-600">• {rule}</div>
                           ))}
                         </div>
@@ -4770,11 +4770,11 @@ ${selectedPageCode.jsCode}
                         <div className="grid grid-cols-2 gap-2">
                           <div className="bg-gray-50 p-2 rounded">
                             <div className="text-xs font-medium">Min Size</div>
-                            <div className="text-xs text-gray-600">{brandGuidelines.logos.sizes[0] || "24px"}</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.sizes?.[0] || "24px"}</div>
                           </div>
                           <div className="bg-gray-50 p-2 rounded">
                             <div className="text-xs font-medium">Clearance</div>
-                            <div className="text-xs text-gray-600">{brandGuidelines.logos.spacing[0] || "20px"}</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.spacing?.[0] || "20px"}</div>
                           </div>
                         </div>
                       </div>
