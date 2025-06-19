@@ -4669,7 +4669,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Primary Colors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.colors.primary.map((color, index) => (
+                          {(brandGuidelines.colors?.primary || []).map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border"
@@ -4683,7 +4683,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Secondary Colors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.colors.secondary.map((color, index) => (
+                          {(brandGuidelines.colors?.secondary || []).map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border"
@@ -4711,7 +4711,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Accent Colors</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.colors.accent.map((color, index) => (
+                          {(brandGuidelines.colors?.accent || []).map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border"
@@ -4751,7 +4751,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Fonts</h4>
                         <div className="space-y-1">
-                          {brandGuidelines.typography.fonts.map((font, index) => (
+                          {(brandGuidelines.typography?.fonts || []).map((font, index) => (
                             <div key={index} className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
                               {font}
                             </div>
@@ -4761,7 +4761,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Weights</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.typography.weights.map((weight, index) => (
+                          {(brandGuidelines.typography?.weights || []).map((weight, index) => (
                             <Badge key={index} variant="outline">{weight}</Badge>
                           ))}
                         </div>
@@ -4769,7 +4769,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Styles</h4>
                         <div className="space-y-1">
-                          {brandGuidelines.typography.headingStyles.map((style, index) => (
+                          {(brandGuidelines.typography?.headingStyles || []).map((style, index) => (
                             <div key={index} className="text-xs text-gray-600">• {style}</div>
                           ))}
                         </div>
@@ -4789,7 +4789,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Spacing Values</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.layout.spacing.map((space, index) => (
+                          {(brandGuidelines.layout?.spacing || []).map((space, index) => (
                             <Badge key={index} variant="secondary">{space}</Badge>
                           ))}
                         </div>
@@ -4797,7 +4797,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Grid Systems</h4>
                         <div className="space-y-1">
-                          {brandGuidelines.layout.gridSystems.map((grid, index) => (
+                          {(brandGuidelines.layout?.gridSystems || []).map((grid, index) => (
                             <div key={index} className="text-xs text-gray-600">• {grid}</div>
                           ))}
                         </div>
