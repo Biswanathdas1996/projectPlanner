@@ -1,6 +1,6 @@
 import { BrandGuideline } from "./brand-guideline-extractor";
 import { ComprehensiveBrandAnalysis, AgenticPDFRAGAgent } from "./agentic-pdf-rag-agent";
-import { MongoDBVectorRAG, VectorSearchResult, KeyPoint } from "./mongodb-vector-rag";
+import { BrowserVectorRAG, VectorSearchResult, KeyPoint } from "./browser-vector-rag";
 
 export interface EnhancedBrandAnalysis extends ComprehensiveBrandAnalysis {
   vectorSearchResults: VectorSearchResult;
@@ -23,11 +23,11 @@ export interface EnhancedBrandAnalysis extends ComprehensiveBrandAnalysis {
 
 export class EnhancedRAGExtractor {
   private agenticAgent: AgenticPDFRAGAgent;
-  private vectorRAG: MongoDBVectorRAG;
+  private vectorRAG: BrowserVectorRAG;
 
   constructor() {
     this.agenticAgent = new AgenticPDFRAGAgent();
-    this.vectorRAG = new MongoDBVectorRAG();
+    this.vectorRAG = new BrowserVectorRAG();
   }
 
   async performEnhancedBrandAnalysis(file: File): Promise<{

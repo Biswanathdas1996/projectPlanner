@@ -34,11 +34,11 @@ export interface VectorSearchResult {
   };
 }
 
-export class MongoDBVectorRAG {
+export class BrowserVectorRAG {
   private genAI: GoogleGenerativeAI;
   private embeddingModel: any;
   private analysisModel: any;
-  private storageKey = 'mongodb_vector_chunks';
+  private storageKey = 'browser_vector_chunks';
 
   constructor() {
     this.genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
@@ -55,19 +55,14 @@ export class MongoDBVectorRAG {
     const startTime = Date.now();
     
     try {
-      console.log('🔍 Processing document with MongoDB Vector RAG:', file.name);
+      console.log('🔍 Processing document with browser vector search:', file.name);
       
-      // Extract text from PDF
       const documentChunks = await this.extractAndChunkDocument(file);
-      
-      // Generate embeddings for each chunk
       const chunksWithEmbeddings = await this.generateEmbeddings(documentChunks);
       
-      // Store in MongoDB
-      await this.storeDocumentChunks(chunksWithEmbeddings);
+      this.storeDocumentChunks(chunksWithEmbeddings);
       
-      // Perform vector search for key points
-      const keyPoints = await this.extractKeyPointsWithVectorSearch(file.name);
+      const keyPoints = await this.extractKeyPointsWithSearch(file.name);
       
       const processingTime = Date.now() - startTime;
       
@@ -88,7 +83,6 @@ export class MongoDBVectorRAG {
   }
 
   private async extractAndChunkDocument(file: File): Promise<Omit<DocumentChunk, 'embedding'>[]> {
-    // Load PDF.js
     const pdfjsLib = await this.loadPDFJS();
     
     const arrayBuffer = await file.arrayBuffer();
@@ -101,12 +95,10 @@ export class MongoDBVectorRAG {
       const page = await pdf.getPage(pageNum);
       const textContent = await page.getTextContent();
       
-      // Extract text items
       const textItems = textContent.items
         .filter((item: any) => item.str && item.str.trim().length > 0)
         .map((item: any) => item.str);
       
-      // Create chunks from text content
       const pageText = textItems.join(' ');
       const pageChunks = this.createSmartChunks(pageText, pageNum, documentId, file.name);
       
@@ -127,6 +119,7 @@ export class MongoDBVectorRAG {
       if (currentChunk.length + sentence.length > 500) {
         if (currentChunk.trim()) {
           chunks.push({
+            id: `chunk_${documentId}_${pageNumber}_${chunkIndex}`,
             documentId,
             pageNumber,
             chunkIndex: chunkIndex++,
@@ -147,6 +140,7 @@ export class MongoDBVectorRAG {
     
     if (currentChunk.trim()) {
       chunks.push({
+        id: `chunk_${documentId}_${pageNumber}_${chunkIndex}`,
         documentId,
         pageNumber,
         chunkIndex: chunkIndex++,
@@ -197,13 +191,11 @@ export class MongoDBVectorRAG {
           embedding
         });
         
-        // Add small delay to avoid rate limiting
         if (i % 10 === 0) {
           await new Promise(resolve => setTimeout(resolve, 100));
         }
       } catch (error) {
         console.warn(`Failed to generate embedding for chunk ${i}:`, error);
-        // Create a fallback embedding
         chunksWithEmbeddings.push({
           ...chunks[i],
           embedding: new Array(768).fill(0)
@@ -214,19 +206,17 @@ export class MongoDBVectorRAG {
     return chunksWithEmbeddings;
   }
 
-  private async storeDocumentChunks(chunks: DocumentChunk[]): Promise<void> {
-    console.log(`💾 Storing ${chunks.length} chunks in MongoDB...`);
+  private storeDocumentChunks(chunks: DocumentChunk[]): void {
+    console.log(`💾 Storing ${chunks.length} chunks in browser storage...`);
     
     try {
-      // Remove existing chunks for this document
-      await this.collection.deleteMany({
-        documentId: chunks[0]?.documentId
-      });
+      const existingChunks = this.getStoredChunks();
+      const filteredExisting = existingChunks.filter(chunk => 
+        chunk.documentId !== chunks[0]?.documentId
+      );
       
-      // Insert new chunks
-      if (chunks.length > 0) {
-        await this.collection.insertMany(chunks);
-      }
+      const allChunks = [...filteredExisting, ...chunks];
+      localStorage.setItem(this.storageKey, JSON.stringify(allChunks));
       
       console.log('✅ Document chunks stored successfully');
     } catch (error) {
@@ -235,12 +225,22 @@ export class MongoDBVectorRAG {
     }
   }
 
-  private async extractKeyPointsWithVectorSearch(documentName: string): Promise<KeyPoint[]> {
-    console.log('🔍 Extracting key points using vector search...');
+  private getStoredChunks(): DocumentChunk[] {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      return stored ? JSON.parse(stored) : [];
+    } catch (error) {
+      console.warn('Failed to retrieve stored chunks:', error);
+      return [];
+    }
+  }
+
+  private async extractKeyPointsWithSearch(documentName: string): Promise<KeyPoint[]> {
+    console.log('🔍 Extracting key points using similarity search...');
     
     const keyPointQueries = [
       "brand guidelines and requirements",
-      "color specifications and palette",
+      "color specifications and palette", 
       "typography and font rules",
       "logo usage guidelines",
       "design principles and standards",
@@ -252,37 +252,46 @@ export class MongoDBVectorRAG {
     for (const query of keyPointQueries) {
       try {
         const queryEmbedding = await this.embeddingModel.embedContent(query);
-        const similarChunks = await this.performVectorSearch(queryEmbedding.embedding.values, 10);
+        const similarChunks = this.performSimilaritySearch(queryEmbedding.embedding.values, 10);
         
         const keyPoints = await this.analyzeChunksForKeyPoints(similarChunks, query);
         allKeyPoints.push(...keyPoints);
       } catch (error) {
-        console.warn(`Vector search failed for query: ${query}`, error);
+        console.warn(`Search failed for query: ${query}`, error);
       }
     }
     
-    // Deduplicate and rank key points
     return this.deduplicateAndRankKeyPoints(allKeyPoints);
   }
 
-  private async performVectorSearch(queryEmbedding: number[], limit: number): Promise<DocumentChunk[]> {
-    try {
-      // For non-vector search compatible MongoDB, fall back to text search
-      const results = await this.collection
-        .find({})
-        .sort({ 'metadata.keyScore': -1 })
-        .limit(limit)
-        .toArray();
-      
-      return results;
-    } catch (error) {
-      console.warn('Vector search not available, using fallback search');
-      return this.collection
-        .find({})
-        .sort({ 'metadata.keyScore': -1 })
-        .limit(limit)
-        .toArray();
+  private performSimilaritySearch(queryEmbedding: number[], limit: number): DocumentChunk[] {
+    const allChunks = this.getStoredChunks();
+    
+    const similarities = allChunks.map(chunk => ({
+      chunk,
+      similarity: this.cosineSimilarity(queryEmbedding, chunk.embedding)
+    }));
+    
+    return similarities
+      .sort((a, b) => b.similarity - a.similarity)
+      .slice(0, limit)
+      .map(item => item.chunk);
+  }
+
+  private cosineSimilarity(vecA: number[], vecB: number[]): number {
+    if (vecA.length !== vecB.length) return 0;
+    
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+    
+    for (let i = 0; i < vecA.length; i++) {
+      dotProduct += vecA[i] * vecB[i];
+      normA += vecA[i] * vecA[i];
+      normB += vecB[i] * vecB[i];
     }
+    
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   private async analyzeChunksForKeyPoints(chunks: DocumentChunk[], category: string): Promise<KeyPoint[]> {
@@ -297,7 +306,7 @@ ${combinedContent}
 
 Extract 3-5 key points that are:
 1. Specific and actionable
-2. Related to brand guidelines or design requirements
+2. Related to brand guidelines or design requirements  
 3. Important for maintaining brand consistency
 
 Format each key point as:
@@ -308,7 +317,7 @@ Categories: brand_clause, design_guideline, color_spec, typography_rule, logo_gu
       const result = await this.analysisModel.generateContent(prompt);
       const response = result.response.text();
       
-      return this.parseKeyPointsResponse(response, chunks.map(c => c._id?.toString() || ''));
+      return this.parseKeyPointsResponse(response, chunks.map(c => c.id));
     } catch (error) {
       console.error('Key point analysis error:', error);
       return [];
@@ -341,7 +350,7 @@ Categories: brand_clause, design_guideline, color_spec, typography_rule, logo_gu
   private mapCategory(categoryRaw: string): KeyPoint['category'] {
     const mapping: Record<string, KeyPoint['category']> = {
       'BRAND_CLAUSE': 'brand_clause',
-      'DESIGN_GUIDELINE': 'design_guideline',
+      'DESIGN_GUIDELINE': 'design_guideline', 
       'COLOR_SPEC': 'color_spec',
       'TYPOGRAPHY_RULE': 'typography_rule',
       'LOGO_GUIDELINE': 'logo_guideline',
@@ -365,7 +374,7 @@ Categories: brand_clause, design_guideline, color_spec, typography_rule, logo_gu
     
     return Array.from(uniquePoints.values())
       .sort((a, b) => b.confidence - a.confidence)
-      .slice(0, 20); // Return top 20 key points
+      .slice(0, 20);
   }
 
   private async loadPDFJS(): Promise<any> {
@@ -379,14 +388,10 @@ Categories: brand_clause, design_guideline, color_spec, typography_rule, logo_gu
   }
 
   async disconnect(): Promise<void> {
-    if (this.connected) {
-      await this.client.close();
-      this.connected = false;
-      console.log('🔌 Disconnected from MongoDB Atlas');
-    }
+    console.log('🔌 Browser vector search session completed');
   }
 }
 
-export function createMongoDBVectorRAG(): MongoDBVectorRAG {
-  return new MongoDBVectorRAG();
+export function createBrowserVectorRAG(): BrowserVectorRAG {
+  return new BrowserVectorRAG();
 }
