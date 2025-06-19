@@ -15,6 +15,8 @@ import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/ht
 import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeResponse } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
+import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -230,6 +232,12 @@ export default function WireframeDesigner() {
   const [selectedColorScheme, setSelectedColorScheme] = useState<string>('modern-blue');
   const [selectedDesignType, setSelectedDesignType] = useState<string>('modern');
   const [selectedLayout, setSelectedLayout] = useState<string>('standard-header');
+
+  // Brand Guidelines state
+  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
+  const [isExtractingBrand, setIsExtractingBrand] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [brandExtractionError, setBrandExtractionError] = useState<string>('');
 
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
@@ -925,6 +933,121 @@ export default function WireframeDesigner() {
       });
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  // Brand guideline extraction handler
+  const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || file.type !== 'application/pdf') {
+      setBrandExtractionError('Please select a valid PDF file');
+      return;
+    }
+
+    setIsExtractingBrand(true);
+    setBrandExtractionError('');
+
+    try {
+      const extractor = createBrandGuidelineExtractor();
+      const guidelines = await extractor.extractFromPDF(file);
+      
+      setBrandGuidelines(guidelines);
+      localStorage.setItem('brand_guidelines', JSON.stringify(guidelines));
+      
+      toast({
+        title: "Brand Guidelines Extracted",
+        description: "Successfully extracted brand guidelines from PDF. Wireframes will now use your brand identity.",
+      });
+      
+      setShowBrandModal(true);
+    } catch (error) {
+      console.error('Brand extraction error:', error);
+      setBrandExtractionError('Failed to extract brand guidelines. Please try again.');
+      toast({
+        title: "Extraction Failed",
+        description: "Could not extract brand guidelines from the PDF file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtractingBrand(false);
+    }
+  };
+
+  // Generate brand-aware wireframes
+  const generateBrandAwareWireframes = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Requirements Missing",
+        description: "Please upload brand guidelines and generate page content first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const brandedWireframes: Array<{
+        id: string;
+        pageName: string;
+        htmlCode: string;
+        cssCode: string;
+        jsCode: string;
+        brandNotes: string[];
+      }> = [];
+
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+
+        const request: BrandedWireframeRequest = {
+          pageContent: card,
+          designStyle: selectedDesignType,
+          deviceType: selectedDeviceType,
+          brandGuidelines
+        };
+
+        const result = await brandGenerator.generateBrandedWireframe(request);
+        
+        brandedWireframes.push({
+          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          pageName: card.pageName,
+          htmlCode: result.html,
+          cssCode: result.css,
+          jsCode: generateWireframeJS(card, selectedDeviceType, selectedDesignType),
+          brandNotes: result.brandNotes
+        });
+
+        // Add delay between generations
+        if (i < pageContentCards.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      setGeneratedWireframes(brandedWireframes);
+      localStorage.setItem('generated_wireframes', JSON.stringify(brandedWireframes));
+
+      toast({
+        title: "Brand-Aware Wireframes Generated",
+        description: `Successfully generated ${brandedWireframes.length} wireframes following your brand guidelines.`,
+      });
+
+      setCurrentStep("results");
+    } catch (error) {
+      console.error('Brand-aware wireframe generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate brand-aware wireframes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
     }
   };
 
