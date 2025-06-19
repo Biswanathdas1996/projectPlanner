@@ -999,8 +999,9 @@ export default function WireframeDesigner() {
 
   // Handle selecting stored brand guidelines
   const handleStoredGuidelineSelection = (guidelineId: string) => {
-    if (!guidelineId) {
+    if (!guidelineId || guidelineId === "none") {
       setSelectedStoredGuideline("");
+      setBrandGuidelines(null);
       return;
     }
 
@@ -2783,7 +2784,7 @@ ${selectedPageCode.jsCode}
                             <SelectValue placeholder="Select stored brand guidelines..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None - Upload new PDF</SelectItem>
+                            <SelectItem value="none">None - Upload new PDF</SelectItem>
                             {storedBrandGuidelines.map((guideline) => (
                               <SelectItem key={guideline.id} value={guideline.id}>
                                 <div className="flex items-center justify-between w-full">
