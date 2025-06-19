@@ -1502,13 +1502,6 @@ export default function WireframeDesigner() {
 
       // Step 2: Convert comprehensive analysis to brand guidelines format
       const guidelines: BrandGuideline = {
-        brandName: file.name.replace('.pdf', '').replace(/[-_]/g, ' '),
-        
-        // Core brand information from consolidated findings
-        keyClauses: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
-        keyPoints: comprehensiveAnalysis.consolidatedFindings.criticalRequirements,
-        keyHighlights: comprehensiveAnalysis.consolidatedFindings.brandThemes,
-        
         // Colors from detailed analysis - matching expected interface
         colors: {
           primary: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(0, 3),
@@ -1576,6 +1569,52 @@ export default function WireframeDesigner() {
         // Components section
         components: {},
         
+        // Imagery section
+        imagery: {
+          style: comprehensiveAnalysis.consolidatedFindings.brandThemes[0] || 'Modern',
+          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5),
+          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
+          aspectRatios: [],
+          treatments: []
+        },
+        
+        // Tone and voice
+        tone: {
+          personality: comprehensiveAnalysis.consolidatedFindings.brandThemes,
+          voice: [],
+          messaging: [],
+          doAndDont: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.concat(
+            comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts
+          )
+        },
+        
+        // Core brand information from consolidated findings
+        keyPoints: comprehensiveAnalysis.consolidatedFindings.criticalRequirements,
+        keyClauses: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
+        keyHighlights: comprehensiveAnalysis.consolidatedFindings.brandThemes,
+        
+        // Dos and don'ts
+        dosAndDonts: {
+          dos: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
+          donts: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts
+        },
+        
+        brandRules: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
+        
+        // Compliance matching expected interface
+        compliance: {
+          requirements: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes,
+          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
+          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines
+        },
+        
+        // Usage guidelines
+        usageGuidelines: {
+          approved: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
+          prohibited: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
+          context: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5)
+        },
+        
         // Logo usage rules - matching expected interface
         logos: {
           primary: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules[0] || '',
@@ -1593,34 +1632,19 @@ export default function WireframeDesigner() {
           images: {}
         },
         
-        // Compliance matching expected interface
-        compliance: {
-          requirements: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes,
-          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
-          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines
-        },
+        brandValues: comprehensiveAnalysis.consolidatedFindings.brandThemes,
+        logoUsage: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules,
+        designPrinciples: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines,
         
-        // Usage guidelines
-        usage: {
-          dos: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
-          donts: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
-          examples: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5)
-        },
-        
-        // Voice and tone
-        voiceAndTone: {
-          personality: comprehensiveAnalysis.consolidatedFindings.brandThemes,
-          language: [],
-          examples: []
-        },
-        
-        // Additional metadata
-        extractionMetadata: {
-          totalPages: comprehensiveAnalysis.totalPages,
-          successfulPages: comprehensiveAnalysis.extractionMetadata.successfulPages,
-          processingTime: comprehensiveAnalysis.extractionMetadata.processingTime,
-          averageConfidence: comprehensiveAnalysis.extractionMetadata.averageConfidence,
-          extractionMethod: 'Agentic RAG Analysis'
+        // Accessibility
+        accessibility: {
+          contrast: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes.filter(note => 
+            note.toLowerCase().includes('contrast')
+          ),
+          guidelines: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes.filter(note => 
+            note.toLowerCase().includes('accessibility')
+          ),
+          compliance: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes
         }
       };
 
