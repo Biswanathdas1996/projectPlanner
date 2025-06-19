@@ -1518,8 +1518,22 @@ export default function WireframeDesigner() {
         logos: finalReport.brandGuidelines.logos,
         layout: finalReport.brandGuidelines.layout,
         accessibility: finalReport.brandGuidelines.accessibility,
-        tone: finalReport.brandGuidelines.tone,
-        components: finalReport.brandGuidelines.components
+        tone: {
+          personality: finalReport.brandGuidelines.tone.personality,
+          voice: finalReport.brandGuidelines.tone.voice,
+          messaging: finalReport.brandGuidelines.tone.messaging,
+          doAndDont: [...finalReport.brandGuidelines.tone.doAndDonts.dos, ...finalReport.brandGuidelines.tone.doAndDonts.donts]
+        },
+        components: {
+          buttons: { primary: 'Primary button', secondary: 'Secondary button', ghost: 'Ghost button', sizes: ['sm', 'md', 'lg'], states: ['default', 'hover', 'active'], borderRadius: '6px', fontWeight: '500' },
+          forms: { inputStyles: 'Input styles', labelStyles: 'Label styles', validationStyles: 'Validation states' },
+          navigation: { primaryNav: 'Main navigation', styles: 'Navigation styles', breadcrumbs: 'Breadcrumb styles' },
+          cards: { design: 'Card layout', shadows: ['Card shadows'], spacing: 'Card spacing' },
+          tables: ['Table headers', 'Table rows', 'Table borders'],
+          modals: ['Modal overlay', 'Modal content', 'Modal actions'],
+          alerts: ['Success alerts', 'Error alerts', 'Warning alerts'],
+          badges: ['Primary badge', 'Secondary badge', 'Status badges']
+        }
       };
       
       setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
@@ -4459,39 +4473,39 @@ ${selectedPageCode.jsCode}
                       </div>
                     )}
                     
-                    {/* Comprehensive Brand Analysis Results */}
-                    {comprehensiveBrandAnalysis && (
+                    {/* Multimodal Brand Analysis Results */}
+                    {finalBrandReport && (
                       <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
                           <span className="text-sm font-medium text-emerald-700">
-                            Page-by-Page Analysis Complete
+                            Multimodal Analysis Complete
                           </span>
                         </div>
                         <div className="grid grid-cols-2 gap-3 text-xs">
                           <div className="space-y-1">
                             <div className="text-emerald-600">
-                              <strong>Pages Analyzed:</strong> {comprehensiveBrandAnalysis.totalPages}
+                              <strong>Pages Analyzed:</strong> {finalBrandReport.documentInfo.totalPages}
                             </div>
                             <div className="text-emerald-600">
-                              <strong>Success Rate:</strong> {Math.round((comprehensiveBrandAnalysis.extractionMetadata.successfulPages / comprehensiveBrandAnalysis.totalPages) * 100)}%
+                              <strong>Content Chunks:</strong> {finalBrandReport.documentInfo.totalChunks}
                             </div>
                           </div>
                           <div className="space-y-1">
                             <div className="text-emerald-600">
-                              <strong>Confidence:</strong> {Math.round(comprehensiveBrandAnalysis.extractionMetadata.averageConfidence * 100)}%
+                              <strong>Confidence:</strong> {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
                             </div>
                             <div className="text-emerald-600">
-                              <strong>Processing Time:</strong> {Math.round(comprehensiveBrandAnalysis.extractionMetadata.processingTime / 1000)}s
+                              <strong>Processing Time:</strong> {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s
                             </div>
                           </div>
                         </div>
                         <div className="mt-2 pt-2 border-t border-emerald-200">
                           <div className="text-xs text-emerald-600 space-y-1">
-                            <div><strong>Brand Clauses:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allKeyBrandClauses.length}</div>
-                            <div><strong>Color Specs:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length}</div>
-                            <div><strong>Typography Rules:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length}</div>
-                            <div><strong>Logo Guidelines:</strong> {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length}</div>
+                            <div><strong>Critical Requirements:</strong> {finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                            <div><strong>Brand Themes:</strong> {finalBrandReport.keyFindings.brandThemes.length}</div>
+                            <div><strong>Design Principles:</strong> {finalBrandReport.keyFindings.designPrinciples.length}</div>
+                            <div><strong>Compliance Notes:</strong> {finalBrandReport.keyFindings.complianceNotes.length}</div>
                           </div>
                         </div>
                       </div>
@@ -4772,68 +4786,43 @@ ${selectedPageCode.jsCode}
               </div>
               
               <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
-                {/* Enhanced RAG Analysis Summary */}
-                {enhancedBrandAnalysis && (
+                {/* Multimodal Brand Analysis Summary */}
+                {finalBrandReport && (
                   <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
                     <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                      Enhanced MongoDB Vector RAG Analysis
+                      Multimodal Brand Analysis Results
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-emerald-600">{enhancedBrandAnalysis.totalPages}</div>
+                        <div className="text-2xl font-bold text-emerald-600">{finalBrandReport.documentInfo.totalPages}</div>
                         <div className="text-xs text-gray-600">Pages Analyzed</div>
                       </div>
                       <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-blue-600">{enhancedBrandAnalysis.vectorSearchResults.totalChunks}</div>
-                        <div className="text-xs text-gray-600">Vector Chunks</div>
+                        <div className="text-2xl font-bold text-blue-600">{finalBrandReport.documentInfo.totalChunks}</div>
+                        <div className="text-xs text-gray-600">Content Chunks</div>
                       </div>
                       <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-purple-600">{enhancedBrandAnalysis.analysisMetadata.keyPointsExtracted}</div>
-                        <div className="text-xs text-gray-600">Key Points</div>
+                        <div className="text-2xl font-bold text-purple-600">{finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                        <div className="text-xs text-gray-600">Critical Requirements</div>
                       </div>
                       <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-orange-600">{Math.round(enhancedBrandAnalysis.analysisMetadata.confidenceScore * 100)}%</div>
+                        <div className="text-2xl font-bold text-orange-600">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</div>
                         <div className="text-xs text-gray-600">Confidence</div>
-                      </div>
-                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-indigo-600">{Math.round(enhancedBrandAnalysis.analysisMetadata.totalProcessingTime / 1000)}s</div>
-                        <div className="text-xs text-gray-600">Total Time</div>
                       </div>
                     </div>
                     
-                    {/* Processing Time Breakdown */}
+                    {/* Processing Summary */}
                     <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                      <div className="text-sm font-medium text-gray-700 mb-2">Processing Breakdown:</div>
+                      <div className="text-sm font-medium text-gray-700 mb-2">Processing Summary:</div>
                       <div className="flex gap-4 text-xs text-gray-600">
-                        <span>Agentic Analysis: {Math.round(enhancedBrandAnalysis.analysisMetadata.agenticAnalysisTime / 1000)}s</span>
-                        <span>Vector Search: {Math.round(enhancedBrandAnalysis.analysisMetadata.vectorSearchTime / 1000)}s</span>
-                        <span>Search Threshold: {enhancedBrandAnalysis.vectorSearchResults.searchMetadata.similarityThreshold}</span>
+                        <span>Processing Time: {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s</span>
+                        <span>Brand Themes: {finalBrandReport.keyFindings.brandThemes.length}</span>
+                        <span>Design Principles: {finalBrandReport.keyFindings.designPrinciples.length}</span>
                       </div>
                     </div>
                   </div>
                 )}
-
-                {/* Fallback for legacy analysis */}
-                {comprehensiveBrandAnalysis && !enhancedBrandAnalysis && (
-                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
-                    <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                      Comprehensive Analysis Results
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-emerald-600">{comprehensiveBrandAnalysis.totalPages}</div>
-                        <div className="text-xs text-gray-600">Pages Analyzed</div>
-                      </div>
-                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-emerald-600">{Math.round(comprehensiveBrandAnalysis.extractionMetadata.averageConfidence * 100)}%</div>
-                        <div className="text-xs text-gray-600">Confidence</div>
-                      </div>
-                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-emerald-600">{comprehensiveBrandAnalysis.consolidatedFindings.allKeyBrandClauses.length}</div>
-                        <div className="text-xs text-gray-600">Brand Clauses</div>
-                      </div>
                       <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
                         <div className="text-2xl font-bold text-emerald-600">{Math.round(comprehensiveBrandAnalysis.extractionMetadata.processingTime / 1000)}s</div>
                         <div className="text-xs text-gray-600">Processing Time</div>
