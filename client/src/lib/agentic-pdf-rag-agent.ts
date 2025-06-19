@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Dynamic PDF.js loading with proper worker configuration
-let pdfjsLib: any = null;
+import { BrowserPDFProcessor, type ComprehensivePDFAnalysis } from './browser-pdf-processor';
 
 export interface PageAnalysis {
   pageNumber: number;
@@ -48,135 +46,33 @@ export interface ComprehensiveBrandAnalysis {
 }
 
 export class AgenticPDFRAGAgent {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
-  private analysisModel: any;
+  private browserProcessor: BrowserPDFProcessor;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI(
-      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
-    );
-    this.genAI = genAI;
-    this.model = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.1, // Low temperature for precise extraction
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-      }
-    });
-    this.analysisModel = genAI.getGenerativeModel({ 
-      model: "gemini-1.5-flash",
-      generationConfig: {
-        temperature: 0.2, // Slightly higher for synthesis
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 8192,
-      }
-    });
+    this.browserProcessor = new BrowserPDFProcessor();
   }
 
-  private async loadPDFJS(): Promise<any> {
-    if (pdfjsLib) return pdfjsLib;
-
-    try {
-      console.log('🔍 Loading PDF.js library...');
-      
-      // Check if PDF.js is already available globally
-      if (typeof window !== 'undefined' && (window as any).pdfjsLib) {
-        console.log('✅ Using global PDF.js library');
-        pdfjsLib = (window as any).pdfjsLib;
-        return pdfjsLib;
-      }
-
-      // Load PDF.js dynamically with proper configuration
-      const pdfjs = await import('pdfjs-dist');
-      
-      // Configure for browser environment without worker
-      if (pdfjs.GlobalWorkerOptions) {
-        delete pdfjs.GlobalWorkerOptions.workerSrc;
-      }
-      
-      // Disable worker entirely
-      Object.defineProperty(pdfjs, 'disableWorker', { value: true });
-      
-      pdfjsLib = pdfjs;
-      console.log('✅ PDF.js loaded successfully in browser mode');
-      return pdfjs;
-    } catch (error) {
-      console.error('❌ Failed to load PDF.js:', error);
-      
-      // Try fallback approach using dynamic script loading
-      try {
-        console.log('🔄 Attempting fallback PDF.js loading...');
-        return await this.loadPDFJSFallback();
-      } catch (fallbackError) {
-        console.error('❌ Fallback PDF.js loading also failed:', fallbackError);
-        throw new Error('PDF processing library unavailable. Please check your browser compatibility.');
-      }
-    }
-  }
-
-  private async loadPDFJSFallback(): Promise<any> {
-    // Import the brand guideline extractor for fallback processing
-    const { createBrandGuidelineExtractor } = await import('./brand-guideline-extractor');
-    
+  // Convert ComprehensivePDFAnalysis to ComprehensiveBrandAnalysis format
+  private convertAnalysisFormat(pdfAnalysis: ComprehensivePDFAnalysis): ComprehensiveBrandAnalysis {
     return {
-      getDocument: (options: any) => ({
-        promise: Promise.resolve({
-          numPages: 5, // Assume standard brand guideline document
-          getPage: (pageNum: number) => Promise.resolve({
-            getTextContent: () => Promise.resolve({
-              items: this.generateFallbackPageContent(pageNum)
-            })
-          })
-        })
-      }),
-      GlobalWorkerOptions: { workerSrc: false }
+      totalPages: pdfAnalysis.totalPages,
+      pageAnalyses: pdfAnalysis.pageAnalyses.map(page => ({
+        pageNumber: page.pageNumber,
+        textContent: page.textContent,
+        keyBrandClauses: page.keyBrandClauses,
+        designGuidelines: page.designGuidelines,
+        colorSpecs: page.colorSpecs,
+        typographyRules: page.typographyRules,
+        logoUsageRules: page.logoUsageRules,
+        spacingSpecs: page.spacingSpecs,
+        complianceNotes: page.complianceNotes,
+        dosAndDonts: page.dosAndDonts,
+        imageDescriptions: page.imageDescriptions,
+        confidence: page.confidence
+      })),
+      consolidatedFindings: pdfAnalysis.consolidatedFindings,
+      extractionMetadata: pdfAnalysis.extractionMetadata
     };
-  }
-
-  private generateFallbackPageContent(pageNum: number): Array<{ str: string }> {
-    const pageContents = [
-      [
-        { str: 'Brand Guidelines Document' },
-        { str: 'Company Brand Identity Standards' },
-        { str: 'Primary Colors: #FF6B35, #004E89, #1A936F' },
-        { str: 'Typography: Helvetica Neue, Arial, sans-serif' },
-        { str: 'Logo Usage: Minimum size 24px, clear space 2x logo height' }
-      ],
-      [
-        { str: 'Color Palette Specifications' },
-        { str: 'Primary: #FF6B35 (Orange), #004E89 (Navy Blue)' },
-        { str: 'Secondary: #1A936F (Green), #F18F01 (Yellow)' },
-        { str: 'Text Colors: #333333 (Dark Gray), #FFFFFF (White)' },
-        { str: 'Background: #F8F9FA (Light Gray), #FFFFFF (White)' }
-      ],
-      [
-        { str: 'Typography Guidelines' },
-        { str: 'Heading Font: Helvetica Neue Bold' },
-        { str: 'Body Font: Helvetica Neue Regular' },
-        { str: 'Font Sizes: H1 32px, H2 24px, Body 16px' },
-        { str: 'Line Height: 1.5x font size for readability' }
-      ],
-      [
-        { str: 'Logo and Imagery Standards' },
-        { str: 'Logo Variations: Primary, Horizontal, Icon, Monochrome' },
-        { str: 'Minimum Size: 24px height for digital, 0.5 inch for print' },
-        { str: 'Clear Space: 2x logo height on all sides' },
-        { str: 'Do not distort, rotate, or modify logo proportions' }
-      ],
-      [
-        { str: 'Layout and Spacing Guidelines' },
-        { str: 'Grid System: 12-column responsive grid' },
-        { str: 'Breakpoints: Mobile 768px, Tablet 1024px, Desktop 1200px' },
-        { str: 'Margins: 16px mobile, 24px tablet, 32px desktop' },
-        { str: 'Component Spacing: 8px, 16px, 24px, 32px multiples' }
-      ]
-    ];
-
-    return pageContents[pageNum - 1] || [{ str: `Brand guideline content for page ${pageNum}` }];
   }
 
   async performComprehensiveRAGAnalysis(file: File): Promise<ComprehensiveBrandAnalysis> {
