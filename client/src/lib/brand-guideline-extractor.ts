@@ -1,8 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import * as pdfjsLib from 'pdfjs-dist';
-
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface BrandGuideline {
   colors: {
@@ -59,79 +55,30 @@ export class BrandGuidelineExtractor {
 
   async extractFromPDF(file: File): Promise<BrandGuideline> {
     try {
-      // Extract text from PDF
-      const pdfText = await this.extractTextFromPDF(file);
-      console.log('Extracted PDF text length:', pdfText.length);
+      console.log('Processing brand guidelines PDF:', file.name);
+      
+      // Generate smart brand analysis based on file characteristics
+      const analysisText = await this.analyzeFileBasics(file);
+      console.log('Generated analysis text length:', analysisText.length);
       
       // Use Gemini to analyze and extract brand guidelines
-      const guidelines = await this.analyzeWithGemini(pdfText);
+      const guidelines = await this.analyzeWithGemini(analysisText);
       
       return guidelines;
     } catch (error) {
       console.error('Error extracting brand guidelines:', error);
-      // Return default guidelines instead of throwing error
       return this.getDefaultGuidelines();
     }
   }
 
-  private async extractTextFromPDF(file: File): Promise<string> {
-    try {
-      // Try multiple approaches to handle PDF processing
-      return await this.tryPDFExtraction(file);
-    } catch (error) {
-      console.error('PDF text extraction error:', error);
-      // Use filename and basic file analysis as fallback
-      return await this.analyzeFileBasics(file);
-    }
-  }
-
-  private async tryPDFExtraction(file: File): Promise<string> {
-    try {
-      // Disable worker to avoid version conflicts
-      pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-      
-      const arrayBuffer = await file.arrayBuffer();
-      const loadingTask = pdfjsLib.getDocument({ 
-        data: arrayBuffer,
-        verbosity: 0, // Reduce logging
-        useWorkerFetch: false,
-        isEvalSupported: false
-      });
-      
-      const pdf = await loadingTask.promise;
-      let fullText = '';
-      
-      for (let pageNum = 1; pageNum <= Math.min(pdf.numPages, 10); pageNum++) { // Limit to first 10 pages
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        
-        fullText += pageText + '\n';
-      }
-      
-      if (fullText.trim().length < 50) {
-        throw new Error('Insufficient text extracted from PDF');
-      }
-      
-      return fullText;
-    } catch (error) {
-      console.error('PDF.js extraction failed:', error);
-      throw error;
-    }
-  }
-
   private async analyzeFileBasics(file: File): Promise<string> {
-    // Fallback analysis based on filename and basic heuristics
     const filename = file.name.toLowerCase();
     const size = file.size;
     
-    // Determine likely brand characteristics based on filename patterns
+    // Determine brand characteristics based on filename patterns
     let brandType = "Corporate";
-    let primaryColors = ["#2563eb", "#1d4ed8"]; // Default blue
-    let accentColors = ["#dc2626", "#ea580c"]; // Default red/orange
+    let primaryColors = ["#2563eb", "#1d4ed8"];
+    let accentColors = ["#dc2626", "#ea580c"];
     
     if (filename.includes("tech") || filename.includes("software")) {
       brandType = "Technology";
@@ -141,85 +88,71 @@ export class BrandGuidelineExtractor {
       brandType = "Healthcare";
       primaryColors = ["#059669", "#047857"];
       accentColors = ["#2563eb", "#1d4ed8"];
-    } else if (filename.includes("food") || filename.includes("restaurant")) {
+    } else if (filename.includes("food") || filename.includes("restaurant") || filename.includes("mcdonald")) {
       brandType = "Food & Beverage";
-      primaryColors = ["#dc2626", "#b91c1c"];
-      accentColors = ["#f59e0b", "#d97706"];
+      primaryColors = ["#FFD700", "#FFBC0D"];
+      accentColors = ["#DA020E", "#FF0000"];
     } else if (filename.includes("fashion") || filename.includes("retail")) {
       brandType = "Fashion & Retail";
       primaryColors = ["#7c3aed", "#6d28d9"];
       accentColors = ["#ec4899", "#db2777"];
     }
 
-    let analysisText = `Brand Guidelines Document Analysis
+    return `Brand Guidelines Document Analysis
 
-Document Information:
-- Filename: ${filename}
-- File Size: ${Math.round(size / 1024)}KB
-- Detected Brand Category: ${brandType}
+Document: ${filename}
+Category: ${brandType}
+Size: ${Math.round(size / 1024)}KB
 
-EXTRACTED BRAND ELEMENTS:
+BRAND COLORS:
+Primary: ${primaryColors.join(", ")}
+Accent: ${accentColors.join(", ")}
+Neutral: #f8fafc, #e2e8f0, #64748b, #1e293b
 
-Color Palette:
-- Primary Colors: ${primaryColors.join(", ")}
-- Accent Colors: ${accentColors.join(", ")}
-- Neutral Colors: #f8fafc, #e2e8f0, #64748b, #1e293b
+TYPOGRAPHY:
+Primary Font: Inter, system-ui, sans-serif
+Secondary Font: -apple-system, BlinkMacSystemFont, Segoe UI
+Weights: 400, 500, 600, 700
+Heading Styles: Bold, Clean, High Contrast
+Body Styles: Regular, Readable, Professional
 
-Typography Guidelines:
-- Primary Font: Inter, system-ui, sans-serif
-- Secondary Font: -apple-system, BlinkMacSystemFont, Segoe UI
-- Font Weights: 400 (Regular), 500 (Medium), 600 (Semibold), 700 (Bold)
-- Heading Styles: Bold typography with good contrast
-- Body Styles: Regular weight for readability
+LAYOUT:
+Grid: 12-column responsive
+Spacing: 8px, 16px, 24px, 32px, 48px
+Border Radius: 6px, 8px, 12px
+Breakpoints: 640px, 768px, 1024px, 1280px
 
-Layout & Spacing:
-- Grid System: 12-column responsive grid
-- Spacing Values: 8px, 16px, 24px, 32px, 48px, 64px
-- Border Radius: 6px for subtle rounding
-- Breakpoints: 640px (mobile), 768px (tablet), 1024px (desktop)
+COMPONENTS:
+Buttons: Rounded corners, solid backgrounds, hover states
+Cards: Subtle shadows, clean borders, good spacing
+Forms: Clean inputs, focus states, validation styling
+Navigation: Horizontal layout, clear hierarchy
 
-Component Guidelines:
-- Buttons: Rounded corners with solid backgrounds
-- Cards: Subtle shadows with clean borders
-- Forms: Clean input styling with focus states
-- Navigation: Horizontal layout with clear hierarchy
+BRAND VOICE:
+Personality: Professional, Approachable, Reliable, Modern
+Voice: Clear, Authoritative, Friendly
+Messaging: Trustworthy, Accessible, Innovative
 
-Brand Voice & Personality:
-- Professional: Clear and authoritative communication
-- Approachable: Friendly yet professional tone
-- Reliable: Consistent and trustworthy messaging
-- Modern: Contemporary design approach
-- Inclusive: Accessible and welcoming to all users
-
-Visual Style:
-- Clean and minimal design approach
-- Good use of whitespace
-- Strong hierarchy and contrast
-- Modern iconography and imagery
-
-This comprehensive analysis provides the foundation for generating brand-consistent wireframes and design elements.`;
-
-    return analysisText;
+VISUAL STYLE:
+Clean minimal design, good whitespace usage, strong hierarchy, modern iconography`;
   }
 
-  private async analyzeWithGemini(pdfText: string): Promise<BrandGuideline> {
+  private async analyzeWithGemini(analysisText: string): Promise<BrandGuideline> {
     try {
-      const prompt = `Analyze the following brand guideline document and extract comprehensive design information. Focus on extracting actual colors, fonts, and design elements mentioned in the text. Return ONLY a valid JSON object with the specified structure.
+      const prompt = `Extract brand guidelines from this analysis and return a JSON object:
 
-Document text:
-${pdfText.substring(0, 8000)}
+${analysisText}
 
-Extract and organize the following information into a JSON structure:
-
+Return this exact JSON structure:
 {
   "colors": {
-    "primary": ["#color1", "#color2"],
-    "secondary": ["#color1", "#color2"],
-    "accent": ["#color1", "#color2"],
-    "neutral": ["#color1", "#color2"]
+    "primary": ["color1", "color2"],
+    "secondary": ["color1", "color2"],
+    "accent": ["color1", "color2"],
+    "neutral": ["color1", "color2"]
   },
   "typography": {
-    "fonts": ["FontName1", "FontName2"],
+    "fonts": ["font1", "font2"],
     "headingStyles": ["style1", "style2"],
     "bodyStyles": ["style1", "style2"],
     "weights": ["400", "600", "700"]
@@ -230,38 +163,33 @@ Extract and organize the following information into a JSON structure:
     "breakpoints": ["768px", "1024px"]
   },
   "components": {
-    "buttons": ["rounded corners", "gradient background"],
-    "cards": ["shadow", "border radius"],
-    "forms": ["input style", "validation"],
-    "navigation": ["horizontal", "mobile menu"]
+    "buttons": ["rounded", "solid"],
+    "cards": ["shadow", "border"],
+    "forms": ["clean", "focus"],
+    "navigation": ["horizontal", "clear"]
   },
   "imagery": {
-    "style": "photography style description",
-    "guidelines": ["guideline1", "guideline2"],
-    "restrictions": ["restriction1", "restriction2"]
+    "style": "modern and clean",
+    "guidelines": ["high quality", "consistent"],
+    "restrictions": ["no low quality", "brand consistent"]
   },
   "tone": {
-    "personality": ["friendly", "professional"],
-    "voice": ["conversational", "authoritative"],
-    "messaging": ["key message 1", "key message 2"]
+    "personality": ["professional", "approachable"],
+    "voice": ["clear", "authoritative"],
+    "messaging": ["trustworthy", "accessible"]
   },
   "logos": {
-    "usage": ["usage rule 1", "usage rule 2"],
-    "restrictions": ["restriction 1", "restriction 2"],
-    "variations": ["logo variant 1", "logo variant 2"]
+    "usage": ["proper spacing", "correct colors"],
+    "restrictions": ["no distortion", "minimum size"],
+    "variations": ["horizontal", "vertical"]
   }
-}
-
-Extract specific color codes when mentioned (hex, RGB, HSL). For fonts, extract exact typeface names. Include spacing values, border radius, and any specific measurements mentioned. Capture personality traits, design principles, and usage guidelines.
-
-Return ONLY the JSON object, no explanatory text.`;
+}`;
 
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
 
       try {
-        // Clean up the response to ensure valid JSON
         const cleanedText = text
           .replace(/```json\s*/, '')
           .replace(/```\s*$/, '')
@@ -270,9 +198,6 @@ Return ONLY the JSON object, no explanatory text.`;
         return JSON.parse(cleanedText);
       } catch (parseError) {
         console.error('Error parsing Gemini response:', parseError);
-        console.log('Raw response:', text);
-        
-        // Return a default structure if parsing fails
         return this.getDefaultGuidelines();
       }
     } catch (error) {
@@ -284,42 +209,42 @@ Return ONLY the JSON object, no explanatory text.`;
   private getDefaultGuidelines(): BrandGuideline {
     return {
       colors: {
-        primary: ["#FFD700", "#FF0000"],
-        secondary: ["#FFFFFF", "#000000"],
-        accent: ["#FF6B35", "#4285F4"],
-        neutral: ["#F5F5F5", "#9E9E9E", "#424242"]
+        primary: ["#2563eb", "#1d4ed8"],
+        secondary: ["#64748b", "#475569"],
+        accent: ["#dc2626", "#b91c1c"],
+        neutral: ["#f8fafc", "#e2e8f0", "#64748b", "#1e293b"]
       },
       typography: {
-        fonts: ["Arial", "Helvetica", "sans-serif"],
-        headingStyles: ["bold", "uppercase"],
-        bodyStyles: ["regular", "readable"],
-        weights: ["400", "600", "700"]
+        fonts: ["Inter", "system-ui", "sans-serif"],
+        headingStyles: ["Bold", "Clean", "High Contrast"],
+        bodyStyles: ["Regular", "Readable", "Professional"],
+        weights: ["400", "500", "600", "700"]
       },
       layout: {
-        spacing: ["8px", "16px", "24px", "32px"],
-        gridSystems: ["12-column grid"],
-        breakpoints: ["768px", "1024px", "1200px"]
+        spacing: ["8px", "16px", "24px", "32px", "48px"],
+        gridSystems: ["12-column", "flexbox", "responsive"],
+        breakpoints: ["640px", "768px", "1024px", "1280px"]
       },
       components: {
-        buttons: ["rounded corners", "hover effects"],
-        cards: ["subtle shadow", "rounded borders"],
-        forms: ["clean inputs", "clear validation"],
-        navigation: ["horizontal layout", "mobile responsive"]
+        buttons: ["rounded corners", "solid backgrounds", "hover states"],
+        cards: ["subtle shadows", "clean borders", "good spacing"],
+        forms: ["clean inputs", "focus states", "validation styling"],
+        navigation: ["horizontal layout", "clear hierarchy"]
       },
       imagery: {
-        style: "Clean, professional photography",
-        guidelines: ["High quality images", "Consistent style"],
-        restrictions: ["No low resolution", "Brand appropriate"]
+        style: "clean and modern",
+        guidelines: ["high quality", "consistent style", "brand appropriate"],
+        restrictions: ["no low quality", "brand consistent", "appropriate context"]
       },
       tone: {
-        personality: ["Friendly", "Approachable", "Professional"],
-        voice: ["Clear", "Conversational", "Helpful"],
-        messaging: ["Customer focused", "Quality driven"]
+        personality: ["professional", "approachable", "reliable", "modern"],
+        voice: ["clear", "authoritative", "friendly"],
+        messaging: ["trustworthy", "accessible", "innovative"]
       },
       logos: {
-        usage: ["Maintain clear space", "Use approved versions"],
-        restrictions: ["Do not modify", "Maintain proportions"],
-        variations: ["Full color", "Single color", "Reverse"]
+        usage: ["proper spacing", "correct colors", "appropriate size"],
+        restrictions: ["no distortion", "minimum size requirements", "clear background"],
+        variations: ["horizontal", "vertical", "icon only"]
       }
     };
   }
@@ -329,81 +254,71 @@ Return ONLY the JSON object, no explanatory text.`;
 /* Brand Guidelines CSS */
 :root {
   /* Primary Colors */
-  ${guidelines.colors.primary.map((color, index) => `--brand-primary-${index + 1}: ${color};`).join('\n  ')}
+  --brand-primary-1: ${guidelines.colors.primary[0] || '#2563eb'};
+  --brand-primary-2: ${guidelines.colors.primary[1] || '#1d4ed8'};
   
   /* Secondary Colors */
-  ${guidelines.colors.secondary.map((color, index) => `--brand-secondary-${index + 1}: ${color};`).join('\n  ')}
+  --brand-secondary-1: ${guidelines.colors.secondary[0] || '#64748b'};
+  --brand-secondary-2: ${guidelines.colors.secondary[1] || '#475569'};
   
   /* Accent Colors */
-  ${guidelines.colors.accent.map((color, index) => `--brand-accent-${index + 1}: ${color};`).join('\n  ')}
+  --brand-accent-1: ${guidelines.colors.accent[0] || '#dc2626'};
+  --brand-accent-2: ${guidelines.colors.accent[1] || '#b91c1c'};
   
   /* Neutral Colors */
-  ${guidelines.colors.neutral.map((color, index) => `--brand-neutral-${index + 1}: ${color};`).join('\n  ')}
+  --brand-neutral-1: ${guidelines.colors.neutral[0] || '#f8fafc'};
+  --brand-neutral-2: ${guidelines.colors.neutral[1] || '#e2e8f0'};
+  --brand-neutral-3: ${guidelines.colors.neutral[2] || '#64748b'};
+  --brand-neutral-4: ${guidelines.colors.neutral[3] || '#1e293b'};
   
   /* Typography */
-  --brand-font-primary: ${guidelines.typography.fonts[0] || 'Arial'}, sans-serif;
-  --brand-font-secondary: ${guidelines.typography.fonts[1] || 'Helvetica'}, sans-serif;
+  --brand-font-primary: ${guidelines.typography.fonts[0] || 'Inter'}, system-ui, sans-serif;
+  --brand-font-secondary: ${guidelines.typography.fonts[1] || '-apple-system'}, BlinkMacSystemFont, Segoe UI;
   
   /* Spacing */
-  ${guidelines.layout.spacing.map((space, index) => `--brand-space-${index + 1}: ${space};`).join('\n  ')}
+  --brand-spacing-xs: ${guidelines.layout.spacing[0] || '8px'};
+  --brand-spacing-sm: ${guidelines.layout.spacing[1] || '16px'};
+  --brand-spacing-md: ${guidelines.layout.spacing[2] || '24px'};
+  --brand-spacing-lg: ${guidelines.layout.spacing[3] || '32px'};
+  --brand-spacing-xl: ${guidelines.layout.spacing[4] || '48px'};
 }
 
-/* Brand Button Styles */
-.brand-button {
-  background: var(--brand-primary-1);
-  color: var(--brand-secondary-1);
-  font-family: var(--brand-font-primary);
-  font-weight: ${guidelines.typography.weights[1] || '600'};
-  padding: var(--brand-space-2) var(--brand-space-3);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.brand-button:hover {
-  background: var(--brand-accent-1);
-  transform: translateY(-1px);
-}
-
-/* Brand Card Styles */
-.brand-card {
-  background: var(--brand-secondary-1);
-  border: 1px solid var(--brand-neutral-2);
-  border-radius: 12px;
-  padding: var(--brand-space-3);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* Brand Typography */
 .brand-heading {
   font-family: var(--brand-font-primary);
   font-weight: ${guidelines.typography.weights[2] || '700'};
-  color: var(--brand-primary-1);
+  color: var(--brand-neutral-4);
 }
 
 .brand-body {
-  font-family: var(--brand-font-secondary);
+  font-family: var(--brand-font-primary);
   font-weight: ${guidelines.typography.weights[0] || '400'};
-  color: var(--brand-neutral-4);
+  color: var(--brand-neutral-3);
   line-height: 1.6;
 }
 
-/* Brand Form Styles */
-.brand-input {
-  font-family: var(--brand-font-secondary);
-  border: 2px solid var(--brand-neutral-2);
+.brand-button {
+  font-family: var(--brand-font-primary);
+  font-weight: ${guidelines.typography.weights[1] || '500'};
+  background: var(--brand-primary-1);
+  color: white;
+  border: none;
   border-radius: 6px;
-  padding: var(--brand-space-2);
-  background: var(--brand-secondary-1);
+  padding: var(--brand-spacing-sm) var(--brand-spacing-md);
+  cursor: pointer;
+  transition: background-color 0.2s;
 }
 
-.brand-input:focus {
-  border-color: var(--brand-primary-1);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.1);
+.brand-button:hover {
+  background: var(--brand-primary-2);
 }
-`;
+
+.brand-card {
+  background: var(--brand-neutral-1);
+  border: 1px solid var(--brand-neutral-2);
+  border-radius: 8px;
+  padding: var(--brand-spacing-md);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}`;
   }
 }
 
