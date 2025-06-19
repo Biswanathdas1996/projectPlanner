@@ -28,6 +28,8 @@ import {
   Layers,
   Grid,
   Type,
+  Layout,
+  MessageSquare,
   Image,
   Square,
   Circle,
@@ -40,7 +42,6 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
-  Layout,
   MousePointer,
   Zap,
   Paintbrush,
@@ -49,7 +50,6 @@ import {
   Users,
   ShoppingCart,
   Calendar,
-  MessageSquare,
   Home,
   User,
   Search,
@@ -2691,6 +2691,108 @@ ${selectedPageCode.jsCode}
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
             
+            {/* Brand Guidelines Upload Section */}
+            <Card className="mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Palette className="h-5 w-5 text-purple-600" />
+                  Brand Guidelines
+                  {brandGuidelines && (
+                    <Badge className="bg-green-100 text-green-800 border-green-300">
+                      Loaded
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Upload your brand guidelines PDF to generate wireframes that match your brand identity, colors, fonts, and design principles.
+                  </p>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex-1">
+                      <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
+                        Upload Brand Guidelines PDF
+                      </Label>
+                      <div className="relative">
+                        <Input
+                          id="brand-pdf"
+                          type="file"
+                          accept=".pdf"
+                          onChange={handleBrandGuidelineUpload}
+                          disabled={isExtractingBrand}
+                          className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                        />
+                        {isExtractingBrand && (
+                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                            <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                          </div>
+                        )}
+                      </div>
+                      {brandExtractionError && (
+                        <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
+                      )}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      {brandGuidelines && (
+                        <Button
+                          onClick={() => setShowBrandModal(true)}
+                          variant="outline"
+                          size="sm"
+                          className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          View Guidelines
+                        </Button>
+                      )}
+                      
+                      <Button
+                        onClick={generateBrandAwareWireframes}
+                        disabled={!brandGuidelines || isGeneratingWireframes}
+                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                        size="sm"
+                      >
+                        {isGeneratingWireframes ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            Generating...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-1" />
+                            Generate Brand Wireframes
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {brandGuidelines && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t">
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-xs text-gray-500">Primary Colors</div>
+                        <div className="text-sm font-medium">{brandGuidelines.colors.primary.length}</div>
+                      </div>
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-xs text-gray-500">Typography</div>
+                        <div className="text-sm font-medium">{brandGuidelines.typography.fonts.length} fonts</div>
+                      </div>
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-xs text-gray-500">Components</div>
+                        <div className="text-sm font-medium">{Object.keys(brandGuidelines.components).length} types</div>
+                      </div>
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-xs text-gray-500">Brand Voice</div>
+                        <div className="text-sm font-medium">{brandGuidelines.tone.personality.length} traits</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            
             {/* Wireframe Generation Progress */}
             {isGeneratingWireframes && (
               <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
@@ -3882,6 +3984,204 @@ ${selectedPageCode.jsCode}
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Brand Guidelines Modal */}
+        {showBrandModal && brandGuidelines && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-[90vw] max-w-4xl h-[90vh] overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Palette className="h-6 w-6 text-purple-600" />
+                  Brand Guidelines Overview
+                </h3>
+                <Button
+                  onClick={() => setShowBrandModal(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Colors Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-blue-500"></div>
+                        Color Palette
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.colors.primary.map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Secondary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.colors.secondary.map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Accent Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.colors.accent.map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Typography Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Typography
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Fonts</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.typography.fonts.map((font, index) => (
+                            <div key={index} className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
+                              {font}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Weights</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.typography.weights.map((weight, index) => (
+                            <Badge key={index} variant="outline">{weight}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Styles</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.typography.headingStyles.map((style, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {style}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Layout Guidelines */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Layout className="h-4 w-4" />
+                        Layout & Spacing
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Spacing Values</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.layout.spacing.map((space, index) => (
+                            <Badge key={index} variant="secondary">{space}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Grid Systems</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.layout.gridSystems.map((grid, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {grid}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Breakpoints</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.layout.breakpoints.map((breakpoint, index) => (
+                            <Badge key={index} variant="outline">{breakpoint}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Brand Voice & Personality */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        Brand Voice
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Personality</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.personality.map((trait, index) => (
+                            <Badge key={index} className="bg-blue-100 text-blue-800">{trait}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Voice Characteristics</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.voice.map((voice, index) => (
+                            <Badge key={index} className="bg-purple-100 text-purple-800">{voice}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Key Messages</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.tone.messaging.map((message, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {message}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-medium text-green-800 mb-2">Brand Integration Status</h4>
+                  <p className="text-sm text-green-700">
+                    Your brand guidelines have been successfully extracted and will be applied to all generated wireframes. 
+                    The AI will use your specific colors, typography, spacing, and design principles to create wireframes 
+                    that perfectly match your brand identity.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
