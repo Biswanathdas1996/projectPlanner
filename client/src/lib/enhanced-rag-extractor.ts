@@ -85,9 +85,78 @@ export class EnhancedRAGExtractor {
 
     } catch (error) {
       console.error('Enhanced RAG analysis failed:', error);
-      throw new Error('Failed to perform enhanced brand analysis');
+      
+      // Fallback to basic brand guideline extraction
+      try {
+        console.log('🔄 Attempting fallback to basic extraction...');
+        const { createBrandGuidelineExtractor } = await import('./brand-guideline-extractor');
+        const basicExtractor = createBrandGuidelineExtractor();
+        const basicGuidelines = await basicExtractor.extractFromPDF(file);
+        
+        // Create minimal enhanced analysis structure
+        const fallbackAnalysis: EnhancedBrandAnalysis = {
+          totalPages: 1,
+          pageAnalyses: [],
+          consolidatedFindings: {
+            allKeyBrandClauses: basicGuidelines.keyClauses || [],
+            allDesignGuidelines: basicGuidelines.designPrinciples || [],
+            allColorSpecs: basicGuidelines.colors?.primary || [],
+            allTypographyRules: basicGuidelines.typography?.fonts || [],
+            allLogoUsageRules: [],
+            allSpacingSpecs: [],
+            allComplianceNotes: [],
+            consolidatedDosAndDonts: { dos: [], donts: [] },
+            brandThemes: basicGuidelines.brandValues || [],
+            criticalRequirements: []
+          },
+          extractionMetadata: {
+            processingTime: Date.now() - startTime,
+            successfulPages: 1,
+            failedPages: 0,
+            averageConfidence: 0.7
+          },
+          vectorSearchResults: {
+            keyPoints: [],
+            totalChunks: 0,
+            processedPages: 1,
+            searchMetadata: {
+              vectorDimensions: 768,
+              similarityThreshold: 0.7,
+              processingTime: 0
+            }
+          },
+          enhancedKeyPoints: {
+            brandClauses: [],
+            designGuidelines: [],
+            colorSpecs: [],
+            typographyRules: [],
+            logoGuidelines: [],
+            complianceRules: []
+          },
+          analysisMetadata: {
+            agenticAnalysisTime: 0,
+            vectorSearchTime: 0,
+            totalProcessingTime: Date.now() - startTime,
+            keyPointsExtracted: 0,
+            confidenceScore: 0.7
+          }
+        };
+        
+        return {
+          brandGuidelines: basicGuidelines,
+          enhancedAnalysis: fallbackAnalysis
+        };
+        
+      } catch (fallbackError) {
+        console.error('Fallback extraction also failed:', fallbackError);
+        throw new Error(`Both enhanced and fallback analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      }
     } finally {
-      await this.vectorRAG.disconnect();
+      try {
+        await this.vectorRAG.disconnect();
+      } catch (disconnectError) {
+        console.warn('Vector search disconnect failed:', disconnectError);
+      }
     }
   }
 

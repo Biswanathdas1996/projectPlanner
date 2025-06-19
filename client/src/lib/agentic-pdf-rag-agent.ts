@@ -84,12 +84,15 @@ export class AgenticPDFRAGAgent {
       // Load PDF.js dynamically
       const pdfjs = await import('pdfjs-dist');
       
-      // Configure worker with proper version matching
-      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-          'pdfjs-dist/build/pdf.worker.min.js',
-          import.meta.url
-        ).toString();
+      // Configure worker with fallback options
+      try {
+        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+          pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
+        }
+      } catch (workerError) {
+        console.warn('PDF worker setup failed, using fallback:', workerError);
+        // Use empty string to disable worker
+        pdfjs.GlobalWorkerOptions.workerSrc = '';
       }
       
       pdfjsLib = pdfjs;
@@ -137,44 +140,71 @@ export class AgenticPDFRAGAgent {
 
     } catch (error) {
       console.error('❌ Agentic RAG Analysis failed:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        type: typeof error,
+        errorObject: error
+      });
       throw new Error(`PDF RAG analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   private async extractAllPagesText(file: File): Promise<Array<{pageNumber: number, textContent: string}>> {
-    const pdfjs = await this.loadPDFJS();
-    const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
-    const pagesData = [];
+    try {
+      console.log('🔍 Loading PDF.js for text extraction...');
+      const pdfjs = await this.loadPDFJS();
+      
+      console.log('📄 Converting file to array buffer...');
+      const arrayBuffer = await file.arrayBuffer();
+      
+      console.log('📖 Loading PDF document...');
+      const loadingTask = pdfjs.getDocument({
+        data: arrayBuffer,
+        disableWorker: true,
+        verbosity: 0
+      });
+      
+      const pdf = await loadingTask.promise;
+      console.log(`📚 PDF loaded successfully with ${pdf.numPages} pages`);
+      
+      const pagesData = [];
 
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      try {
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        
-        // Extract and clean text from page
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ')
-          .replace(/\s+/g, ' ')
-          .trim();
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        try {
+          console.log(`📃 Processing page ${pageNum}/${pdf.numPages}...`);
+          const page = await pdf.getPage(pageNum);
+          const textContent = await page.getTextContent();
+          
+          // Extract and clean text from page
+          const pageText = textContent.items
+            .map((item: any) => item.str)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim();
 
-        pagesData.push({
-          pageNumber: pageNum,
-          textContent: pageText
-        });
+          pagesData.push({
+            pageNumber: pageNum,
+            textContent: pageText
+          });
 
-        console.log(`📖 Extracted page ${pageNum}: ${pageText.length} characters`);
-      } catch (error) {
-        console.warn(`⚠️ Failed to extract page ${pageNum}:`, error);
-        pagesData.push({
-          pageNumber: pageNum,
-          textContent: ''
-        });
+          console.log(`✅ Page ${pageNum} extracted: ${pageText.length} characters`);
+        } catch (error) {
+          console.warn(`⚠️ Failed to extract page ${pageNum}:`, error);
+          pagesData.push({
+            pageNumber: pageNum,
+            textContent: ''
+          });
+        }
       }
-    }
 
-    return pagesData;
+      console.log(`🎯 Text extraction completed: ${pagesData.length} pages processed`);
+      return pagesData;
+      
+    } catch (error) {
+      console.error('💥 PDF text extraction failed:', error);
+      throw new Error(`Failed to extract text from PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   private async analyzeEachPageIntelligently(pagesData: Array<{pageNumber: number, textContent: string}>): Promise<PageAnalysis[]> {
