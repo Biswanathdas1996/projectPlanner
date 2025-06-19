@@ -2753,146 +2753,7 @@ ${selectedPageCode.jsCode}
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
             
-            {/* Brand Guidelines Upload Section */}
-            <Card className="mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Palette className="h-5 w-5 text-purple-600" />
-                  Brand Guidelines
-                  {brandGuidelines && (
-                    <Badge className="bg-green-100 text-green-800 border-green-300">
-                      Loaded
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
-                  </p>
 
-                  {/* Stored Brand Guidelines Selection */}
-                  {storedBrandGuidelines.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="block text-sm font-medium">
-                        Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
-                      </Label>
-                      <div className="flex gap-2">
-                        <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
-                          <SelectTrigger className="flex-1">
-                            <SelectValue placeholder="Select stored brand guidelines..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="none">None - Upload new PDF</SelectItem>
-                            {storedBrandGuidelines.map((guideline) => (
-                              <SelectItem key={guideline.id} value={guideline.id}>
-                                <div className="flex items-center justify-between w-full">
-                                  <span>{guideline.name}</span>
-                                  <span className="text-xs text-gray-500 ml-2">
-                                    {new Date(guideline.extractedAt).toLocaleDateString()}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        {selectedStoredGuideline && (
-                          <Button
-                            onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
-                            variant="outline"
-                            size="sm"
-                            className="border-red-300 text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <div className="flex-1">
-                      <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
-                        Upload New Brand Guidelines PDF
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="brand-pdf"
-                          type="file"
-                          accept=".pdf"
-                          onChange={handleBrandGuidelineUpload}
-                          disabled={isExtractingBrand}
-                          className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                        />
-                        {isExtractingBrand && (
-                          <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                            <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
-                          </div>
-                        )}
-                      </div>
-                      {brandExtractionError && (
-                        <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
-                      )}
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      {brandGuidelines && (
-                        <Button
-                          onClick={() => setShowBrandModal(true)}
-                          variant="outline"
-                          size="sm"
-                          className="border-purple-300 text-purple-700 hover:bg-purple-50"
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Guidelines
-                        </Button>
-                      )}
-                      
-                      <Button
-                        onClick={generateBrandAwareWireframes}
-                        disabled={!brandGuidelines || isGeneratingWireframes}
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                        size="sm"
-                      >
-                        {isGeneratingWireframes ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                            Generating...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-1" />
-                            Generate Brand Wireframes
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  {brandGuidelines && (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t">
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
-                        <div className="text-xs text-gray-500">Primary Colors</div>
-                        <div className="text-sm font-medium">{brandGuidelines.colors.primary.length}</div>
-                      </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
-                        <div className="text-xs text-gray-500">Typography</div>
-                        <div className="text-sm font-medium">{brandGuidelines.typography.fonts.length} fonts</div>
-                      </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
-                        <div className="text-xs text-gray-500">Components</div>
-                        <div className="text-sm font-medium">{Object.keys(brandGuidelines.components).length} types</div>
-                      </div>
-                      <div className="text-center p-2 bg-white/60 rounded-lg">
-                        <div className="text-xs text-gray-500">Brand Voice</div>
-                        <div className="text-sm font-medium">{brandGuidelines.tone.personality.length} traits</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
             
             {/* Wireframe Generation Progress */}
             {isGeneratingWireframes && (
@@ -3952,6 +3813,149 @@ ${selectedPageCode.jsCode}
               </div>
             </div>
           </div>
+        )}
+
+        {/* Brand Guidelines Upload Section */}
+        {pageContentCards.length > 0 && (
+          <Card className="mt-8 mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Palette className="h-5 w-5 text-purple-600" />
+                Brand Guidelines
+                {brandGuidelines && (
+                  <Badge className="bg-green-100 text-green-800 border-green-300">
+                    Loaded
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
+                </p>
+
+                {/* Stored Brand Guidelines Selection */}
+                {storedBrandGuidelines.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="block text-sm font-medium">
+                      Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select stored brand guidelines..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None - Upload new PDF</SelectItem>
+                          {storedBrandGuidelines.map((guideline) => (
+                            <SelectItem key={guideline.id} value={guideline.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{guideline.name}</span>
+                                <span className="text-xs text-gray-500 ml-2">
+                                  {new Date(guideline.extractedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedStoredGuideline && (
+                        <Button
+                          onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
+                      Upload New Brand Guidelines PDF
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="brand-pdf"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleBrandGuidelineUpload}
+                        disabled={isExtractingBrand}
+                        className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                      />
+                      {isExtractingBrand && (
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                        </div>
+                      )}
+                    </div>
+                    {brandExtractionError && (
+                      <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {brandGuidelines && (
+                      <Button
+                        onClick={() => setShowBrandModal(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Guidelines
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={generateBrandAwareWireframes}
+                      disabled={!brandGuidelines || isGeneratingWireframes}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      size="sm"
+                    >
+                      {isGeneratingWireframes ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          Generate Brand Wireframes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {brandGuidelines && (
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t">
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Primary Colors</div>
+                      <div className="text-sm font-medium">{brandGuidelines.colors.primary.length}</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Typography</div>
+                      <div className="text-sm font-medium">{brandGuidelines.typography.fonts.length} fonts</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Components</div>
+                      <div className="text-sm font-medium">{Object.keys(brandGuidelines.components).length} types</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Brand Voice</div>
+                      <div className="text-sm font-medium">{brandGuidelines.tone.personality.length} traits</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Generated Wireframes Display */}
