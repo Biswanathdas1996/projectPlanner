@@ -235,7 +235,7 @@ WIREFRAME DESIGN REQUIREMENTS:
    - Include ALL content sections mentioned above - do not omit any
    - Apply brand colors consistently throughout, no gradients
    - Use specified typography with proper hierarchy
-   - Include brand logo placeholder in header following specifications'
+   - Include brand logo placeholder in header following specifications
    
    - Make it responsive and modern
    - Ensure proper color contrast for accessibility
