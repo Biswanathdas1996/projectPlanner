@@ -139,6 +139,7 @@ LOGO & BRANDING:
 - Size Requirements: ${brandGuidelines.logos.sizes.join(", ")}
 - Spacing: ${brandGuidelines.logos.spacing.join(", ")}
 - Color Options: ${brandGuidelines.logos.colors.join(", ")}
+- Extracted Logo Images: ${brandGuidelines.logos.images?.primary ? 'Primary logo extracted from PDF' : 'No logo images extracted'}
 
 ACCESSIBILITY:
 - Contrast Standards: ${brandGuidelines.accessibility.contrast.join(", ")}

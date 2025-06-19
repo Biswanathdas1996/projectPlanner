@@ -1,5 +1,12 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// PDF image extraction utilities
+declare global {
+  interface Window {
+    pdfjsLib: any;
+  }
+}
+
 export interface BrandGuideline {
   colors: {
     primary: string[];
@@ -60,6 +67,12 @@ export interface BrandGuideline {
     colors: string[];
     sizes: string[];
     formats: string[];
+    images: {
+      primary?: string; // base64 encoded logo image
+      horizontal?: string; // base64 encoded horizontal variant
+      icon?: string; // base64 encoded icon variant
+      monochrome?: string; // base64 encoded monochrome variant
+    };
   };
   brandValues: string[];
   logoUsage: string[];
@@ -87,6 +100,9 @@ export class BrandGuidelineExtractor {
     try {
       console.log('Processing brand guidelines PDF:', file.name);
       
+      // Extract logos and images from PDF
+      const logoImages = await this.extractLogosFromPDF(file);
+      
       // Generate smart brand analysis based on file characteristics
       const analysisText = await this.analyzeFileBasics(file);
       console.log('Generated analysis text length:', analysisText.length);
@@ -94,11 +110,148 @@ export class BrandGuidelineExtractor {
       // Use Gemini to analyze and extract brand guidelines
       const guidelines = await this.analyzeWithGemini(analysisText);
       
+      // Integrate extracted logo images
+      if (logoImages && Object.keys(logoImages).length > 0) {
+        guidelines.logos.images = logoImages;
+        console.log('Extracted logo images:', Object.keys(logoImages).length, 'variants');
+      }
+      
       return guidelines;
     } catch (error) {
       console.error('Error extracting brand guidelines:', error);
       return this.getDefaultGuidelines();
     }
+  }
+
+  private async extractLogosFromPDF(file: File): Promise<{
+    primary?: string;
+    horizontal?: string;
+    icon?: string;
+    monochrome?: string;
+  }> {
+    try {
+      // Load PDF.js library if not already loaded
+      if (!window.pdfjsLib) {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        document.head.appendChild(script);
+        await new Promise((resolve) => {
+          script.onload = resolve;
+        });
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      }
+
+      // Convert file to array buffer
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      const extractedImages: { [key: string]: string } = {};
+      
+      // Process first few pages to find logos
+      const maxPages = Math.min(pdf.numPages, 5);
+      
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const operatorList = await page.getOperatorList();
+        
+        // Look for image operations in the PDF
+        for (let i = 0; i < operatorList.fnArray.length; i++) {
+          if (operatorList.fnArray[i] === window.pdfjsLib.OPS.paintImageXObject) {
+            try {
+              const imgName = operatorList.argsArray[i][0];
+              const resources = await page.getAnnotations();
+              
+              // Extract image data and convert to base64
+              const canvas = document.createElement('canvas');
+              const context = canvas.getContext('2d');
+              const viewport = page.getViewport({ scale: 1.0 });
+              
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              
+              await page.render({
+                canvasContext: context,
+                viewport: viewport
+              }).promise;
+              
+              // Convert canvas to base64 and resize for logo use
+              const imageData = await this.extractAndResizeImage(canvas);
+              
+              if (imageData) {
+                // Categorize based on position and size
+                if (pageNum === 1) {
+                  extractedImages.primary = imageData;
+                } else {
+                  extractedImages[`variant_${pageNum}`] = imageData;
+                }
+              }
+            } catch (imgError) {
+              console.warn('Error extracting image from page', pageNum, imgError);
+            }
+          }
+        }
+      }
+      
+      // If we found images, process and categorize them
+      if (Object.keys(extractedImages).length > 0) {
+        console.log('Successfully extracted', Object.keys(extractedImages).length, 'logo images from PDF');
+        return this.processExtractedLogos(extractedImages);
+      }
+      
+      return {};
+    } catch (error) {
+      console.error('Error extracting logos from PDF:', error);
+      return {};
+    }
+  }
+
+  private async extractAndResizeImage(canvas: HTMLCanvasElement): Promise<string | null> {
+    try {
+      // Create a smaller canvas for logo optimization
+      const logoCanvas = document.createElement('canvas');
+      const logoContext = logoCanvas.getContext('2d');
+      
+      // Set optimal logo dimensions (max 200px width/height)
+      const maxSize = 200;
+      const ratio = Math.min(maxSize / canvas.width, maxSize / canvas.height);
+      
+      logoCanvas.width = canvas.width * ratio;
+      logoCanvas.height = canvas.height * ratio;
+      
+      // Draw resized image
+      logoContext?.drawImage(canvas, 0, 0, logoCanvas.width, logoCanvas.height);
+      
+      // Convert to base64 with compression
+      return logoCanvas.toDataURL('image/png', 0.8);
+    } catch (error) {
+      console.error('Error resizing logo image:', error);
+      return null;
+    }
+  }
+
+  private processExtractedLogos(images: { [key: string]: string }): {
+    primary?: string;
+    horizontal?: string;
+    icon?: string;
+    monochrome?: string;
+  } {
+    const processed: any = {};
+    
+    // Use the first extracted image as primary
+    const imageKeys = Object.keys(images);
+    if (imageKeys.length > 0) {
+      processed.primary = images[imageKeys[0]];
+      
+      // If we have multiple images, use them as variations
+      if (imageKeys.length > 1) {
+        processed.horizontal = images[imageKeys[1]];
+      }
+      if (imageKeys.length > 2) {
+        processed.icon = images[imageKeys[2]];
+      }
+    }
+    
+    return processed;
   }
 
   private async analyzeFileBasics(file: File): Promise<string> {
@@ -326,7 +479,8 @@ Return this exact JSON structure with enhanced color and logo information:
         spacing: ["minimum 20px clearance"],
         colors: ["full color", "monochrome", "reverse"],
         sizes: ["minimum 24px height"],
-        formats: ["SVG", "PNG", "JPG"]
+        formats: ["SVG", "PNG", "JPG"],
+        images: {}
       },
       brandValues: ["innovation", "quality", "trust", "excellence"],
       logoUsage: ["maintain proportions", "use appropriate backgrounds"],
