@@ -1,11 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { BrandGuideline } from "./brand-guideline-extractor";
+import { ComprehensiveBrandAnalysis } from "./agentic-pdf-rag-agent";
 
 export interface BrandedWireframeRequest {
     pageContent: any;
     designStyle: string;
     deviceType: string;
     brandGuidelines: BrandGuideline;
+    comprehensiveBrandAnalysis?: ComprehensiveBrandAnalysis;
 }
 
 export interface BrandedWireframeResponse {
@@ -71,7 +73,7 @@ export class BrandAwareWireframeGenerator {
     }
 
     private buildBrandedPrompt(request: BrandedWireframeRequest): string {
-        const { pageContent, designStyle, deviceType, brandGuidelines } =
+        const { pageContent, designStyle, deviceType, brandGuidelines, comprehensiveBrandAnalysis } =
             request;
 
         // Build complete content sections
@@ -116,9 +118,41 @@ export class BrandAwareWireframeGenerator {
                 ? `Stakeholders: ${pageContent.stakeholders.join(", ")}`
                 : "";
 
-        return `Create a professional, brand-compliant web page wireframe for "${pageContent.pageName}" using comprehensive brand guidelines.
+        // Extract comprehensive brand data from RAG analysis
+        const consolidatedFindings = comprehensiveBrandAnalysis?.consolidatedFindings;
+        const keyBrandClauses = consolidatedFindings?.allKeyBrandClauses?.slice(0, 8) || [];
+        const colorSpecs = consolidatedFindings?.allColorSpecs?.slice(0, 6) || [];
+        const typographyRules = consolidatedFindings?.allTypographyRules?.slice(0, 6) || [];
+        const logoUsageRules = consolidatedFindings?.allLogoUsageRules?.slice(0, 6) || [];
+        const designGuidelines = consolidatedFindings?.allDesignGuidelines?.slice(0, 8) || [];
+        const dosAndDonts = consolidatedFindings?.consolidatedDosAndDonts || { dos: [], donts: [] };
 
-ENHANCED BRAND GUIDELINES TO APPLY:
+        return `Create a professional, brand-compliant web page wireframe for "${pageContent.pageName}" using comprehensive RAG-extracted brand guidelines.
+
+==== COMPREHENSIVE BRAND ANALYSIS GUIDELINES ====
+
+KEY BRAND CLAUSES (Critical Requirements):
+${keyBrandClauses.map((clause, i) => `${i + 1}. ${clause}`).join('\n')}
+
+EXTRACTED COLOR SPECIFICATIONS:
+${colorSpecs.map(spec => `• ${spec}`).join('\n')}
+
+EXTRACTED TYPOGRAPHY RULES:
+${typographyRules.map(rule => `• ${rule}`).join('\n')}
+
+LOGO USAGE GUIDELINES:
+${logoUsageRules.map(rule => `• ${rule}`).join('\n')}
+
+DESIGN GUIDELINES:
+${designGuidelines.map(guideline => `• ${guideline}`).join('\n')}
+
+BRAND COMPLIANCE - MUST DO:
+${dosAndDonts.dos.slice(0, 5).map(item => `✓ ${item}`).join('\n')}
+
+BRAND COMPLIANCE - MUST NOT DO:
+${dosAndDonts.donts.slice(0, 5).map(item => `✗ ${item}`).join('\n')}
+
+FALLBACK BRAND GUIDELINES:
 COLORS:
 - Primary: ${(brandGuidelines.colors?.primary || []).join(", ")}
 - Secondary: ${(brandGuidelines.colors?.secondary || []).join(", ")}
@@ -173,7 +207,7 @@ SECTIONS:
 - Header Design: ${brandGuidelines.components?.sections?.headerDesign || "Brand logo with navigation menu"}
 - Footer Design: ${brandGuidelines.components?.sections?.footerDesign || "Multiple columns with links and contact info"}
 - Content Areas: ${brandGuidelines.components?.sections?.contentAreas || "Proper margins and readable layouts"}
-- Backgrounds: ${brandGuidelines.components?.sections?.backgrounds?.join(", ") || "White, light grays, brand accents"}
+- Backgrounds: ${Array.isArray(brandGuidelines.components?.sections?.backgrounds) ? brandGuidelines.components.sections.backgrounds.join(", ") : (brandGuidelines.components?.sections?.backgrounds || "White, light grays, brand accents")}
 
 ACCESSIBILITY:
 - Contrast Standards: ${(brandGuidelines.accessibility?.contrast || []).join(", ")}
