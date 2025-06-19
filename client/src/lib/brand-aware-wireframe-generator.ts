@@ -1,13 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { BrandGuideline } from "./brand-guideline-extractor";
-import { ComprehensiveBrandAnalysis } from "./agentic-pdf-rag-agent";
+import { FinalBrandReport } from "./chunked-brand-analyzer";
 
 export interface BrandedWireframeRequest {
     pageContent: any;
     designStyle: string;
     deviceType: string;
     brandGuidelines: BrandGuideline;
-    comprehensiveBrandAnalysis?: ComprehensiveBrandAnalysis;
+    finalBrandReport?: FinalBrandReport;
 }
 
 export interface BrandedWireframeResponse {
@@ -73,7 +73,7 @@ export class BrandAwareWireframeGenerator {
     }
 
     private buildBrandedPrompt(request: BrandedWireframeRequest): string {
-        const { pageContent, designStyle, deviceType, brandGuidelines, comprehensiveBrandAnalysis } =
+        const { pageContent, designStyle, deviceType, brandGuidelines, finalBrandReport } =
             request;
 
         // Build complete content sections

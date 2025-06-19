@@ -1531,9 +1531,16 @@ export default function WireframeDesigner() {
           cards: { design: 'Card layout', shadows: ['Card shadows'], spacing: 'Card spacing' },
           tables: ['Table headers', 'Table rows', 'Table borders'],
           modals: ['Modal overlay', 'Modal content', 'Modal actions'],
-          alerts: ['Success alerts', 'Error alerts', 'Warning alerts'],
           badges: ['Primary badge', 'Secondary badge', 'Status badges']
-        }
+        },
+        imagery: { style: 'Photography style', guidelines: ['Image guidelines'], restrictions: ['No low-res images'], aspectRatios: ['16:9', '4:3'], treatments: ['Clean', 'Professional'] },
+        keyPoints: finalReport.keyFindings.criticalRequirements,
+        keyClauses: finalReport.keyFindings.brandThemes,
+        keyHighlights: finalReport.keyFindings.designPrinciples,
+        restrictions: finalReport.keyFindings.complianceNotes,
+        specifications: [...finalReport.brandGuidelines.colors.primary, ...finalReport.brandGuidelines.typography.fonts],
+        usageRules: finalReport.brandGuidelines.logos.usage,
+        complianceNotes: finalReport.keyFindings.complianceNotes
       };
       
       setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
@@ -1728,7 +1735,7 @@ export default function WireframeDesigner() {
           designStyle: selectedDesignType,
           deviceType: selectedDeviceType,
           brandGuidelines,
-          comprehensiveBrandAnalysis: comprehensiveBrandAnalysis ?? undefined
+          finalBrandReport: finalBrandReport ?? undefined
         };
 
         const result = await brandGenerator.generateBrandedWireframe(request);
@@ -4819,13 +4826,6 @@ ${selectedPageCode.jsCode}
                         <span>Processing Time: {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s</span>
                         <span>Brand Themes: {finalBrandReport.keyFindings.brandThemes.length}</span>
                         <span>Design Principles: {finalBrandReport.keyFindings.designPrinciples.length}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                        <div className="text-2xl font-bold text-emerald-600">{Math.round(comprehensiveBrandAnalysis.extractionMetadata.processingTime / 1000)}s</div>
-                        <div className="text-xs text-gray-600">Processing Time</div>
                       </div>
                     </div>
                   </div>
