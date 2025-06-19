@@ -780,6 +780,296 @@ export default function WireframeDesigner() {
     });
   };
 
+  // Generate unified HTML that combines all page content sections with brand guidelines
+  const generateUnifiedHTML = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Missing Requirements",
+        description: "Please ensure you have both brand guidelines and page content sections before generating unified HTML.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingUnifiedHTML(true);
+    
+    try {
+      const generator = createBrandAwareWireframeGenerator();
+      
+      // Combine all page content into a unified structure
+      const unifiedContent = {
+        id: `unified_${Date.now()}`,
+        pageName: "Complete Application",
+        pageType: "Multi-Page Application",
+        purpose: "A unified application combining all page sections with brand-compliant design",
+        stakeholders: Array.from(new Set(pageContentCards.flatMap(card => card.stakeholders))),
+        headers: pageContentCards.flatMap(card => card.headers),
+        buttons: pageContentCards.flatMap(card => card.buttons || []),
+        forms: pageContentCards.flatMap(card => card.forms || []),
+        lists: pageContentCards.flatMap(card => card.lists || []),
+        navigation: Array.from(new Set(pageContentCards.flatMap(card => card.navigation || []))),
+        additionalContent: pageContentCards.flatMap(card => card.additionalContent || []),
+        textContent: pageContentCards.flatMap(card => card.textContent || []),
+        isEdited: false
+      };
+
+      // Generate the unified HTML using brand guidelines
+      const result = await generator.generateBrandedWireframe({
+        pageContent: unifiedContent,
+        designStyle: "modern professional",
+        deviceType: "desktop",
+        brandGuidelines: brandGuidelines
+      });
+
+      // Create a comprehensive HTML structure
+      const unifiedHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Application - Brand Compliant</title>
+    <style>
+        ${result.css}
+        
+        /* Additional responsive and modern enhancements */
+        body {
+            font-family: ${brandGuidelines.typography.fonts[0] || 'Inter, sans-serif'};
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, ${brandGuidelines.colors.primary[0] || '#f8fafc'}, ${brandGuidelines.colors.secondary[0] || '#e2e8f0'});
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .section {
+            background: white;
+            margin-bottom: 30px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+        }
+        
+        .section h2 {
+            color: ${brandGuidelines.colors.primary[0] || '#1e293b'};
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: ${brandGuidelines.colors.neutral[0] || '#f8fafc'};
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid ${brandGuidelines.colors.secondary[0] || '#e2e8f0'};
+        }
+        
+        .btn {
+            background: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn:hover {
+            background: ${brandGuidelines.colors.primary[0] || '#1e40af'};
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+            }
+            .section {
+                padding: 20px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="section">
+            <h1 style="color: ${brandGuidelines.colors.primary[0] || '#1e293b'}; text-align: center; margin-bottom: 10px;">
+                Complete Application
+            </h1>
+            <p style="text-align: center; color: #64748b; font-size: 18px;">
+                Brand-compliant unified application combining all page sections
+            </p>
+        </header>
+        
+        ${pageContentCards.map((card, index) => `
+        <section class="section" id="section-${index + 1}">
+            <h2>${card.pageName}</h2>
+            <p style="color: #64748b; margin-bottom: 20px;">${card.purpose}</p>
+            
+            ${card.headers.length > 0 ? `
+            <div class="card">
+                <h3>Content Headers</h3>
+                ${card.headers.map(header => `<h4 style="color: ${brandGuidelines.colors.primary[0] || '#1e293b'};">${header}</h4>`).join('')}
+            </div>
+            ` : ''}
+            
+            ${card.textContent && card.textContent.length > 0 ? `
+            <div class="card">
+                <h3>Text Content</h3>
+                ${card.textContent.map(text => `<p>${text}</p>`).join('')}
+            </div>
+            ` : ''}
+            
+            ${card.buttons && card.buttons.length > 0 ? `
+            <div class="card">
+                <h3>Actions</h3>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    ${card.buttons.map(button => `<button class="btn">${button.label || button}</button>`).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            ${card.forms && card.forms.length > 0 ? `
+            <div class="card">
+                <h3>Forms</h3>
+                ${card.forms.map(form => `
+                    <div style="margin-bottom: 20px;">
+                        <h4>${form.title || form}</h4>
+                        ${form.fields ? form.fields.map(field => `
+                            <div style="margin-bottom: 10px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: 500;">${field}</label>
+                                <input type="text" style="width: 100%; padding: 8px; border: 1px solid #d1d5db; border-radius: 4px;" placeholder="Enter ${field}">
+                            </div>
+                        `).join('') : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${card.lists && card.lists.length > 0 ? `
+            <div class="card">
+                <h3>Lists & Data</h3>
+                ${card.lists.map(list => `
+                    <div style="margin-bottom: 15px;">
+                        <h4>${list.title || list}</h4>
+                        ${list.items ? `<ul>${list.items.map(item => `<li>${item}</li>`).join('')}</ul>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+            ` : ''}
+            
+            ${card.navigation && card.navigation.length > 0 ? `
+            <div class="card">
+                <h3>Navigation</h3>
+                <nav style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    ${card.navigation.map(nav => `<a href="#" style="color: ${brandGuidelines.colors.accent[0] || '#3b82f6'}; text-decoration: none; font-weight: 500;">${nav}</a>`).join('')}
+                </nav>
+            </div>
+            ` : ''}
+        </section>
+        `).join('')}
+        
+        <footer class="section" style="text-align: center; background: ${brandGuidelines.colors.primary[0] || '#1e293b'}; color: white;">
+            <p>Generated with brand guidelines compliance</p>
+            <p style="font-size: 14px; opacity: 0.8;">Using ${brandGuidelines.typography.fonts[0] || 'system fonts'} typography and brand color palette</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Simple interactive enhancements
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const ripple = document.createElement('span');
+                ripple.style.cssText = 'position: absolute; border-radius: 50%; background: rgba(255,255,255,0.6); transform: scale(0); animation: ripple 0.6s linear; pointer-events: none;';
+                btn.style.position = 'relative';
+                btn.style.overflow = 'hidden';
+                btn.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+        });
+        
+        // Add smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+        
+        // Add CSS animation for ripple effect
+        const style = document.createElement('style');
+        style.textContent = '@keyframes ripple { to { transform: scale(4); opacity: 0; } }';
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>`;
+
+      setUnifiedHTMLResult({
+        html: unifiedHTML,
+        css: result.css,
+        js: "// Interactive enhancements included in HTML"
+      });
+
+      // Save to storage
+      const unifiedWireframe = {
+        id: `unified_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        pageName: "Complete Unified Application",
+        htmlCode: unifiedHTML,
+        cssCode: result.css,
+        jsCode: "// Interactive enhancements included in HTML",
+        isEnhanced: true,
+        lastUpdated: new Date().toISOString(),
+        lastEnhancedElement: "Unified HTML Generator",
+        enhancementExplanation: "Generated unified HTML application combining all page sections with brand guidelines"
+      };
+
+      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const updatedWireframes = [...existingWireframes, unifiedWireframe];
+      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      setGeneratedWireframes(updatedWireframes);
+
+      toast({
+        title: "Unified HTML Generated",
+        description: "Complete application created with all page sections and brand guidelines applied.",
+      });
+
+      // Auto-preview the generated unified HTML
+      const newWindow = window.open('', '_blank');
+      if (newWindow) {
+        newWindow.document.write(unifiedHTML);
+        newWindow.document.close();
+      }
+
+    } catch (error) {
+      console.error('Error generating unified HTML:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate unified HTML. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingUnifiedHTML(false);
+    }
+  };
+
   // Handle element selection for targeted enhancement
   const handleElementSelection = (event: React.MouseEvent) => {
     if (!selectionMode) return;
