@@ -1078,15 +1078,15 @@ Return HTML and CSS in this exact format:
     }
 
     private generateBrandCSS(guidelines: BrandGuideline): string {
-        const primaryColor = guidelines.colors.primary[0] || "#2563eb";
-        const primaryColorAlt = guidelines.colors.primary[1] || "#1d4ed8";
-        const accentColor = guidelines.colors.accent[0] || "#dc2626";
-        const accentColorAlt = guidelines.colors.accent[1] || "#b91c1c";
-        const secondaryColor = guidelines.colors.secondary[0] || "#64748b";
-        const neutralLight = guidelines.colors.neutral[0] || "#f8fafc";
-        const neutralMid = guidelines.colors.neutral[1] || "#e2e8f0";
-        const neutralDark = guidelines.colors.neutral[3] || "#1e293b";
-        const primaryFont = guidelines.typography.fonts[0] || "Inter";
+        const primaryColor = guidelines?.colors?.primary?.[0] || "#2563eb";
+        const primaryColorAlt = guidelines?.colors?.primary?.[1] || "#1d4ed8";
+        const accentColor = guidelines?.colors?.accent?.[0] || "#dc2626";
+        const accentColorAlt = guidelines?.colors?.accent?.[1] || "#b91c1c";
+        const secondaryColor = guidelines?.colors?.secondary?.[0] || "#64748b";
+        const neutralLight = guidelines?.colors?.neutral?.[0] || "#f8fafc";
+        const neutralMid = guidelines?.colors?.neutral?.[1] || "#e2e8f0";
+        const neutralDark = guidelines?.colors?.neutral?.[3] || "#1e293b";
+        const primaryFont = guidelines?.typography?.fonts?.[0] || "Inter";
 
         return `
 /* Professional Brand-Compliant Wireframe System */
