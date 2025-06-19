@@ -63,7 +63,6 @@ import {
   Edit2,
   Edit3,
   Save,
-  RefreshCw,
   Upload,
   FileText,
   Star,
@@ -1362,81 +1361,6 @@ export default function WireframeDesigner() {
       title: "Element Selected",
       description: `Selected: ${elementInfo}`,
     });
-  };
-
-  // Regenerate single wireframe with updated logo variants
-  const regenerateWireframe = async (pageName: string) => {
-    if (!brandGuidelines) {
-      toast({
-        title: "No Brand Guidelines",
-        description: "Please upload brand guidelines first",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const pageCard = pageContentCards.find(card => card.pageName === pageName);
-    if (!pageCard) {
-      toast({
-        title: "Page Not Found",
-        description: "Cannot find page content to regenerate",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsGeneratingWireframes(true);
-    setWireframeGenerationProgress({ current: 0, total: 1, currentPage: pageName });
-
-    try {
-      const generator = createBrandAwareWireframeGenerator();
-      const result = await generator.generateWireframe({
-        pageContent: pageCard,
-        brandGuidelines,
-        designStyle: "modern",
-        deviceType: "desktop"
-      });
-
-      // Update existing wireframe
-      const existingWireframes = storage.getItem('generated_wireframes') || [];
-      const wireframeIndex = existingWireframes.findIndex((w: any) => w.pageName === pageName);
-      
-      if (wireframeIndex !== -1) {
-        existingWireframes[wireframeIndex] = {
-          ...existingWireframes[wireframeIndex],
-          htmlContent: result.html,
-          cssStyles: result.css,
-          lastModified: new Date().toISOString()
-        };
-      } else {
-        existingWireframes.push({
-          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          pageName,
-          htmlContent: result.html,
-          cssStyles: result.css,
-          createdAt: new Date().toISOString()
-        });
-      }
-
-      storage.setItem('generated_wireframes', existingWireframes);
-      setGeneratedWireframes(existingWireframes);
-
-      toast({
-        title: "Wireframe Regenerated",
-        description: `${pageName} has been updated with logo variants`
-      });
-
-    } catch (error) {
-      console.error('Error regenerating wireframe:', error);
-      toast({
-        title: "Generation Failed",
-        description: "Please try again",
-        variant: "destructive"
-      });
-    } finally {
-      setIsGeneratingWireframes(false);
-      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: null });
-    }
   };
 
   // Handle selective element enhancement
