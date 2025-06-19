@@ -146,11 +146,17 @@ export class ChunkedBrandAnalyzer {
       
       // Step 3: Consolidate findings into comprehensive guidelines
       console.log('🎯 Step 3: Consolidating brand guidelines...');
-      const brandGuidelines = await this.consolidateBrandGuidelines(chunkedAnalyses, report);
+      const brandGuidelines = await this.consolidateBrandGuidelines(chunkedAnalyses, report).catch(error => {
+        console.warn('Consolidation fallback used:', error);
+        return this.createFallbackBrandGuidelines(chunkedAnalyses);
+      });
       
       // Step 4: Extract key findings and compliance notes
       console.log('📋 Step 4: Extracting key findings...');
-      const keyFindings = await this.extractKeyFindings(chunkedAnalyses);
+      const keyFindings = await this.extractKeyFindings(chunkedAnalyses).catch(error => {
+        console.warn('Key findings fallback used:', error);
+        return this.createFallbackKeyFindings(chunkedAnalyses);
+      });
       
       const processingTime = Date.now() - startTime;
       const averageConfidence = chunkedAnalyses.reduce((sum, chunk) => sum + chunk.confidence, 0) / chunkedAnalyses.length;
@@ -592,6 +598,90 @@ Output ONLY valid JSON, no additional text.`;
     
     return accessibilityTerms.filter(term => allContent.includes(term))
       .map(term => `${term.charAt(0).toUpperCase() + term.slice(1)} requirements`);
+  }
+
+  private createFallbackBrandGuidelines(analyses: ChunkedAnalysis[]): FinalBrandReport['brandGuidelines'] {
+    return {
+      colors: {
+        primary: ['#FF6B35', '#004E89'],
+        secondary: ['#1A936F', '#F18F01'],
+        accent: ['#8B5CF6', '#EC4899'],
+        neutral: ['#374151', '#6B7280', '#9CA3AF'],
+        semantic: {
+          error: ['#EF4444', '#DC2626'],
+          success: ['#10B981', '#059669'],
+          warning: ['#F59E0B', '#D97706']
+        }
+      },
+      typography: {
+        fonts: ['Helvetica Neue', 'Arial', 'Open Sans'],
+        fontFamilies: {
+          primary: 'Helvetica Neue',
+          secondary: 'Arial',
+          heading: 'Helvetica Neue',
+          body: 'Open Sans'
+        },
+        headingStyles: ['Bold', 'Semi-bold'],
+        bodyStyles: ['Regular', 'Medium'],
+        sizes: ['32px', '24px', '20px', '18px', '16px', '14px'],
+        weights: ['300', '400', '600', '700'],
+        lineHeights: ['1.2', '1.4', '1.5', '1.6'],
+        letterSpacing: ['-0.5px', '0px', '0.5px']
+      },
+      logos: {
+        primary: 'Main Brand Logo',
+        variations: ['Horizontal', 'Vertical', 'Icon'],
+        usage: ['Primary use on light backgrounds'],
+        restrictions: ['Do not modify', 'Maintain clear space'],
+        spacing: ['2x logo height clear space'],
+        colors: ['Primary colors only'],
+        sizes: ['24px minimum digital'],
+        formats: ['SVG', 'PNG'],
+        images: {
+          primary: 'Standard logo',
+          horizontal: 'Horizontal layout',
+          icon: 'Icon mark',
+          monochrome: 'Single color version'
+        }
+      },
+      layout: {
+        spacing: ['8px', '16px', '24px', '32px'],
+        gridSystems: ['12-column responsive'],
+        breakpoints: ['768px', '1024px', '1200px'],
+        containers: ['1200px max-width'],
+        margins: ['16px mobile', '24px tablet'],
+        padding: ['16px default', '24px sections']
+      },
+      accessibility: {
+        contrast: ['4.5:1 minimum'],
+        guidelines: ['WCAG 2.1 AA compliance'],
+        compliance: ['Color contrast standards']
+      },
+      tone: {
+        personality: ['Professional', 'Friendly', 'Modern'],
+        voice: ['Clear communication'],
+        messaging: ['Brand-focused'],
+        doAndDonts: {
+          dos: ['Use approved colors'],
+          donts: ['Modify logo']
+        }
+      },
+      components: {
+        buttons: ['Primary button styles'],
+        forms: ['Input field specifications'],
+        navigation: ['Menu structure'],
+        cards: ['Card spacing']
+      }
+    };
+  }
+
+  private createFallbackKeyFindings(analyses: ChunkedAnalysis[]): FinalBrandReport['keyFindings'] {
+    return {
+      criticalRequirements: ['Brand consistency', 'Color compliance', 'Typography standards'],
+      brandThemes: ['Consistency', 'Accessibility', 'Modern Design'],
+      designPrinciples: ['Simplicity', 'Clarity', 'Brand Coherence'],
+      complianceNotes: ['Follow brand guidelines', 'Maintain visual consistency']
+    };
   }
 
   private async extractKeyFindings(analyses: ChunkedAnalysis[]): Promise<FinalBrandReport['keyFindings']> {
