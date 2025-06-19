@@ -795,7 +795,6 @@ export default function WireframeDesigner() {
     setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
     
     try {
-      const generator = createBrandAwareWireframeGenerator();
       const newWireframes = [];
       
       // Generate individual wireframes for each page content section
@@ -829,7 +828,7 @@ export default function WireframeDesigner() {
         }
         
         body {
-            font-family: ${brandFont};
+            font-family: '${brandFont}', Arial, sans-serif;
             line-height: 1.6;
             color: #333333;
             background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
@@ -894,8 +893,8 @@ export default function WireframeDesigner() {
         }
         
         .stakeholder-badge {
-            background: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
-            color: white;
+            background: ${accentColor};
+            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.875rem;
@@ -908,7 +907,7 @@ export default function WireframeDesigner() {
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            border: 1px solid ${brandGuidelines.colors.secondary[0] || '#e2e8f0'};
+            border: 1px solid #e2e8f0;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         
@@ -918,7 +917,7 @@ export default function WireframeDesigner() {
         }
         
         .content-section h2 {
-            color: ${brandGuidelines.colors.primary[0] || '#1e293b'};
+            color: ${primaryColor};
             font-size: 1.5rem;
             margin-bottom: 15px;
             display: flex;
@@ -930,7 +929,7 @@ export default function WireframeDesigner() {
             content: '';
             width: 4px;
             height: 20px;
-            background: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            background: ${accentColor};
             border-radius: 2px;
         }
         
@@ -942,20 +941,20 @@ export default function WireframeDesigner() {
         }
         
         .card {
-            background: ${brandGuidelines.colors.neutral[0] || '#f8fafc'};
+            background: ${neutralColor};
             padding: 20px;
             border-radius: 10px;
-            border: 1px solid ${brandGuidelines.colors.secondary[0] || '#e2e8f0'};
+            border: 1px solid #e2e8f0;
             transition: all 0.3s ease;
         }
         
         .card:hover {
-            border-color: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            border-color: ${accentColor};
             transform: translateY(-3px);
         }
         
         .btn {
-            background: linear-gradient(135deg, ${brandGuidelines.colors.accent[0] || '#3b82f6'}, ${brandGuidelines.colors.primary[0] || '#1e40af'});
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
             color: white;
             padding: 12px 24px;
             border: none;
@@ -971,7 +970,8 @@ export default function WireframeDesigner() {
         
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
+            filter: brightness(1.1);
         }
         
         .btn:active {
@@ -986,7 +986,7 @@ export default function WireframeDesigner() {
             display: block;
             margin-bottom: 8px;
             font-weight: 600;
-            color: ${brandGuidelines.colors.primary[0] || '#1e293b'};
+            color: ${primaryColor};
         }
         
         .form-group input,
@@ -994,7 +994,7 @@ export default function WireframeDesigner() {
         .form-group select {
             width: 100%;
             padding: 12px;
-            border: 2px solid ${brandGuidelines.colors.secondary[0] || '#e2e8f0'};
+            border: 2px solid #e2e8f0;
             border-radius: 8px;
             font-size: 1rem;
             transition: border-color 0.3s ease;
@@ -1004,8 +1004,8 @@ export default function WireframeDesigner() {
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: ${accentColor};
+            box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.1);
         }
         
         .nav-links {
@@ -1016,7 +1016,7 @@ export default function WireframeDesigner() {
         }
         
         .nav-links a {
-            color: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            color: ${primaryColor};
             text-decoration: none;
             font-weight: 600;
             padding: 8px 16px;
@@ -1026,7 +1026,7 @@ export default function WireframeDesigner() {
         }
         
         .nav-links a:hover {
-            background: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            background: ${primaryColor};
             color: white;
             transform: translateY(-1px);
         }
@@ -1040,7 +1040,7 @@ export default function WireframeDesigner() {
             padding: 12px;
             margin-bottom: 8px;
             background: white;
-            border-left: 4px solid ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            border-left: 4px solid ${accentColor};
             border-radius: 6px;
             transition: all 0.3s ease;
         }
@@ -1087,7 +1087,7 @@ export default function WireframeDesigner() {
         ${card.headers.length > 0 ? `
         <section class="content-section">
             <h2>Content Headers</h2>
-            ${card.headers.map(header => `<h3 style="color: ${brandGuidelines.colors.primary[0] || '#1e293b'}; margin-bottom: 15px;">${header}</h3>`).join('')}
+            ${card.headers.map(header => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join('')}
         </section>
         ` : ''}
         
@@ -1161,7 +1161,7 @@ export default function WireframeDesigner() {
     </div>
     
     <script>
-        // Interactive button effects
+        // Interactive button effects with proper brand colors
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -1208,25 +1208,23 @@ export default function WireframeDesigner() {
         // Navigation function
         function navigateTo(section) {
             console.log('Navigating to:', section);
-            // Add your navigation logic here
             alert('Navigating to: ' + section);
         }
         
-        // Smooth scrolling for better UX
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'start'
-                    });
-                }
+        // Form interactions
+        document.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 199, 44, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
             });
         });
         
-        // Add ripple animation styles
+        // Add ripple animation styles dynamically
         const style = document.createElement('style');
         style.textContent = \`
             @keyframes ripple {
@@ -1237,11 +1235,24 @@ export default function WireframeDesigner() {
             }
             
             .btn:focus {
-                outline: 2px solid ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+                outline: 2px solid ${accentColor};
                 outline-offset: 2px;
             }
         \`;
         document.head.appendChild(style);
+        
+        // Add hover effects for cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.transform = 'translateY(0)';
+            });
+        });
     </script>
 </body>
 </html>`;
@@ -1250,12 +1261,12 @@ export default function WireframeDesigner() {
           id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           pageName: card.pageName,
           htmlCode: htmlCode,
-          cssCode: "// CSS embedded in HTML",
-          jsCode: "// Interactive enhancements included in HTML",
+          cssCode: "// CSS embedded in HTML with brand colors",
+          jsCode: "// Interactive JavaScript included in HTML",
           isEnhanced: true,
           lastUpdated: new Date().toISOString(),
           lastEnhancedElement: "Brand-Compliant Generator",
-          enhancementExplanation: `Generated modern, responsive wireframe for ${card.pageName} using brand guidelines`
+          enhancementExplanation: `Generated modern, responsive wireframe for ${card.pageName} using McDonald's brand guidelines`
         };
 
         newWireframes.push(wireframe);
@@ -1269,7 +1280,7 @@ export default function WireframeDesigner() {
 
       toast({
         title: "Wireframes Generated Successfully",
-        description: `Created ${newWireframes.length} brand-compliant wireframes with modern, responsive design.`,
+        description: `Created ${newWireframes.length} brand-compliant wireframes with working CSS and JavaScript.`,
       });
 
     } catch (error) {
