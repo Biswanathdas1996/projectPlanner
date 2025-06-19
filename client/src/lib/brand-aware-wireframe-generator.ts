@@ -118,39 +118,45 @@ export class BrandAwareWireframeGenerator {
                 ? `Stakeholders: ${pageContent.stakeholders.join(", ")}`
                 : "";
 
-        // Extract comprehensive brand data from RAG analysis
-        const consolidatedFindings = comprehensiveBrandAnalysis?.consolidatedFindings;
-        const keyBrandClauses = consolidatedFindings?.allKeyBrandClauses?.slice(0, 8) || [];
-        const colorSpecs = consolidatedFindings?.allColorSpecs?.slice(0, 6) || [];
-        const typographyRules = consolidatedFindings?.allTypographyRules?.slice(0, 6) || [];
-        const logoUsageRules = consolidatedFindings?.allLogoUsageRules?.slice(0, 6) || [];
-        const designGuidelines = consolidatedFindings?.allDesignGuidelines?.slice(0, 8) || [];
-        const dosAndDonts = consolidatedFindings?.consolidatedDosAndDonts || { dos: [], donts: [] };
+        // Extract comprehensive brand data from multimodal analysis
+        const criticalRequirements = finalBrandReport?.keyFindings?.criticalRequirements?.slice(0, 8) || [];
+        const brandThemes = finalBrandReport?.keyFindings?.brandThemes?.slice(0, 6) || [];
+        const designPrinciples = finalBrandReport?.keyFindings?.designPrinciples?.slice(0, 6) || [];
+        const colorGuidelines = finalBrandReport?.brandGuidelines?.colors?.primary?.slice(0, 6) || [];
+        const typographyGuidelines = finalBrandReport?.brandGuidelines?.typography?.fonts?.slice(0, 6) || [];
+        const logoGuidelines = finalBrandReport?.brandGuidelines?.logos?.usage?.slice(0, 6) || [];
+        const dosAndDonts = { 
+          dos: finalBrandReport?.brandGuidelines?.tone?.doAndDonts?.dos?.slice(0, 5) || [], 
+          donts: finalBrandReport?.brandGuidelines?.tone?.doAndDonts?.donts?.slice(0, 5) || [] 
+        };
 
-        return `Create a professional, brand-compliant web page wireframe for "${pageContent.pageName}" using comprehensive RAG-extracted brand guidelines.
+        return `Create a professional, brand-compliant web page wireframe for "${pageContent.pageName}" using multimodal AI-extracted brand guidelines.
 
-==== COMPREHENSIVE BRAND ANALYSIS GUIDELINES ====
+==== MULTIMODAL BRAND ANALYSIS GUIDELINES ====
 
-KEY BRAND CLAUSES (Critical Requirements):
-${keyBrandClauses.map((clause, i) => `${i + 1}. ${clause}`).join('\n')}
+CRITICAL REQUIREMENTS:
+${criticalRequirements.map((requirement, i) => `${i + 1}. ${requirement}`).join('\n')}
 
-EXTRACTED COLOR SPECIFICATIONS:
-${colorSpecs.map(spec => `• ${spec}`).join('\n')}
+BRAND THEMES:
+${brandThemes.map(theme => `• ${theme}`).join('\n')}
 
-EXTRACTED TYPOGRAPHY RULES:
-${typographyRules.map(rule => `• ${rule}`).join('\n')}
+DESIGN PRINCIPLES:
+${designPrinciples.map(principle => `• ${principle}`).join('\n')}
+
+COLOR GUIDELINES:
+${colorGuidelines.map(color => `• ${color}`).join('\n')}
+
+TYPOGRAPHY GUIDELINES:
+${typographyGuidelines.map(font => `• ${font}`).join('\n')}
 
 LOGO USAGE GUIDELINES:
-${logoUsageRules.map(rule => `• ${rule}`).join('\n')}
-
-DESIGN GUIDELINES:
-${designGuidelines.map(guideline => `• ${guideline}`).join('\n')}
+${logoGuidelines.map(guideline => `• ${guideline}`).join('\n')}
 
 BRAND COMPLIANCE - MUST DO:
-${dosAndDonts.dos.slice(0, 5).map(item => `✓ ${item}`).join('\n')}
+${dosAndDonts.dos.map(item => `✓ ${item}`).join('\n')}
 
 BRAND COMPLIANCE - MUST NOT DO:
-${dosAndDonts.donts.slice(0, 5).map(item => `✗ ${item}`).join('\n')}
+${dosAndDonts.donts.map(item => `✗ ${item}`).join('\n')}
 
 FALLBACK BRAND GUIDELINES:
 COLORS:

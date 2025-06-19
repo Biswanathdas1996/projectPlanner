@@ -1537,7 +1537,7 @@ export default function WireframeDesigner() {
         keyPoints: finalReport.keyFindings.criticalRequirements,
         keyClauses: finalReport.keyFindings.brandThemes,
         keyHighlights: finalReport.keyFindings.designPrinciples,
-        restrictions: finalReport.keyFindings.complianceNotes,
+        complianceNotes: finalReport.keyFindings.complianceNotes,
         specifications: [...finalReport.brandGuidelines.colors.primary, ...finalReport.brandGuidelines.typography.fonts],
         usageRules: finalReport.brandGuidelines.logos.usage,
         complianceNotes: finalReport.keyFindings.complianceNotes
