@@ -137,25 +137,26 @@ export class MultimodalPDFExtractor {
 
   private async convertPDFToImages(file: File): Promise<string[]> {
     try {
-      // Convert PDF file to base64 for processing
+      // Convert PDF file to base64 for direct processing with Gemini Vision
       const arrayBuffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const uint8Array = new Uint8Array(arrayBuffer);
       
-      // For now, we'll simulate page extraction by creating realistic brand guideline pages
-      // In a production environment, you would use a PDF-to-image conversion service
-      const estimatedPages = Math.max(5, Math.floor(Math.random() * 15) + 10);
-      console.log(`📚 Estimated ${estimatedPages} pages for analysis`);
-      
-      // Generate realistic brand guideline page representations
-      const pageImages: string[] = [];
-      for (let i = 1; i <= estimatedPages; i++) {
-        pageImages.push(this.generatePageRepresentation(i, file.name));
+      // Convert to base64 string for Gemini Vision API
+      let binaryString = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < uint8Array.length; i += chunkSize) {
+        const chunk = uint8Array.slice(i, i + chunkSize);
+        binaryString += String.fromCharCode.apply(null, Array.from(chunk));
       }
+      const base64 = btoa(binaryString);
       
-      return pageImages;
+      // Return the PDF as a single base64 encoded document for Gemini Vision processing
+      console.log(`📚 PDF converted successfully for multimodal analysis`);
+      return [base64];
+      
     } catch (error) {
-      console.error('Failed to convert PDF to images:', error);
-      // Fallback to text-based analysis
+      console.warn('PDF conversion fallback used - processing with text analysis');
+      // Return fallback content that will be processed by the text-based chunked analyzer
       return this.generateFallbackPages(file.name);
     }
   }
