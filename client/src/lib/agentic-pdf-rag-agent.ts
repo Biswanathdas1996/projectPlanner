@@ -86,13 +86,9 @@ export class AgenticPDFRAGAgent {
       
       // Configure worker with fallback options
       try {
-        if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-          pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-        }
+        pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
       } catch (workerError) {
-        console.warn('PDF worker setup failed, using fallback:', workerError);
-        // Use empty string to disable worker
-        pdfjs.GlobalWorkerOptions.workerSrc = '';
+        console.warn('PDF worker setup failed:', workerError);
       }
       
       pdfjsLib = pdfjs;
@@ -300,28 +296,49 @@ Return ONLY a JSON object with this exact structure:
 }`;
 
     try {
+      console.log(`🔍 Analyzing page ${pageData.pageNumber} with AI...`);
+      
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
 
-      // Clean and parse the response
-      const cleanedText = text
+      console.log(`📋 Raw AI response for page ${pageData.pageNumber}:`, text.substring(0, 200) + '...');
+
+      // Clean and parse the response more robustly
+      let cleanedText = text
         .replace(/```json\s*/, '')
         .replace(/```\s*$/, '')
+        .replace(/^[^{]*/, '') // Remove any text before first {
         .trim();
+
+      // Ensure it ends with a closing brace
+      if (!cleanedText.endsWith('}')) {
+        const lastBraceIndex = cleanedText.lastIndexOf('}');
+        if (lastBraceIndex > 0) {
+          cleanedText = cleanedText.substring(0, lastBraceIndex + 1);
+        }
+      }
 
       const analysis = JSON.parse(cleanedText) as PageAnalysis;
       
-      // Validate and enhance the analysis
-      analysis.pageNumber = pageData.pageNumber;
-      analysis.textContent = pageData.textContent;
-      
-      // Ensure confidence is reasonable
-      if (analysis.confidence < 0 || analysis.confidence > 1) {
-        analysis.confidence = 0.5;
-      }
+      // Validate and fix the analysis structure
+      const validatedAnalysis: PageAnalysis = {
+        pageNumber: pageData.pageNumber,
+        textContent: pageData.textContent.substring(0, 500),
+        keyBrandClauses: Array.isArray(analysis.keyBrandClauses) ? analysis.keyBrandClauses : [],
+        designGuidelines: Array.isArray(analysis.designGuidelines) ? analysis.designGuidelines : [],
+        colorSpecs: Array.isArray(analysis.colorSpecs) ? analysis.colorSpecs : [],
+        typographyRules: Array.isArray(analysis.typographyRules) ? analysis.typographyRules : [],
+        logoUsageRules: Array.isArray(analysis.logoUsageRules) ? analysis.logoUsageRules : [],
+        spacingSpecs: Array.isArray(analysis.spacingSpecs) ? analysis.spacingSpecs : [],
+        complianceNotes: Array.isArray(analysis.complianceNotes) ? analysis.complianceNotes : [],
+        dosAndDonts: analysis.dosAndDonts && typeof analysis.dosAndDonts === 'object' ? analysis.dosAndDonts : { dos: [], donts: [] },
+        imageDescriptions: Array.isArray(analysis.imageDescriptions) ? analysis.imageDescriptions : [],
+        confidence: typeof analysis.confidence === 'number' && analysis.confidence >= 0 && analysis.confidence <= 1 ? analysis.confidence : 0.7
+      };
 
-      return analysis;
+      console.log(`✅ Page ${pageData.pageNumber} analyzed successfully`);
+      return validatedAnalysis;
 
     } catch (error) {
       console.error(`🔥 JSON parsing failed for page ${pageData.pageNumber}:`, error);
