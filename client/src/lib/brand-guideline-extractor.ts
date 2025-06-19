@@ -104,6 +104,24 @@ export interface BrandGuideline {
     messaging: string[];
     doAndDont: string[];
   };
+  keyPoints: string[];
+  keyClauses: string[];
+  keyHighlights: string[];
+  dosAndDonts: {
+    dos: string[];
+    donts: string[];
+  };
+  brandRules: string[];
+  compliance: {
+    requirements: string[];
+    restrictions: string[];
+    guidelines: string[];
+  };
+  usageGuidelines: {
+    approved: string[];
+    prohibited: string[];
+    context: string[];
+  };
   logos: {
     primary: string;
     variations: string[];
@@ -419,11 +437,23 @@ Clean minimal design, good whitespace usage, strong hierarchy, modern iconograph
 
   private async analyzeWithGemini(analysisText: string): Promise<BrandGuideline> {
     try {
-      const prompt = `Extract comprehensive brand guidelines from this analysis including design patterns, component styles, typography families, and detailed specifications. Return a JSON object:
+      const prompt = `Extract comprehensive brand guidelines from this analysis. Focus on capturing ALL key points, clauses, highlights, dos and don'ts, brand rules, compliance requirements, and usage guidelines from the document. Return a detailed JSON object:
 
 ${analysisText}
 
-Return this exact JSON structure with enhanced design system information:
+EXTRACTION REQUIREMENTS:
+1. Identify ALL key points mentioned in the document
+2. Extract key clauses and important statements
+3. Capture highlights and emphasized content
+4. List specific dos and don'ts for brand usage
+5. Document brand rules and compliance requirements
+6. Note usage guidelines and restrictions
+7. Extract color specifications, typography details, and component guidelines
+8. Capture accessibility requirements and design principles
+9. Document logo usage rules and restrictions
+10. Extract any legal or trademark information
+
+Return this exact JSON structure with comprehensive brand information:
 {
   "colors": {
     "primary": ["#DA291C", "#FF6900"],
@@ -535,6 +565,78 @@ Return this exact JSON structure with enhanced design system information:
     "contrast": ["4.5:1 minimum", "7:1 preferred"],
     "guidelines": ["WCAG 2.1 AA compliance"],
     "compliance": ["color contrast", "keyboard navigation"]
+  },
+  "keyPoints": [
+    "Main brand objectives and goals",
+    "Core visual identity principles",
+    "Primary brand messaging themes",
+    "Target audience considerations"
+  ],
+  "keyClauses": [
+    "Logo must maintain minimum size requirements",
+    "Brand colors must meet accessibility standards",
+    "Typography must be legible across all platforms",
+    "Consistent application across all touchpoints"
+  ],
+  "keyHighlights": [
+    "Brand essence and unique value proposition",
+    "Critical design specifications",
+    "Important usage restrictions",
+    "Key differentiating factors"
+  ],
+  "dosAndDonts": {
+    "dos": [
+      "Use approved color combinations",
+      "Maintain proper logo clearspace",
+      "Follow typography hierarchy",
+      "Ensure accessibility compliance"
+    ],
+    "donts": [
+      "Never distort or skew the logo",
+      "Don't use unauthorized color variations",
+      "Avoid poor contrast combinations",
+      "Never alter brand typography"
+    ]
+  },
+  "brandRules": [
+    "Always use official brand assets",
+    "Maintain consistent visual hierarchy",
+    "Follow approved color usage guidelines",
+    "Ensure proper logo placement and sizing"
+  ],
+  "compliance": {
+    "requirements": [
+      "WCAG 2.1 AA accessibility standards",
+      "Brand consistency across all platforms",
+      "Legal trademark usage compliance"
+    ],
+    "restrictions": [
+      "No unauthorized logo modifications",
+      "Restricted color palette usage",
+      "Specific spacing requirements"
+    ],
+    "guidelines": [
+      "Follow established design patterns",
+      "Maintain brand voice and tone",
+      "Use approved imagery styles"
+    ]
+  },
+  "usageGuidelines": {
+    "approved": [
+      "Official marketing materials",
+      "Digital platforms and websites",
+      "Print publications and collateral"
+    ],
+    "prohibited": [
+      "Unauthorized logo alterations",
+      "Off-brand color combinations",
+      "Inconsistent typography usage"
+    ],
+    "context": [
+      "Business communications",
+      "Marketing campaigns",
+      "Product packaging and design"
+    ]
   }
 }`;
 
