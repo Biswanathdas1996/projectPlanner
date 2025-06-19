@@ -148,6 +148,11 @@ REQUIREMENTS:
 7. Ensure the design is brand compliant and follows all brand guidelines
 8. color gradient should not be used for any elemnts like buttons, cards etc.
 9. use infographics to make the design more engaging
+10. PROPER COLOR CONTRAST: Ensure text is readable on all backgrounds:
+    - Dark brand colors (like ${brandGuidelines.colors.primary[0]}) require white or light text
+    - Light brand colors (like ${brandGuidelines.colors.accent[0]}) require dark text
+    - Calculate luminance: if background luminance > 0.5 use dark text (#333), else use white text
+    - Apply contrast rules to buttons, badges, cards, and all colored elements
 
 Return HTML and CSS in this exact format:
 
@@ -806,27 +811,29 @@ Return HTML and CSS in this exact format:
     </div>
     
     <script>
-        // Interactive features with brand colors
+        // Interactive features with brand colors and proper contrast
         document.querySelectorAll('.btn').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Visual feedback
+                // Visual feedback with proper contrast
                 const originalText = this.textContent;
                 this.textContent = '✓ ' + originalText;
                 this.style.background = '${accentColor}';
+                this.style.color = '${accentTextColor}';
                 setTimeout(() => {
                     this.textContent = originalText;
                     this.style.background = '';
+                    this.style.color = '';
                 }, 1500);
             });
         });
         
-        // Form interactions
+        // Form interactions with proper focus colors
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', function() {
                 this.style.borderColor = '${accentColor}';
-                this.style.boxShadow = '0 0 0 3px rgba(255, 199, 44, 0.1)';
+                this.style.boxShadow = '0 0 0 3px ${accentColor}33';
             });
             
             input.addEventListener('blur', function() {
