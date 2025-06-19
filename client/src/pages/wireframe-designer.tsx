@@ -1489,166 +1489,14 @@ export default function WireframeDesigner() {
     setRAGAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing PDF analysis..." });
 
     try {
-      // Step 1: Perform comprehensive agentic RAG analysis
-      console.log('🤖 Starting comprehensive RAG analysis for brand guidelines');
-      setRAGAnalysisProgress({ current: 10, total: 100, currentStep: "Analyzing PDF structure..." });
+      console.log('🤖 Starting brand guideline extraction for:', file.name);
+      setRAGAnalysisProgress({ current: 20, total: 100, currentStep: "Extracting brand guidelines..." });
       
-      const ragAgent = createAgenticPDFRAGAgent();
-      const comprehensiveAnalysis = await ragAgent.performComprehensiveRAGAnalysis(file);
+      // Use existing brand guideline extractor
+      const extractor = createBrandGuidelineExtractor();
+      const guidelines = await extractor.extractFromPDF(file);
       
-      console.log('✅ Comprehensive RAG analysis completed:', comprehensiveAnalysis);
-      setComprehensiveBrandAnalysis(comprehensiveAnalysis);
-      setRAGAnalysisProgress({ current: 70, total: 100, currentStep: "Converting analysis to brand guidelines..." });
-
-      // Step 2: Convert comprehensive analysis to brand guidelines format
-      const guidelines: BrandGuideline = {
-        // Colors from detailed analysis - matching expected interface
-        colors: {
-          primary: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(0, 3),
-          secondary: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(3, 6),
-          accent: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(6, 8),
-          neutral: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.slice(8, 10),
-          text: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.filter(color => 
-            color.toLowerCase().includes('text') || color.toLowerCase().includes('font')
-          ),
-          background: comprehensiveAnalysis.consolidatedFindings.allColorSpecs.filter(color => 
-            color.toLowerCase().includes('background') || color.toLowerCase().includes('bg')
-          ),
-          error: [],
-          success: [],
-          warning: []
-        },
-        
-        // Typography from analysis - matching expected interface
-        typography: {
-          fonts: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
-            rule.toLowerCase().includes('font') || rule.toLowerCase().includes('typeface')
-          ),
-          fontFamilies: {
-            primary: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
-              rule.toLowerCase().includes('primary') || rule.toLowerCase().includes('main')
-            ),
-            secondary: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
-              rule.toLowerCase().includes('secondary') || rule.toLowerCase().includes('sub')
-            ),
-            heading: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
-              rule.toLowerCase().includes('heading') || rule.toLowerCase().includes('title')
-            ),
-            body: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.find(rule => 
-              rule.toLowerCase().includes('body') || rule.toLowerCase().includes('text')
-            )
-          },
-          headingStyles: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
-            rule.toLowerCase().includes('heading') || rule.toLowerCase().includes('title')
-          ),
-          bodyStyles: comprehensiveAnalysis.consolidatedFindings.allTypographyRules.filter(rule => 
-            rule.toLowerCase().includes('body') || rule.toLowerCase().includes('text')
-          ),
-          weights: [],
-          sizes: [],
-          lineHeights: [],
-          letterSpacing: []
-        },
-        
-        // Layout from spacing specifications
-        layout: {
-          spacing: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs,
-          gridSystems: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
-            spec.toLowerCase().includes('grid')
-          ),
-          breakpoints: [],
-          containers: [],
-          margins: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
-            spec.toLowerCase().includes('margin')
-          ),
-          padding: comprehensiveAnalysis.consolidatedFindings.allSpacingSpecs.filter(spec => 
-            spec.toLowerCase().includes('padding')
-          )
-        },
-        
-        // Components section
-        components: {},
-        
-        // Imagery section
-        imagery: {
-          style: comprehensiveAnalysis.consolidatedFindings.brandThemes[0] || 'Modern',
-          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5),
-          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
-          aspectRatios: [],
-          treatments: []
-        },
-        
-        // Tone and voice
-        tone: {
-          personality: comprehensiveAnalysis.consolidatedFindings.brandThemes,
-          voice: [],
-          messaging: [],
-          doAndDont: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.concat(
-            comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts
-          )
-        },
-        
-        // Core brand information from consolidated findings
-        keyPoints: comprehensiveAnalysis.consolidatedFindings.criticalRequirements,
-        keyClauses: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
-        keyHighlights: comprehensiveAnalysis.consolidatedFindings.brandThemes,
-        
-        // Dos and don'ts
-        dosAndDonts: {
-          dos: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
-          donts: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts
-        },
-        
-        brandRules: comprehensiveAnalysis.consolidatedFindings.allKeyBrandClauses,
-        
-        // Compliance matching expected interface
-        compliance: {
-          requirements: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes,
-          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
-          guidelines: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines
-        },
-        
-        // Usage guidelines
-        usageGuidelines: {
-          approved: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos,
-          prohibited: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts,
-          context: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines.slice(0, 5)
-        },
-        
-        // Logo usage rules - matching expected interface
-        logos: {
-          primary: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules[0] || '',
-          variations: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules,
-          usage: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules.filter(rule => 
-            rule.toLowerCase().includes('usage') || rule.toLowerCase().includes('placement')
-          ),
-          restrictions: comprehensiveAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.filter(dont => 
-            dont.toLowerCase().includes('logo')
-          ),
-          spacing: [],
-          colors: [],
-          sizes: [],
-          formats: [],
-          images: {}
-        },
-        
-        brandValues: comprehensiveAnalysis.consolidatedFindings.brandThemes,
-        logoUsage: comprehensiveAnalysis.consolidatedFindings.allLogoUsageRules,
-        designPrinciples: comprehensiveAnalysis.consolidatedFindings.allDesignGuidelines,
-        
-        // Accessibility
-        accessibility: {
-          contrast: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes.filter(note => 
-            note.toLowerCase().includes('contrast')
-          ),
-          guidelines: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes.filter(note => 
-            note.toLowerCase().includes('accessibility')
-          ),
-          compliance: comprehensiveAnalysis.consolidatedFindings.allComplianceNotes
-        }
-      };
-
-      setRAGAnalysisProgress({ current: 90, total: 100, currentStep: "Saving brand guidelines..." });
+      setRAGAnalysisProgress({ current: 80, total: 100, currentStep: "Processing guidelines..." });
       
       // Generate a name for the brand guidelines based on file name
       const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -1667,8 +1515,8 @@ export default function WireframeDesigner() {
       setRAGAnalysisProgress({ current: 100, total: 100, currentStep: "Analysis complete!" });
       
       toast({
-        title: "Comprehensive Brand Analysis Complete",
-        description: `Successfully analyzed ${comprehensiveAnalysis.totalPages} pages and extracted detailed "${guidelineName}" brand guidelines with ${Math.round(comprehensiveAnalysis.extractionMetadata.averageConfidence * 100)}% confidence.`,
+        title: "Brand Guidelines Extracted Successfully",
+        description: `Successfully extracted and saved "${guidelineName}" brand guidelines.`,
       });
       
       setShowBrandModal(true);

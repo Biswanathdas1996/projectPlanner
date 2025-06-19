@@ -1,8 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import * as pdfjsLib from 'pdfjs-dist';
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+// Dynamic PDF.js loading with proper worker configuration
+let pdfjsLib: any = null;
 
 export interface PageAnalysis {
   pageNumber: number;
@@ -78,6 +77,29 @@ export class AgenticPDFRAGAgent {
     });
   }
 
+  private async loadPDFJS(): Promise<any> {
+    if (pdfjsLib) return pdfjsLib;
+
+    try {
+      // Load PDF.js dynamically
+      const pdfjs = await import('pdfjs-dist');
+      
+      // Configure worker with proper version matching
+      if (!pdfjs.GlobalWorkerOptions.workerSrc) {
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+          'pdfjs-dist/build/pdf.worker.min.js',
+          import.meta.url
+        ).toString();
+      }
+      
+      pdfjsLib = pdfjs;
+      return pdfjs;
+    } catch (error) {
+      console.error('Failed to load PDF.js:', error);
+      throw new Error('PDF processing library not available');
+    }
+  }
+
   async performComprehensiveRAGAnalysis(file: File): Promise<ComprehensiveBrandAnalysis> {
     const startTime = Date.now();
     console.log('🤖 Starting Agentic RAG Analysis of PDF:', file.name);
@@ -120,8 +142,9 @@ export class AgenticPDFRAGAgent {
   }
 
   private async extractAllPagesText(file: File): Promise<Array<{pageNumber: number, textContent: string}>> {
+    const pdfjs = await this.loadPDFJS();
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument(arrayBuffer).promise;
+    const pdf = await pdfjs.getDocument(arrayBuffer).promise;
     const pagesData = [];
 
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
