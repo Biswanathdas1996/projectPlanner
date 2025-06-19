@@ -254,34 +254,27 @@ Create a realistic, functional web page layout that a real user would encounter.
 - Dashboard pages should display key metrics, quick actions, and data summaries
 - E-commerce should show products, filters, shopping cart, and checkout flow
 
-AUTHENTIC LOGO INTEGRATION - USE ALL EXTRACTED VARIANTS:
-${brandGuidelines.logos.images ? Object.entries(brandGuidelines.logos.images).map(([variant, imageData]) => {
-  if (variant === 'primary') {
-    return `- Primary Logo: Main header/navigation area
-  <img src="${imageData}" alt="Brand Logo" style="height: 40px; width: auto; margin-right: 16px;">`
-  } else if (variant === 'horizontal') {
-    return `- Horizontal Logo: Footer, wide banner sections, or login pages
-  <img src="${imageData}" alt="Brand Logo Horizontal" style="height: 32px; width: auto;">`
-  } else if (variant === 'icon') {
-    return `- Icon Logo: Favicon, mobile menu, compact spaces, loading screens
-  <img src="${imageData}" alt="Brand Icon" style="height: 24px; width: 24px;">`
-  } else if (variant === 'monochrome') {
-    return `- Monochrome Logo: Dark backgrounds, print sections, watermarks
-  <img src="${imageData}" alt="Brand Logo Monochrome" style="height: 36px; width: auto;">`
-  } else {
-    return `- ${variant.charAt(0).toUpperCase() + variant.slice(1)} Logo: Use in ${variant} sections
-  <img src="${imageData}" alt="Brand Logo ${variant}" style="height: 36px; width: auto;">`
-  }
-}).join('\n') : '- No extracted logos available, use text-based brand representation'}
+LOGO INTEGRATION WITH PLACEHOLDERS:
+- Primary Logo: Main header/navigation area
+  <div class="logo-placeholder primary-logo" style="height: 40px; width: 120px; background: linear-gradient(45deg, ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}, ${(brandGuidelines.colors?.accent || [])[0] || '#FFC72C'}); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">[LOGO]</div>
 
-IMPLEMENT MULTIPLE LOGO PLACEMENTS:
-1. Header Navigation: Use primary logo
-2. Footer Section: Use horizontal or primary logo variant
-3. Loading/Error States: Use icon logo if available
-4. Mobile Menu: Use icon or compact logo variant
-5. Print Sections: Use monochrome variant if available
-6. Background Watermarks: Use faded logo variants
-7. Brand Sections: Use appropriate logo based on context and background
+- Horizontal Logo: Footer, wide banner sections
+  <div class="logo-placeholder horizontal-logo" style="height: 32px; width: 160px; background: ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">[BRAND NAME]</div>
+
+- Icon Logo: Favicon, mobile menu, compact spaces
+  <div class="logo-placeholder icon-logo" style="height: 24px; width: 24px; background: ${(brandGuidelines.colors?.accent || [])[0] || '#FFC72C'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">B</div>
+
+- Text Logo: Use brand typography and colors for text-based branding
+  <div class="text-logo" style="font-family: ${(brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0]) || 'system-ui, sans-serif'}; color: ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}; font-weight: bold; font-size: 24px;">BRAND</div>
+
+IMPLEMENT MULTIPLE LOGO PLACEMENTS WITH PLACEHOLDERS:
+1. Header Navigation: Use primary logo placeholder with brand colors
+2. Footer Section: Use horizontal brand name placeholder
+3. Loading/Error States: Use icon logo placeholder (circular)
+4. Mobile Menu: Use compact icon placeholder
+5. Content Sections: Use text logo with brand typography
+6. Background Watermarks: Use faded brand elements
+7. All Images: Use placeholder divs with appropriate dimensions and brand colors
 
 Return HTML and CSS in this exact format:
 
@@ -305,8 +298,8 @@ Return HTML and CSS in this exact format:
 
 
 ===BRAND_NOTES===
-- Applied primary brand color: ${brandGuidelines.colors.primary[0]}
-- Used brand typography: ${brandGuidelines.typography.fonts[0]}
+- Applied primary brand color: ${(brandGuidelines.colors?.primary || [])[0] || 'brand primary color'}
+- Used brand typography: ${(brandGuidelines.typography?.fonts || [])[0] || 'brand typography'}
 - Implemented responsive design with brand guidelines`;
     }
 
@@ -379,12 +372,12 @@ Return HTML and CSS in this exact format:
         pageContent: any,
         brandGuidelines: BrandGuideline,
     ): string {
-        const primaryColor = brandGuidelines.colors.primary[0] || "#DA291C";
-        const accentColor = brandGuidelines.colors.accent[0] || "#FFC72C";
-        const secondaryColor = brandGuidelines.colors.secondary[0] || "#264A2B";
-        const neutralColor = brandGuidelines.colors.neutral[0] || "#f8fafc";
+        const primaryColor = (brandGuidelines.colors?.primary || [])[0] || "#DA291C";
+        const accentColor = (brandGuidelines.colors?.accent || [])[0] || "#FFC72C";
+        const secondaryColor = (brandGuidelines.colors?.secondary || [])[0] || "#264A2B";
+        const neutralColor = (brandGuidelines.colors?.neutral || [])[0] || "#f8fafc";
         const brandFont =
-            brandGuidelines.typography.fonts[0] || "Helvetica Neue";
+            (brandGuidelines.typography?.fonts || [])[0] || "Helvetica Neue";
 
         // Calculate proper text colors based on background contrast
         const getContrastColor = (backgroundColor: string): string => {
