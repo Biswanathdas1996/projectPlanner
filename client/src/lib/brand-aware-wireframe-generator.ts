@@ -116,7 +116,7 @@ export class BrandAwareWireframeGenerator {
                 ? `Stakeholders: ${pageContent.stakeholders.join(", ")}`
                 : "";
 
-        return `Create a professional wireframe for "${pageContent.pageName}" using the following brand guidelines and EXACT page content.
+        return `Create a professional, realistic web page wireframe for "${pageContent.pageName}" that organizes content in a logical, user-friendly layout.
 
 BRAND GUIDELINES TO APPLY:
 - Primary Color: ${brandGuidelines.colors.primary[0] || "#DA291C"}
@@ -126,10 +126,12 @@ BRAND GUIDELINES TO APPLY:
 - Design Style: ${designStyle}
 - Device Type: ${deviceType}
 
-COMPLETE PAGE CONTENT TO INCLUDE (USE ALL OF THIS CONTENT):
-- Page Title: ${pageContent.pageName}
-- Page Purpose: ${pageContent.purpose}
-${stakeholdersSection}
+PAGE CONTEXT & PURPOSE:
+- Page Type: ${pageContent.pageType || "Web Application Page"}
+- Main Purpose: ${pageContent.purpose}
+- Target Users: ${pageContent.stakeholders?.join(", ") || "General users"}
+
+CONTENT TO ORGANIZE INTO LOGICAL SECTIONS:
 ${headersSection}
 ${textContentSection}
 ${buttonsSection}
@@ -138,21 +140,59 @@ ${listsSection}
 ${navigationSection}
 ${additionalContentSection}
 
-REQUIREMENTS:
-1. Include ALL content sections mentioned above - do not omit any
-2. Apply brand colors consistently throughout, do not use any color gradient / any color that is not in the brand guidelines.
-3. Use the specified typography
-4. Make it responsive and modern 
-5. Ensure all interactive elements are styled with brand colors
-6. Include proper spacing and layout following brand guidelines
-7. Ensure the design is brand compliant and follows all brand guidelines
-8. color gradient should not be used for any elemnts like buttons, cards etc.
-9. use infographics to make the design more engaging
-10. PROPER COLOR CONTRAST: Ensure text is readable on all backgrounds:
-    - Dark brand colors (like ${brandGuidelines.colors.primary[0]}) require white or light text
-    - Light brand colors (like ${brandGuidelines.colors.accent[0]}) require dark text
-    - Calculate luminance: if background luminance > 0.5 use dark text (#333), else use white text
-    - Apply contrast rules to buttons, badges, cards, and all colored elements
+LAYOUT REQUIREMENTS:
+- Create a realistic web page structure with proper information hierarchy
+- Organize content into logical sections that flow naturally
+- Place navigation elements appropriately (header/sidebar)
+- Group related functionality together
+- Design forms as functional input areas, not just lists
+- Make buttons actionable and contextually placed
+- Structure lists as meaningful data displays
+- Create a cohesive user experience that serves the page purpose
+
+WIREFRAME DESIGN REQUIREMENTS:
+1. REALISTIC LAYOUT: Create a logical web page structure that serves the actual purpose
+   - Use proper header with navigation and branding
+   - Organize content in meaningful sections with clear hierarchy
+   - Place forms in appropriate contexts (not just as lists)
+   - Group related buttons and actions logically
+   - Structure data/lists as functional components (tables, cards, dashboards)
+
+2. CONTENT ORGANIZATION: Transform raw content into proper web elements
+   - Headers become section titles and page structure
+   - Text content becomes explanatory copy, descriptions, and help text
+   - Buttons become actionable CTAs in logical positions
+   - Forms become functional input areas with proper labels and flow
+   - Lists become data displays, menus, or feature highlights
+   - Navigation becomes actual site navigation structure
+
+3. USER EXPERIENCE FLOW: Design for real user interactions
+   - Create logical task flows based on page purpose
+   - Place primary actions prominently
+   - Support secondary actions appropriately
+   - Provide clear information hierarchy
+   - Include status indicators and feedback elements
+
+4. TECHNICAL REQUIREMENTS:
+   - Include ALL content sections mentioned above - do not omit any
+   - Apply brand colors consistently throughout, no gradients
+   - Use specified typography with proper hierarchy
+   - Make it responsive and modern
+   - Ensure proper color contrast for accessibility
+   - Include engaging infographic elements
+   - Apply brand guidelines consistently
+
+5. REAL-WORLD FUNCTIONALITY: Design as if this were a production website
+   - Forms should have proper validation states
+   - Buttons should indicate their specific functions
+   - Navigation should reflect actual site structure
+   - Content should be organized for easy scanning and comprehension
+
+Create a realistic, functional web page layout that a real user would encounter. Examples:
+- Appointment scheduling should have a calendar interface, time slots, and booking forms
+- Video call pages should show connection status, participant info, and call controls  
+- Dashboard pages should display key metrics, quick actions, and data summaries
+- E-commerce should show products, filters, shopping cart, and checkout flow
 
 Return HTML and CSS in this exact format:
 
@@ -168,7 +208,7 @@ Return HTML and CSS in this exact format:
     </style>
 </head>
 <body>
-    [Complete HTML structure with ALL content sections from above]
+    [Complete realistic web page structure organizing ALL content into logical, functional sections]
 </body>
 </html>
 
@@ -276,6 +316,12 @@ Return HTML and CSS in this exact format:
         const accentTextColor = getContrastColor(accentColor);
         const secondaryTextColor = getContrastColor(secondaryColor);
         const neutralTextColor = getContrastColor(neutralColor);
+
+        // Determine page type and create appropriate layout structure
+        const isAppointmentPage = pageContent.pageName.toLowerCase().includes('appointment') || pageContent.pageName.toLowerCase().includes('scheduling');
+        const isVideoCallPage = pageContent.pageName.toLowerCase().includes('video') || pageContent.pageName.toLowerCase().includes('call') || pageContent.pageName.toLowerCase().includes('telemedicine');
+        const isDashboardPage = pageContent.pageName.toLowerCase().includes('dashboard') || pageContent.pageName.toLowerCase().includes('overview');
+        const isFormPage = pageContent.forms && pageContent.forms.length > 0;
 
         return `<!DOCTYPE html>
 <html lang="en">
@@ -641,20 +687,44 @@ Return HTML and CSS in this exact format:
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="page-header">
-            <h1>${pageContent.pageName}</h1>
-            <p class="purpose">${pageContent.purpose}</p>
-            ${
-                pageContent.stakeholders && pageContent.stakeholders.length > 0
-                    ? `
-            <div class="stakeholders">
-                ${pageContent.stakeholders.map((stakeholder: string) => `<span class="stakeholder-badge">${stakeholder}</span>`).join("")}
+    <!-- Top Navigation -->
+    <nav style="background: white; border-bottom: 2px solid ${accentColor}; padding: 15px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div style="width: 40px; height: 40px; background: ${primaryColor}; color: ${primaryTextColor}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+                    ${pageContent.pageName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                    <h1 style="color: ${primaryColor}; font-size: 1.4rem; margin: 0; font-weight: 700;">${pageContent.pageName}</h1>
+                    <p style="color: #64748b; font-size: 0.85rem; margin: 0;">${pageContent.pageType || 'Application'}</p>
+                </div>
             </div>
-            `
-                    : ""
-            }
-        </header>
+            ${pageContent.navigation && pageContent.navigation.length > 0 ? `
+            <div style="display: flex; gap: 5px;">
+                ${pageContent.navigation.slice(0, 4).map((nav: string) => `
+                    <a href="#" style="color: ${primaryColor}; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; transition: all 0.3s ease; font-size: 0.9rem;" 
+                       onmouseover="this.style.background='${accentColor}'; this.style.color='${accentTextColor}'" 
+                       onmouseout="this.style.background=''; this.style.color='${primaryColor}'">${nav}</a>
+                `).join('')}
+            </div>
+            ` : ''}
+        </div>
+    </nav>
+
+    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+        <!-- Page Header Section -->
+        <section style="background: linear-gradient(135deg, white 0%, ${neutralColor} 100%); padding: 40px; border-radius: 16px; margin-bottom: 30px; text-align: center; position: relative; border: 1px solid #e2e8f0;">
+            <h1 style="color: ${primaryColor}; font-size: 2.5rem; font-weight: 700; margin-bottom: 15px;">${pageContent.pageName}</h1>
+            <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">${pageContent.purpose}</p>
+            ${pageContent.stakeholders && pageContent.stakeholders.length > 0 ? `
+            <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
+                <span style="color: #64748b; font-size: 0.9rem; font-weight: 500;">For:</span>
+                ${pageContent.stakeholders.map((stakeholder: string) => `
+                    <span style="background: ${accentColor}; color: ${accentTextColor}; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">${stakeholder}</span>
+                `).join('')}
+            </div>
+            ` : ''}
+        </section>
         
         ${
             pageContent.headers && pageContent.headers.length > 0
@@ -717,28 +787,44 @@ Return HTML and CSS in this exact format:
         ${
             pageContent.forms && pageContent.forms.length > 0
                 ? `
-        <section class="content-section">
-            <h2>Forms</h2>
+        <!-- Interactive Forms Section -->
+        <section style="display: grid; grid-template-columns: ${pageContent.forms.length > 1 ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr'}; gap: 30px; margin-bottom: 30px;">
             ${pageContent.forms
                 .map(
-                    (form: any) => `
-                <div class="form-container">
-                    <h3 style="margin-bottom: 20px;">${form.title || form}</h3>
-                    ${
-                        form.fields
-                            ? form.fields
-                                  .map(
-                                      (field: string) => `
-                        <div class="form-group">
-                            <label>${field}</label>
-                            <input type="text" placeholder="Enter ${field}">
+                    (form: any, formIdx: number) => `
+                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px;">
+                        <div style="width: 35px; height: 35px; background: ${primaryColor}; color: ${primaryTextColor}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                            ${formIdx + 1}
                         </div>
-                    `,
-                                  )
-                                  .join("")
-                            : ""
-                    }
-                    <button class="btn">Submit ${form.title || "Form"}</button>
+                        <div>
+                            <h3 style="color: ${primaryColor}; margin: 0; font-size: 1.3rem; font-weight: 600;">${form.title || form}</h3>
+                            <p style="color: #64748b; font-size: 0.9rem; margin: 0;">Complete the information below</p>
+                        </div>
+                    </div>
+                    <div style="display: grid; gap: 20px;">
+                        ${
+                            form.fields
+                                ? form.fields
+                                      .map(
+                                          (field: string, fieldIdx: number) => `
+                            <div style="position: relative;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: ${primaryColor}; font-size: 0.9rem;">${field} ${fieldIdx < 2 ? '<span style="color: #ef4444;">*</span>' : ''}</label>
+                                <input type="${field.toLowerCase().includes('email') ? 'email' : field.toLowerCase().includes('phone') ? 'tel' : field.toLowerCase().includes('date') || field.toLowerCase().includes('time') ? 'datetime-local' : 'text'}" 
+                                       placeholder="Enter your ${field.toLowerCase()}" 
+                                       style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: all 0.3s ease;"
+                                       onfocus="this.style.borderColor='${accentColor}'; this.style.boxShadow='0 0 0 3px ${accentColor}33'"
+                                       onblur="this.style.borderColor='#e2e8f0'; this.style.boxShadow='none'">
+                            </div>
+                        `,
+                                      )
+                                      .join("")
+                                : ""
+                        }
+                        <button style="background: ${primaryColor}; color: ${primaryTextColor}; padding: 15px 25px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;"
+                                onmouseover="this.style.background='${secondaryColor}'; this.style.color='${secondaryTextColor}'; this.style.transform='translateY(-2px)'"
+                                onmouseout="this.style.background='${primaryColor}'; this.style.color='${primaryTextColor}'; this.style.transform='translateY(0)'">${form.submitAction || 'Submit ' + (form.title || 'Form')}</button>
+                    </div>
                 </div>
             `,
                 )
@@ -751,34 +837,54 @@ Return HTML and CSS in this exact format:
         ${
             pageContent.lists && pageContent.lists.length > 0
                 ? `
-        <section class="content-section">
-            <h2>📋 Data & Lists</h2>
-            <div class="stats-container">
-                <div class="stat-item">
-                    <span class="stat-number">${pageContent.lists.length}</span>
-                    <div class="stat-label">Data Sets</div>
+        <!-- Data Dashboard Section -->
+        <section style="margin-bottom: 30px;">
+            <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="color: ${primaryColor}; margin: 0; font-size: 1.5rem; font-weight: 600;">📊 Data Overview</h2>
+                    <div style="display: flex; gap: 20px;">
+                        <div style="text-align: center; padding: 15px; background: ${accentColor}; color: ${accentTextColor}; border-radius: 8px; min-width: 100px;">
+                            <div style="font-size: 1.8rem; font-weight: bold;">${pageContent.lists.length}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Categories</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: ${primaryColor}; color: ${primaryTextColor}; border-radius: 8px; min-width: 100px;">
+                            <div style="font-size: 1.8rem; font-weight: bold;">${pageContent.lists.reduce((total: number, list: any) => total + (list.items ? list.items.length : 0), 0)}</div>
+                            <div style="font-size: 0.8rem; opacity: 0.9;">Total Items</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <span class="stat-number">${pageContent.lists.reduce((total: number, list: any) => total + (list.items ? list.items.length : 0), 0)}</span>
-                    <div class="stat-label">Total Items</div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+                    ${pageContent.lists
+                        .map(
+                            (list: any, idx: number) => `
+                        <div style="border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: ${neutralColor};">
+                            <div style="background: ${primaryColor}; color: ${primaryTextColor}; padding: 15px; display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 30px; height: 30px; background: ${accentColor}; color: ${accentTextColor}; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem;">
+                                    ${idx + 1}
+                                </div>
+                                <h3 style="margin: 0; font-size: 1.1rem; font-weight: 600;">${list.title || list}</h3>
+                                <span style="margin-left: auto; background: ${accentColor}; color: ${accentTextColor}; padding: 4px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                                    ${list.items ? list.items.length : 0} items
+                                </span>
+                            </div>
+                            <div style="padding: 20px;">
+                                ${list.items ? list.items.map((item: string, itemIdx: number) => `
+                                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; background: white; border-radius: 6px; border-left: 3px solid ${accentColor}; transition: all 0.3s ease;"
+                                         onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
+                                         onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
+                                        <div style="width: 8px; height: 8px; background: ${primaryColor}; border-radius: 50%; flex-shrink: 0;"></div>
+                                        <span style="color: #374151; font-weight: 500;">${item}</span>
+                                        <span style="margin-left: auto; color: #9ca3af; font-size: 0.8rem;">#${itemIdx + 1}</span>
+                                    </div>
+                                `).join("") : '<p style="color: #9ca3af; text-align: center; padding: 20px;">No items available</p>'}
+                            </div>
+                        </div>
+                    `,
+                        )
+                        .join("")}
                 </div>
             </div>
-            <div class="visual-separator"></div>
-            ${pageContent.lists
-                .map(
-                    (list: any, idx: number) => `
-                <div class="list-container">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div class="info-icon" style="background: ${primaryColor}; color: ${primaryTextColor}; width: 30px; height: 30px; font-size: 0.9rem;">
-                            ${idx + 1}
-                        </div>
-                        <h3 style="margin: 0;">${list.title || list}</h3>
-                    </div>
-                    ${list.items ? `<ul>${list.items.map((item: string) => `<li>${item}</li>`).join("")}</ul>` : ""}
-                </div>
-            `,
-                )
-                .join("")}
         </section>
         `
                 : ""
