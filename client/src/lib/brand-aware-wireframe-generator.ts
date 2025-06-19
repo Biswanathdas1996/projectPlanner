@@ -116,13 +116,36 @@ export class BrandAwareWireframeGenerator {
                 ? `Stakeholders: ${pageContent.stakeholders.join(", ")}`
                 : "";
 
-        return `Create a professional, realistic web page wireframe for "${pageContent.pageName}" that organizes content in a logical, user-friendly layout.
+        return `Create a professional, brand-compliant web page wireframe for "${pageContent.pageName}" using comprehensive brand guidelines.
 
-BRAND GUIDELINES TO APPLY:
-- Primary Color: ${brandGuidelines.colors.primary[0] || "#DA291C"}
-- Secondary Color: ${brandGuidelines.colors.secondary[0] || "#264A2B"}
-- Accent Color: ${brandGuidelines.colors.accent[0] || "#FFC72C"}
-- Typography: ${brandGuidelines.typography.fonts[0] || "Helvetica Neue"}
+ENHANCED BRAND GUIDELINES TO APPLY:
+COLORS:
+- Primary: ${brandGuidelines.colors.primary.join(", ")}
+- Secondary: ${brandGuidelines.colors.secondary.join(", ")}
+- Accent: ${brandGuidelines.colors.accent.join(", ")}
+- Text Colors: ${brandGuidelines.colors.text.join(", ")}
+- Background: ${brandGuidelines.colors.background.join(", ")}
+- State Colors - Error: ${brandGuidelines.colors.error.join(", ")}, Success: ${brandGuidelines.colors.success.join(", ")}, Warning: ${brandGuidelines.colors.warning.join(", ")}
+
+TYPOGRAPHY:
+- Fonts: ${brandGuidelines.typography.fonts.join(", ")}
+- Sizes: ${brandGuidelines.typography.sizes.join(", ")}
+- Weights: ${brandGuidelines.typography.weights.join(", ")}
+- Line Heights: ${brandGuidelines.typography.lineHeights.join(", ")}
+
+LOGO & BRANDING:
+- Primary Logo: ${brandGuidelines.logos.primary}
+- Logo Variations: ${brandGuidelines.logos.variations.join(", ")}
+- Size Requirements: ${brandGuidelines.logos.sizes.join(", ")}
+- Spacing: ${brandGuidelines.logos.spacing.join(", ")}
+- Color Options: ${brandGuidelines.logos.colors.join(", ")}
+
+ACCESSIBILITY:
+- Contrast Standards: ${brandGuidelines.accessibility.contrast.join(", ")}
+- Compliance: ${brandGuidelines.accessibility.compliance.join(", ")}
+
+BRAND VALUES: ${brandGuidelines.brandValues.join(", ")}
+DESIGN PRINCIPLES: ${brandGuidelines.designPrinciples.join(", ")}
 - Design Style: ${designStyle}
 - Device Type: ${deviceType}
 

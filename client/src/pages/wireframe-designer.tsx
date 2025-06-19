@@ -4369,10 +4369,10 @@ ${selectedPageCode.jsCode}
                 </div>
                 
                 {brandGuidelines && (
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-3 border-t">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
                     <div className="text-center p-2 bg-white/60 rounded-lg">
-                      <div className="text-xs text-gray-500">Primary Colors</div>
-                      <div className="text-sm font-medium">{brandGuidelines.colors.primary.length}</div>
+                      <div className="text-xs text-gray-500">Colors</div>
+                      <div className="text-sm font-medium">{brandGuidelines.colors.primary.length + brandGuidelines.colors.text.length}</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Typography</div>
@@ -4381,6 +4381,10 @@ ${selectedPageCode.jsCode}
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Components</div>
                       <div className="text-sm font-medium">{Object.keys(brandGuidelines.components).length} types</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Logo Info</div>
+                      <div className="text-sm font-medium">{brandGuidelines.logos.variations.length} variants</div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Brand Voice</div>
@@ -4612,12 +4616,40 @@ ${selectedPageCode.jsCode}
                         </div>
                       </div>
                       <div>
+                        <h4 className="font-medium text-sm mb-2">Text Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.colors.text.map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
                         <h4 className="font-medium text-sm mb-2">Accent Colors</h4>
                         <div className="flex flex-wrap gap-2">
                           {brandGuidelines.colors.accent.map((color, index) => (
                             <div key={index} className="flex items-center gap-1">
                               <div 
                                 className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Background Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.colors.background.map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border border-gray-300"
                                 style={{ backgroundColor: color }}
                               ></div>
                               <span className="text-xs font-mono">{color}</span>
@@ -4702,6 +4734,53 @@ ${selectedPageCode.jsCode}
                     </CardContent>
                   </Card>
 
+                  {/* Logo Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-400 to-red-500"></div>
+                        Logo Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Logo</h4>
+                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                          {brandGuidelines.logos.primary}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Variations</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.logos.variations.map((variation, index) => (
+                            <Badge key={index} variant="outline">{variation}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Usage Rules</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.logos.usage.map((rule, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {rule}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Size & Spacing</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Min Size</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos.sizes[0] || "24px"}</div>
+                          </div>
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Clearance</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos.spacing[0] || "20px"}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
                   {/* Brand Voice & Personality */}
                   <Card>
                     <CardHeader>
@@ -4735,16 +4814,83 @@ ${selectedPageCode.jsCode}
                           ))}
                         </div>
                       </div>
+                      {brandGuidelines.tone.doAndDont && brandGuidelines.tone.doAndDont.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Communication Guidelines</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.tone.doAndDont.map((guideline, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {guideline}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Brand Values & Accessibility */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-blue-500"></div>
+                        Brand Values
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {brandGuidelines.brandValues.map((value, index) => (
+                          <Badge key={index} className="bg-green-100 text-green-800">{value}</Badge>
+                        ))}
+                      </div>
+                      {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.designPrinciples.map((principle, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {principle}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Accessibility
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Contrast Requirements</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.accessibility.contrast.map((contrast, index) => (
+                            <Badge key={index} variant="secondary">{contrast}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Compliance Standards</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.accessibility.compliance.map((standard, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {standard}</div>
+                          ))}
+                        </div>
+                      </div>
                     </CardContent>
                   </Card>
                 </div>
 
                 <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                  <h4 className="font-medium text-green-800 mb-2">Brand Integration Status</h4>
+                  <h4 className="font-medium text-green-800 mb-2">Enhanced Brand Integration Status</h4>
                   <p className="text-sm text-green-700">
-                    Your brand guidelines have been successfully extracted and will be applied to all generated wireframes. 
-                    The AI will use your specific colors, typography, spacing, and design principles to create wireframes 
-                    that perfectly match your brand identity.
+                    Comprehensive brand guidelines extracted including text colors, logo specifications, accessibility requirements, 
+                    and brand values. The AI will use all extracted elements including {brandGuidelines.colors.text.length} text colors, 
+                    {brandGuidelines.logos.variations.length} logo variations, and {brandGuidelines.accessibility.contrast.length} contrast requirements 
+                    to create wireframes that perfectly match your brand identity.
                   </p>
                 </div>
               </div>

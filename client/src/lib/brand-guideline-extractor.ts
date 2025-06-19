@@ -215,17 +215,33 @@ Return this exact JSON structure with enhanced color and logo information:
   "imagery": {
     "style": "modern and clean",
     "guidelines": ["high quality", "consistent"],
-    "restrictions": ["no low quality", "brand consistent"]
+    "restrictions": ["no low quality", "brand consistent"],
+    "aspectRatios": ["16:9", "4:3", "1:1"],
+    "treatments": ["original", "filtered", "branded"]
   },
   "tone": {
     "personality": ["professional", "approachable"],
     "voice": ["clear", "authoritative"],
-    "messaging": ["trustworthy", "accessible"]
+    "messaging": ["trustworthy", "accessible"],
+    "doAndDont": ["be clear and concise", "avoid jargon"]
   },
   "logos": {
+    "primary": "Main brand logo description",
     "usage": ["proper spacing", "correct colors"],
     "restrictions": ["no distortion", "minimum size"],
-    "variations": ["horizontal", "vertical"]
+    "variations": ["horizontal", "vertical"],
+    "spacing": ["minimum 20px clearance"],
+    "colors": ["full color", "monochrome"],
+    "sizes": ["minimum 24px height"],
+    "formats": ["SVG", "PNG", "JPG"]
+  },
+  "brandValues": ["innovation", "quality", "trust"],
+  "logoUsage": ["maintain proportions", "use appropriate backgrounds"],
+  "designPrinciples": ["simplicity", "consistency", "accessibility"],
+  "accessibility": {
+    "contrast": ["4.5:1 minimum", "7:1 preferred"],
+    "guidelines": ["WCAG 2.1 AA compliance"],
+    "compliance": ["color contrast", "keyboard navigation"]
   }
 }`;
 
@@ -325,7 +341,7 @@ Return this exact JSON structure with enhanced color and logo information:
 
   generateBrandCSS(guidelines: BrandGuideline): string {
     return `
-/* Brand Guidelines CSS */
+/* Enhanced Brand Guidelines CSS */
 :root {
   /* Primary Colors */
   --brand-primary-1: ${guidelines.colors.primary[0] || '#2563eb'};
@@ -334,6 +350,21 @@ Return this exact JSON structure with enhanced color and logo information:
   /* Secondary Colors */
   --brand-secondary-1: ${guidelines.colors.secondary[0] || '#64748b'};
   --brand-secondary-2: ${guidelines.colors.secondary[1] || '#475569'};
+  
+  /* Text Colors */
+  --brand-text-primary: ${guidelines.colors.text[0] || '#1f2937'};
+  --brand-text-secondary: ${guidelines.colors.text[1] || '#374151'};
+  --brand-text-muted: ${guidelines.colors.text[2] || '#6b7280'};
+  
+  /* Background Colors */
+  --brand-bg-primary: ${guidelines.colors.background[0] || '#ffffff'};
+  --brand-bg-secondary: ${guidelines.colors.background[1] || '#f9fafb'};
+  --brand-bg-tertiary: ${guidelines.colors.background[2] || '#f3f4f6'};
+  
+  /* State Colors */
+  --brand-error: ${guidelines.colors.error[0] || '#dc2626'};
+  --brand-success: ${guidelines.colors.success[0] || '#16a34a'};
+  --brand-warning: ${guidelines.colors.warning[0] || '#d97706'};
   
   /* Accent Colors */
   --brand-accent-1: ${guidelines.colors.accent[0] || '#dc2626'};
