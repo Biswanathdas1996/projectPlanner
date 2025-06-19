@@ -338,12 +338,36 @@ Primary: ${primaryColors.join(", ")}
 Accent: ${accentColors.join(", ")}
 Neutral: #f8fafc, #e2e8f0, #64748b, #1e293b
 
-TYPOGRAPHY:
-Primary Font: Inter, system-ui, sans-serif
-Secondary Font: -apple-system, BlinkMacSystemFont, Segoe UI
-Weights: 400, 500, 600, 700
-Heading Styles: Bold, Clean, High Contrast
-Body Styles: Regular, Readable, Professional
+TYPOGRAPHY & FONT FAMILIES - COMPREHENSIVE SPECIFICATIONS:
+FONT FAMILIES:
+- Primary Font Family: Inter, system-ui, -apple-system, sans-serif
+- Secondary Font Family: Georgia, Times New Roman, serif
+- Heading Font Family: Inter, Helvetica Neue, Arial, sans-serif
+- Body Font Family: system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif
+- Monospace Font Family: Menlo, Monaco, Consolas, Liberation Mono, monospace
+
+FONT WEIGHTS:
+- Light: 300
+- Regular: 400
+- Medium: 500
+- Semibold: 600
+- Bold: 700
+
+FONT SIZES:
+- Extra Small: 12px
+- Small: 14px
+- Base: 16px
+- Large: 18px
+- Extra Large: 20px
+- 2XL: 24px
+- 3XL: 32px
+- 4XL: 40px
+
+TYPOGRAPHY STYLES:
+- Heading Styles: Bold weight, clean lines, high contrast, proper hierarchy
+- Body Styles: Regular weight, readable line height, professional appearance
+- Caption Styles: Smaller size, medium weight, subtle color
+- Link Styles: Brand color, underline on hover, proper contrast
 
 LAYOUT:
 Grid: 12-column responsive
