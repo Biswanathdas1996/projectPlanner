@@ -48,6 +48,8 @@ import {
   Paintbrush,
   Frame,
   Component,
+  Globe,
+  Code,
   Users,
   ShoppingCart,
   Calendar,
@@ -241,6 +243,8 @@ export default function WireframeDesigner() {
   const [brandExtractionError, setBrandExtractionError] = useState<string>('');
   const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
   const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
+  const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{ html: string; css: string; js: string } | null>(null);
 
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
@@ -3730,88 +3734,7 @@ ${selectedPageCode.jsCode}
               ))}
             </div>
             
-            {/* Wireframe Generation Options */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-              <h3 className="text-lg font-semibold mb-4">Wireframe Generation Options</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {/* Device Type Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Device Type</Label>
-                  <Select value={selectedDeviceType} onValueChange={(value: 'mobile' | 'tablet' | 'desktop') => setSelectedDeviceType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mobile">Mobile (375px)</SelectItem>
-                      <SelectItem value="tablet">Tablet (768px)</SelectItem>
-                      <SelectItem value="desktop">Desktop (1200px)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Color Scheme Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Color Scheme</Label>
-                  <Select value={selectedColorScheme} onValueChange={setSelectedColorScheme}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="modern-blue">Modern Blue</SelectItem>
-                      <SelectItem value="professional-gray">Professional Gray</SelectItem>
-                      <SelectItem value="vibrant-green">Vibrant Green</SelectItem>
-                      <SelectItem value="elegant-purple">Elegant Purple</SelectItem>
-                      <SelectItem value="warm-orange">Warm Orange</SelectItem>
-                      <SelectItem value="corporate-navy">Corporate Navy</SelectItem>
-                      <SelectItem value="minimalist-black">Minimalist Black</SelectItem>
-                      <SelectItem value="fresh-teal">Fresh Teal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Design Type Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Design Type</Label>
-                  <Select value={selectedDesignType} onValueChange={setSelectedDesignType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="simple">Simple & Clean</SelectItem>
-                      <SelectItem value="modern">Modern & Trendy</SelectItem>
-                      <SelectItem value="corporate">Corporate & Formal</SelectItem>
-                      <SelectItem value="professional">Professional & Polished</SelectItem>
-                      <SelectItem value="creative">Creative & Artistic</SelectItem>
-                      <SelectItem value="minimal">Minimal & Elegant</SelectItem>
-                      <SelectItem value="bold">Bold & Dynamic</SelectItem>
-                      <SelectItem value="classic">Classic & Traditional</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Generate Wireframes Button */}
-              <div className="flex justify-center pt-4 border-t border-gray-200">
-                <Button
-                  onClick={handleGenerateWireframes}
-                  disabled={isGeneratingWireframes || pageContentCards.length === 0}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  {isGeneratingWireframes ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Generating Wireframes...
-                    </>
-                  ) : (
-                    <>
-                      <Frame className="h-5 w-5 mr-2" />
-                      Generate Wireframes ({pageContentCards.length})
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
+            
           </div>
         )}
 
@@ -3927,6 +3850,25 @@ ${selectedPageCode.jsCode}
                         <>
                           <Sparkles className="h-4 w-4 mr-1" />
                           Generate Brand Wireframes
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={generateUnifiedHTML}
+                      disabled={!brandGuidelines || isGeneratingUnifiedHTML}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      size="sm"
+                    >
+                      {isGeneratingUnifiedHTML ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="h-4 w-4 mr-1" />
+                          Generate Unified HTML
                         </>
                       )}
                     </Button>
