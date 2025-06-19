@@ -4745,16 +4745,45 @@ ${selectedPageCode.jsCode}
                     <CardContent className="space-y-3">
                       <div>
                         <h4 className="font-medium text-sm mb-2">Primary Logo</h4>
-                        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
-                          {brandGuidelines.logos.primary}
-                        </div>
+                        {brandGuidelines.logos.images?.primary ? (
+                          <div className="bg-gray-50 p-3 rounded border">
+                            <img 
+                              src={brandGuidelines.logos.images.primary} 
+                              alt="Extracted Brand Logo" 
+                              className="max-h-16 w-auto mx-auto mb-2"
+                            />
+                            <div className="text-xs text-green-600 text-center">✓ Logo extracted from PDF</div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                            {brandGuidelines.logos.primary}
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h4 className="font-medium text-sm mb-2">Variations</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(brandGuidelines.logos?.variations || []).map((variation, index) => (
-                            <Badge key={index} variant="outline">{variation}</Badge>
-                          ))}
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {(brandGuidelines.logos?.variations || []).map((variation, index) => (
+                              <Badge key={index} variant="outline">{variation}</Badge>
+                            ))}
+                          </div>
+                          {brandGuidelines.logos.images && Object.keys(brandGuidelines.logos.images).length > 1 && (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                              {Object.entries(brandGuidelines.logos.images).map(([type, imageData], index) => (
+                                type !== 'primary' && imageData && (
+                                  <div key={index} className="bg-gray-50 p-2 rounded border text-center">
+                                    <img 
+                                      src={imageData} 
+                                      alt={`${type} logo variant`} 
+                                      className="max-h-8 w-auto mx-auto mb-1"
+                                    />
+                                    <div className="text-xs text-gray-500 capitalize">{type}</div>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div>
@@ -4887,11 +4916,27 @@ ${selectedPageCode.jsCode}
                 <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
                   <h4 className="font-medium text-green-800 mb-2">Enhanced Brand Integration Status</h4>
                   <p className="text-sm text-green-700">
-                    Comprehensive brand guidelines extracted including text colors, logo specifications, accessibility requirements, 
+                    Comprehensive brand guidelines extracted including text colors, {brandGuidelines.logos?.images?.primary ? 'authentic logo images' : 'logo specifications'}, accessibility requirements, 
                     and brand values. The AI will use all extracted elements including {brandGuidelines.colors?.text?.length || 0} text colors, 
-                    {brandGuidelines.logos?.variations?.length || 0} logo variations, and {brandGuidelines.accessibility?.contrast?.length || 0} contrast requirements 
+                    {brandGuidelines.logos?.variations?.length || 0} logo variations, {brandGuidelines.accessibility?.contrast?.length || 0} contrast requirements
+                    {brandGuidelines.logos?.images?.primary ? ', and extracted logo images' : ''} 
                     to create wireframes that perfectly match your brand identity.
                   </p>
+                  {brandGuidelines.logos?.images?.primary && (
+                    <div className="mt-3 p-3 bg-white rounded border border-green-300">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={brandGuidelines.logos.images.primary} 
+                          alt="Extracted Brand Logo" 
+                          className="h-8 w-auto"
+                        />
+                        <div className="text-sm text-green-700">
+                          <div className="font-medium">Authentic Logo Extracted</div>
+                          <div className="text-xs">Logo will be used in generated wireframes for authentic brand representation</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

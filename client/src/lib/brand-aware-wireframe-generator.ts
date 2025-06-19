@@ -201,6 +201,7 @@ WIREFRAME DESIGN REQUIREMENTS:
    - Include ALL content sections mentioned above - do not omit any
    - Apply brand colors consistently throughout, no gradients
    - Use specified typography with proper hierarchy
+   ${brandGuidelines.logos.images?.primary ? `- Include authentic logo in header/navigation: <img src="${brandGuidelines.logos.images.primary}" alt="Brand Logo" style="height: 40px; width: auto;">` : '- Include brand logo placeholder in header following specifications'}
    - Make it responsive and modern
    - Ensure proper color contrast for accessibility
    - Include engaging infographic elements
