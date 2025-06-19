@@ -964,12 +964,23 @@ export default function WireframeDesigner() {
       const extractor = createBrandGuidelineExtractor();
       const guidelines = await extractor.extractFromPDF(file);
       
+      // Generate a name for the brand guidelines based on file name
+      const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      // Save to local storage with proper metadata
+      const storedGuideline = BrandGuidelinesStorage.save(guidelines, guidelineName, file.name);
+      
+      // Update state
       setBrandGuidelines(guidelines);
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      setSelectedStoredGuideline(storedGuideline.id);
+      
+      // Keep legacy localStorage for backward compatibility
       localStorage.setItem('brand_guidelines', JSON.stringify(guidelines));
       
       toast({
-        title: "Brand Guidelines Extracted",
-        description: "Successfully extracted brand guidelines from PDF. Wireframes will now use your brand identity.",
+        title: "Brand Guidelines Saved",
+        description: `Successfully extracted and saved "${guidelineName}" brand guidelines. They are now available for future use.`,
       });
       
       setShowBrandModal(true);
@@ -983,6 +994,43 @@ export default function WireframeDesigner() {
       });
     } finally {
       setIsExtractingBrand(false);
+    }
+  };
+
+  // Handle selecting stored brand guidelines
+  const handleStoredGuidelineSelection = (guidelineId: string) => {
+    if (!guidelineId) {
+      setSelectedStoredGuideline("");
+      return;
+    }
+
+    const selectedGuideline = BrandGuidelinesStorage.getById(guidelineId);
+    if (selectedGuideline) {
+      setBrandGuidelines(selectedGuideline);
+      setSelectedStoredGuideline(guidelineId);
+      
+      toast({
+        title: "Brand Guidelines Loaded",
+        description: `Using "${selectedGuideline.name}" brand guidelines for wireframe generation.`,
+      });
+    }
+  };
+
+  // Delete stored brand guidelines
+  const handleDeleteStoredGuideline = (guidelineId: string) => {
+    const success = BrandGuidelinesStorage.delete(guidelineId);
+    if (success) {
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      
+      if (selectedStoredGuideline === guidelineId) {
+        setSelectedStoredGuideline("");
+        setBrandGuidelines(null);
+      }
+      
+      toast({
+        title: "Guidelines Deleted",
+        description: "Brand guidelines have been removed from storage.",
+      });
     }
   };
 
@@ -2720,13 +2768,52 @@ ${selectedPageCode.jsCode}
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-600">
-                    Upload your brand guidelines PDF to generate wireframes that match your brand identity, colors, fonts, and design principles.
+                    Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
                   </p>
+
+                  {/* Stored Brand Guidelines Selection */}
+                  {storedBrandGuidelines.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="block text-sm font-medium">
+                        Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
+                      </Label>
+                      <div className="flex gap-2">
+                        <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select stored brand guidelines..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="">None - Upload new PDF</SelectItem>
+                            {storedBrandGuidelines.map((guideline) => (
+                              <SelectItem key={guideline.id} value={guideline.id}>
+                                <div className="flex items-center justify-between w-full">
+                                  <span>{guideline.name}</span>
+                                  <span className="text-xs text-gray-500 ml-2">
+                                    {new Date(guideline.extractedAt).toLocaleDateString()}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        {selectedStoredGuideline && (
+                          <Button
+                            onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
+                            variant="outline"
+                            size="sm"
+                            className="border-red-300 text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="flex flex-col sm:flex-row gap-3">
                     <div className="flex-1">
                       <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
-                        Upload Brand Guidelines PDF
+                        Upload New Brand Guidelines PDF
                       </Label>
                       <div className="relative">
                         <Input
