@@ -351,11 +351,38 @@ Spacing: 8px, 16px, 24px, 32px, 48px
 Border Radius: 6px, 8px, 12px
 Breakpoints: 640px, 768px, 1024px, 1280px
 
-COMPONENTS:
-Buttons: Rounded corners, solid backgrounds, hover states
-Cards: Subtle shadows, clean borders, good spacing
-Forms: Clean inputs, focus states, validation styling
-Navigation: Horizontal layout, clear hierarchy
+COMPONENTS - DETAILED SPECIFICATIONS:
+BUTTONS:
+- Primary: Solid brand color background, white text, 8px border-radius, 12px padding
+- Secondary: Outlined border with brand color, transparent background, brand color text
+- Ghost: No border, transparent background, subtle hover color change
+- Sizes: Small (8px padding), Medium (12px padding), Large (16px padding)
+- States: Hover (darker shade), Active (pressed state), Disabled (50% opacity)
+
+CARDS:
+- Design: Clean with subtle shadows or borders, rounded corners, proper internal spacing
+- Shadows: None, Subtle (0 1px 2px rgba(0,0,0,0.05)), Medium (0 4px 6px rgba(0,0,0,0.1))
+- Border Radius: 8px to 12px depending on card size
+- Spacing: 16px internal padding, 24px between cards
+- Hover States: Subtle shadow increase, border color change
+
+NAVIGATION:
+- Primary Nav: Horizontal layout, brand logo left, menu items right
+- Styles: Clean typography, proper spacing, clear visual hierarchy
+- States: Active state highlighted, hover effects, current page indicator
+- Mobile Nav: Hamburger menu, slide-out panel, stacked menu items
+
+FORMS & CONTACT:
+- Input Styles: 1px border, 8px border-radius, 12px padding, focus outline
+- Label Styles: Medium font weight, 14px size, brand color
+- Contact Design: Form layout with contact information display
+- Contact Layout: Two-column or single column based on available space
+
+SECTIONS:
+- Header Design: Brand logo with navigation menu, proper spacing and alignment
+- Footer Design: Multiple columns with links, contact info, social media
+- Content Areas: Proper margins, readable line lengths, section spacing
+- Backgrounds: White, light grays, brand accent colors for emphasis
 
 BRAND VOICE:
 Personality: Professional, Approachable, Reliable, Modern

@@ -120,28 +120,28 @@ export class BrandAwareWireframeGenerator {
 
 ENHANCED BRAND GUIDELINES TO APPLY:
 COLORS:
-- Primary: ${brandGuidelines.colors.primary.join(", ")}
-- Secondary: ${brandGuidelines.colors.secondary.join(", ")}
-- Accent: ${brandGuidelines.colors.accent.join(", ")}
-- Text Colors: ${brandGuidelines.colors.text.join(", ")}
-- Background: ${brandGuidelines.colors.background.join(", ")}
-- State Colors - Error: ${brandGuidelines.colors.error.join(", ")}, Success: ${brandGuidelines.colors.success.join(", ")}, Warning: ${brandGuidelines.colors.warning.join(", ")}
+- Primary: ${(brandGuidelines.colors?.primary || []).join(", ")}
+- Secondary: ${(brandGuidelines.colors?.secondary || []).join(", ")}
+- Accent: ${(brandGuidelines.colors?.accent || []).join(", ")}
+- Text Colors: ${(brandGuidelines.colors?.text || []).join(", ")}
+- Background: ${(brandGuidelines.colors?.background || []).join(", ")}
+- State Colors - Error: ${(brandGuidelines.colors?.error || []).join(", ")}, Success: ${(brandGuidelines.colors?.success || []).join(", ")}, Warning: ${(brandGuidelines.colors?.warning || []).join(", ")}
 
 TYPOGRAPHY & FONT FAMILIES:
-- Primary Font Family: ${brandGuidelines.typography.fontFamilies?.primary || brandGuidelines.typography.fonts[0] || 'system-ui, sans-serif'}
-- Heading Font Family: ${brandGuidelines.typography.fontFamilies?.heading || brandGuidelines.typography.fonts[0] || 'system-ui, sans-serif'}
-- Body Font Family: ${brandGuidelines.typography.fontFamilies?.body || brandGuidelines.typography.fonts[1] || 'system-ui, sans-serif'}
-- Font Sizes: ${brandGuidelines.typography.sizes.join(", ")}
-- Font Weights: ${brandGuidelines.typography.weights.join(", ")}
-- Line Heights: ${brandGuidelines.typography.lineHeights.join(", ")}
+- Primary Font Family: ${brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0] || 'system-ui, sans-serif'}
+- Heading Font Family: ${brandGuidelines.typography?.fontFamilies?.heading || (brandGuidelines.typography?.fonts || [])[0] || 'system-ui, sans-serif'}
+- Body Font Family: ${brandGuidelines.typography?.fontFamilies?.body || (brandGuidelines.typography?.fonts || [])[1] || 'system-ui, sans-serif'}
+- Font Sizes: ${(brandGuidelines.typography?.sizes || []).join(", ")}
+- Font Weights: ${(brandGuidelines.typography?.weights || []).join(", ")}
+- Line Heights: ${(brandGuidelines.typography?.lineHeights || []).join(", ")}
 
 LOGO & BRANDING:
-- Primary Logo: ${brandGuidelines.logos.primary}
-- Logo Variations: ${brandGuidelines.logos.variations.join(", ")}
-- Size Requirements: ${brandGuidelines.logos.sizes.join(", ")}
-- Spacing: ${brandGuidelines.logos.spacing.join(", ")}
-- Color Options: ${brandGuidelines.logos.colors.join(", ")}
-- Extracted Logo Images: ${brandGuidelines.logos.images?.primary ? 'Primary logo extracted from PDF' : 'No logo images extracted'}
+- Primary Logo: ${brandGuidelines.logos?.primary || 'Brand logo'}
+- Logo Variations: ${(brandGuidelines.logos?.variations || []).join(", ")}
+- Size Requirements: ${(brandGuidelines.logos?.sizes || []).join(", ")}
+- Spacing: ${(brandGuidelines.logos?.spacing || []).join(", ")}
+- Color Options: ${(brandGuidelines.logos?.colors || []).join(", ")}
+- Extracted Logo Images: ${brandGuidelines.logos?.images?.primary ? 'Primary logo extracted from PDF' : 'No logo images extracted'}
 
 COMPONENT DESIGN SPECIFICATIONS:
 BUTTONS:
@@ -176,11 +176,11 @@ SECTIONS:
 - Backgrounds: ${brandGuidelines.components?.sections?.backgrounds?.join(', ') || 'White, light grays, brand accents'}
 
 ACCESSIBILITY:
-- Contrast Standards: ${brandGuidelines.accessibility.contrast.join(", ")}
-- Compliance: ${brandGuidelines.accessibility.compliance.join(", ")}
+- Contrast Standards: ${(brandGuidelines.accessibility?.contrast || []).join(", ")}
+- Compliance: ${(brandGuidelines.accessibility?.compliance || []).join(", ")}
 
-BRAND VALUES: ${brandGuidelines.brandValues.join(", ")}
-DESIGN PRINCIPLES: ${brandGuidelines.designPrinciples.join(", ")}
+BRAND VALUES: ${(brandGuidelines.brandValues || []).join(", ")}
+DESIGN PRINCIPLES: ${(brandGuidelines.designPrinciples || []).join(", ")}
 - Design Style: ${designStyle}
 - Device Type: ${deviceType}
 
