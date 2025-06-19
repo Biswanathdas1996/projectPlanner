@@ -63,7 +63,6 @@ import {
   Edit2,
   Edit3,
   Save,
-  RefreshCw,
   Upload,
   FileText,
   Star,
@@ -4441,6 +4440,15 @@ ${selectedPageCode.jsCode}
                           {wireframe.pageName}
                         </CardTitle>
                         <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-blue-500/20 text-blue-600"
+                            onClick={() => regenerateWireframe(wireframe.pageName)}
+                            title="Regenerate with logo variants"
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"

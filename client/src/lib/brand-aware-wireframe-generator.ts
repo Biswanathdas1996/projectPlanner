@@ -201,7 +201,8 @@ WIREFRAME DESIGN REQUIREMENTS:
    - Include ALL content sections mentioned above - do not omit any
    - Apply brand colors consistently throughout, no gradients
    - Use specified typography with proper hierarchy
-   ${brandGuidelines.logos.images?.primary ? `- Include authentic logo in header/navigation: <img src="${brandGuidelines.logos.images.primary}" alt="Brand Logo" style="height: 40px; width: auto;">` : '- Include brand logo placeholder in header following specifications'}
+   ${brandGuidelines.logos.images?.primary ? `- Include authentic extracted logo in header/navigation: <img src="${brandGuidelines.logos.images.primary}" alt="Brand Logo" style="height: 40px; width: auto;">` : '- Include brand logo placeholder in header following specifications'}
+   ${brandGuidelines.logos.images && Object.keys(brandGuidelines.logos.images).length > 1 ? `- Use logo variants where appropriate: ${Object.keys(brandGuidelines.logos.images).filter(k => k !== 'primary').map(variant => `${variant} variant available`).join(', ')}` : ''}
    - Make it responsive and modern
    - Ensure proper color contrast for accessibility
    - Include engaging infographic elements
@@ -218,6 +219,35 @@ Create a realistic, functional web page layout that a real user would encounter.
 - Video call pages should show connection status, participant info, and call controls  
 - Dashboard pages should display key metrics, quick actions, and data summaries
 - E-commerce should show products, filters, shopping cart, and checkout flow
+
+AUTHENTIC LOGO INTEGRATION - USE ALL EXTRACTED VARIANTS:
+${brandGuidelines.logos.images ? Object.entries(brandGuidelines.logos.images).map(([variant, imageData]) => {
+  if (variant === 'primary') {
+    return `- Primary Logo: Main header/navigation area
+  <img src="${imageData}" alt="Brand Logo" style="height: 40px; width: auto; margin-right: 16px;">`
+  } else if (variant === 'horizontal') {
+    return `- Horizontal Logo: Footer, wide banner sections, or login pages
+  <img src="${imageData}" alt="Brand Logo Horizontal" style="height: 32px; width: auto;">`
+  } else if (variant === 'icon') {
+    return `- Icon Logo: Favicon, mobile menu, compact spaces, loading screens
+  <img src="${imageData}" alt="Brand Icon" style="height: 24px; width: 24px;">`
+  } else if (variant === 'monochrome') {
+    return `- Monochrome Logo: Dark backgrounds, print sections, watermarks
+  <img src="${imageData}" alt="Brand Logo Monochrome" style="height: 36px; width: auto;">`
+  } else {
+    return `- ${variant.charAt(0).toUpperCase() + variant.slice(1)} Logo: Use in ${variant} sections
+  <img src="${imageData}" alt="Brand Logo ${variant}" style="height: 36px; width: auto;">`
+  }
+}).join('\n') : '- No extracted logos available, use text-based brand representation'}
+
+IMPLEMENT MULTIPLE LOGO PLACEMENTS:
+1. Header Navigation: Use primary logo
+2. Footer Section: Use horizontal or primary logo variant
+3. Loading/Error States: Use icon logo if available
+4. Mobile Menu: Use icon or compact logo variant
+5. Print Sections: Use monochrome variant if available
+6. Background Watermarks: Use faded logo variants
+7. Brand Sections: Use appropriate logo based on context and background
 
 Return HTML and CSS in this exact format:
 
