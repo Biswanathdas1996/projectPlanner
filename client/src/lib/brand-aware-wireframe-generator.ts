@@ -252,6 +252,26 @@ Return HTML and CSS in this exact format:
         const brandFont =
             brandGuidelines.typography.fonts[0] || "Helvetica Neue";
 
+        // Calculate proper text colors based on background contrast
+        const getContrastColor = (backgroundColor: string): string => {
+            // Remove # if present and convert to RGB
+            const hex = backgroundColor.replace('#', '');
+            const r = parseInt(hex.substr(0, 2), 16);
+            const g = parseInt(hex.substr(2, 2), 16);
+            const b = parseInt(hex.substr(4, 2), 16);
+            
+            // Calculate luminance
+            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+            
+            // Return white for dark backgrounds, dark for light backgrounds
+            return luminance > 0.5 ? '#333333' : '#ffffff';
+        };
+
+        const primaryTextColor = getContrastColor(primaryColor);
+        const accentTextColor = getContrastColor(accentColor);
+        const secondaryTextColor = getContrastColor(secondaryColor);
+        const neutralTextColor = getContrastColor(neutralColor);
+
         return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -332,7 +352,7 @@ Return HTML and CSS in this exact format:
         
         .stakeholder-badge {
             background: ${accentColor};
-            color: ${primaryColor === "#DA291C" ? "white" : "#333"};
+            color: ${accentTextColor};
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.875rem;
@@ -379,7 +399,7 @@ Return HTML and CSS in this exact format:
         
         .btn {
             background: ${primaryColor};
-            color: white;
+            color: ${primaryTextColor};
             padding: 12px 24px;
             border: none;
             border-radius: 8px;
@@ -393,18 +413,19 @@ Return HTML and CSS in this exact format:
         
         .btn:hover {
             background: ${secondaryColor};
+            color: ${secondaryTextColor};
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
         
         .btn-secondary {
             background: ${accentColor};
-            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+            color: ${accentTextColor};
         }
         
         .btn-secondary:hover {
             background: ${secondaryColor};
-            color: white;
+            color: ${secondaryTextColor};
         }
         
         .form-container {
@@ -638,7 +659,7 @@ Return HTML and CSS in this exact format:
             <div class="infographic-grid">
                 ${pageContent.headers.map((header: string, idx: number) => `
                     <div class="info-card">
-                        <div class="info-icon" style="background: ${accentColor}; color: ${primaryColor};">
+                        <div class="info-icon" style="background: ${accentColor}; color: ${accentTextColor};">
                             ${idx + 1}
                         </div>
                         <h3 style="color: ${primaryColor}; margin-bottom: 8px;">${header}</h3>
@@ -743,7 +764,7 @@ Return HTML and CSS in this exact format:
                     (list: any, idx: number) => `
                 <div class="list-container">
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div class="info-icon" style="background: ${primaryColor}; color: white; width: 30px; height: 30px; font-size: 0.9rem;">
+                        <div class="info-icon" style="background: ${primaryColor}; color: ${primaryTextColor}; width: 30px; height: 30px; font-size: 0.9rem;">
                             ${idx + 1}
                         </div>
                         <h3 style="margin: 0;">${list.title || list}</h3>
