@@ -117,6 +117,49 @@ export class EnhancedProjectPlanner {
     ];
   }
 
+  buildSectionPromptWithAI(
+    sectionTitle: string,
+    projectDescription: string,
+    additionalRequirements?: string[],
+    sectionConfig?: {
+      id: string;
+      aiPrompts?: {
+        primary: string;
+        secondary?: string;
+        context?: string;
+      };
+    }
+  ): string {
+    const baseContext = `Project Description: ${projectDescription}`;
+    const requirements = additionalRequirements && additionalRequirements.length > 0 
+      ? `\n\nAdditional Requirements:\n${additionalRequirements.map(req => `- ${req}`).join('\n')}`
+      : '';
+
+    // Use configured AI prompts if available
+    if (sectionConfig?.aiPrompts?.primary) {
+      let prompt = sectionConfig.aiPrompts.primary;
+      
+      if (sectionConfig.aiPrompts.secondary) {
+        prompt += `\n\nAdditional Details: ${sectionConfig.aiPrompts.secondary}`;
+      }
+      
+      if (sectionConfig.aiPrompts.context) {
+        prompt += `\n\nContext Guidelines: ${sectionConfig.aiPrompts.context}`;
+      }
+
+      return `${baseContext}${requirements}
+
+${prompt}
+
+CRITICAL: Return ONLY clean HTML content without any markdown formatting, code blocks, or backtick tags. Your response must start directly with the HTML section tag and contain no explanatory text or markdown.
+
+Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES. Use modern layouts with tables, flowcharts, timelines, cards, metrics, and status badges. Never suggest images or external diagrams. All visualizations must be HTML/CSS based.`;
+    }
+
+    // Fallback to original method if no AI prompts configured
+    return this.buildSectionPrompt(sectionTitle, projectDescription, additionalRequirements);
+  }
+
   private buildSectionPrompt(
     sectionTitle: string,
     projectDescription: string,
@@ -689,13 +732,22 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
 
   async generateSection(
     sectionTitle: string,
-    config: EnhancedProjectPlanConfig
+    config: EnhancedProjectPlanConfig,
+    sectionConfig?: {
+      id: string;
+      aiPrompts?: {
+        primary: string;
+        secondary?: string;
+        context?: string;
+      };
+    }
   ): Promise<string> {
     try {
-      const prompt = this.buildSectionPrompt(
+      const prompt = this.buildSectionPromptWithAI(
         sectionTitle,
         config.projectDescription,
-        config.additionalRequirements
+        config.additionalRequirements,
+        sectionConfig
       );
 
       const result = await this.model.generateContent(prompt);

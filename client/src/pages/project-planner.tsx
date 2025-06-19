@@ -965,8 +965,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
         additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
       };
 
-      // Generate content for this specific section
-      const content = await planner.generateSection(section.title, config);
+      // Generate content for this specific section using configured AI prompts
+      const content = await planner.generateSection(section.title, config, {
+        id: section.id,
+        aiPrompts: section.aiPrompts
+      });
       
       // Update the enhanced sections state
       setEnhancedSections(current => {
