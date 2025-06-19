@@ -3275,30 +3275,7 @@ ${selectedPageCode.jsCode}
             
 
             
-            {/* Wireframe Generation Progress */}
-            {isGeneratingWireframes && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-green-700">
-                    Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
-                  </span>
-                  <span className="text-xs text-green-600">
-                    {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
-                  </span>
-                </div>
-                <div className="w-full bg-green-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
-                  ></div>
-                </div>
-                {wireframeGenerationProgress.currentPage && (
-                  <p className="text-xs text-green-600 mt-2">
-                    Currently generating: {wireframeGenerationProgress.currentPage}
-                  </p>
-                )}
-              </div>
-            )}
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {pageContentCards.map((card, index) => (
                 <Card key={card.id} className="border-2 border-gray-200">
@@ -4414,6 +4391,31 @@ ${selectedPageCode.jsCode}
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Wireframe Generation Progress */}
+        {isGeneratingWireframes && (
+          <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-green-700">
+                Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+              </span>
+              <span className="text-xs text-green-600">
+                {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-green-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+              ></div>
+            </div>
+            {wireframeGenerationProgress.currentPage && (
+              <p className="text-xs text-green-600 mt-2">
+                Currently generating: {wireframeGenerationProgress.currentPage}
+              </p>
+            )}
+          </div>
         )}
 
         {/* Generated Wireframes Display */}

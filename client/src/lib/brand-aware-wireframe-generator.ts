@@ -2,91 +2,127 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import { BrandGuideline } from "./brand-guideline-extractor";
 
 export interface BrandedWireframeRequest {
-  pageContent: any;
-  designStyle: string;
-  deviceType: string;
-  brandGuidelines: BrandGuideline;
+    pageContent: any;
+    designStyle: string;
+    deviceType: string;
+    brandGuidelines: BrandGuideline;
 }
 
 export interface BrandedWireframeResponse {
-  html: string;
-  css: string;
-  brandNotes: string[];
+    html: string;
+    css: string;
+    brandNotes: string[];
 }
 
 export class BrandAwareWireframeGenerator {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+    private genAI: GoogleGenerativeAI;
+    private model: any;
 
-  constructor() {
-    const genAI = new GoogleGenerativeAI(
-      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
-    );
-    this.genAI = genAI;
-    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-  }
-
-  async generateBrandedWireframe(request: BrandedWireframeRequest): Promise<BrandedWireframeResponse> {
-    try {
-      console.log('Generating branded wireframe for:', request.pageContent.pageName);
-      
-      const prompt = this.buildBrandedPrompt(request);
-      console.log('Prompt length:', prompt.length);
-      
-      const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
-      
-      console.log('AI response received, length:', response.length);
-      
-      return this.parseResponse(response, request.brandGuidelines, request.pageContent);
-    } catch (error: any) {
-      console.error('Error generating branded wireframe:', error);
-      console.error('Error details:', error?.message || 'Unknown error', error?.stack || 'No stack trace');
-      
-      // Return fallback with complete page content preserved
-      return {
-        html: this.generateCompletePageHTML(request.pageContent, request.brandGuidelines),
-        css: this.generateBrandCSS(request.brandGuidelines),
-        brandNotes: this.generateDefaultBrandNotes(request.brandGuidelines)
-      };
+    constructor() {
+        const genAI = new GoogleGenerativeAI(
+            "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+        );
+        this.genAI = genAI;
+        this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
     }
-  }
 
-  private buildBrandedPrompt(request: BrandedWireframeRequest): string {
-    const { pageContent, designStyle, deviceType, brandGuidelines } = request;
+    async generateBrandedWireframe(
+        request: BrandedWireframeRequest,
+    ): Promise<BrandedWireframeResponse> {
+        try {
+            console.log(
+                "Generating branded wireframe for:",
+                request.pageContent.pageName,
+            );
 
-    // Build complete content sections
-    const headersSection = pageContent.headers && pageContent.headers.length > 0 
-      ? `Headers: ${pageContent.headers.join(', ')}` : '';
-    
-    const buttonsSection = pageContent.buttons && pageContent.buttons.length > 0 
-      ? `Buttons: ${pageContent.buttons.map((b: any) => b.label || b).join(', ')}` : '';
-    
-    const formsSection = pageContent.forms && pageContent.forms.length > 0 
-      ? `Forms: ${pageContent.forms.map((f: any) => `${f.title || f} (${f.fields ? f.fields.join(', ') : 'form fields'})`).join('; ')}` : '';
-    
-    const listsSection = pageContent.lists && pageContent.lists.length > 0 
-      ? `Lists: ${pageContent.lists.map((l: any) => `${l.title || l} (${l.items ? l.items.join(', ') : 'list items'})`).join('; ')}` : '';
-    
-    const navigationSection = pageContent.navigation && pageContent.navigation.length > 0 
-      ? `Navigation: ${pageContent.navigation.join(', ')}` : '';
-    
-    const textContentSection = pageContent.textContent && pageContent.textContent.length > 0 
-      ? `Text Content: ${pageContent.textContent.join('; ')}` : '';
-    
-    const additionalContentSection = pageContent.additionalContent && pageContent.additionalContent.length > 0 
-      ? `Additional Content: ${pageContent.additionalContent.join('; ')}` : '';
-    
-    const stakeholdersSection = pageContent.stakeholders && pageContent.stakeholders.length > 0 
-      ? `Stakeholders: ${pageContent.stakeholders.join(', ')}` : '';
+            const prompt = this.buildBrandedPrompt(request);
+            console.log("Prompt length:", prompt.length);
 
-    return `Create a professional wireframe for "${pageContent.pageName}" using the following brand guidelines and EXACT page content.
+            const result = await this.model.generateContent(prompt);
+            const response = result.response.text();
+
+            console.log("AI response received, length:", response.length);
+
+            return this.parseResponse(
+                response,
+                request.brandGuidelines,
+                request.pageContent,
+            );
+        } catch (error: any) {
+            console.error("Error generating branded wireframe:", error);
+            console.error(
+                "Error details:",
+                error?.message || "Unknown error",
+                error?.stack || "No stack trace",
+            );
+
+            // Return fallback with complete page content preserved
+            return {
+                html: this.generateCompletePageHTML(
+                    request.pageContent,
+                    request.brandGuidelines,
+                ),
+                css: this.generateBrandCSS(request.brandGuidelines),
+                brandNotes: this.generateDefaultBrandNotes(
+                    request.brandGuidelines,
+                ),
+            };
+        }
+    }
+
+    private buildBrandedPrompt(request: BrandedWireframeRequest): string {
+        const { pageContent, designStyle, deviceType, brandGuidelines } =
+            request;
+
+        // Build complete content sections
+        const headersSection =
+            pageContent.headers && pageContent.headers.length > 0
+                ? `Headers: ${pageContent.headers.join(", ")}`
+                : "";
+
+        const buttonsSection =
+            pageContent.buttons && pageContent.buttons.length > 0
+                ? `Buttons: ${pageContent.buttons.map((b: any) => b.label || b).join(", ")}`
+                : "";
+
+        const formsSection =
+            pageContent.forms && pageContent.forms.length > 0
+                ? `Forms: ${pageContent.forms.map((f: any) => `${f.title || f} (${f.fields ? f.fields.join(", ") : "form fields"})`).join("; ")}`
+                : "";
+
+        const listsSection =
+            pageContent.lists && pageContent.lists.length > 0
+                ? `Lists: ${pageContent.lists.map((l: any) => `${l.title || l} (${l.items ? l.items.join(", ") : "list items"})`).join("; ")}`
+                : "";
+
+        const navigationSection =
+            pageContent.navigation && pageContent.navigation.length > 0
+                ? `Navigation: ${pageContent.navigation.join(", ")}`
+                : "";
+
+        const textContentSection =
+            pageContent.textContent && pageContent.textContent.length > 0
+                ? `Text Content: ${pageContent.textContent.join("; ")}`
+                : "";
+
+        const additionalContentSection =
+            pageContent.additionalContent &&
+            pageContent.additionalContent.length > 0
+                ? `Additional Content: ${pageContent.additionalContent.join("; ")}`
+                : "";
+
+        const stakeholdersSection =
+            pageContent.stakeholders && pageContent.stakeholders.length > 0
+                ? `Stakeholders: ${pageContent.stakeholders.join(", ")}`
+                : "";
+
+        return `Create a professional wireframe for "${pageContent.pageName}" using the following brand guidelines and EXACT page content.
 
 BRAND GUIDELINES TO APPLY:
-- Primary Color: ${brandGuidelines.colors.primary[0] || '#DA291C'}
-- Secondary Color: ${brandGuidelines.colors.secondary[0] || '#264A2B'}
-- Accent Color: ${brandGuidelines.colors.accent[0] || '#FFC72C'}
-- Typography: ${brandGuidelines.typography.fonts[0] || 'Helvetica Neue'}
+- Primary Color: ${brandGuidelines.colors.primary[0] || "#DA291C"}
+- Secondary Color: ${brandGuidelines.colors.secondary[0] || "#264A2B"}
+- Accent Color: ${brandGuidelines.colors.accent[0] || "#FFC72C"}
+- Typography: ${brandGuidelines.typography.fonts[0] || "Helvetica Neue"}
 - Design Style: ${designStyle}
 - Device Type: ${deviceType}
 
@@ -104,9 +140,9 @@ ${additionalContentSection}
 
 REQUIREMENTS:
 1. Include ALL content sections mentioned above - do not omit any
-2. Apply brand colors consistently throughout
+2. Apply brand colors consistently throughout, do not use any color gradient / any color that is not in the brand guidelines.
 3. Use the specified typography
-4. Make it responsive and modern
+4. Make it responsive and modern 
 5. Ensure all interactive elements are styled with brand colors
 6. Include proper spacing and layout following brand guidelines
 
@@ -119,75 +155,101 @@ Return HTML and CSS in this exact format:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${pageContent.pageName} - Brand Compliant</title>
+    <style>
+[Complete CSS using brand colors and typography - make it modern and responsive]
+    </style>
 </head>
 <body>
     [Complete HTML structure with ALL content sections from above]
 </body>
 </html>
 
-===CSS===
-[Complete CSS using brand colors and typography - make it modern and responsive]
+
+
 
 ===BRAND_NOTES===
 - Applied primary brand color: ${brandGuidelines.colors.primary[0]}
 - Used brand typography: ${brandGuidelines.typography.fonts[0]}
 - Implemented responsive design with brand guidelines`;
-  }
-
-  private parseResponse(response: string, brandGuidelines: BrandGuideline, pageContent: any): BrandedWireframeResponse {
-    try {
-      const htmlMatch = response.match(/===HTML===\s*([\s\S]*?)(?===CSS===)/);
-      const cssMatch = response.match(/===CSS===\s*([\s\S]*?)(?===BRAND_NOTES===)/);
-      const notesMatch = response.match(/===BRAND_NOTES===\s*([\s\S]*?)$/);
-
-      let html = htmlMatch ? htmlMatch[1].trim() : '';
-      let css = cssMatch ? cssMatch[1].trim() : '';
-      const notesText = notesMatch ? notesMatch[1].trim() : '';
-
-      // Clean up code blocks
-      html = html.replace(/```html\s*|\s*```$/g, '').trim();
-      css = css.replace(/```css\s*|\s*```$/g, '').trim();
-
-      // Generate brand-specific CSS if not provided
-      if (!css) {
-        css = this.generateBrandCSS(brandGuidelines);
-      }
-
-      // If HTML is missing or incomplete, generate complete page HTML with all content
-      if (!html || html.length < 200) {
-        html = this.generateCompletePageHTML(pageContent, brandGuidelines);
-      }
-
-      // Parse brand notes
-      const brandNotes = notesText
-        .split('\n')
-        .filter(line => line.trim())
-        .map(line => line.replace(/^[•\-\*]\s*/, '').trim());
-
-      return {
-        html: html,
-        css: css,
-        brandNotes: brandNotes.length > 0 ? brandNotes : this.generateDefaultBrandNotes(brandGuidelines)
-      };
-    } catch (error) {
-      console.error('Error parsing wireframe response:', error);
-      
-      return {
-        html: this.generateCompletePageHTML(pageContent, brandGuidelines),
-        css: this.generateBrandCSS(brandGuidelines),
-        brandNotes: this.generateDefaultBrandNotes(brandGuidelines)
-      };
     }
-  }
 
-  private generateCompletePageHTML(pageContent: any, brandGuidelines: BrandGuideline): string {
-    const primaryColor = brandGuidelines.colors.primary[0] || '#DA291C';
-    const accentColor = brandGuidelines.colors.accent[0] || '#FFC72C';
-    const secondaryColor = brandGuidelines.colors.secondary[0] || '#264A2B';
-    const neutralColor = brandGuidelines.colors.neutral[0] || '#f8fafc';
-    const brandFont = brandGuidelines.typography.fonts[0] || 'Helvetica Neue';
+    private parseResponse(
+        response: string,
+        brandGuidelines: BrandGuideline,
+        pageContent: any,
+    ): BrandedWireframeResponse {
+        try {
+            const htmlMatch = response.match(
+                /===HTML===\s*([\s\S]*?)(?===CSS===)/,
+            );
+            const cssMatch = response.match(
+                /===CSS===\s*([\s\S]*?)(?===BRAND_NOTES===)/,
+            );
+            const notesMatch = response.match(
+                /===BRAND_NOTES===\s*([\s\S]*?)$/,
+            );
 
-    return `<!DOCTYPE html>
+            let html = htmlMatch ? htmlMatch[1].trim() : "";
+            let css = cssMatch ? cssMatch[1].trim() : "";
+            const notesText = notesMatch ? notesMatch[1].trim() : "";
+
+            // Clean up code blocks
+            html = html.replace(/```html\s*|\s*```$/g, "").trim();
+            css = css.replace(/```css\s*|\s*```$/g, "").trim();
+
+            // Generate brand-specific CSS if not provided
+            if (!css) {
+                css = this.generateBrandCSS(brandGuidelines);
+            }
+
+            // If HTML is missing or incomplete, generate complete page HTML with all content
+            if (!html || html.length < 200) {
+                html = this.generateCompletePageHTML(
+                    pageContent,
+                    brandGuidelines,
+                );
+            }
+
+            // Parse brand notes
+            const brandNotes = notesText
+                .split("\n")
+                .filter((line) => line.trim())
+                .map((line) => line.replace(/^[•\-\*]\s*/, "").trim());
+
+            return {
+                html: html,
+                css: css,
+                brandNotes:
+                    brandNotes.length > 0
+                        ? brandNotes
+                        : this.generateDefaultBrandNotes(brandGuidelines),
+            };
+        } catch (error) {
+            console.error("Error parsing wireframe response:", error);
+
+            return {
+                html: this.generateCompletePageHTML(
+                    pageContent,
+                    brandGuidelines,
+                ),
+                css: this.generateBrandCSS(brandGuidelines),
+                brandNotes: this.generateDefaultBrandNotes(brandGuidelines),
+            };
+        }
+    }
+
+    private generateCompletePageHTML(
+        pageContent: any,
+        brandGuidelines: BrandGuideline,
+    ): string {
+        const primaryColor = brandGuidelines.colors.primary[0] || "#DA291C";
+        const accentColor = brandGuidelines.colors.accent[0] || "#FFC72C";
+        const secondaryColor = brandGuidelines.colors.secondary[0] || "#264A2B";
+        const neutralColor = brandGuidelines.colors.neutral[0] || "#f8fafc";
+        const brandFont =
+            brandGuidelines.typography.fonts[0] || "Helvetica Neue";
+
+        return `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -267,7 +329,7 @@ Return HTML and CSS in this exact format:
         
         .stakeholder-badge {
             background: ${accentColor};
-            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+            color: ${primaryColor === "#DA291C" ? "white" : "#333"};
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.875rem;
@@ -440,81 +502,130 @@ Return HTML and CSS in this exact format:
         <header class="page-header">
             <h1>${pageContent.pageName}</h1>
             <p class="purpose">${pageContent.purpose}</p>
-            ${pageContent.stakeholders && pageContent.stakeholders.length > 0 ? `
+            ${
+                pageContent.stakeholders && pageContent.stakeholders.length > 0
+                    ? `
             <div class="stakeholders">
-                ${pageContent.stakeholders.map((stakeholder: string) => `<span class="stakeholder-badge">${stakeholder}</span>`).join('')}
+                ${pageContent.stakeholders.map((stakeholder: string) => `<span class="stakeholder-badge">${stakeholder}</span>`).join("")}
             </div>
-            ` : ''}
+            `
+                    : ""
+            }
         </header>
         
-        ${pageContent.headers && pageContent.headers.length > 0 ? `
+        ${
+            pageContent.headers && pageContent.headers.length > 0
+                ? `
         <section class="content-section">
             <h2>Content Headers</h2>
-            ${pageContent.headers.map((header: string) => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join('')}
+            ${pageContent.headers.map((header: string) => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join("")}
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.textContent && pageContent.textContent.length > 0 ? `
+        ${
+            pageContent.textContent && pageContent.textContent.length > 0
+                ? `
         <section class="content-section">
             <h2>Content</h2>
-            ${pageContent.textContent.map((text: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${text}</p>`).join('')}
+            ${pageContent.textContent.map((text: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${text}</p>`).join("")}
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.buttons && pageContent.buttons.length > 0 ? `
+        ${
+            pageContent.buttons && pageContent.buttons.length > 0
+                ? `
         <section class="content-section">
             <h2>Actions</h2>
             <div class="button-group">
-                ${pageContent.buttons.map((button: any) => `<button class="btn">${button.label || button}</button>`).join('')}
+                ${pageContent.buttons.map((button: any) => `<button class="btn">${button.label || button}</button>`).join("")}
             </div>
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.forms && pageContent.forms.length > 0 ? `
+        ${
+            pageContent.forms && pageContent.forms.length > 0
+                ? `
         <section class="content-section">
             <h2>Forms</h2>
-            ${pageContent.forms.map((form: any) => `
+            ${pageContent.forms
+                .map(
+                    (form: any) => `
                 <div class="form-container">
                     <h3 style="margin-bottom: 20px;">${form.title || form}</h3>
-                    ${form.fields ? form.fields.map((field: string) => `
+                    ${
+                        form.fields
+                            ? form.fields
+                                  .map(
+                                      (field: string) => `
                         <div class="form-group">
                             <label>${field}</label>
                             <input type="text" placeholder="Enter ${field}">
                         </div>
-                    `).join('') : ''}
-                    <button class="btn">Submit ${form.title || 'Form'}</button>
+                    `,
+                                  )
+                                  .join("")
+                            : ""
+                    }
+                    <button class="btn">Submit ${form.title || "Form"}</button>
                 </div>
-            `).join('')}
+            `,
+                )
+                .join("")}
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.lists && pageContent.lists.length > 0 ? `
+        ${
+            pageContent.lists && pageContent.lists.length > 0
+                ? `
         <section class="content-section">
             <h2>Data & Lists</h2>
-            ${pageContent.lists.map((list: any) => `
+            ${pageContent.lists
+                .map(
+                    (list: any) => `
                 <div class="list-container">
                     <h3 style="margin-bottom: 15px;">${list.title || list}</h3>
-                    ${list.items ? `<ul>${list.items.map((item: string) => `<li>${item}</li>`).join('')}</ul>` : ''}
+                    ${list.items ? `<ul>${list.items.map((item: string) => `<li>${item}</li>`).join("")}</ul>` : ""}
                 </div>
-            `).join('')}
+            `,
+                )
+                .join("")}
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.navigation && pageContent.navigation.length > 0 ? `
+        ${
+            pageContent.navigation && pageContent.navigation.length > 0
+                ? `
         <section class="content-section">
             <h2>Navigation</h2>
             <nav class="nav-links">
-                ${pageContent.navigation.map((nav: string) => `<a href="#" class="nav-link">${nav}</a>`).join('')}
+                ${pageContent.navigation.map((nav: string) => `<a href="#" class="nav-link">${nav}</a>`).join("")}
             </nav>
         </section>
-        ` : ''}
+        `
+                : ""
+        }
         
-        ${pageContent.additionalContent && pageContent.additionalContent.length > 0 ? `
+        ${
+            pageContent.additionalContent &&
+            pageContent.additionalContent.length > 0
+                ? `
         <section class="content-section">
             <h2>Additional Information</h2>
-            ${pageContent.additionalContent.map((content: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${content}</p>`).join('')}
+            ${pageContent.additionalContent.map((content: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${content}</p>`).join("")}
         </section>
-        ` : ''}
+        `
+                : ""
+        }
     </div>
     
     <script>
@@ -549,20 +660,20 @@ Return HTML and CSS in this exact format:
     </script>
 </body>
 </html>`;
-  }
+    }
 
-  private generateBrandCSS(guidelines: BrandGuideline): string {
-    const primaryColor = guidelines.colors.primary[0] || '#2563eb';
-    const primaryColorAlt = guidelines.colors.primary[1] || '#1d4ed8';
-    const accentColor = guidelines.colors.accent[0] || '#dc2626';
-    const accentColorAlt = guidelines.colors.accent[1] || '#b91c1c';
-    const secondaryColor = guidelines.colors.secondary[0] || '#64748b';
-    const neutralLight = guidelines.colors.neutral[0] || '#f8fafc';
-    const neutralMid = guidelines.colors.neutral[1] || '#e2e8f0';
-    const neutralDark = guidelines.colors.neutral[3] || '#1e293b';
-    const primaryFont = guidelines.typography.fonts[0] || 'Inter';
-    
-    return `
+    private generateBrandCSS(guidelines: BrandGuideline): string {
+        const primaryColor = guidelines.colors.primary[0] || "#2563eb";
+        const primaryColorAlt = guidelines.colors.primary[1] || "#1d4ed8";
+        const accentColor = guidelines.colors.accent[0] || "#dc2626";
+        const accentColorAlt = guidelines.colors.accent[1] || "#b91c1c";
+        const secondaryColor = guidelines.colors.secondary[0] || "#64748b";
+        const neutralLight = guidelines.colors.neutral[0] || "#f8fafc";
+        const neutralMid = guidelines.colors.neutral[1] || "#e2e8f0";
+        const neutralDark = guidelines.colors.neutral[3] || "#1e293b";
+        const primaryFont = guidelines.typography.fonts[0] || "Inter";
+
+        return `
 /* Professional Brand-Compliant Wireframe System */
 * {
   margin: 0;
@@ -583,17 +694,17 @@ Return HTML and CSS in this exact format:
   
   /* Brand Typography System */
   --brand-font-primary: '${primaryFont}', system-ui, -apple-system, sans-serif;
-  --brand-font-secondary: '${guidelines.typography.fonts[1] || 'system-ui'}', -apple-system, sans-serif;
-  --brand-weight-normal: ${guidelines.typography.weights[0] || '400'};
-  --brand-weight-medium: ${guidelines.typography.weights[1] || '500'};
-  --brand-weight-bold: ${guidelines.typography.weights[2] || '700'};
+  --brand-font-secondary: '${guidelines.typography.fonts[1] || "system-ui"}', -apple-system, sans-serif;
+  --brand-weight-normal: ${guidelines.typography.weights[0] || "400"};
+  --brand-weight-medium: ${guidelines.typography.weights[1] || "500"};
+  --brand-weight-bold: ${guidelines.typography.weights[2] || "700"};
   
   /* Professional Spacing System */
-  --brand-space-xs: ${guidelines.layout.spacing[0] || '8px'};
-  --brand-space-sm: ${guidelines.layout.spacing[1] || '16px'};
-  --brand-space-md: ${guidelines.layout.spacing[2] || '24px'};
-  --brand-space-lg: ${guidelines.layout.spacing[3] || '32px'};
-  --brand-space-xl: ${guidelines.layout.spacing[4] || '48px'};
+  --brand-space-xs: ${guidelines.layout.spacing[0] || "8px"};
+  --brand-space-sm: ${guidelines.layout.spacing[1] || "16px"};
+  --brand-space-md: ${guidelines.layout.spacing[2] || "24px"};
+  --brand-space-lg: ${guidelines.layout.spacing[3] || "32px"};
+  --brand-space-xl: ${guidelines.layout.spacing[4] || "48px"};
   
   /* Modern Design Tokens */
   --brand-radius: 12px;
@@ -1032,10 +1143,10 @@ h3 {
     transform: translateY(0);
   }
 }`;
-  }
+    }
 
-  private generateFallbackHTML(): string {
-    return `
+    private generateFallbackHTML(): string {
+        return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1112,21 +1223,21 @@ h3 {
     </div>
 </body>
 </html>`;
-  }
+    }
 
-  private generateDefaultBrandNotes(guidelines: BrandGuideline): string[] {
-    return [
-      `Applied primary brand color: ${guidelines.colors.primary[0]} throughout the design`,
-      `Used brand typography: ${guidelines.typography.fonts[0]} for consistent text styling`,
-      `Implemented brand spacing system: ${guidelines.layout.spacing.join(', ')} for proper layout`,
-      `Followed button guidelines with modern gradients and hover effects`,
-      `Reflected brand personality: ${guidelines.tone.personality.join(', ')} in design choices`,
-      `Created responsive layouts that maintain brand integrity across devices`,
-      `Applied sophisticated CSS with modern animations and transitions`
-    ];
-  }
+    private generateDefaultBrandNotes(guidelines: BrandGuideline): string[] {
+        return [
+            `Applied primary brand color: ${guidelines.colors.primary[0]} throughout the design`,
+            `Used brand typography: ${guidelines.typography.fonts[0]} for consistent text styling`,
+            `Implemented brand spacing system: ${guidelines.layout.spacing.join(", ")} for proper layout`,
+            `Followed button guidelines with modern gradients and hover effects`,
+            `Reflected brand personality: ${guidelines.tone.personality.join(", ")} in design choices`,
+            `Created responsive layouts that maintain brand integrity across devices`,
+            `Applied sophisticated CSS with modern animations and transitions`,
+        ];
+    }
 }
 
 export function createBrandAwareWireframeGenerator(): BrandAwareWireframeGenerator {
-  return new BrandAwareWireframeGenerator();
+    return new BrandAwareWireframeGenerator();
 }
