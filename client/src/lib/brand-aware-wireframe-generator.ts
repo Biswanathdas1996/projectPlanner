@@ -43,41 +43,67 @@ export class BrandAwareWireframeGenerator {
   private buildBrandedPrompt(request: BrandedWireframeRequest): string {
     const { pageContent, designStyle, deviceType, brandGuidelines } = request;
 
-    return `Generate a complete, production-ready wireframe that strictly follows the provided brand guidelines.
+    return `Create a MODERN, PROFESSIONAL, and BRAND-COMPLIANT wireframe that strictly adheres to the brand guidelines. The design must be sophisticated, contemporary, and production-ready.
 
-PAGE CONTENT:
-${JSON.stringify(pageContent, null, 2)}
+PAGE REQUIREMENTS:
+Page Name: ${pageContent.pageName}
+Page Type: ${pageContent.pageType}
+Purpose: ${pageContent.purpose}
+Target Users: ${pageContent.stakeholders.join(', ')}
 
-DESIGN STYLE: ${designStyle}
-DEVICE TYPE: ${deviceType}
+CONTENT ELEMENTS:
+Headers: ${pageContent.headers.join(', ')}
+Buttons: ${pageContent.buttons.map((b: any) => `${b.label} (${b.style})`).join(', ')}
+Forms: ${pageContent.forms.map((f: any) => `${f.title} with fields: ${f.fields.join(', ')}`).join(' | ')}
+Navigation: ${pageContent.navigation.join(', ')}
 
-BRAND GUIDELINES TO FOLLOW:
-Colors:
-- Primary: ${brandGuidelines.colors.primary.join(', ')}
-- Secondary: ${brandGuidelines.colors.secondary.join(', ')}
-- Accent: ${brandGuidelines.colors.accent.join(', ')}
-- Neutral: ${brandGuidelines.colors.neutral.join(', ')}
+DESIGN REQUIREMENTS: ${designStyle} style for ${deviceType}
 
-Typography:
-- Fonts: ${brandGuidelines.typography.fonts.join(', ')}
-- Heading Styles: ${brandGuidelines.typography.headingStyles.join(', ')}
-- Body Styles: ${brandGuidelines.typography.bodyStyles.join(', ')}
-- Weights: ${brandGuidelines.typography.weights.join(', ')}
+MANDATORY BRAND COMPLIANCE:
+PRIMARY COLORS (use for headers, navigation, primary buttons):
+${brandGuidelines.colors.primary.map(color => `- ${color}`).join('\n')}
 
-Layout Guidelines:
-- Spacing: ${brandGuidelines.layout.spacing.join(', ')}
-- Grid Systems: ${brandGuidelines.layout.gridSystems.join(', ')}
-- Breakpoints: ${brandGuidelines.layout.breakpoints.join(', ')}
+ACCENT COLORS (use for CTAs, highlights, interactive elements):
+${brandGuidelines.colors.accent.map(color => `- ${color}`).join('\n')}
 
-Component Guidelines:
-- Buttons: ${brandGuidelines.components.buttons.join(', ')}
-- Cards: ${brandGuidelines.components.cards.join(', ')}
-- Forms: ${brandGuidelines.components.forms.join(', ')}
-- Navigation: ${brandGuidelines.components.navigation.join(', ')}
+SECONDARY COLORS (use for supporting elements, borders):
+${brandGuidelines.colors.secondary.map(color => `- ${color}`).join('\n')}
 
-Imagery Style: ${brandGuidelines.imagery.style}
-Brand Personality: ${brandGuidelines.tone.personality.join(', ')}
-Brand Voice: ${brandGuidelines.tone.voice.join(', ')}
+NEUTRAL COLORS (use for backgrounds, text, subtle elements):
+${brandGuidelines.colors.neutral.map(color => `- ${color}`).join('\n')}
+
+TYPOGRAPHY SYSTEM:
+Primary Font: ${brandGuidelines.typography.fonts[0] || 'Inter'}
+Secondary Font: ${brandGuidelines.typography.fonts[1] || 'system-ui'}
+Font Weights: ${brandGuidelines.typography.weights.join(', ')}
+Heading Style: ${brandGuidelines.typography.headingStyles.join(', ')}
+Body Style: ${brandGuidelines.typography.bodyStyles.join(', ')}
+
+LAYOUT SPECIFICATIONS:
+Spacing System: ${brandGuidelines.layout.spacing.join(', ')}
+Grid System: ${brandGuidelines.layout.gridSystems.join(', ')}
+Responsive Breakpoints: ${brandGuidelines.layout.breakpoints.join(', ')}
+
+COMPONENT STYLING:
+Buttons: ${brandGuidelines.components.buttons.join(', ')} - USE EXACT BRAND COLORS
+Cards: ${brandGuidelines.components.cards.join(', ')} - PROFESSIONAL SHADOWS AND SPACING
+Forms: ${brandGuidelines.components.forms.join(', ')} - CLEAN, ACCESSIBLE DESIGN
+Navigation: ${brandGuidelines.components.navigation.join(', ')} - CLEAR HIERARCHY
+
+BRAND PERSONALITY TO REFLECT:
+${brandGuidelines.tone.personality.join(', ')} - ${brandGuidelines.tone.voice.join(', ')}
+
+MODERN DESIGN REQUIREMENTS:
+1. Use contemporary layout patterns (CSS Grid, Flexbox)
+2. Implement proper visual hierarchy with brand colors
+3. Apply consistent spacing using the brand spacing system
+4. Use brand-specific fonts with appropriate weights
+5. Create professional shadows and subtle gradients within brand palette
+6. Ensure accessibility with proper contrast ratios
+7. Add micro-interactions and hover states using accent colors
+8. Implement responsive design following brand breakpoints
+9. Use brand colors for ALL interactive elements
+10. Apply brand personality through color psychology and spacing
 
 CRITICAL REQUIREMENTS:
 1. Use ONLY the specified brand colors - no other colors allowed
@@ -159,31 +185,55 @@ Document how you applied each brand guideline element in the design.`;
   }
 
   private generateBrandCSS(guidelines: BrandGuideline): string {
+    const primaryColor = guidelines.colors.primary[0] || '#2563eb';
+    const primaryColorAlt = guidelines.colors.primary[1] || '#1d4ed8';
+    const accentColor = guidelines.colors.accent[0] || '#dc2626';
+    const accentColorAlt = guidelines.colors.accent[1] || '#b91c1c';
+    const secondaryColor = guidelines.colors.secondary[0] || '#64748b';
+    const neutralLight = guidelines.colors.neutral[0] || '#f8fafc';
+    const neutralMid = guidelines.colors.neutral[1] || '#e2e8f0';
+    const neutralDark = guidelines.colors.neutral[3] || '#1e293b';
+    const primaryFont = guidelines.typography.fonts[0] || 'Inter';
+    
     return `
-/* Brand-Aware Wireframe Styles */
+/* Professional Brand-Compliant Wireframe System */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
-  /* Brand Colors */
-  --brand-primary: ${guidelines.colors.primary[0] || '#007bff'};
-  --brand-primary-light: ${guidelines.colors.primary[1] || '#6cb2eb'};
-  --brand-secondary: ${guidelines.colors.secondary[0] || '#6c757d'};
-  --brand-accent: ${guidelines.colors.accent[0] || '#28a745'};
-  --brand-neutral-light: ${guidelines.colors.neutral[0] || '#f8f9fa'};
-  --brand-neutral: ${guidelines.colors.neutral[1] || '#e9ecef'};
-  --brand-neutral-dark: ${guidelines.colors.neutral[2] || '#6c757d'};
+  /* Exact Brand Color System */
+  --brand-primary: ${primaryColor};
+  --brand-primary-dark: ${primaryColorAlt};
+  --brand-accent: ${accentColor};
+  --brand-accent-dark: ${accentColorAlt};
+  --brand-secondary: ${secondaryColor};
+  --brand-neutral-50: ${neutralLight};
+  --brand-neutral-200: ${neutralMid};
+  --brand-neutral-800: ${neutralDark};
   
-  /* Brand Typography */
-  --brand-font-primary: '${guidelines.typography.fonts[0] || 'Arial'}', sans-serif;
-  --brand-font-secondary: '${guidelines.typography.fonts[1] || 'Helvetica'}', sans-serif;
+  /* Brand Typography System */
+  --brand-font-primary: '${primaryFont}', system-ui, -apple-system, sans-serif;
+  --brand-font-secondary: '${guidelines.typography.fonts[1] || 'system-ui'}', -apple-system, sans-serif;
   --brand-weight-normal: ${guidelines.typography.weights[0] || '400'};
   --brand-weight-medium: ${guidelines.typography.weights[1] || '500'};
   --brand-weight-bold: ${guidelines.typography.weights[2] || '700'};
   
-  /* Brand Spacing */
-  --brand-space-xs: ${guidelines.layout.spacing[0] || '4px'};
-  --brand-space-sm: ${guidelines.layout.spacing[1] || '8px'};
-  --brand-space-md: ${guidelines.layout.spacing[2] || '16px'};
-  --brand-space-lg: ${guidelines.layout.spacing[3] || '24px'};
-  --brand-space-xl: ${guidelines.layout.spacing[4] || '32px'};
+  /* Professional Spacing System */
+  --brand-space-xs: ${guidelines.layout.spacing[0] || '8px'};
+  --brand-space-sm: ${guidelines.layout.spacing[1] || '16px'};
+  --brand-space-md: ${guidelines.layout.spacing[2] || '24px'};
+  --brand-space-lg: ${guidelines.layout.spacing[3] || '32px'};
+  --brand-space-xl: ${guidelines.layout.spacing[4] || '48px'};
+  
+  /* Modern Design Tokens */
+  --brand-radius: 12px;
+  --brand-radius-sm: 8px;
+  --brand-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --brand-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --brand-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 * {
@@ -195,39 +245,83 @@ Document how you applied each brand guideline element in the design.`;
 body {
   font-family: var(--brand-font-primary);
   font-weight: var(--brand-weight-normal);
+  color: var(--brand-neutral-800);
+  background: linear-gradient(135deg, var(--brand-neutral-50) 0%, #ffffff 100%);
   line-height: 1.6;
-  color: var(--brand-neutral-dark);
-  background-color: var(--brand-neutral-light);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-.wireframe-container {
-  max-width: 1200px;
+/* Modern Layout Container */
+.brand-container {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: var(--brand-space-md);
+  padding: 0 var(--brand-space-md);
+}
+
+.brand-wireframe {
   background: white;
   min-height: 100vh;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--brand-shadow-lg);
+  border-radius: var(--brand-radius);
+  overflow: hidden;
 }
 
-/* Brand Headers */
+/* Professional Typography System */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--brand-font-primary);
   font-weight: var(--brand-weight-bold);
   color: var(--brand-primary);
+  line-height: 1.2;
   margin-bottom: var(--brand-space-md);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.5rem; }
+h1 { 
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
 
-/* Brand Buttons */
+h2 { 
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: var(--brand-neutral-800);
+}
+
+h3 { 
+  font-size: 1.25rem;
+  color: var(--brand-primary-dark);
+  font-weight: var(--brand-weight-medium);
+}
+
+.brand-text {
+  font-size: 1rem;
+  color: var(--brand-secondary);
+  line-height: 1.6;
+  margin-bottom: var(--brand-space-sm);
+}
+
+/* Modern Component System */
 .brand-button {
-  background: var(--brand-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--brand-space-xs);
+  padding: var(--brand-space-sm) var(--brand-space-md);
+  font-family: var(--brand-font-primary);
+  font-weight: var(--brand-weight-medium);
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
   color: white;
   border: none;
-  padding: var(--brand-space-sm) var(--brand-space-lg);
-  border-radius: 6px;
+  border-radius: var(--brand-radius-sm);
+  cursor: pointer;
+  transition: var(--brand-transition);
+  text-decoration: none;
+  box-shadow: var(--brand-shadow);
+  position: relative;
+  overflow: hidden;
   font-family: var(--brand-font-primary);
   font-weight: var(--brand-weight-medium);
   cursor: pointer;
@@ -236,74 +330,157 @@ h3 { font-size: 1.5rem; }
   display: inline-block;
 }
 
+.brand-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
 .brand-button:hover {
-  background: var(--brand-primary-light);
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-dark) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--brand-shadow-lg);
 }
 
-.brand-button-secondary {
-  background: var(--brand-secondary);
+.brand-button:hover::before {
+  left: 100%;
+}
+
+.brand-button--secondary {
+  background: transparent;
+  color: var(--brand-primary);
+  border: 2px solid var(--brand-primary);
+  box-shadow: none;
+}
+
+.brand-button--secondary:hover {
+  background: var(--brand-primary);
   color: white;
 }
 
-.brand-button-accent {
-  background: var(--brand-accent);
-  color: white;
+.brand-button--accent {
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-dark) 100%);
 }
 
-/* Brand Cards */
+/* Professional Card System */
 .brand-card {
   background: white;
-  border: 1px solid var(--brand-neutral);
-  border-radius: 8px;
+  border-radius: var(--brand-radius);
   padding: var(--brand-space-lg);
+  box-shadow: var(--brand-shadow);
+  border: 1px solid var(--brand-neutral-200);
+  transition: var(--brand-transition);
+  position: relative;
+  overflow: hidden;
   margin-bottom: var(--brand-space-md);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.brand-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--brand-primary) 0%, var(--brand-accent) 100%);
 }
 
 .brand-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: var(--brand-shadow-lg);
 }
 
-/* Brand Forms */
+/* Modern Form Elements */
+.brand-form-group {
+  margin-bottom: var(--brand-space-md);
+}
+
+.brand-label {
+  display: block;
+  font-weight: var(--brand-weight-medium);
+  color: var(--brand-neutral-800);
+  margin-bottom: var(--brand-space-xs);
+  font-size: 0.95rem;
+}
+
 .brand-input, .brand-select, .brand-textarea {
   width: 100%;
   padding: var(--brand-space-sm);
-  border: 2px solid var(--brand-neutral);
-  border-radius: 4px;
-  font-family: var(--brand-font-secondary);
+  font-family: var(--brand-font-primary);
   font-size: 1rem;
-  transition: border-color 0.2s ease;
+  border: 2px solid var(--brand-neutral-200);
+  border-radius: var(--brand-radius-sm);
+  background: white;
+  transition: var(--brand-transition);
 }
 
 .brand-input:focus, .brand-select:focus, .brand-textarea:focus {
   outline: none;
   border-color: var(--brand-primary);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Brand Navigation */
+/* Professional Navigation System */
 .brand-nav {
-  background: var(--brand-primary);
-  padding: var(--brand-space-md) 0;
-  margin-bottom: var(--brand-space-lg);
+  background: white;
+  padding: var(--brand-space-sm) 0;
+  border-bottom: 1px solid var(--brand-neutral-200);
+  box-shadow: var(--brand-shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.brand-nav ul {
-  list-style: none;
+.brand-nav-content {
   display: flex;
-  justify-content: center;
-  gap: var(--brand-space-lg);
+  align-items: center;
+  justify-content: space-between;
 }
 
-.brand-nav a {
-  color: white;
+.brand-logo {
+  font-size: 1.5rem;
+  font-weight: var(--brand-weight-bold);
+  color: var(--brand-primary);
+  text-decoration: none;
+}
+
+.brand-nav-links {
+  display: flex;
+  gap: var(--brand-space-lg);
+  list-style: none;
+}
+
+.brand-nav-link {
+  color: var(--brand-secondary);
   text-decoration: none;
   font-weight: var(--brand-weight-medium);
-  padding: var(--brand-space-sm) var(--brand-space-md);
+  transition: var(--brand-transition);
+  position: relative;
+}
+
+.brand-nav-link:hover {
+  color: var(--brand-primary);
+}
+
+.brand-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: var(--brand-accent);
+  transition: var(--brand-transition);
+}
+
+.brand-nav-link:hover::after {
+  width: 100%;
+}
   border-radius: 4px;
   transition: background-color 0.2s ease;
 }
