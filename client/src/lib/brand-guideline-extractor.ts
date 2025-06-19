@@ -650,7 +650,7 @@ Return this exact JSON structure with comprehensive brand information:
           .replace(/```\s*$/, '')
           .trim();
 
-        return JSON.parse(cleanedText);
+        return JSON.parse(cleanedText) as BrandGuideline;
       } catch (parseError) {
         console.error('Error parsing Gemini response:', parseError);
         return this.getDefaultGuidelines();
@@ -764,6 +764,78 @@ Return this exact JSON structure with comprehensive brand information:
         contrast: ["4.5:1 minimum", "7:1 preferred"],
         guidelines: ["WCAG 2.1 AA compliance"],
         compliance: ["color contrast", "keyboard navigation", "screen reader support"]
+      },
+      keyPoints: [
+        "Maintain brand consistency across all touchpoints",
+        "Use approved color combinations for accessibility",
+        "Follow typography hierarchy guidelines",
+        "Ensure proper logo placement and sizing"
+      ],
+      keyClauses: [
+        "Logo must maintain minimum size requirements",
+        "Brand colors must meet accessibility standards",
+        "Typography must be legible across all platforms",
+        "Consistent application across all touchpoints"
+      ],
+      keyHighlights: [
+        "Brand essence and unique value proposition",
+        "Critical design specifications",
+        "Important usage restrictions",
+        "Key differentiating factors"
+      ],
+      dosAndDonts: {
+        dos: [
+          "Use approved color combinations",
+          "Maintain proper logo clearspace",
+          "Follow typography hierarchy",
+          "Ensure accessibility compliance"
+        ],
+        donts: [
+          "Never distort or skew the logo",
+          "Don't use unauthorized color variations",
+          "Avoid poor contrast combinations",
+          "Never alter brand typography"
+        ]
+      },
+      brandRules: [
+        "Always use official brand assets",
+        "Maintain consistent visual hierarchy",
+        "Follow approved color usage guidelines",
+        "Ensure proper logo placement and sizing"
+      ],
+      compliance: {
+        requirements: [
+          "WCAG 2.1 AA accessibility standards",
+          "Brand consistency across all platforms",
+          "Legal trademark usage compliance"
+        ],
+        restrictions: [
+          "No unauthorized logo modifications",
+          "Restricted color palette usage",
+          "Specific spacing requirements"
+        ],
+        guidelines: [
+          "Follow established design patterns",
+          "Maintain brand voice and tone",
+          "Use approved imagery styles"
+        ]
+      },
+      usageGuidelines: {
+        approved: [
+          "Official marketing materials",
+          "Digital platforms and websites",
+          "Print publications and collateral"
+        ],
+        prohibited: [
+          "Unauthorized logo alterations",
+          "Off-brand color combinations",
+          "Inconsistent typography usage"
+        ],
+        context: [
+          "Business communications",
+          "Marketing campaigns",
+          "Product packaging and design"
+        ]
       }
     };
   }

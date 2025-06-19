@@ -4934,6 +4934,219 @@ ${selectedPageCode.jsCode}
                       )}
                     </CardContent>
                   </Card>
+                  
+                  {/* Key Points & Highlights */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Points</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyPoints.map((point, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                • {point}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Highlights</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyHighlights.map((highlight, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                                ⭐ {highlight}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Important Clauses</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyClauses.map((clause, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                📋 {clause}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Dos and Don'ts */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-red-400"></div>
+                        Dos & Don'ts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.dosAndDonts && (
+                        <>
+                          {brandGuidelines.dosAndDonts.dos && brandGuidelines.dosAndDonts.dos.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">✓ Do</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.dos.map((doItem, index) => (
+                                  <div key={index} className="text-xs text-green-800 bg-green-50 p-2 rounded border-l-3 border-green-500">
+                                    ✓ {doItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.dosAndDonts.donts && brandGuidelines.dosAndDonts.donts.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">✗ Don't</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.donts.map((dontItem, index) => (
+                                  <div key={index} className="text-xs text-red-800 bg-red-50 p-2 rounded border-l-3 border-red-500">
+                                    ✗ {dontItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      
+                      {brandGuidelines.brandRules && brandGuidelines.brandRules.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Rules</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandRules.map((rule, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                📜 {rule}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Compliance & Usage Guidelines */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-400 to-purple-500"></div>
+                        Compliance & Requirements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.compliance && (
+                        <>
+                          {brandGuidelines.compliance.requirements && brandGuidelines.compliance.requirements.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Requirements</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.requirements.map((req, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-indigo-50 p-2 rounded">
+                                    • {req}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.restrictions && brandGuidelines.compliance.restrictions.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Restrictions</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.restrictions.map((restriction, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ⚠️ {restriction}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.guidelines && brandGuidelines.compliance.guidelines.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.guidelines.map((guideline, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-gray-50 p-2 rounded">
+                                    📋 {guideline}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-teal-400 to-cyan-500"></div>
+                        Usage Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.usageGuidelines && (
+                        <>
+                          {brandGuidelines.usageGuidelines.approved && brandGuidelines.usageGuidelines.approved.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">Approved Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.approved.map((usage, index) => (
+                                  <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded">
+                                    ✓ {usage}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.prohibited && brandGuidelines.usageGuidelines.prohibited.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">Prohibited Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.prohibited.map((prohibited, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ✗ {prohibited}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.context && brandGuidelines.usageGuidelines.context.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Context Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.context.map((context, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-teal-50 p-2 rounded">
+                                    📝 {context}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Brand Values & Accessibility */}
