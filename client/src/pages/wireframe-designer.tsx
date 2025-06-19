@@ -807,15 +807,13 @@ export default function WireframeDesigner() {
           currentPage: card.pageName 
         });
 
-        // Generate brand-aware wireframe for this specific section
-        const result = await generator.generateBrandedWireframe({
-          pageContent: card,
-          designStyle: "modern professional",
-          deviceType: "desktop",
-          brandGuidelines: brandGuidelines
-        });
+        // Create a complete, modern HTML page for this section with embedded CSS and JS
+        const primaryColor = brandGuidelines.colors.primary[0] || '#DA291C';
+        const accentColor = brandGuidelines.colors.accent[0] || '#FFC72C';
+        const secondaryColor = brandGuidelines.colors.secondary[0] || '#264A2B';
+        const neutralColor = brandGuidelines.colors.neutral[0] || '#f8fafc';
+        const brandFont = brandGuidelines.typography.fonts[0] || 'Helvetica Neue';
 
-        // Create a complete, modern HTML page for this section
         const htmlCode = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -831,10 +829,10 @@ export default function WireframeDesigner() {
         }
         
         body {
-            font-family: ${brandGuidelines.typography.fonts[0] || "'Helvetica Neue', Arial, sans-serif"};
+            font-family: ${brandFont};
             line-height: 1.6;
-            color: ${brandGuidelines.colors.primary[0] || '#333'};
-            background: linear-gradient(135deg, ${brandGuidelines.colors.neutral[0] || '#f8fafc'} 0%, ${brandGuidelines.colors.secondary[0] || '#e2e8f0'} 100%);
+            color: #333333;
+            background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
             min-height: 100vh;
         }
         
@@ -856,7 +854,7 @@ export default function WireframeDesigner() {
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
-            border-left: 6px solid ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            border-left: 6px solid ${accentColor};
             position: relative;
             overflow: hidden;
         }
@@ -868,14 +866,14 @@ export default function WireframeDesigner() {
             right: 0;
             width: 100px;
             height: 100px;
-            background: ${brandGuidelines.colors.accent[0] || '#3b82f6'};
+            background: ${accentColor};
             opacity: 0.1;
             border-radius: 50%;
             transform: translate(50%, -50%);
         }
         
         .header h1 {
-            color: ${brandGuidelines.colors.primary[0] || '#1e293b'};
+            color: ${primaryColor};
             font-size: 2.5rem;
             font-weight: 700;
             margin-bottom: 10px;
@@ -1252,7 +1250,7 @@ export default function WireframeDesigner() {
           id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           pageName: card.pageName,
           htmlCode: htmlCode,
-          cssCode: result.css,
+          cssCode: "// CSS embedded in HTML",
           jsCode: "// Interactive enhancements included in HTML",
           isEnhanced: true,
           lastUpdated: new Date().toISOString(),
