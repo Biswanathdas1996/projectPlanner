@@ -442,14 +442,105 @@ Return HTML and CSS in this exact format:
             font-family: '${brandFont}', Arial, sans-serif;
             line-height: 1.6;
             color: #333333;
-            background: ${neutralColor};
+            background: #f5f7fa;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Corporate Header */
+        .header {
+            background: ${headerColor};
+            color: white;
+            height: ${headerHeight};
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+        }
+        
+        .header-brand {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+        }
+        
+        .header-nav {
+            display: flex;
+            gap: 32px;
+            list-style: none;
+        }
+        
+        .header-nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        
+        .header-nav a:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            margin-top: ${headerHeight};
+            min-height: calc(100vh - ${headerHeight});
+        }
+        
+        /* Left Sidebar */
+        .sidebar {
+            width: ${sidebarWidth};
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+        
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sidebar-nav li {
+            margin: 4px 0;
+        }
+        
+        .sidebar-nav a {
+            display: block;
+            padding: 12px 24px;
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .sidebar-nav a:hover,
+        .sidebar-nav a.active {
+            background: #f1f5f9;
+            color: ${headerColor};
+            border-right: 3px solid ${headerColor};
+        }
+        
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 32px;
+            max-width: calc(100vw - ${sidebarWidth});
+            overflow-x: auto;
         }
         
         .container {
             max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
             animation: fadeIn 0.8s ease-out;
         }
         
@@ -789,40 +880,46 @@ Return HTML and CSS in this exact format:
     </style>
 </head>
 <body>
-    <!-- Top Navigation -->
-    <nav style="background: white; border-bottom: 2px solid ${accentColor}; padding: 15px 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="width: 40px; height: 40px; background: ${primaryColor}; color: ${primaryTextColor}; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem;">
+    <!-- Corporate Header -->
+    <header class="header">
+        <div class="header-brand">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 32px; height: 32px; background: white; color: ${headerColor}; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">
                     ${pageContent.pageName.charAt(0).toUpperCase()}
                 </div>
-                <div>
-                    <h1 style="color: ${primaryColor}; font-size: 1.4rem; margin: 0; font-weight: 700;">${pageContent.pageName}</h1>
-                    <p style="color: #64748b; font-size: 0.85rem; margin: 0;">${pageContent.pageType || "Application"}</p>
-                </div>
+                Brand Strategy Team
             </div>
-            ${
-                pageContent.navigation && pageContent.navigation.length > 0
-                    ? `
-            <div style="display: flex; gap: 5px;">
-                ${pageContent.navigation
-                    .slice(0, 4)
-                    .map(
-                        (nav: string) => `
-                    <a href="#" style="color: ${primaryColor}; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; transition: all 0.3s ease; font-size: 0.9rem;" 
-                       onmouseover="this.style.background='${accentColor}'; this.style.color='${accentTextColor}'" 
-                       onmouseout="this.style.background=''; this.style.color='${primaryColor}'">${nav}</a>
-                `,
-                    )
-                    .join("")}
-            </div>
-            `
-                    : ""
-            }
         </div>
-    </nav>
+        <nav class="header-nav">
+            ${pageContent.navigation && pageContent.navigation.length > 0 
+                ? pageContent.navigation.slice(0, 5).map((nav: string) => `<a href="#">${nav}</a>`).join('')
+                : `<a href="#">Home</a><a href="#">People & Org</a><a href="#">Campaigns</a><a href="#">Agency Management</a><a href="#">Resources</a>`
+            }
+        </nav>
+        <div style="color: white; font-weight: 500;">Welcome Marcel Redmond</div>
+    </header>
 
-    <div class="container" style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <li><a href="#" class="active">Service Development</a></li>
+                <li><a href="#">Product Development</a></li>
+                <li><a href="#">Jobs and Building Infrastructure</a></li>
+                <li><a href="#">About Planning</a></li>
+                <li><a href="#">Employee Advantage</a></li>
+                <li><a href="#">Client Satisfaction</a></li>
+                <li><a href="#">Page Rating</a></li>
+                <li><a href="#">Tools & Events</a></li>
+                <li><a href="#">Documents</a></li>
+                <li><a href="#">Resources</a></li>
+            </nav>
+        </aside>
+
+        <!-- Content Area -->
+        <main class="content">
+            <div class="container">
         <!-- Page Header Section -->
         <section style="background: linear-gradient(135deg, white 0%, ${neutralColor} 100%); padding: 40px; border-radius: 16px; margin-bottom: 30px; text-align: center; position: relative; border: 1px solid #e2e8f0;">
             <h1 style="color: ${primaryColor}; font-size: 2.5rem; font-weight: 700; margin-bottom: 15px;">${pageContent.pageName}</h1>
@@ -1048,6 +1145,8 @@ Return HTML and CSS in this exact format:
         `
                 : ""
         }
+            </div>
+        </main>
     </div>
     
     <script>
