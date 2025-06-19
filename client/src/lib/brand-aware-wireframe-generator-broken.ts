@@ -19,38 +19,33 @@ export class BrandAwareWireframeGenerator {
   private model: any;
 
   constructor() {
-    const apiKey = import.meta.env.VITE_GOOGLE_AI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Google AI API key not found');
-    }
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
+    );
+    this.genAI = genAI;
+    this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
   async generateBrandedWireframe(request: BrandedWireframeRequest): Promise<BrandedWireframeResponse> {
     try {
       const prompt = this.buildBrandedPrompt(request);
       const result = await this.model.generateContent(prompt);
-      const response = result.response.text();
-      
-      return this.parseResponse(response, request.brandGuidelines);
+      const response = await result.response;
+      const text = response.text();
+
+      return this.parseResponse(text, request.brandGuidelines);
     } catch (error) {
       console.error('Error generating branded wireframe:', error);
-      
-      return {
-        html: this.generateFallbackHTML(),
-        css: this.generateBrandCSS(request.brandGuidelines),
-        brandNotes: this.generateDefaultBrandNotes(request.brandGuidelines)
-      };
+      throw new Error('Failed to generate branded wireframe');
     }
   }
 
   private buildBrandedPrompt(request: BrandedWireframeRequest): string {
     const { pageContent, designStyle, deviceType, brandGuidelines } = request;
 
-    return `You are a professional UI/UX designer specializing in brand-compliant wireframe generation. Create a modern, sophisticated wireframe that strictly follows the provided brand guidelines.
+    return `Create a MODERN, PROFESSIONAL, and BRAND-COMPLIANT wireframe that strictly adheres to the brand guidelines. The design must be sophisticated, contemporary, and production-ready.
 
-PAGE CONTENT ANALYSIS:
+PAGE REQUIREMENTS:
 Page Name: ${pageContent.pageName}
 Page Type: ${pageContent.pageType}
 Purpose: ${pageContent.purpose}
@@ -64,67 +59,88 @@ Navigation: ${pageContent.navigation.join(', ')}
 
 DESIGN REQUIREMENTS: ${designStyle} style for ${deviceType}
 
-BRAND GUIDELINES TO FOLLOW EXACTLY:
-Colors:
-- Primary: ${brandGuidelines.colors.primary.join(', ')}
-- Secondary: ${brandGuidelines.colors.secondary.join(', ')}
-- Accent: ${brandGuidelines.colors.accent.join(', ')}
-- Neutral: ${brandGuidelines.colors.neutral.join(', ')}
+MANDATORY BRAND COMPLIANCE:
+PRIMARY COLORS (use for headers, navigation, primary buttons):
+${brandGuidelines.colors.primary.map(color => `- ${color}`).join('\n')}
 
-Typography:
-- Fonts: ${brandGuidelines.typography.fonts.join(', ')}
-- Weights: ${brandGuidelines.typography.weights.join(', ')}
+ACCENT COLORS (use for CTAs, highlights, interactive elements):
+${brandGuidelines.colors.accent.map(color => `- ${color}`).join('\n')}
 
-Layout:
-- Spacing: ${brandGuidelines.layout.spacing.join(', ')}
-- Grid: ${brandGuidelines.layout.grid.join(', ')}
+SECONDARY COLORS (use for supporting elements, borders):
+${brandGuidelines.colors.secondary.map(color => `- ${color}`).join('\n')}
 
-Components:
-- Buttons: ${brandGuidelines.components.buttons.join(', ')}
-- Cards: ${brandGuidelines.components.cards.join(', ')}
+NEUTRAL COLORS (use for backgrounds, text, subtle elements):
+${brandGuidelines.colors.neutral.map(color => `- ${color}`).join('\n')}
 
-Brand Tone: ${brandGuidelines.tone.personality.join(', ')}
+TYPOGRAPHY SYSTEM:
+Primary Font: ${brandGuidelines.typography.fonts[0] || 'Inter'}
+Secondary Font: ${brandGuidelines.typography.fonts[1] || 'system-ui'}
+Font Weights: ${brandGuidelines.typography.weights.join(', ')}
+Heading Style: ${brandGuidelines.typography.headingStyles.join(', ')}
+Body Style: ${brandGuidelines.typography.bodyStyles.join(', ')}
 
-WIREFRAME GENERATION REQUIREMENTS:
+LAYOUT SPECIFICATIONS:
+Spacing System: ${brandGuidelines.layout.spacing.join(', ')}
+Grid System: ${brandGuidelines.layout.gridSystems.join(', ')}
+Responsive Breakpoints: ${brandGuidelines.layout.breakpoints.join(', ')}
 
-1. STRICT BRAND COMPLIANCE:
-- Use EXACT brand colors (no approximations)
-- Apply specified typography with correct fonts and weights
-- Follow spacing and grid guidelines precisely
-- Implement component styles as specified
+COMPONENT STYLING:
+Buttons: ${brandGuidelines.components.buttons.join(', ')} - USE EXACT BRAND COLORS
+Cards: ${brandGuidelines.components.cards.join(', ')} - PROFESSIONAL SHADOWS AND SPACING
+Forms: ${brandGuidelines.components.forms.join(', ')} - CLEAN, ACCESSIBLE DESIGN
+Navigation: ${brandGuidelines.components.navigation.join(', ')} - CLEAR HIERARCHY
 
-2. MODERN PROFESSIONAL DESIGN:
-- Clean, sophisticated layout with modern CSS techniques
-- Professional gradients, shadows, and transitions
-- Responsive grid systems and flexible layouts
-- Advanced typography with proper hierarchy
+BRAND PERSONALITY TO REFLECT:
+${brandGuidelines.tone.personality.join(', ')} - ${brandGuidelines.tone.voice.join(', ')}
 
-3. COMPREHENSIVE STYLING:
-- Modern CSS variables for brand consistency
-- Professional button styles with hover effects
-- Sophisticated card designs with subtle shadows
-- Advanced navigation with smooth animations
-- Responsive breakpoints for all devices
+MODERN DESIGN REQUIREMENTS:
+1. Use contemporary layout patterns (CSS Grid, Flexbox)
+2. Implement proper visual hierarchy with brand colors
+3. Apply consistent spacing using the brand spacing system
+4. Use brand-specific fonts with appropriate weights
+5. Create professional shadows and subtle gradients within brand palette
+6. Ensure accessibility with proper contrast ratios
+7. Add micro-interactions and hover states using accent colors
+8. Implement responsive design following brand breakpoints
+9. Use brand colors for ALL interactive elements
+10. Apply brand personality through color psychology and spacing
 
-4. ADVANCED COMPONENTS:
-- Hero sections with gradient backgrounds
-- Feature grids with icon placeholders
-- Statistics sections with large numbers
-- Professional forms with proper validation styling
-- Modern navigation bars with brand logos
+CRITICAL REQUIREMENTS:
+1. Use ONLY the specified brand colors - no other colors allowed
+2. Apply the exact typography fonts and weights specified
+3. Follow the spacing system precisely
+4. Implement component styles according to brand guidelines
+5. Ensure the design reflects the brand personality and tone
+6. Create a cohesive, professional wireframe that embodies the brand
 
-Provide your response in this exact format:
+RESPONSE FORMAT:
+Return your response in this exact format:
 
 ===HTML===
-[Complete HTML structure with semantic elements, proper accessibility, and brand-specific classes]
-
+[Complete HTML wireframe code here]
 ===CSS===
-[Complete CSS with modern techniques, exact brand colors, sophisticated styling, and responsive design]
-
+[Complete CSS styling here - must use brand colors, fonts, and spacing]
 ===BRAND_NOTES===
-[Detailed list of how brand guidelines were applied in the design]
+[List of specific brand guideline applications made]
 
-IMPORTANT: Use exact brand colors from the guidelines. Create a professional, modern design that would be suitable for enterprise use. Include advanced CSS features like gradients, animations, and modern layout techniques.`;
+HTML REQUIREMENTS:
+- Complete, semantic HTML5 structure
+- Responsive design for ${deviceType}
+- All content from pageContent included
+- Proper accessibility attributes
+- Clean, production-ready code
+
+CSS REQUIREMENTS:
+- Use CSS custom properties for brand colors
+- Apply brand fonts exactly as specified
+- Follow brand spacing system
+- Implement brand component styles
+- Create hover and interactive states
+- Mobile-responsive design
+- Professional animations and transitions
+
+BRAND APPLICATION NOTES:
+Document how you applied each brand guideline element in the design.`;
   }
 
   private parseResponse(response: string, brandGuidelines: BrandGuideline): BrandedWireframeResponse {
@@ -220,6 +236,12 @@ IMPORTANT: Use exact brand colors from the guidelines. Create a professional, mo
   --brand-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
   font-family: var(--brand-font-primary);
   font-weight: var(--brand-weight-normal);
@@ -300,6 +322,12 @@ h3 {
   box-shadow: var(--brand-shadow);
   position: relative;
   overflow: hidden;
+  font-family: var(--brand-font-primary);
+  font-weight: var(--brand-weight-medium);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: inline-block;
 }
 
 .brand-button::before {
@@ -333,6 +361,10 @@ h3 {
 .brand-button--secondary:hover {
   background: var(--brand-primary);
   color: white;
+}
+
+.brand-button--accent {
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-accent-dark) 100%);
 }
 
 /* Professional Card System */
@@ -661,71 +693,40 @@ h3 {
     <title>Brand-Aware Wireframe</title>
 </head>
 <body>
-    <div class="brand-container">
-        <div class="brand-wireframe">
-            <nav class="brand-nav">
-                <div class="brand-nav-content brand-container">
-                    <a href="#" class="brand-logo">Brand</a>
-                    <ul class="brand-nav-links">
-                        <li><a href="#" class="brand-nav-link">Home</a></li>
-                        <li><a href="#" class="brand-nav-link">About</a></li>
-                        <li><a href="#" class="brand-nav-link">Services</a></li>
-                        <li><a href="#" class="brand-nav-link">Contact</a></li>
-                    </ul>
-                </div>
+    <div class="wireframe-container">
+        <header class="brand-nav">
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
             </nav>
+        </header>
 
-            <main>
-                <section class="brand-hero">
-                    <div class="brand-container">
-                        <h1>Welcome to Our Brand</h1>
-                        <p class="brand-text">Experience our professional, brand-aligned design system with modern components and sophisticated styling.</p>
-                        <a href="#" class="brand-button">Get Started</a>
-                        <a href="#" class="brand-button brand-button--secondary">Learn More</a>
-                    </div>
-                </section>
+        <main>
+            <section class="hero brand-text-center">
+                <h1>Welcome to Our Brand</h1>
+                <p>Experience our brand-aligned design system</p>
+                <button class="brand-button">Get Started</button>
+            </section>
 
-                <section class="brand-section">
-                    <div class="brand-container">
-                        <h2 class="brand-text-center brand-mb-lg">Our Features</h2>
-                        <div class="brand-features">
-                            <div class="brand-feature">
-                                <div class="brand-feature-icon">1</div>
-                                <h3>Professional Design</h3>
-                                <p class="brand-text">Modern, sophisticated components that follow exact brand guidelines and color specifications.</p>
-                            </div>
-                            <div class="brand-feature">
-                                <div class="brand-feature-icon">2</div>
-                                <h3>Brand Compliance</h3>
-                                <p class="brand-text">Strict adherence to typography, spacing, and visual identity standards across all elements.</p>
-                            </div>
-                            <div class="brand-feature">
-                                <div class="brand-feature-icon">3</div>
-                                <h3>Responsive Excellence</h3>
-                                <p class="brand-text">Adaptive layouts that maintain brand integrity across all device sizes and orientations.</p>
-                            </div>
-                        </div>
+            <section class="content">
+                <div class="brand-grid">
+                    <div class="brand-card">
+                        <h3>Feature One</h3>
+                        <p>Description of the first key feature following brand guidelines.</p>
+                        <button class="brand-button-accent">Learn More</button>
                     </div>
-                </section>
-
-                <section class="brand-stats">
-                    <div class="brand-container brand-grid">
-                        <div class="brand-text-center">
-                            <span class="brand-stat-number">99%</span>
-                            <span class="brand-stat-label">Brand Compliance</span>
-                        </div>
-                        <div class="brand-text-center">
-                            <span class="brand-stat-number">50+</span>
-                            <span class="brand-stat-label">Components</span>
-                        </div>
-                        <div class="brand-text-center">
-                            <span class="brand-stat-number">24/7</span>
-                            <span class="brand-stat-label">Support</span>
-                        </div>
+                    <div class="brand-card">
+                        <h3>Feature Two</h3>
+                        <p>Description of the second key feature with brand consistency.</p>
+                        <button class="brand-button-accent">Learn More</button>
                     </div>
-                </section>
-            </main>
-        </div>
+                </div>
+            </section>
+        </main>
     </div>
 </body>
 </html>`;
@@ -733,13 +734,11 @@ h3 {
 
   private generateDefaultBrandNotes(guidelines: BrandGuideline): string[] {
     return [
-      `Applied primary brand color: ${guidelines.colors.primary[0]} throughout the design`,
-      `Used brand typography: ${guidelines.typography.fonts[0]} for consistent text styling`,
-      `Implemented brand spacing system: ${guidelines.layout.spacing.join(', ')} for proper layout`,
-      `Followed button guidelines with modern gradients and hover effects`,
-      `Reflected brand personality: ${guidelines.tone.personality.join(', ')} in design choices`,
-      `Created responsive layouts that maintain brand integrity across devices`,
-      `Applied sophisticated CSS with modern animations and transitions`
+      `Applied primary brand color: ${guidelines.colors.primary[0]}`,
+      `Used brand typography: ${guidelines.typography.fonts[0]}`,
+      `Implemented brand spacing system: ${guidelines.layout.spacing.join(', ')}`,
+      `Followed button guidelines: ${guidelines.components.buttons.join(', ')}`,
+      `Reflected brand personality: ${guidelines.tone.personality.join(', ')}`
     ];
   }
 }
