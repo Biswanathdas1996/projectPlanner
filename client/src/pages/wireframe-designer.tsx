@@ -1680,7 +1680,8 @@ export default function WireframeDesigner() {
           pageContent: card,
           designStyle: selectedDesignType,
           deviceType: selectedDeviceType,
-          brandGuidelines
+          brandGuidelines,
+          comprehensiveBrandAnalysis
         };
 
         const result = await brandGenerator.generateBrandedWireframe(request);
