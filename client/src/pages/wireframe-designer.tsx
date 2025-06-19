@@ -4805,7 +4805,7 @@ ${selectedPageCode.jsCode}
                       <div>
                         <h4 className="font-medium text-sm mb-2">Breakpoints</h4>
                         <div className="flex flex-wrap gap-2">
-                          {brandGuidelines.layout.breakpoints.map((breakpoint, index) => (
+                          {(brandGuidelines.layout?.breakpoints || []).map((breakpoint, index) => (
                             <Badge key={index} variant="outline">{breakpoint}</Badge>
                           ))}
                         </div>
