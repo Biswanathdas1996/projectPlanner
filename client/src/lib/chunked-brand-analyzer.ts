@@ -607,11 +607,11 @@ Output ONLY valid JSON, no additional text.`;
         secondary: ['#1A936F', '#F18F01'],
         accent: ['#8B5CF6', '#EC4899'],
         neutral: ['#374151', '#6B7280', '#9CA3AF'],
-        semantic: {
-          error: ['#EF4444', '#DC2626'],
-          success: ['#10B981', '#059669'],
-          warning: ['#F59E0B', '#D97706']
-        }
+        text: ['#000000', '#333333'],
+        background: ['#FFFFFF', '#F8F9FA'],
+        error: ['#EF4444', '#DC2626'],
+        success: ['#10B981', '#059669'],
+        warning: ['#F59E0B', '#D97706']
       },
       typography: {
         fonts: ['Helvetica Neue', 'Arial', 'Open Sans'],
