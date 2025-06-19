@@ -1537,7 +1537,7 @@ export default function WireframeDesigner() {
         keyPoints: finalReport.keyFindings.criticalRequirements,
         keyClauses: finalReport.keyFindings.brandThemes,
         keyHighlights: finalReport.keyFindings.designPrinciples,
-        complianceNotes: finalReport.keyFindings.complianceNotes,
+        compliance: finalReport.keyFindings.complianceNotes,
         specifications: [...finalReport.brandGuidelines.colors.primary, ...finalReport.brandGuidelines.typography.fonts],
         usageRules: finalReport.brandGuidelines.logos.usage
       };
@@ -5386,42 +5386,8 @@ ${selectedPageCode.jsCode}
                               {finalBrandReport.keyFindings.complianceNotes.slice(0, 5).map((note, index) => (
                                 <div key={index} className="text-xs text-purple-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
                                   <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Logo Guidelines */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.length > 0 && (
-                          <div>
-                            <h4 className="font-medium text-sm mb-2 text-indigo-700">Logo Guidelines ({enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.length})</h4>
-                            <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.slice(0, 5).map((point, index) => (
-                                <div key={index} className="text-xs text-indigo-700 bg-indigo-50 p-2 rounded border-l-3 border-indigo-400">
-                                  <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Compliance Rules */}
-                        {enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.length > 0 && (
-                          <div>
-                            <h4 className="font-medium text-sm mb-2 text-red-700">Compliance Rules ({enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.length})</h4>
-                            <div className="max-h-32 overflow-y-auto space-y-1">
-                              {enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.slice(0, 5).map((point, index) => (
-                                <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded border-l-3 border-red-400">
-                                  <div className="flex justify-between items-start">
-                                    <span>{point.content}</span>
-                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                    <span>{note}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
                                   </div>
                                 </div>
                               ))}
@@ -5433,85 +5399,49 @@ ${selectedPageCode.jsCode}
                   </Card>
                 )}
 
-                {/* Comprehensive Analysis Data */}
-                {comprehensiveBrandAnalysis && (
+                {/* Document Information */}
+                {finalBrandReport && finalBrandReport.documentInfo && (
                   <Card className="mt-6">
                     <CardHeader>
                       <CardTitle className="text-lg flex items-center gap-2">
                         <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-teal-500 animate-pulse"></div>
-                        Detailed Analysis Results
+                        Document Analysis Summary
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <h4 className="font-medium text-sm mb-2 text-emerald-700">Color Specifications ({comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length})</h4>
-                          <div className="max-h-32 overflow-y-auto space-y-1">
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.slice(0, 10).map((spec, index) => (
-                              <div key={index} className="text-xs text-gray-600 bg-emerald-50 p-1 rounded">
-                                {spec}
-                              </div>
-                            ))}
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length > 10 && (
-                              <div className="text-xs text-emerald-600 font-medium">
-                                +{comprehensiveBrandAnalysis.consolidatedFindings.allColorSpecs.length - 10} more...
-                              </div>
-                            )}
+                          <h4 className="font-medium text-sm mb-2 text-emerald-700">Processing Stats</h4>
+                          <div className="space-y-2">
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Total Pages: {finalBrandReport.documentInfo.totalPages}
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Average Confidence: {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Processing Time: {finalBrandReport.documentInfo.processingTime}s
+                            </div>
                           </div>
                         </div>
                         
                         <div>
-                          <h4 className="font-medium text-sm mb-2 text-blue-700">Typography Rules ({comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length})</h4>
+                          <h4 className="font-medium text-sm mb-2 text-blue-700">Color Guidelines</h4>
                           <div className="max-h-32 overflow-y-auto space-y-1">
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.slice(0, 10).map((rule, index) => (
+                            {finalBrandReport.brandGuidelines.colors.primary.slice(0, 5).map((color, index) => (
                               <div key={index} className="text-xs text-gray-600 bg-blue-50 p-1 rounded">
-                                {rule}
+                                {color}
                               </div>
                             ))}
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length > 10 && (
-                              <div className="text-xs text-blue-600 font-medium">
-                                +{comprehensiveBrandAnalysis.consolidatedFindings.allTypographyRules.length - 10} more...
-                              </div>
-                            )}
                           </div>
                         </div>
                         
                         <div>
-                          <h4 className="font-medium text-sm mb-2 text-purple-700">Logo Guidelines ({comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length})</h4>
+                          <h4 className="font-medium text-sm mb-2 text-purple-700">Typography Guidelines</h4>
                           <div className="max-h-32 overflow-y-auto space-y-1">
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.slice(0, 10).map((rule, index) => (
+                            {finalBrandReport.brandGuidelines.typography.fonts.slice(0, 5).map((font, index) => (
                               <div key={index} className="text-xs text-gray-600 bg-purple-50 p-1 rounded">
-                                {rule}
-                              </div>
-                            ))}
-                            {comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length > 10 && (
-                              <div className="text-xs text-purple-600 font-medium">
-                                +{comprehensiveBrandAnalysis.consolidatedFindings.allLogoUsageRules.length - 10} more...
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Dos and Don'ts from Analysis */}
-                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h4 className="font-medium text-sm mb-2 text-green-700">Dos ({comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.length})</h4>
-                          <div className="max-h-24 overflow-y-auto space-y-1">
-                            {comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.dos.slice(0, 5).map((item, index) => (
-                              <div key={index} className="text-xs text-green-700 bg-green-50 p-1 rounded">
-                                ✓ {item}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <h4 className="font-medium text-sm mb-2 text-red-700">Don'ts ({comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.length})</h4>
-                          <div className="max-h-24 overflow-y-auto space-y-1">
-                            {comprehensiveBrandAnalysis.consolidatedFindings.consolidatedDosAndDonts.donts.slice(0, 5).map((item, index) => (
-                              <div key={index} className="text-xs text-red-700 bg-red-50 p-1 rounded">
-                                ✗ {item}
+                                {font}
                               </div>
                             ))}
                           </div>
