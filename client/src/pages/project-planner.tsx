@@ -443,9 +443,12 @@ export default function ProjectPlanner() {
         })));
 
         try {
-          // Generate content for this section
+          // Generate content for this section using configured AI prompts
           console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
-          const content = await planner.generateSection(section.title, config);
+          const content = await planner.generateSection(section.title, config, {
+            id: section.id,
+            aiPrompts: section.aiPrompts
+          });
           
           const generatedSection: ProjectPlanSection = {
             id: section.id,
