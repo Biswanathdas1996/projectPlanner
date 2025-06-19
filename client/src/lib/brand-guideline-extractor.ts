@@ -41,23 +41,6 @@ export interface BrandGuideline {
     containers: string[];
     margins: string[];
     padding: string[];
-    pageStructure: {
-      headerStyle: string;
-      navigationStyle: string;
-      contentLayout: string;
-      sidebarStyle: string;
-      footerStyle: string;
-      cardDesign: string;
-      sectionSpacing: string;
-    };
-    layoutPatterns: {
-      multiColumn: boolean;
-      sidebarLeft: boolean;
-      sidebarRight: boolean;
-      headerHeight: string;
-      contentMaxWidth: string;
-      gridColumns: number;
-    };
   };
   components: {
     buttons?: {
@@ -474,24 +457,7 @@ Return this exact JSON structure with enhanced design system information:
     "breakpoints": ["640px", "768px", "1024px", "1280px", "1536px"],
     "containers": ["320px", "768px", "1024px", "1280px"],
     "margins": ["16px", "24px", "32px", "48px"],
-    "padding": ["8px", "16px", "24px", "32px"],
-    "pageStructure": {
-      "headerStyle": "Blue header with navigation bar, height 60-80px",
-      "navigationStyle": "Left sidebar navigation with white background, 200-250px width",
-      "contentLayout": "Main content area with card-based layout, max-width 1200px",
-      "sidebarStyle": "Clean white sidebar with blue accent links",
-      "footerStyle": "Multi-column footer with brand colors",
-      "cardDesign": "White cards with subtle shadows and rounded corners",
-      "sectionSpacing": "24-32px between major sections"
-    },
-    "layoutPatterns": {
-      "multiColumn": true,
-      "sidebarLeft": true,
-      "sidebarRight": false,
-      "headerHeight": "70px",
-      "contentMaxWidth": "1200px",
-      "gridColumns": 12
-    }
+    "padding": ["8px", "16px", "24px", "32px"]
   },
   "components": {
     "buttons": {
@@ -626,24 +592,7 @@ Return this exact JSON structure with enhanced design system information:
         breakpoints: ["640px", "768px", "1024px", "1280px"],
         containers: ["768px", "1024px", "1280px"],
         margins: ["16px", "24px", "32px"],
-        padding: ["16px", "24px", "32px"],
-        pageStructure: {
-          headerStyle: "Professional header with navigation",
-          navigationStyle: "Clean sidebar or top navigation",
-          contentLayout: "Grid-based content area",
-          sidebarStyle: "Supporting navigation sidebar",
-          footerStyle: "Multi-column footer",
-          cardDesign: "Clean cards with shadows",
-          sectionSpacing: "Consistent section spacing"
-        },
-        layoutPatterns: {
-          multiColumn: true,
-          sidebarLeft: false,
-          sidebarRight: false,
-          headerHeight: "60px",
-          contentMaxWidth: "1200px",
-          gridColumns: 12
-        }
+        padding: ["16px", "24px", "32px"]
       },
       components: {
         buttons: {
