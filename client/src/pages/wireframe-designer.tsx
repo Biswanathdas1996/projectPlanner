@@ -89,7 +89,8 @@ import {
   Lightbulb,
   Briefcase,
   Shield,
-  Activity
+  Activity,
+  RefreshCw
 } from "lucide-react";
 
 interface WireframeData {
