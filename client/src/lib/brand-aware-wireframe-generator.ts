@@ -128,52 +128,52 @@ COLORS:
 - State Colors - Error: ${(brandGuidelines.colors?.error || []).join(", ")}, Success: ${(brandGuidelines.colors?.success || []).join(", ")}, Warning: ${(brandGuidelines.colors?.warning || []).join(", ")}
 
 TYPOGRAPHY & FONT FAMILIES:
-- Primary Font Family: ${brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0] || 'system-ui, sans-serif'}
-- Heading Font Family: ${brandGuidelines.typography?.fontFamilies?.heading || (brandGuidelines.typography?.fonts || [])[0] || 'system-ui, sans-serif'}
-- Body Font Family: ${brandGuidelines.typography?.fontFamilies?.body || (brandGuidelines.typography?.fonts || [])[1] || 'system-ui, sans-serif'}
+- Primary Font Family: ${brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0] || "system-ui, sans-serif"}
+- Heading Font Family: ${brandGuidelines.typography?.fontFamilies?.heading || (brandGuidelines.typography?.fonts || [])[0] || "system-ui, sans-serif"}
+- Body Font Family: ${brandGuidelines.typography?.fontFamilies?.body || (brandGuidelines.typography?.fonts || [])[1] || "system-ui, sans-serif"}
 - Font Sizes: ${(brandGuidelines.typography?.sizes || []).join(", ")}
 - Font Weights: ${(brandGuidelines.typography?.weights || []).join(", ")}
 - Line Heights: ${(brandGuidelines.typography?.lineHeights || []).join(", ")}
 
 LOGO & BRANDING:
-- Primary Logo: ${brandGuidelines.logos?.primary || 'Brand logo'}
+- Primary Logo: ${brandGuidelines.logos?.primary || "Brand logo"}
 - Logo Variations: ${(brandGuidelines.logos?.variations || []).join(", ")}
 - Size Requirements: ${(brandGuidelines.logos?.sizes || []).join(", ")}
 - Spacing: ${(brandGuidelines.logos?.spacing || []).join(", ")}
 - Color Options: ${(brandGuidelines.logos?.colors || []).join(", ")}
-- Extracted Logo Images: ${brandGuidelines.logos?.images?.primary ? 'Primary logo extracted from PDF' : 'No logo images extracted'}
+
 
 COMPONENT DESIGN SPECIFICATIONS:
 BUTTONS:
-- Primary: ${brandGuidelines.components?.buttons?.primary || 'Solid background with brand colors'}
-- Secondary: ${brandGuidelines.components?.buttons?.secondary || 'Outlined style with brand colors'}
-- Border Radius: ${brandGuidelines.components?.buttons?.borderRadius || '8px'}
-- Font Weight: ${brandGuidelines.components?.buttons?.fontWeight || '500'}
-- States: ${brandGuidelines.components?.buttons?.states?.join(', ') || 'hover, active, disabled'}
+- Primary: ${brandGuidelines.components?.buttons?.primary || "Solid background with brand colors"}
+- Secondary: ${brandGuidelines.components?.buttons?.secondary || "Outlined style with brand colors"}
+- Border Radius: ${brandGuidelines.components?.buttons?.borderRadius || "8px"}
+- Font Weight: ${brandGuidelines.components?.buttons?.fontWeight || "500"}
+- States: ${brandGuidelines.components?.buttons?.states?.join(", ") || "hover, active, disabled"}
 
 CARDS:
-- Design: ${brandGuidelines.components?.cards?.design || 'Clean with subtle shadows and rounded corners'}
-- Shadows: ${brandGuidelines.components?.cards?.shadows?.join(', ') || 'subtle elevation'}
-- Border Radius: ${brandGuidelines.components?.cards?.borderRadius || '8px to 12px'}
-- Spacing: ${brandGuidelines.components?.cards?.spacing || '16px internal padding'}
-- Hover States: ${brandGuidelines.components?.cards?.hoverStates?.join(', ') || 'subtle shadow increase'}
+- Design: ${brandGuidelines.components?.cards?.design || "Clean with subtle shadows and rounded corners"}
+- Shadows: ${brandGuidelines.components?.cards?.shadows?.join(", ") || "subtle elevation"}
+- Border Radius: ${brandGuidelines.components?.cards?.borderRadius || "8px to 12px"}
+- Spacing: ${brandGuidelines.components?.cards?.spacing || "16px internal padding"}
+- Hover States: ${brandGuidelines.components?.cards?.hoverStates?.join(", ") || "subtle shadow increase"}
 
 NAVIGATION:
-- Primary Nav: ${brandGuidelines.components?.navigation?.primaryNav || 'Horizontal layout with brand logo'}
-- States: ${brandGuidelines.components?.navigation?.states || 'Active, hover, and current page indicators'}
-- Mobile Nav: ${brandGuidelines.components?.navigation?.mobileNav || 'Hamburger menu with slide-out panel'}
+- Primary Nav: ${brandGuidelines.components?.navigation?.primaryNav || "Horizontal layout with brand logo"}
+- States: ${brandGuidelines.components?.navigation?.states || "Active, hover, and current page indicators"}
+- Mobile Nav: ${brandGuidelines.components?.navigation?.mobileNav || "Hamburger menu with slide-out panel"}
 
 FORMS & CONTACT:
-- Input Styles: ${brandGuidelines.components?.forms?.inputStyles || 'Clean with focus states'}
-- Label Styles: ${brandGuidelines.components?.forms?.labelStyles || 'Medium weight with brand colors'}
-- Contact Design: ${brandGuidelines.components?.contactUs?.design || 'Form with contact information display'}
-- Contact Layout: ${brandGuidelines.components?.contactUs?.layout || 'Two-column or single column layout'}
+- Input Styles: ${brandGuidelines.components?.forms?.inputStyles || "Clean with focus states"}
+- Label Styles: ${brandGuidelines.components?.forms?.labelStyles || "Medium weight with brand colors"}
+- Contact Design: ${brandGuidelines.components?.contactUs?.design || "Form with contact information display"}
+- Contact Layout: ${brandGuidelines.components?.contactUs?.layout || "Two-column or single column layout"}
 
 SECTIONS:
-- Header Design: ${brandGuidelines.components?.sections?.headerDesign || 'Brand logo with navigation menu'}
-- Footer Design: ${brandGuidelines.components?.sections?.footerDesign || 'Multiple columns with links and contact info'}
-- Content Areas: ${brandGuidelines.components?.sections?.contentAreas || 'Proper margins and readable layouts'}
-- Backgrounds: ${brandGuidelines.components?.sections?.backgrounds?.join(', ') || 'White, light grays, brand accents'}
+- Header Design: ${brandGuidelines.components?.sections?.headerDesign || "Brand logo with navigation menu"}
+- Footer Design: ${brandGuidelines.components?.sections?.footerDesign || "Multiple columns with links and contact info"}
+- Content Areas: ${brandGuidelines.components?.sections?.contentAreas || "Proper margins and readable layouts"}
+- Backgrounds: ${brandGuidelines.components?.sections?.backgrounds?.join(", ") || "White, light grays, brand accents"}
 
 ACCESSIBILITY:
 - Contrast Standards: ${(brandGuidelines.accessibility?.contrast || []).join(", ")}
@@ -235,8 +235,8 @@ WIREFRAME DESIGN REQUIREMENTS:
    - Include ALL content sections mentioned above - do not omit any
    - Apply brand colors consistently throughout, no gradients
    - Use specified typography with proper hierarchy
-   ${brandGuidelines.logos.images?.primary ? `- Include authentic extracted logo in header/navigation: <img src="${brandGuidelines.logos.images.primary}" alt="Brand Logo" style="height: 40px; width: auto;">` : '- Include brand logo placeholder in header following specifications'}
-   ${brandGuidelines.logos.images && Object.keys(brandGuidelines.logos.images).length > 1 ? `- Use logo variants where appropriate: ${Object.keys(brandGuidelines.logos.images).filter(k => k !== 'primary').map(variant => `${variant} variant available`).join(', ')}` : ''}
+   - Include brand logo placeholder in header following specifications'
+   
    - Make it responsive and modern
    - Ensure proper color contrast for accessibility
    - Include engaging infographic elements
@@ -256,16 +256,16 @@ Create a realistic, functional web page layout that a real user would encounter.
 
 LOGO INTEGRATION WITH PLACEHOLDERS:
 - Primary Logo: Main header/navigation area
-  <div class="logo-placeholder primary-logo" style="height: 40px; width: 120px; background: linear-gradient(45deg, ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}, ${(brandGuidelines.colors?.accent || [])[0] || '#FFC72C'}); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">[LOGO]</div>
+  <div class="logo-placeholder primary-logo" style="height: 40px; width: 120px; background: linear-gradient(45deg, ${(brandGuidelines.colors?.primary || [])[0] || "#DA291C"}, ${(brandGuidelines.colors?.accent || [])[0] || "#FFC72C"}); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 14px;">[LOGO]</div>
 
 - Horizontal Logo: Footer, wide banner sections
-  <div class="logo-placeholder horizontal-logo" style="height: 32px; width: 160px; background: ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">[BRAND NAME]</div>
+  <div class="logo-placeholder horizontal-logo" style="height: 32px; width: 160px; background: ${(brandGuidelines.colors?.primary || [])[0] || "#DA291C"}; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">[BRAND NAME]</div>
 
 - Icon Logo: Favicon, mobile menu, compact spaces
-  <div class="logo-placeholder icon-logo" style="height: 24px; width: 24px; background: ${(brandGuidelines.colors?.accent || [])[0] || '#FFC72C'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">B</div>
+  <div class="logo-placeholder icon-logo" style="height: 24px; width: 24px; background: ${(brandGuidelines.colors?.accent || [])[0] || "#FFC72C"}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">B</div>
 
 - Text Logo: Use brand typography and colors for text-based branding
-  <div class="text-logo" style="font-family: ${(brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0]) || 'system-ui, sans-serif'}; color: ${(brandGuidelines.colors?.primary || [])[0] || '#DA291C'}; font-weight: bold; font-size: 24px;">BRAND</div>
+  <div class="text-logo" style="font-family: ${brandGuidelines.typography?.fontFamilies?.primary || (brandGuidelines.typography?.fonts || [])[0] || "system-ui, sans-serif"}; color: ${(brandGuidelines.colors?.primary || [])[0] || "#DA291C"}; font-weight: bold; font-size: 24px;">BRAND</div>
 
 IMPLEMENT MULTIPLE LOGO PLACEMENTS WITH PLACEHOLDERS:
 1. Header Navigation: Use primary logo placeholder with brand colors
@@ -298,8 +298,8 @@ Return HTML and CSS in this exact format:
 
 
 ===BRAND_NOTES===
-- Applied primary brand color: ${(brandGuidelines.colors?.primary || [])[0] || 'brand primary color'}
-- Used brand typography: ${(brandGuidelines.typography?.fonts || [])[0] || 'brand typography'}
+- Applied primary brand color: ${(brandGuidelines.colors?.primary || [])[0] || "brand primary color"}
+- Used brand typography: ${(brandGuidelines.typography?.fonts || [])[0] || "brand typography"}
 - Implemented responsive design with brand guidelines`;
     }
 
@@ -372,26 +372,30 @@ Return HTML and CSS in this exact format:
         pageContent: any,
         brandGuidelines: BrandGuideline,
     ): string {
-        const primaryColor = (brandGuidelines.colors?.primary || [])[0] || "#DA291C";
-        const accentColor = (brandGuidelines.colors?.accent || [])[0] || "#FFC72C";
-        const secondaryColor = (brandGuidelines.colors?.secondary || [])[0] || "#264A2B";
-        const neutralColor = (brandGuidelines.colors?.neutral || [])[0] || "#f8fafc";
+        const primaryColor =
+            (brandGuidelines.colors?.primary || [])[0] || "#DA291C";
+        const accentColor =
+            (brandGuidelines.colors?.accent || [])[0] || "#FFC72C";
+        const secondaryColor =
+            (brandGuidelines.colors?.secondary || [])[0] || "#264A2B";
+        const neutralColor =
+            (brandGuidelines.colors?.neutral || [])[0] || "#f8fafc";
         const brandFont =
             (brandGuidelines.typography?.fonts || [])[0] || "Helvetica Neue";
 
         // Calculate proper text colors based on background contrast
         const getContrastColor = (backgroundColor: string): string => {
             // Remove # if present and convert to RGB
-            const hex = backgroundColor.replace('#', '');
+            const hex = backgroundColor.replace("#", "");
             const r = parseInt(hex.substr(0, 2), 16);
             const g = parseInt(hex.substr(2, 2), 16);
             const b = parseInt(hex.substr(4, 2), 16);
-            
+
             // Calculate luminance
             const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            
+
             // Return white for dark backgrounds, dark for light backgrounds
-            return luminance > 0.5 ? '#333333' : '#ffffff';
+            return luminance > 0.5 ? "#333333" : "#ffffff";
         };
 
         const primaryTextColor = getContrastColor(primaryColor);
@@ -400,9 +404,16 @@ Return HTML and CSS in this exact format:
         const neutralTextColor = getContrastColor(neutralColor);
 
         // Determine page type and create appropriate layout structure
-        const isAppointmentPage = pageContent.pageName.toLowerCase().includes('appointment') || pageContent.pageName.toLowerCase().includes('scheduling');
-        const isVideoCallPage = pageContent.pageName.toLowerCase().includes('video') || pageContent.pageName.toLowerCase().includes('call') || pageContent.pageName.toLowerCase().includes('telemedicine');
-        const isDashboardPage = pageContent.pageName.toLowerCase().includes('dashboard') || pageContent.pageName.toLowerCase().includes('overview');
+        const isAppointmentPage =
+            pageContent.pageName.toLowerCase().includes("appointment") ||
+            pageContent.pageName.toLowerCase().includes("scheduling");
+        const isVideoCallPage =
+            pageContent.pageName.toLowerCase().includes("video") ||
+            pageContent.pageName.toLowerCase().includes("call") ||
+            pageContent.pageName.toLowerCase().includes("telemedicine");
+        const isDashboardPage =
+            pageContent.pageName.toLowerCase().includes("dashboard") ||
+            pageContent.pageName.toLowerCase().includes("overview");
         const isFormPage = pageContent.forms && pageContent.forms.length > 0;
 
         return `<!DOCTYPE html>
@@ -778,18 +789,27 @@ Return HTML and CSS in this exact format:
                 </div>
                 <div>
                     <h1 style="color: ${primaryColor}; font-size: 1.4rem; margin: 0; font-weight: 700;">${pageContent.pageName}</h1>
-                    <p style="color: #64748b; font-size: 0.85rem; margin: 0;">${pageContent.pageType || 'Application'}</p>
+                    <p style="color: #64748b; font-size: 0.85rem; margin: 0;">${pageContent.pageType || "Application"}</p>
                 </div>
             </div>
-            ${pageContent.navigation && pageContent.navigation.length > 0 ? `
+            ${
+                pageContent.navigation && pageContent.navigation.length > 0
+                    ? `
             <div style="display: flex; gap: 5px;">
-                ${pageContent.navigation.slice(0, 4).map((nav: string) => `
+                ${pageContent.navigation
+                    .slice(0, 4)
+                    .map(
+                        (nav: string) => `
                     <a href="#" style="color: ${primaryColor}; text-decoration: none; font-weight: 500; padding: 8px 16px; border-radius: 6px; transition: all 0.3s ease; font-size: 0.9rem;" 
                        onmouseover="this.style.background='${accentColor}'; this.style.color='${accentTextColor}'" 
                        onmouseout="this.style.background=''; this.style.color='${primaryColor}'">${nav}</a>
-                `).join('')}
+                `,
+                    )
+                    .join("")}
             </div>
-            ` : ''}
+            `
+                    : ""
+            }
         </div>
     </nav>
 
@@ -798,14 +818,22 @@ Return HTML and CSS in this exact format:
         <section style="background: linear-gradient(135deg, white 0%, ${neutralColor} 100%); padding: 40px; border-radius: 16px; margin-bottom: 30px; text-align: center; position: relative; border: 1px solid #e2e8f0;">
             <h1 style="color: ${primaryColor}; font-size: 2.5rem; font-weight: 700; margin-bottom: 15px;">${pageContent.pageName}</h1>
             <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">${pageContent.purpose}</p>
-            ${pageContent.stakeholders && pageContent.stakeholders.length > 0 ? `
+            ${
+                pageContent.stakeholders && pageContent.stakeholders.length > 0
+                    ? `
             <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 10px;">
                 <span style="color: #64748b; font-size: 0.9rem; font-weight: 500;">For:</span>
-                ${pageContent.stakeholders.map((stakeholder: string) => `
+                ${pageContent.stakeholders
+                    .map(
+                        (stakeholder: string) => `
                     <span style="background: ${accentColor}; color: ${accentTextColor}; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">${stakeholder}</span>
-                `).join('')}
+                `,
+                    )
+                    .join("")}
             </div>
-            ` : ''}
+            `
+                    : ""
+            }
         </section>
         
         ${
@@ -814,17 +842,21 @@ Return HTML and CSS in this exact format:
         <section class="content-section">
             <h2>📊 Key Sections</h2>
             <div class="infographic-grid">
-                ${pageContent.headers.map((header: string, idx: number) => `
+                ${pageContent.headers
+                    .map(
+                        (header: string, idx: number) => `
                     <div class="info-card">
                         <div class="info-icon" style="background: ${accentColor}; color: ${accentTextColor};">
                             ${idx + 1}
                         </div>
                         <h3 style="color: ${primaryColor}; margin-bottom: 8px;">${header}</h3>
                         <div class="progress-indicator">
-                            <div class="progress-bar" style="width: ${85 - (idx * 5)}%; background: ${primaryColor};"></div>
+                            <div class="progress-bar" style="width: ${85 - idx * 5}%; background: ${primaryColor};"></div>
                         </div>
                     </div>
-                `).join("")}
+                `,
+                    )
+                    .join("")}
             </div>
         </section>
         `
@@ -859,7 +891,7 @@ Return HTML and CSS in this exact format:
             </div>
             <div class="visual-separator"></div>
             <div class="button-group">
-                ${pageContent.buttons.map((button: any, idx: number) => `<button class="btn ${idx % 2 === 0 ? '' : 'btn-secondary'}">${button.label || button}</button>`).join("")}
+                ${pageContent.buttons.map((button: any, idx: number) => `<button class="btn ${idx % 2 === 0 ? "" : "btn-secondary"}">${button.label || button}</button>`).join("")}
             </div>
         </section>
         `
@@ -870,7 +902,7 @@ Return HTML and CSS in this exact format:
             pageContent.forms && pageContent.forms.length > 0
                 ? `
         <!-- Interactive Forms Section -->
-        <section style="display: grid; grid-template-columns: ${pageContent.forms.length > 1 ? 'repeat(auto-fit, minmax(400px, 1fr))' : '1fr'}; gap: 30px; margin-bottom: 30px;">
+        <section style="display: grid; grid-template-columns: ${pageContent.forms.length > 1 ? "repeat(auto-fit, minmax(400px, 1fr))" : "1fr"}; gap: 30px; margin-bottom: 30px;">
             ${pageContent.forms
                 .map(
                     (form: any, formIdx: number) => `
@@ -891,8 +923,8 @@ Return HTML and CSS in this exact format:
                                       .map(
                                           (field: string, fieldIdx: number) => `
                             <div style="position: relative;">
-                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: ${primaryColor}; font-size: 0.9rem;">${field} ${fieldIdx < 2 ? '<span style="color: #ef4444;">*</span>' : ''}</label>
-                                <input type="${field.toLowerCase().includes('email') ? 'email' : field.toLowerCase().includes('phone') ? 'tel' : field.toLowerCase().includes('date') || field.toLowerCase().includes('time') ? 'datetime-local' : 'text'}" 
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: ${primaryColor}; font-size: 0.9rem;">${field} ${fieldIdx < 2 ? '<span style="color: #ef4444;">*</span>' : ""}</label>
+                                <input type="${field.toLowerCase().includes("email") ? "email" : field.toLowerCase().includes("phone") ? "tel" : field.toLowerCase().includes("date") || field.toLowerCase().includes("time") ? "datetime-local" : "text"}" 
                                        placeholder="Enter your ${field.toLowerCase()}" 
                                        style="width: 100%; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: all 0.3s ease;"
                                        onfocus="this.style.borderColor='${accentColor}'; this.style.boxShadow='0 0 0 3px ${accentColor}33'"
@@ -905,7 +937,7 @@ Return HTML and CSS in this exact format:
                         }
                         <button style="background: ${primaryColor}; color: ${primaryTextColor}; padding: 15px 25px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;"
                                 onmouseover="this.style.background='${secondaryColor}'; this.style.color='${secondaryTextColor}'; this.style.transform='translateY(-2px)'"
-                                onmouseout="this.style.background='${primaryColor}'; this.style.color='${primaryTextColor}'; this.style.transform='translateY(0)'">${form.submitAction || 'Submit ' + (form.title || 'Form')}</button>
+                                onmouseout="this.style.background='${primaryColor}'; this.style.color='${primaryTextColor}'; this.style.transform='translateY(0)'">${form.submitAction || "Submit " + (form.title || "Form")}</button>
                     </div>
                 </div>
             `,
@@ -951,7 +983,14 @@ Return HTML and CSS in this exact format:
                                 </span>
                             </div>
                             <div style="padding: 20px;">
-                                ${list.items ? list.items.map((item: string, itemIdx: number) => `
+                                ${
+                                    list.items
+                                        ? list.items
+                                              .map(
+                                                  (
+                                                      item: string,
+                                                      itemIdx: number,
+                                                  ) => `
                                     <div style="display: flex; align-items: center; gap: 12px; padding: 12px; margin-bottom: 8px; background: white; border-radius: 6px; border-left: 3px solid ${accentColor}; transition: all 0.3s ease;"
                                          onmouseover="this.style.transform='translateX(5px)'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'"
                                          onmouseout="this.style.transform='translateX(0)'; this.style.boxShadow='none'">
@@ -959,7 +998,11 @@ Return HTML and CSS in this exact format:
                                         <span style="color: #374151; font-weight: 500;">${item}</span>
                                         <span style="margin-left: auto; color: #9ca3af; font-size: 0.8rem;">#${itemIdx + 1}</span>
                                     </div>
-                                `).join("") : '<p style="color: #9ca3af; text-align: center; padding: 20px;">No items available</p>'}
+                                `,
+                                              )
+                                              .join("")
+                                        : '<p style="color: #9ca3af; text-align: center; padding: 20px;">No items available</p>'
+                                }
                             </div>
                         </div>
                     `,
