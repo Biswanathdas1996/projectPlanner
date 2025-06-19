@@ -137,7 +137,7 @@ export class MultimodalPDFExtractor {
 
   private async convertPDFToImages(file: File): Promise<string[]> {
     try {
-      // Convert PDF file to base64 for direct processing with Gemini Vision
+      // Convert PDF file to base64 for processing with Gemini Vision
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
       
@@ -150,9 +150,12 @@ export class MultimodalPDFExtractor {
       }
       const base64 = btoa(binaryString);
       
-      // Return the PDF as a single base64 encoded document for Gemini Vision processing
-      console.log(`📚 PDF converted successfully for multimodal analysis`);
-      return [base64];
+      // Estimate pages based on file size (rough estimation)
+      const estimatedPages = Math.max(5, Math.min(20, Math.floor(file.size / 100000)));
+      console.log(`📚 PDF converted successfully - estimated ${estimatedPages} pages for analysis`);
+      
+      // Return multiple references to the same PDF but with different page contexts
+      return Array.from({ length: estimatedPages }, (_, i) => `${base64}:page:${i + 1}`);
       
     } catch (error) {
       console.warn('PDF conversion fallback used - processing with text analysis');
@@ -217,6 +220,13 @@ export class MultimodalPDFExtractor {
 
   private async extractFromSinglePage(pageNumber: number, pageContent: string): Promise<PageExtraction> {
     try {
+      // Check if this is a PDF with page marker
+      if (pageContent.includes(':page:')) {
+        const [base64Data, , pageNum] = pageContent.split(':');
+        return await this.extractFromPDFPage(base64Data, parseInt(pageNum));
+      }
+
+      // Fallback to text-based analysis
       const prompt = `Analyze this brand guidelines content and extract key information:
 
 ${pageContent.substring(0, 2000)}
@@ -289,6 +299,100 @@ Return structured data as JSON:
     } catch (error) {
       console.warn(`Failed to extract page ${pageNumber}:`, error);
       return this.createFallbackExtraction(pageNumber, pageContent);
+    }
+  }
+
+  private async extractFromPDFPage(pdfBase64: string, pageNumber: number): Promise<PageExtraction> {
+    try {
+      const prompt = `Analyze page ${pageNumber} of this brand guidelines PDF document and extract comprehensive brand information.
+
+Focus on extracting from page ${pageNumber}:
+1. Brand colors (hex codes, RGB values, color names, usage contexts)
+2. Typography (font families, sizes, weights, line heights, letter spacing)
+3. Logo guidelines (usage rules, sizing, spacing, color variations)
+4. Layout principles (grids, spacing, margins, padding)
+5. Brand voice and tone guidelines
+6. Compliance requirements and restrictions
+7. Visual elements and design specifications
+
+Return structured data as JSON:
+{
+  "pageNumber": ${pageNumber},
+  "textContent": "summary of page ${pageNumber} content",
+  "visualElements": {
+    "colors": ["specific colors found on this page"],
+    "typography": ["fonts and typography rules from this page"],
+    "layouts": ["layout specifications from this page"],
+    "logos": ["logo guidelines from this page"],
+    "images": ["image specifications from this page"]
+  },
+  "brandElements": {
+    "guidelines": ["brand guidelines from this page"],
+    "rules": ["usage rules from this page"],
+    "specifications": ["technical specifications from this page"],
+    "restrictions": ["restrictions mentioned on this page"]
+  },
+  "confidence": 0.9
+}
+
+Output ONLY valid JSON, no additional text.`;
+
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 45000)
+      );
+
+      const result = await Promise.race([
+        this.model.generateContent([
+          { text: prompt },
+          {
+            inlineData: {
+              mimeType: "application/pdf",
+              data: pdfBase64
+            }
+          }
+        ]),
+        timeoutPromise
+      ]);
+
+      const response = await result.response;
+      const text = response.text();
+
+      let cleanedText = text
+        .replace(/```json\s*/, '')
+        .replace(/```\s*$/, '')
+        .replace(/^[^{]*/, '')
+        .trim();
+
+      if (!cleanedText.endsWith('}')) {
+        const lastBraceIndex = cleanedText.lastIndexOf('}');
+        if (lastBraceIndex > 0) {
+          cleanedText = cleanedText.substring(0, lastBraceIndex + 1);
+        }
+      }
+
+      const parsed = JSON.parse(cleanedText);
+      
+      return {
+        pageNumber,
+        textContent: parsed.textContent || `Brand guidelines page ${pageNumber}`,
+        visualElements: {
+          colors: Array.isArray(parsed.visualElements?.colors) ? parsed.visualElements.colors : [],
+          typography: Array.isArray(parsed.visualElements?.typography) ? parsed.visualElements.typography : [],
+          layouts: Array.isArray(parsed.visualElements?.layouts) ? parsed.visualElements.layouts : [],
+          logos: Array.isArray(parsed.visualElements?.logos) ? parsed.visualElements.logos : [],
+          images: Array.isArray(parsed.visualElements?.images) ? parsed.visualElements.images : []
+        },
+        brandElements: {
+          guidelines: Array.isArray(parsed.brandElements?.guidelines) ? parsed.brandElements.guidelines : [],
+          rules: Array.isArray(parsed.brandElements?.rules) ? parsed.brandElements.rules : [],
+          specifications: Array.isArray(parsed.brandElements?.specifications) ? parsed.brandElements.specifications : [],
+          restrictions: Array.isArray(parsed.brandElements?.restrictions) ? parsed.brandElements.restrictions : []
+        },
+        confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.9
+      };
+    } catch (error) {
+      console.warn(`Failed to extract PDF page ${pageNumber}:`, error);
+      return this.createFallbackExtraction(pageNumber, `PDF page ${pageNumber}`);
     }
   }
 
