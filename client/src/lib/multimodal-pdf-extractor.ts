@@ -216,38 +216,45 @@ export class MultimodalPDFExtractor {
   }
 
   private async extractFromSinglePage(pageNumber: number, pageContent: string): Promise<PageExtraction> {
-    const prompt = `Analyze this brand guidelines page content and extract structured information.
+    try {
+      const prompt = `Analyze this brand guidelines content and extract key information:
 
-Page Content: ${pageContent}
+${pageContent.substring(0, 2000)}
 
-Extract and format as JSON:
+Return structured data as JSON:
 {
   "pageNumber": ${pageNumber},
-  "textContent": "Summary of page content",
+  "textContent": "brief summary",
   "visualElements": {
-    "colors": ["#FF6B35", "#004E89"],
-    "typography": ["Helvetica Neue", "Open Sans"],
-    "layouts": ["12-column grid", "responsive layout"],
-    "logos": ["horizontal variant", "stacked variant"],
-    "images": ["photography style", "iconography"]
+    "colors": ["color values found"],
+    "typography": ["fonts mentioned"],
+    "layouts": ["layout specs"],
+    "logos": ["logo guidelines"],
+    "images": ["image specs"]
   },
   "brandElements": {
-    "guidelines": ["color usage rules", "typography specs"],
-    "rules": ["logo placement", "spacing requirements"],
-    "specifications": ["minimum sizes", "clear space"],
-    "restrictions": ["prohibited uses", "don't modify"]
+    "guidelines": ["key guidelines"],
+    "rules": ["usage rules"],
+    "specifications": ["technical specs"],
+    "restrictions": ["restrictions mentioned"]
   },
-  "confidence": 0.9
-}
+  "confidence": 0.8
+}`;
 
-Output ONLY valid JSON, no additional text.`;
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 30000)
+      );
 
-    const result = await this.model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+      const result = await Promise.race([
+        this.model.generateContent(prompt),
+        timeoutPromise
+      ]);
 
-    let cleanedText = text
-      .replace(/```json\s*/, '')
+      const response = await result.response;
+      const text = response.text();
+
+      let cleanedText = text
+        .replace(/```json\s*/, '')
       .replace(/```\s*$/, '')
       .replace(/^[^{]*/, '')
       .trim();
@@ -279,6 +286,10 @@ Output ONLY valid JSON, no additional text.`;
       },
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.8
     };
+    } catch (error) {
+      console.warn(`Failed to extract page ${pageNumber}:`, error);
+      return this.createFallbackExtraction(pageNumber, pageContent);
+    }
   }
 
   private createFallbackExtraction(pageNumber: number, pageContent: string): PageExtraction {
