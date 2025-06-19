@@ -6,38 +6,68 @@ export interface BrandGuideline {
     secondary: string[];
     accent: string[];
     neutral: string[];
+    text: string[];
+    background: string[];
+    error: string[];
+    success: string[];
+    warning: string[];
   };
   typography: {
     fonts: string[];
     headingStyles: string[];
     bodyStyles: string[];
     weights: string[];
+    sizes: string[];
+    lineHeights: string[];
+    letterSpacing: string[];
   };
   layout: {
     spacing: string[];
     gridSystems: string[];
     breakpoints: string[];
+    containers: string[];
+    margins: string[];
+    padding: string[];
   };
   components: {
     buttons: string[];
     cards: string[];
     forms: string[];
     navigation: string[];
+    modals: string[];
+    tables: string[];
+    badges: string[];
   };
   imagery: {
     style: string;
     guidelines: string[];
     restrictions: string[];
+    aspectRatios: string[];
+    treatments: string[];
   };
   tone: {
     personality: string[];
     voice: string[];
     messaging: string[];
+    doAndDont: string[];
   };
   logos: {
+    primary: string;
+    variations: string[];
     usage: string[];
     restrictions: string[];
-    variations: string[];
+    spacing: string[];
+    colors: string[];
+    sizes: string[];
+    formats: string[];
+  };
+  brandValues: string[];
+  logoUsage: string[];
+  designPrinciples: string[];
+  accessibility: {
+    contrast: string[];
+    guidelines: string[];
+    compliance: string[];
   };
 }
 
@@ -139,34 +169,48 @@ Clean minimal design, good whitespace usage, strong hierarchy, modern iconograph
 
   private async analyzeWithGemini(analysisText: string): Promise<BrandGuideline> {
     try {
-      const prompt = `Extract brand guidelines from this analysis and return a JSON object:
+      const prompt = `Extract comprehensive brand guidelines from this analysis including text colors, logos, and detailed specifications. Return a JSON object:
 
 ${analysisText}
 
-Return this exact JSON structure:
+Return this exact JSON structure with enhanced color and logo information:
 {
   "colors": {
-    "primary": ["color1", "color2"],
-    "secondary": ["color1", "color2"],
-    "accent": ["color1", "color2"],
-    "neutral": ["color1", "color2"]
+    "primary": ["#DA291C", "#FF6900"],
+    "secondary": ["#264A2B", "#0A5D00"],
+    "accent": ["#FFC72C", "#FFDD44"],
+    "neutral": ["#f8fafc", "#e2e8f0", "#64748b"],
+    "text": ["#333333", "#000000", "#1f2937", "#4b5563"],
+    "background": ["#ffffff", "#f8fafc", "#f1f5f9"],
+    "error": ["#dc2626", "#ef4444"],
+    "success": ["#16a34a", "#22c55e"],
+    "warning": ["#d97706", "#f59e0b"]
   },
   "typography": {
-    "fonts": ["font1", "font2"],
-    "headingStyles": ["style1", "style2"],
-    "bodyStyles": ["style1", "style2"],
-    "weights": ["400", "600", "700"]
+    "fonts": ["Helvetica Neue", "Arial", "system-ui"],
+    "headingStyles": ["Bold 32px", "Semibold 24px", "Medium 20px"],
+    "bodyStyles": ["Regular 16px", "Medium 14px", "Light 12px"],
+    "weights": ["300", "400", "500", "600", "700"],
+    "sizes": ["12px", "14px", "16px", "18px", "20px", "24px", "32px"],
+    "lineHeights": ["1.2", "1.4", "1.6", "1.8"],
+    "letterSpacing": ["normal", "0.025em", "0.05em"]
   },
   "layout": {
-    "spacing": ["8px", "16px", "24px"],
-    "gridSystems": ["12-column", "flexbox"],
-    "breakpoints": ["768px", "1024px"]
+    "spacing": ["4px", "8px", "12px", "16px", "24px", "32px", "48px"],
+    "gridSystems": ["12-column responsive", "CSS Grid", "Flexbox"],
+    "breakpoints": ["640px", "768px", "1024px", "1280px", "1536px"],
+    "containers": ["320px", "768px", "1024px", "1280px"],
+    "margins": ["16px", "24px", "32px", "48px"],
+    "padding": ["8px", "16px", "24px", "32px"]
   },
   "components": {
-    "buttons": ["rounded", "solid"],
-    "cards": ["shadow", "border"],
-    "forms": ["clean", "focus"],
-    "navigation": ["horizontal", "clear"]
+    "buttons": ["Primary solid", "Secondary outline", "Ghost transparent"],
+    "cards": ["Elevated shadow", "Outlined border", "Filled background"],
+    "forms": ["Clean inputs", "Focus states", "Validation styling"],
+    "navigation": ["Horizontal menu", "Sidebar", "Mobile hamburger"],
+    "modals": ["Centered overlay", "Slide-in panel", "Full-screen"],
+    "tables": ["Striped rows", "Hover states", "Sortable headers"],
+    "badges": ["Solid fill", "Outline", "Pill shape"]
   },
   "imagery": {
     "style": "modern and clean",
@@ -212,39 +256,69 @@ Return this exact JSON structure:
         primary: ["#2563eb", "#1d4ed8"],
         secondary: ["#64748b", "#475569"],
         accent: ["#dc2626", "#b91c1c"],
-        neutral: ["#f8fafc", "#e2e8f0", "#64748b", "#1e293b"]
+        neutral: ["#f8fafc", "#e2e8f0", "#64748b", "#1e293b"],
+        text: ["#1f2937", "#374151", "#6b7280"],
+        background: ["#ffffff", "#f9fafb", "#f3f4f6"],
+        error: ["#dc2626", "#ef4444"],
+        success: ["#16a34a", "#22c55e"],
+        warning: ["#d97706", "#f59e0b"]
       },
       typography: {
         fonts: ["Inter", "system-ui", "sans-serif"],
         headingStyles: ["Bold", "Clean", "High Contrast"],
         bodyStyles: ["Regular", "Readable", "Professional"],
-        weights: ["400", "500", "600", "700"]
+        weights: ["400", "500", "600", "700"],
+        sizes: ["14px", "16px", "18px", "24px", "32px"],
+        lineHeights: ["1.4", "1.6", "1.8"],
+        letterSpacing: ["normal", "0.025em"]
       },
       layout: {
         spacing: ["8px", "16px", "24px", "32px", "48px"],
         gridSystems: ["12-column", "flexbox", "responsive"],
-        breakpoints: ["640px", "768px", "1024px", "1280px"]
+        breakpoints: ["640px", "768px", "1024px", "1280px"],
+        containers: ["768px", "1024px", "1280px"],
+        margins: ["16px", "24px", "32px"],
+        padding: ["16px", "24px", "32px"]
       },
       components: {
         buttons: ["rounded corners", "solid backgrounds", "hover states"],
         cards: ["subtle shadows", "clean borders", "good spacing"],
         forms: ["clean inputs", "focus states", "validation styling"],
-        navigation: ["horizontal layout", "clear hierarchy"]
+        navigation: ["horizontal layout", "clear hierarchy"],
+        modals: ["centered overlay", "smooth animations"],
+        tables: ["striped rows", "hover states"],
+        badges: ["solid fill", "outline variants"]
       },
       imagery: {
         style: "clean and modern",
         guidelines: ["high quality", "consistent style", "brand appropriate"],
-        restrictions: ["no low quality", "brand consistent", "appropriate context"]
+        restrictions: ["no low quality", "brand consistent", "appropriate context"],
+        aspectRatios: ["16:9", "4:3", "1:1"],
+        treatments: ["original", "filtered", "branded"]
       },
       tone: {
         personality: ["professional", "approachable", "reliable", "modern"],
         voice: ["clear", "authoritative", "friendly"],
-        messaging: ["trustworthy", "accessible", "innovative"]
+        messaging: ["trustworthy", "accessible", "innovative"],
+        doAndDont: ["be clear and concise", "avoid jargon", "stay on brand"]
       },
       logos: {
+        primary: "Main brand logo",
         usage: ["proper spacing", "correct colors", "appropriate size"],
         restrictions: ["no distortion", "minimum size requirements", "clear background"],
-        variations: ["horizontal", "vertical", "icon only"]
+        variations: ["horizontal", "vertical", "icon only"],
+        spacing: ["minimum 20px clearance"],
+        colors: ["full color", "monochrome", "reverse"],
+        sizes: ["minimum 24px height"],
+        formats: ["SVG", "PNG", "JPG"]
+      },
+      brandValues: ["innovation", "quality", "trust", "excellence"],
+      logoUsage: ["maintain proportions", "use appropriate backgrounds"],
+      designPrinciples: ["simplicity", "consistency", "accessibility"],
+      accessibility: {
+        contrast: ["4.5:1 minimum", "7:1 preferred"],
+        guidelines: ["WCAG 2.1 AA compliance"],
+        compliance: ["color contrast", "keyboard navigation", "screen reader support"]
       }
     };
   }
