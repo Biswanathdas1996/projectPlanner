@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Settings, Plus, Edit, Trash2, Save, X, GripVertical } from 'lucide-react';
+import { Settings, Plus, Edit, Trash2, Save, X, GripVertical, Code, ChevronDown, ChevronUp } from 'lucide-react';
 
 export interface ProjectSection {
   id: string;
@@ -15,6 +15,11 @@ export interface ProjectSection {
   order: number;
   enabled: boolean;
   isCustom?: boolean;
+  aiPrompts?: {
+    primary: string;
+    secondary?: string;
+    context?: string;
+  };
 }
 
 interface ProjectSectionsSettingsProps {
@@ -23,16 +28,136 @@ interface ProjectSectionsSettingsProps {
 }
 
 const DEFAULT_SECTIONS: ProjectSection[] = [
-  { id: "executive-summary", title: "Executive Summary", description: "Project overview and objectives", icon: "📋", order: 1, enabled: true },
-  { id: "technical-architecture", title: "Technical Architecture & Infrastructure", description: "System design and technology stack", icon: "🏗️", order: 2, enabled: true },
-  { id: "feature-specifications", title: "Detailed Feature Specifications", description: "Complete feature breakdown", icon: "⚙️", order: 3, enabled: true },
-  { id: "development-methodology", title: "Development Methodology & Timeline", description: "Project timeline and methodology", icon: "📅", order: 4, enabled: true },
-  { id: "user-experience", title: "User Experience & Interface Design", description: "UX/UI design strategy", icon: "🎨", order: 5, enabled: true },
-  { id: "quality-assurance", title: "Quality Assurance & Testing Strategy", description: "Testing and QA approach", icon: "🧪", order: 6, enabled: true },
-  { id: "deployment-devops", title: "Deployment & DevOps Strategy", description: "Deployment and infrastructure", icon: "🚀", order: 7, enabled: true },
-  { id: "risk-management", title: "Risk Management & Mitigation", description: "Risk assessment and planning", icon: "⚠️", order: 8, enabled: true },
-  { id: "stakeholder-management", title: "Stakeholder Management", description: "Communication and stakeholder strategy", icon: "👥", order: 9, enabled: true },
-  { id: "post-launch", title: "Post-Launch Strategy", description: "Launch and growth planning", icon: "📈", order: 10, enabled: true }
+  { 
+    id: "executive-summary", 
+    title: "Executive Summary", 
+    description: "Project overview and objectives", 
+    icon: "📋", 
+    order: 1, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Generate a comprehensive executive summary including project goals, scope, key objectives, success criteria, and expected business value based on the user requirements.",
+      secondary: "Create a brief overview highlighting the main value proposition, target audience, and expected outcomes.",
+      context: "Focus on business value, strategic alignment, and high-level project scope."
+    }
+  },
+  { 
+    id: "technical-architecture", 
+    title: "Technical Architecture & Infrastructure", 
+    description: "System design and technology stack", 
+    icon: "🏗️", 
+    order: 2, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Define detailed technical architecture including system design, technology stack, database architecture, API design, security considerations, and infrastructure requirements.",
+      secondary: "Specify scalability, performance, and reliability requirements with architectural patterns and best practices.",
+      context: "Include frontend/backend separation, microservices considerations, cloud infrastructure, and third-party integrations."
+    }
+  },
+  { 
+    id: "feature-specifications", 
+    title: "Detailed Feature Specifications", 
+    description: "Complete feature breakdown", 
+    icon: "⚙️", 
+    order: 3, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Create detailed feature specifications with functional requirements, user interactions, business rules, and technical implementation details for each feature.",
+      secondary: "Define feature priorities, dependencies, and acceptance criteria with user story mapping.",
+      context: "Focus on user needs, business logic, and technical feasibility for each feature."
+    }
+  },
+  { 
+    id: "development-methodology", 
+    title: "Development Methodology & Timeline", 
+    description: "Project timeline and methodology", 
+    icon: "📅", 
+    order: 4, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Develop a comprehensive project timeline with development methodology, sprint planning, milestones, resource allocation, and project phases.",
+      secondary: "Create realistic estimates, team capacity planning, and dependency management with risk buffers.",
+      context: "Consider team size, skill levels, complexity factors, and external dependencies."
+    }
+  },
+  { 
+    id: "user-experience", 
+    title: "User Experience & Interface Design", 
+    description: "UX/UI design strategy", 
+    icon: "🎨", 
+    order: 5, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Generate comprehensive UX/UI design strategy including user flows, wireframes, design system specifications, accessibility requirements, and responsive design considerations.",
+      secondary: "Define user personas, journey maps, and interaction patterns with usability testing approach.",
+      context: "Focus on user-centered design, accessibility standards, and modern design principles."
+    }
+  },
+  { 
+    id: "quality-assurance", 
+    title: "Quality Assurance & Testing Strategy", 
+    description: "Testing and QA approach", 
+    icon: "🧪", 
+    order: 6, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Create a comprehensive testing strategy including unit testing, integration testing, end-to-end testing, performance testing, and security testing approaches.",
+      secondary: "Define QA processes, test automation, bug tracking, and quality metrics with testing tools and frameworks.",
+      context: "Include both manual and automated testing, CI/CD integration, and quality gates."
+    }
+  },
+  { 
+    id: "deployment-devops", 
+    title: "Deployment & DevOps Strategy", 
+    description: "Deployment and infrastructure", 
+    icon: "🚀", 
+    order: 7, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Develop deployment strategy including CI/CD pipelines, infrastructure as code, environment management, monitoring, and release management processes.",
+      secondary: "Define DevOps practices, containerization, orchestration, and infrastructure automation with backup and disaster recovery.",
+      context: "Focus on automation, reliability, security, and scalability of deployment processes."
+    }
+  },
+  { 
+    id: "risk-management", 
+    title: "Risk Management & Mitigation", 
+    description: "Risk assessment and planning", 
+    icon: "⚠️", 
+    order: 8, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Conduct comprehensive risk assessment including technical risks, project risks, business risks, and external dependencies with detailed mitigation strategies.",
+      secondary: "Create risk monitoring processes, contingency plans, and escalation procedures with risk impact analysis.",
+      context: "Consider technology risks, timeline risks, resource risks, and market risks."
+    }
+  },
+  { 
+    id: "stakeholder-management", 
+    title: "Stakeholder Management", 
+    description: "Communication and stakeholder strategy", 
+    icon: "👥", 
+    order: 9, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Define stakeholder management strategy including stakeholder identification, communication plans, reporting structures, and engagement approaches.",
+      secondary: "Create stakeholder matrix, communication schedules, and feedback mechanisms with change management processes.",
+      context: "Include internal and external stakeholders, decision makers, and end users."
+    }
+  },
+  { 
+    id: "post-launch", 
+    title: "Post-Launch Strategy", 
+    description: "Launch and growth planning", 
+    icon: "📈", 
+    order: 10, 
+    enabled: true,
+    aiPrompts: {
+      primary: "Develop post-launch strategy including go-to-market plan, user adoption, performance monitoring, maintenance, and continuous improvement processes.",
+      secondary: "Define success metrics, user onboarding, support processes, and growth strategies with feedback collection.",
+      context: "Focus on user adoption, system performance, business growth, and long-term sustainability."
+    }
+  }
 ];
 
 export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectSectionsSettingsProps) {
@@ -44,8 +169,14 @@ export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectS
     title: '',
     description: '',
     icon: '📄',
-    enabled: true
+    enabled: true,
+    aiPrompts: {
+      primary: '',
+      secondary: '',
+      context: ''
+    }
   });
+  const [showPrompts, setShowPrompts] = useState<string | null>(null);
 
   useEffect(() => {
     setLocalSections(sections);
@@ -257,6 +388,82 @@ export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectS
                             rows={2}
                           />
                         </div>
+                        
+                        {/* AI Prompts Section */}
+                        <div className="border-t pt-4">
+                          <div className="flex items-center justify-between mb-3">
+                            <label className="block text-sm font-medium text-gray-700">AI Generation Prompts</label>
+                            <Button
+                              type="button"
+                              onClick={() => setShowPrompts(showPrompts === editingSection.id ? null : editingSection.id)}
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2"
+                            >
+                              <Code className="h-4 w-4 mr-1" />
+                              {showPrompts === editingSection.id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
+                            </Button>
+                          </div>
+                          
+                          {showPrompts === editingSection.id && (
+                            <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Primary Prompt</label>
+                                <Textarea
+                                  value={editingSection.aiPrompts?.primary || ''}
+                                  onChange={(e) => setEditingSection(prev => prev ? { 
+                                    ...prev, 
+                                    aiPrompts: { 
+                                      ...prev.aiPrompts, 
+                                      primary: e.target.value,
+                                      secondary: prev.aiPrompts?.secondary || '',
+                                      context: prev.aiPrompts?.context || ''
+                                    } 
+                                  } : null)}
+                                  rows={3}
+                                  placeholder="Main prompt for generating this section's content..."
+                                  className="text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Secondary Prompt</label>
+                                <Textarea
+                                  value={editingSection.aiPrompts?.secondary || ''}
+                                  onChange={(e) => setEditingSection(prev => prev ? { 
+                                    ...prev, 
+                                    aiPrompts: { 
+                                      ...prev.aiPrompts, 
+                                      primary: prev.aiPrompts?.primary || '',
+                                      secondary: e.target.value,
+                                      context: prev.aiPrompts?.context || ''
+                                    } 
+                                  } : null)}
+                                  rows={2}
+                                  placeholder="Additional detail prompt for enhanced content..."
+                                  className="text-xs"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-600 mb-1">Context Guidelines</label>
+                                <Textarea
+                                  value={editingSection.aiPrompts?.context || ''}
+                                  onChange={(e) => setEditingSection(prev => prev ? { 
+                                    ...prev, 
+                                    aiPrompts: { 
+                                      ...prev.aiPrompts, 
+                                      primary: prev.aiPrompts?.primary || '',
+                                      secondary: prev.aiPrompts?.secondary || '',
+                                      context: e.target.value
+                                    } 
+                                  } : null)}
+                                  rows={2}
+                                  placeholder="Context and guidelines for AI generation..."
+                                  className="text-xs"
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
                         <div className="flex gap-2">
                           <Button onClick={saveEdit} className="bg-blue-600 hover:bg-blue-700 text-white">
                             <Save className="h-4 w-4 mr-2" />
@@ -284,11 +491,52 @@ export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectS
                             <h4 className="font-medium text-gray-900">
                               {section.order}. {section.title}
                               {section.isCustom && <span className="ml-2 text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Custom</span>}
+                              {section.aiPrompts?.primary && (
+                                <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded flex items-center">
+                                  <Code className="h-3 w-3 mr-1" />
+                                  AI Prompts
+                                </span>
+                              )}
                             </h4>
                             <p className="text-sm text-gray-600">{section.description}</p>
+                            
+                            {/* AI Prompts Preview */}
+                            {showPrompts === section.id && section.aiPrompts?.primary && (
+                              <div className="mt-3 p-3 bg-gray-50 rounded-lg border">
+                                <div className="space-y-2">
+                                  <div>
+                                    <span className="text-xs font-medium text-gray-600">Primary:</span>
+                                    <p className="text-xs text-gray-700 mt-1">{section.aiPrompts.primary}</p>
+                                  </div>
+                                  {section.aiPrompts.secondary && (
+                                    <div>
+                                      <span className="text-xs font-medium text-gray-600">Secondary:</span>
+                                      <p className="text-xs text-gray-700 mt-1">{section.aiPrompts.secondary}</p>
+                                    </div>
+                                  )}
+                                  {section.aiPrompts.context && (
+                                    <div>
+                                      <span className="text-xs font-medium text-gray-600">Context:</span>
+                                      <p className="text-xs text-gray-700 mt-1">{section.aiPrompts.context}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2">
+                          {section.aiPrompts?.primary && (
+                            <Button
+                              onClick={() => setShowPrompts(showPrompts === section.id ? null : section.id)}
+                              variant="outline"
+                              size="sm"
+                              className="border-purple-200 text-purple-600 hover:bg-purple-50"
+                              title="View AI Prompts"
+                            >
+                              <Code className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button
                             onClick={() => startEditing(section)}
                             variant="outline"
