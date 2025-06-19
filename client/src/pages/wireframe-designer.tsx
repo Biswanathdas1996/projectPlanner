@@ -18,6 +18,7 @@ import { createPageContentAgent, type PageContentCard } from "@/lib/page-content
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
+import { createAgenticPDFRAGAgent, type ComprehensiveBrandAnalysis } from "@/lib/agentic-pdf-rag-agent";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
