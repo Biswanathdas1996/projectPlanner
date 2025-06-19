@@ -84,14 +84,11 @@ export class AgenticPDFRAGAgent {
       // Load PDF.js dynamically
       const pdfjs = await import('pdfjs-dist');
       
-      // Configure worker with fallback options
-      try {
-        pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-      } catch (workerError) {
-        console.warn('PDF worker setup failed:', workerError);
-      }
+      // Disable worker entirely for browser compatibility
+      pdfjs.GlobalWorkerOptions.workerSrc = false;
       
       pdfjsLib = pdfjs;
+      console.log('✅ PDF.js loaded successfully without worker');
       return pdfjs;
     } catch (error) {
       console.error('Failed to load PDF.js:', error);
@@ -157,7 +154,10 @@ export class AgenticPDFRAGAgent {
       console.log('📖 Loading PDF document...');
       const loadingTask = pdfjs.getDocument({
         data: arrayBuffer,
-        disableWorker: true,
+        useWorkerFetch: false,
+        isEvalSupported: false,
+        disableAutoFetch: true,
+        disableStreaming: true,
         verbosity: 0
       });
       
