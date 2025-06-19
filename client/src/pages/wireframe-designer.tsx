@@ -17,6 +17,7 @@ import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
+import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -238,6 +239,8 @@ export default function WireframeDesigner() {
   const [isExtractingBrand, setIsExtractingBrand] = useState(false);
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [brandExtractionError, setBrandExtractionError] = useState<string>('');
+  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
+  const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
 
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
@@ -272,8 +275,18 @@ export default function WireframeDesigner() {
     return null;
   };
 
-  // Load saved data
+  // Load saved data and stored brand guidelines
   useEffect(() => {
+    // Load stored brand guidelines
+    const stored = BrandGuidelinesStorage.getAll();
+    setStoredBrandGuidelines(stored);
+    
+    // Load the most recent brand guidelines if available
+    const latest = BrandGuidelinesStorage.getLatest();
+    if (latest && !brandGuidelines) {
+      setBrandGuidelines(latest);
+    }
+    
     const savedWireframes = storage.getItem('wireframe_designs');
     const savedPageContent = storage.getItem('page_content_cards');
     const savedGeneratedWireframes = storage.getItem('generated_wireframes');
