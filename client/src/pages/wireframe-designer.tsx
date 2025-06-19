@@ -4351,7 +4351,24 @@ ${selectedPageCode.jsCode}
                       </Button>
                     )}
                     
-                    
+                    <Button
+                      onClick={generateBrandAwareWireframes}
+                      disabled={!brandGuidelines || isGeneratingWireframes}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      size="sm"
+                    >
+                      {isGeneratingWireframes ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          Generate Brand Wireframes
+                        </>
+                      )}
+                    </Button>
                     
                     <Button
                       onClick={generateUnifiedHTML}
