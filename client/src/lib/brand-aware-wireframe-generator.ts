@@ -38,14 +38,14 @@ export class BrandAwareWireframeGenerator {
       
       console.log('AI response received, length:', response.length);
       
-      return this.parseResponse(response, request.brandGuidelines);
+      return this.parseResponse(response, request.brandGuidelines, request.pageContent);
     } catch (error: any) {
       console.error('Error generating branded wireframe:', error);
       console.error('Error details:', error?.message || 'Unknown error', error?.stack || 'No stack trace');
       
-      // Return fallback with brand-compliant styling
+      // Return fallback with complete page content preserved
       return {
-        html: this.generateFallbackHTML(),
+        html: this.generateCompletePageHTML(request.pageContent, request.brandGuidelines),
         css: this.generateBrandCSS(request.brandGuidelines),
         brandNotes: this.generateDefaultBrandNotes(request.brandGuidelines)
       };
@@ -55,44 +55,86 @@ export class BrandAwareWireframeGenerator {
   private buildBrandedPrompt(request: BrandedWireframeRequest): string {
     const { pageContent, designStyle, deviceType, brandGuidelines } = request;
 
-    return `Create a professional wireframe for ${pageContent.pageName} using the following brand guidelines.
+    // Build complete content sections
+    const headersSection = pageContent.headers && pageContent.headers.length > 0 
+      ? `Headers: ${pageContent.headers.join(', ')}` : '';
+    
+    const buttonsSection = pageContent.buttons && pageContent.buttons.length > 0 
+      ? `Buttons: ${pageContent.buttons.map((b: any) => b.label || b).join(', ')}` : '';
+    
+    const formsSection = pageContent.forms && pageContent.forms.length > 0 
+      ? `Forms: ${pageContent.forms.map((f: any) => `${f.title || f} (${f.fields ? f.fields.join(', ') : 'form fields'})`).join('; ')}` : '';
+    
+    const listsSection = pageContent.lists && pageContent.lists.length > 0 
+      ? `Lists: ${pageContent.lists.map((l: any) => `${l.title || l} (${l.items ? l.items.join(', ') : 'list items'})`).join('; ')}` : '';
+    
+    const navigationSection = pageContent.navigation && pageContent.navigation.length > 0 
+      ? `Navigation: ${pageContent.navigation.join(', ')}` : '';
+    
+    const textContentSection = pageContent.textContent && pageContent.textContent.length > 0 
+      ? `Text Content: ${pageContent.textContent.join('; ')}` : '';
+    
+    const additionalContentSection = pageContent.additionalContent && pageContent.additionalContent.length > 0 
+      ? `Additional Content: ${pageContent.additionalContent.join('; ')}` : '';
+    
+    const stakeholdersSection = pageContent.stakeholders && pageContent.stakeholders.length > 0 
+      ? `Stakeholders: ${pageContent.stakeholders.join(', ')}` : '';
 
-BRAND COLORS:
-Primary: ${brandGuidelines.colors.primary[0] || '#2563eb'}
-Accent: ${brandGuidelines.colors.accent[0] || '#dc2626'}
-Typography: ${brandGuidelines.typography.fonts[0] || 'Inter'}
+    return `Create a professional wireframe for "${pageContent.pageName}" using the following brand guidelines and EXACT page content.
 
-PAGE CONTENT:
-- Title: ${pageContent.pageName}
-- Purpose: ${pageContent.purpose}
-- Headers: ${pageContent.headers.slice(0, 3).join(', ')}
-- Buttons: ${pageContent.buttons.slice(0, 3).map((b: any) => b.label).join(', ')}
+BRAND GUIDELINES TO APPLY:
+- Primary Color: ${brandGuidelines.colors.primary[0] || '#DA291C'}
+- Secondary Color: ${brandGuidelines.colors.secondary[0] || '#264A2B'}
+- Accent Color: ${brandGuidelines.colors.accent[0] || '#FFC72C'}
+- Typography: ${brandGuidelines.typography.fonts[0] || 'Helvetica Neue'}
+- Design Style: ${designStyle}
+- Device Type: ${deviceType}
 
-Generate a modern, responsive wireframe. Return HTML and CSS only in this format:
+COMPLETE PAGE CONTENT TO INCLUDE (USE ALL OF THIS CONTENT):
+- Page Title: ${pageContent.pageName}
+- Page Purpose: ${pageContent.purpose}
+${stakeholdersSection}
+${headersSection}
+${textContentSection}
+${buttonsSection}
+${formsSection}
+${listsSection}
+${navigationSection}
+${additionalContentSection}
+
+REQUIREMENTS:
+1. Include ALL content sections mentioned above - do not omit any
+2. Apply brand colors consistently throughout
+3. Use the specified typography
+4. Make it responsive and modern
+5. Ensure all interactive elements are styled with brand colors
+6. Include proper spacing and layout following brand guidelines
+
+Return HTML and CSS in this exact format:
 
 ===HTML===
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>${pageContent.pageName}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageContent.pageName} - Brand Compliant</title>
 </head>
 <body>
-    [Your HTML content here]
+    [Complete HTML structure with ALL content sections from above]
 </body>
 </html>
 
 ===CSS===
-[Your CSS styles here using the brand colors]
+[Complete CSS using brand colors and typography - make it modern and responsive]
 
 ===BRAND_NOTES===
 - Applied primary brand color: ${brandGuidelines.colors.primary[0]}
 - Used brand typography: ${brandGuidelines.typography.fonts[0]}
-- Implemented responsive design`;
+- Implemented responsive design with brand guidelines`;
   }
 
-  private parseResponse(response: string, brandGuidelines: BrandGuideline): BrandedWireframeResponse {
+  private parseResponse(response: string, brandGuidelines: BrandGuideline, pageContent: any): BrandedWireframeResponse {
     try {
       const htmlMatch = response.match(/===HTML===\s*([\s\S]*?)(?===CSS===)/);
       const cssMatch = response.match(/===CSS===\s*([\s\S]*?)(?===BRAND_NOTES===)/);
@@ -111,6 +153,11 @@ Generate a modern, responsive wireframe. Return HTML and CSS only in this format
         css = this.generateBrandCSS(brandGuidelines);
       }
 
+      // If HTML is missing or incomplete, generate complete page HTML with all content
+      if (!html || html.length < 200) {
+        html = this.generateCompletePageHTML(pageContent, brandGuidelines);
+      }
+
       // Parse brand notes
       const brandNotes = notesText
         .split('\n')
@@ -118,19 +165,390 @@ Generate a modern, responsive wireframe. Return HTML and CSS only in this format
         .map(line => line.replace(/^[•\-\*]\s*/, '').trim());
 
       return {
-        html: html || this.generateFallbackHTML(),
-        css: css || this.generateBrandCSS(brandGuidelines),
+        html: html,
+        css: css,
         brandNotes: brandNotes.length > 0 ? brandNotes : this.generateDefaultBrandNotes(brandGuidelines)
       };
     } catch (error) {
       console.error('Error parsing wireframe response:', error);
       
       return {
-        html: this.generateFallbackHTML(),
+        html: this.generateCompletePageHTML(pageContent, brandGuidelines),
         css: this.generateBrandCSS(brandGuidelines),
         brandNotes: this.generateDefaultBrandNotes(brandGuidelines)
       };
     }
+  }
+
+  private generateCompletePageHTML(pageContent: any, brandGuidelines: BrandGuideline): string {
+    const primaryColor = brandGuidelines.colors.primary[0] || '#DA291C';
+    const accentColor = brandGuidelines.colors.accent[0] || '#FFC72C';
+    const secondaryColor = brandGuidelines.colors.secondary[0] || '#264A2B';
+    const neutralColor = brandGuidelines.colors.neutral[0] || '#f8fafc';
+    const brandFont = brandGuidelines.typography.fonts[0] || 'Helvetica Neue';
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageContent.pageName} - Brand Compliant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: '${brandFont}', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .page-header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-left: 6px solid ${accentColor};
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .page-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: ${accentColor};
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+        
+        .page-header h1 {
+            color: ${primaryColor};
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .purpose {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .stakeholders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .stakeholder-badge {
+            background: ${accentColor};
+            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .content-section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .content-section h2 {
+            color: ${primaryColor};
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .content-section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: ${accentColor};
+            border-radius: 2px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
+            filter: brightness(1.1);
+        }
+        
+        .form-container {
+            background: ${neutralColor};
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: ${primaryColor};
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: ${accentColor};
+            box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.1);
+        }
+        
+        .list-container {
+            background: ${neutralColor};
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        
+        .list-container ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .list-container li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 4px solid ${accentColor};
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .list-container li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .nav-link {
+            color: ${primaryColor};
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-link:hover {
+            background: ${primaryColor};
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .page-header {
+                padding: 25px;
+            }
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            .content-section {
+                padding: 20px;
+            }
+            .nav-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <h1>${pageContent.pageName}</h1>
+            <p class="purpose">${pageContent.purpose}</p>
+            ${pageContent.stakeholders && pageContent.stakeholders.length > 0 ? `
+            <div class="stakeholders">
+                ${pageContent.stakeholders.map((stakeholder: string) => `<span class="stakeholder-badge">${stakeholder}</span>`).join('')}
+            </div>
+            ` : ''}
+        </header>
+        
+        ${pageContent.headers && pageContent.headers.length > 0 ? `
+        <section class="content-section">
+            <h2>Content Headers</h2>
+            ${pageContent.headers.map((header: string) => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${pageContent.textContent && pageContent.textContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Content</h2>
+            ${pageContent.textContent.map((text: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${text}</p>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${pageContent.buttons && pageContent.buttons.length > 0 ? `
+        <section class="content-section">
+            <h2>Actions</h2>
+            <div class="button-group">
+                ${pageContent.buttons.map((button: any) => `<button class="btn">${button.label || button}</button>`).join('')}
+            </div>
+        </section>
+        ` : ''}
+        
+        ${pageContent.forms && pageContent.forms.length > 0 ? `
+        <section class="content-section">
+            <h2>Forms</h2>
+            ${pageContent.forms.map((form: any) => `
+                <div class="form-container">
+                    <h3 style="margin-bottom: 20px;">${form.title || form}</h3>
+                    ${form.fields ? form.fields.map((field: string) => `
+                        <div class="form-group">
+                            <label>${field}</label>
+                            <input type="text" placeholder="Enter ${field}">
+                        </div>
+                    `).join('') : ''}
+                    <button class="btn">Submit ${form.title || 'Form'}</button>
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+        
+        ${pageContent.lists && pageContent.lists.length > 0 ? `
+        <section class="content-section">
+            <h2>Data & Lists</h2>
+            ${pageContent.lists.map((list: any) => `
+                <div class="list-container">
+                    <h3 style="margin-bottom: 15px;">${list.title || list}</h3>
+                    ${list.items ? `<ul>${list.items.map((item: string) => `<li>${item}</li>`).join('')}</ul>` : ''}
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+        
+        ${pageContent.navigation && pageContent.navigation.length > 0 ? `
+        <section class="content-section">
+            <h2>Navigation</h2>
+            <nav class="nav-links">
+                ${pageContent.navigation.map((nav: string) => `<a href="#" class="nav-link">${nav}</a>`).join('')}
+            </nav>
+        </section>
+        ` : ''}
+        
+        ${pageContent.additionalContent && pageContent.additionalContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Additional Information</h2>
+            ${pageContent.additionalContent.map((content: string) => `<p style="margin-bottom: 15px; line-height: 1.7;">${content}</p>`).join('')}
+        </section>
+        ` : ''}
+    </div>
+    
+    <script>
+        // Interactive features with brand colors
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Visual feedback
+                const originalText = this.textContent;
+                this.textContent = '✓ ' + originalText;
+                this.style.background = '${accentColor}';
+                setTimeout(() => {
+                    this.textContent = originalText;
+                    this.style.background = '';
+                }, 1500);
+            });
+        });
+        
+        // Form interactions
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 199, 44, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+            });
+        });
+    </script>
+</body>
+</html>`;
   }
 
   private generateBrandCSS(guidelines: BrandGuideline): string {
