@@ -21,6 +21,12 @@ export interface BrandGuideline {
   };
   typography: {
     fonts: string[];
+    fontFamilies?: {
+      primary?: string;
+      secondary?: string;
+      heading?: string;
+      body?: string;
+    };
     headingStyles: string[];
     bodyStyles: string[];
     weights: string[];
@@ -37,13 +43,53 @@ export interface BrandGuideline {
     padding: string[];
   };
   components: {
-    buttons: string[];
-    cards: string[];
-    forms: string[];
-    navigation: string[];
-    modals: string[];
-    tables: string[];
-    badges: string[];
+    buttons?: {
+      primary?: string;
+      secondary?: string;
+      ghost?: string;
+      sizes?: string[];
+      states?: string[];
+      borderRadius?: string;
+      fontWeight?: string;
+    };
+    cards?: {
+      design?: string;
+      shadows?: string[];
+      borders?: string[];
+      spacing?: string;
+      borderRadius?: string;
+      backgrounds?: string[];
+      hoverStates?: string[];
+    };
+    forms?: {
+      inputStyles?: string;
+      labelStyles?: string;
+      validationStyles?: string;
+      placeholderStyles?: string;
+      focusStates?: string;
+    };
+    navigation?: {
+      primaryNav?: string;
+      styles?: string;
+      states?: string;
+      mobileNav?: string;
+      breadcrumbs?: string;
+    };
+    sections?: {
+      headerDesign?: string;
+      footerDesign?: string;
+      contentAreas?: string;
+      sidebars?: string;
+      backgrounds?: string[];
+    };
+    contactUs?: {
+      design?: string;
+      formStyles?: string;
+      layout?: string;
+    };
+    modals?: string[];
+    tables?: string[];
+    badges?: string[];
   };
   imagery: {
     style: string;
@@ -322,11 +368,11 @@ Clean minimal design, good whitespace usage, strong hierarchy, modern iconograph
 
   private async analyzeWithGemini(analysisText: string): Promise<BrandGuideline> {
     try {
-      const prompt = `Extract comprehensive brand guidelines from this analysis including text colors, logos, and detailed specifications. Return a JSON object:
+      const prompt = `Extract comprehensive brand guidelines from this analysis including design patterns, component styles, typography families, and detailed specifications. Return a JSON object:
 
 ${analysisText}
 
-Return this exact JSON structure with enhanced color and logo information:
+Return this exact JSON structure with enhanced design system information:
 {
   "colors": {
     "primary": ["#DA291C", "#FF6900"],
@@ -341,6 +387,12 @@ Return this exact JSON structure with enhanced color and logo information:
   },
   "typography": {
     "fonts": ["Helvetica Neue", "Arial", "system-ui"],
+    "fontFamilies": {
+      "primary": "Helvetica Neue, Arial, sans-serif",
+      "secondary": "Georgia, Times New Roman, serif",
+      "heading": "Inter, system-ui, sans-serif",
+      "body": "system-ui, -apple-system, sans-serif"
+    },
     "headingStyles": ["Bold 32px", "Semibold 24px", "Medium 20px"],
     "bodyStyles": ["Regular 16px", "Medium 14px", "Light 12px"],
     "weights": ["300", "400", "500", "600", "700"],
@@ -357,13 +409,50 @@ Return this exact JSON structure with enhanced color and logo information:
     "padding": ["8px", "16px", "24px", "32px"]
   },
   "components": {
-    "buttons": ["Primary solid", "Secondary outline", "Ghost transparent"],
-    "cards": ["Elevated shadow", "Outlined border", "Filled background"],
-    "forms": ["Clean inputs", "Focus states", "Validation styling"],
-    "navigation": ["Horizontal menu", "Sidebar", "Mobile hamburger"],
-    "modals": ["Centered overlay", "Slide-in panel", "Full-screen"],
-    "tables": ["Striped rows", "Hover states", "Sortable headers"],
-    "badges": ["Solid fill", "Outline", "Pill shape"]
+    "buttons": {
+      "primary": "Solid background, white text, 8px border-radius, 12px padding",
+      "secondary": "Outlined border, brand color text, transparent background",
+      "ghost": "No border, transparent background, hover color change",
+      "sizes": ["sm: 8px padding", "md: 12px padding", "lg: 16px padding"],
+      "states": ["hover: darker shade", "active: pressed state", "disabled: 50% opacity"],
+      "borderRadius": "8px",
+      "fontWeight": "500"
+    },
+    "cards": {
+      "design": "Clean borders or subtle shadows, rounded corners, proper spacing",
+      "shadows": ["none", "sm: 0 1px 2px rgba(0,0,0,0.05)", "md: 0 4px 6px rgba(0,0,0,0.1)"],
+      "borders": ["1px solid #e5e7eb", "2px solid brand-color"],
+      "spacing": "16px internal padding, 24px between cards",
+      "borderRadius": "8px to 12px",
+      "backgrounds": ["white", "light gray", "brand accent"],
+      "hoverStates": ["subtle shadow increase", "border color change"]
+    },
+    "forms": {
+      "inputStyles": "1px border, 8px border-radius, 12px padding, focus outline",
+      "labelStyles": "Medium font weight, 14px size, brand color",
+      "validationStyles": "Red border for errors, green for success, helper text",
+      "placeholderStyles": "Light gray text, regular font weight",
+      "focusStates": "Brand color outline, 2px focus ring"
+    },
+    "navigation": {
+      "primaryNav": "Horizontal layout, brand logo left, menu items right",
+      "styles": "Clean typography, proper spacing, clear hierarchy",
+      "states": "Active state highlighted, hover effects, current page indicator",
+      "mobileNav": "Hamburger menu, slide-out panel, stacked items",
+      "breadcrumbs": "Separator characters, clickable links, current page non-clickable"
+    },
+    "sections": {
+      "headerDesign": "Brand logo, navigation menu, proper spacing and alignment",
+      "footerDesign": "Multiple columns, links, contact info, social media",
+      "contentAreas": "Proper margins, readable line lengths, section spacing",
+      "sidebars": "Complementary content, navigation aids, related information",
+      "backgrounds": "White, light grays, brand accent colors for emphasis"
+    },
+    "contactUs": {
+      "design": "Form layout with proper spacing, contact information display",
+      "formStyles": "Clean inputs, proper labels, submit button styling",
+      "layout": "Two-column or single column based on space, contact details sidebar"
+    }
   },
   "imagery": {
     "style": "modern and clean",

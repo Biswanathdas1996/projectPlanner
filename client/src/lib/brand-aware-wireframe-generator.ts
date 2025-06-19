@@ -127,10 +127,12 @@ COLORS:
 - Background: ${brandGuidelines.colors.background.join(", ")}
 - State Colors - Error: ${brandGuidelines.colors.error.join(", ")}, Success: ${brandGuidelines.colors.success.join(", ")}, Warning: ${brandGuidelines.colors.warning.join(", ")}
 
-TYPOGRAPHY:
-- Fonts: ${brandGuidelines.typography.fonts.join(", ")}
-- Sizes: ${brandGuidelines.typography.sizes.join(", ")}
-- Weights: ${brandGuidelines.typography.weights.join(", ")}
+TYPOGRAPHY & FONT FAMILIES:
+- Primary Font Family: ${brandGuidelines.typography.fontFamilies?.primary || brandGuidelines.typography.fonts[0] || 'system-ui, sans-serif'}
+- Heading Font Family: ${brandGuidelines.typography.fontFamilies?.heading || brandGuidelines.typography.fonts[0] || 'system-ui, sans-serif'}
+- Body Font Family: ${brandGuidelines.typography.fontFamilies?.body || brandGuidelines.typography.fonts[1] || 'system-ui, sans-serif'}
+- Font Sizes: ${brandGuidelines.typography.sizes.join(", ")}
+- Font Weights: ${brandGuidelines.typography.weights.join(", ")}
 - Line Heights: ${brandGuidelines.typography.lineHeights.join(", ")}
 
 LOGO & BRANDING:
@@ -140,6 +142,38 @@ LOGO & BRANDING:
 - Spacing: ${brandGuidelines.logos.spacing.join(", ")}
 - Color Options: ${brandGuidelines.logos.colors.join(", ")}
 - Extracted Logo Images: ${brandGuidelines.logos.images?.primary ? 'Primary logo extracted from PDF' : 'No logo images extracted'}
+
+COMPONENT DESIGN SPECIFICATIONS:
+BUTTONS:
+- Primary: ${brandGuidelines.components?.buttons?.primary || 'Solid background with brand colors'}
+- Secondary: ${brandGuidelines.components?.buttons?.secondary || 'Outlined style with brand colors'}
+- Border Radius: ${brandGuidelines.components?.buttons?.borderRadius || '8px'}
+- Font Weight: ${brandGuidelines.components?.buttons?.fontWeight || '500'}
+- States: ${brandGuidelines.components?.buttons?.states?.join(', ') || 'hover, active, disabled'}
+
+CARDS:
+- Design: ${brandGuidelines.components?.cards?.design || 'Clean with subtle shadows and rounded corners'}
+- Shadows: ${brandGuidelines.components?.cards?.shadows?.join(', ') || 'subtle elevation'}
+- Border Radius: ${brandGuidelines.components?.cards?.borderRadius || '8px to 12px'}
+- Spacing: ${brandGuidelines.components?.cards?.spacing || '16px internal padding'}
+- Hover States: ${brandGuidelines.components?.cards?.hoverStates?.join(', ') || 'subtle shadow increase'}
+
+NAVIGATION:
+- Primary Nav: ${brandGuidelines.components?.navigation?.primaryNav || 'Horizontal layout with brand logo'}
+- States: ${brandGuidelines.components?.navigation?.states || 'Active, hover, and current page indicators'}
+- Mobile Nav: ${brandGuidelines.components?.navigation?.mobileNav || 'Hamburger menu with slide-out panel'}
+
+FORMS & CONTACT:
+- Input Styles: ${brandGuidelines.components?.forms?.inputStyles || 'Clean with focus states'}
+- Label Styles: ${brandGuidelines.components?.forms?.labelStyles || 'Medium weight with brand colors'}
+- Contact Design: ${brandGuidelines.components?.contactUs?.design || 'Form with contact information display'}
+- Contact Layout: ${brandGuidelines.components?.contactUs?.layout || 'Two-column or single column layout'}
+
+SECTIONS:
+- Header Design: ${brandGuidelines.components?.sections?.headerDesign || 'Brand logo with navigation menu'}
+- Footer Design: ${brandGuidelines.components?.sections?.footerDesign || 'Multiple columns with links and contact info'}
+- Content Areas: ${brandGuidelines.components?.sections?.contentAreas || 'Proper margins and readable layouts'}
+- Backgrounds: ${brandGuidelines.components?.sections?.backgrounds?.join(', ') || 'White, light grays, brand accents'}
 
 ACCESSIBILITY:
 - Contrast Standards: ${brandGuidelines.accessibility.contrast.join(", ")}
