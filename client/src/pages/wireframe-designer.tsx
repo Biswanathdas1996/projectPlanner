@@ -19,6 +19,7 @@ import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
 import { createAgenticPDFRAGAgent, type ComprehensiveBrandAnalysis } from "@/lib/agentic-pdf-rag-agent";
+import { createEnhancedRAGExtractor, type EnhancedBrandAnalysis } from "@/lib/enhanced-rag-extractor";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -249,6 +250,7 @@ export default function WireframeDesigner() {
   
   // Comprehensive brand analysis state
   const [comprehensiveBrandAnalysis, setComprehensiveBrandAnalysis] = useState<ComprehensiveBrandAnalysis | null>(null);
+  const [enhancedBrandAnalysis, setEnhancedBrandAnalysis] = useState<EnhancedBrandAnalysis | null>(null);
   const [isPerformingRAGAnalysis, setIsPerformingRAGAnalysis] = useState(false);
   const [ragAnalysisProgress, setRAGAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
 
@@ -1489,14 +1491,23 @@ export default function WireframeDesigner() {
     setRAGAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing PDF analysis..." });
 
     try {
-      console.log('🤖 Starting brand guideline extraction for:', file.name);
-      setRAGAnalysisProgress({ current: 20, total: 100, currentStep: "Extracting brand guidelines..." });
+      console.log('🤖 Starting enhanced RAG analysis for:', file.name);
+      setRAGAnalysisProgress({ current: 10, total: 100, currentStep: "Initializing enhanced RAG extraction..." });
       
-      // Use existing brand guideline extractor
-      const extractor = createBrandGuidelineExtractor();
-      const guidelines = await extractor.extractFromPDF(file);
+      // Use enhanced RAG extractor with MongoDB Vector Search
+      const enhancedExtractor = createEnhancedRAGExtractor();
       
-      setRAGAnalysisProgress({ current: 80, total: 100, currentStep: "Processing guidelines..." });
+      setRAGAnalysisProgress({ current: 30, total: 100, currentStep: "Performing agentic PDF analysis..." });
+      
+      const { brandGuidelines: guidelines, enhancedAnalysis } = await enhancedExtractor.performEnhancedBrandAnalysis(file);
+      
+      setRAGAnalysisProgress({ current: 70, total: 100, currentStep: "Processing MongoDB vector search results..." });
+      
+      // Store both comprehensive and enhanced analysis results
+      setComprehensiveBrandAnalysis(enhancedAnalysis);
+      setEnhancedBrandAnalysis(enhancedAnalysis);
+      
+      setRAGAnalysisProgress({ current: 90, total: 100, currentStep: "Saving brand guidelines..." });
       
       // Generate a name for the brand guidelines based on file name
       const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
@@ -1512,11 +1523,18 @@ export default function WireframeDesigner() {
       // Keep legacy localStorage for backward compatibility
       localStorage.setItem('brand_guidelines', JSON.stringify(guidelines));
       
-      setRAGAnalysisProgress({ current: 100, total: 100, currentStep: "Analysis complete!" });
+      setRAGAnalysisProgress({ current: 100, total: 100, currentStep: "Enhanced analysis complete!" });
+      
+      console.log('✅ Enhanced RAG analysis completed:', {
+        totalTime: enhancedAnalysis.analysisMetadata.totalProcessingTime,
+        keyPoints: enhancedAnalysis.analysisMetadata.keyPointsExtracted,
+        confidence: Math.round(enhancedAnalysis.analysisMetadata.confidenceScore * 100) + '%',
+        vectorChunks: enhancedAnalysis.vectorSearchResults.totalChunks
+      });
       
       toast({
-        title: "Brand Guidelines Extracted Successfully",
-        description: `Successfully extracted and saved "${guidelineName}" brand guidelines.`,
+        title: "Enhanced Brand Analysis Complete",
+        description: `Extracted ${enhancedAnalysis.analysisMetadata.keyPointsExtracted} key points using MongoDB Vector Search with ${Math.round(enhancedAnalysis.analysisMetadata.confidenceScore * 100)}% confidence.`,
       });
       
       setShowBrandModal(true);
@@ -4739,8 +4757,50 @@ ${selectedPageCode.jsCode}
               </div>
               
               <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
-                {/* Brand Analysis Summary */}
-                {comprehensiveBrandAnalysis && (
+                {/* Enhanced RAG Analysis Summary */}
+                {enhancedBrandAnalysis && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                    <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                      Enhanced MongoDB Vector RAG Analysis
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{enhancedBrandAnalysis.totalPages}</div>
+                        <div className="text-xs text-gray-600">Pages Analyzed</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-blue-600">{enhancedBrandAnalysis.vectorSearchResults.totalChunks}</div>
+                        <div className="text-xs text-gray-600">Vector Chunks</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-purple-600">{enhancedBrandAnalysis.analysisMetadata.keyPointsExtracted}</div>
+                        <div className="text-xs text-gray-600">Key Points</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-orange-600">{Math.round(enhancedBrandAnalysis.analysisMetadata.confidenceScore * 100)}%</div>
+                        <div className="text-xs text-gray-600">Confidence</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-indigo-600">{Math.round(enhancedBrandAnalysis.analysisMetadata.totalProcessingTime / 1000)}s</div>
+                        <div className="text-xs text-gray-600">Total Time</div>
+                      </div>
+                    </div>
+                    
+                    {/* Processing Time Breakdown */}
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Processing Breakdown:</div>
+                      <div className="flex gap-4 text-xs text-gray-600">
+                        <span>Agentic Analysis: {Math.round(enhancedBrandAnalysis.analysisMetadata.agenticAnalysisTime / 1000)}s</span>
+                        <span>Vector Search: {Math.round(enhancedBrandAnalysis.analysisMetadata.vectorSearchTime / 1000)}s</span>
+                        <span>Search Threshold: {enhancedBrandAnalysis.vectorSearchResults.searchMetadata.similarityThreshold}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Fallback for legacy analysis */}
+                {comprehensiveBrandAnalysis && !enhancedBrandAnalysis && (
                   <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
                     <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
@@ -5243,6 +5303,123 @@ ${selectedPageCode.jsCode}
                               {brandGuidelines.designPrinciples.map((principle, index) => (
                                 <div key={index} className="text-sm text-indigo-700 bg-indigo-50 px-3 py-2 rounded">
                                   {principle}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* MongoDB Vector Search Key Points */}
+                {enhancedBrandAnalysis && enhancedBrandAnalysis.enhancedKeyPoints && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-blue-500 animate-pulse"></div>
+                        MongoDB Vector Search Key Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Brand Clauses */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-amber-700">Brand Clauses ({enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.brandClauses.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-amber-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Design Guidelines */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-blue-700">Design Guidelines ({enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.designGuidelines.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-blue-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Color Specifications */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-green-700">Color Specifications ({enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.colorSpecs.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded border-l-3 border-green-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Typography Rules */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-purple-700">Typography Rules ({enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.typographyRules.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-purple-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Logo Guidelines */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-indigo-700">Logo Guidelines ({enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.logoGuidelines.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-indigo-700 bg-indigo-50 p-2 rounded border-l-3 border-indigo-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Compliance Rules */}
+                        {enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-red-700">Compliance Rules ({enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {enhancedBrandAnalysis.enhancedKeyPoints.complianceRules.slice(0, 5).map((point, index) => (
+                                <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded border-l-3 border-red-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{point.content}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(point.confidence * 100)}%</Badge>
+                                  </div>
                                 </div>
                               ))}
                             </div>

@@ -1,4 +1,3 @@
-import { MongoClient, Db, Collection } from 'mongodb';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface DocumentChunk {
