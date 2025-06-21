@@ -931,3 +931,85 @@ Return this exact JSON structure with comprehensive brand information:
 export function createBrandGuidelineExtractor(): BrandGuidelineExtractor {
   return new BrandGuidelineExtractor();
 }
+
+// Storage interface for brand guidelines
+export interface StoredBrandGuideline extends BrandGuideline {
+  id: string;
+  name: string;
+  extractedAt: string;
+}
+
+// Brand guidelines storage class
+export class BrandGuidelinesStorage {
+  private static STORAGE_KEY = 'stored_brand_guidelines';
+
+  static save(guideline: BrandGuideline, name: string): string {
+    const stored: StoredBrandGuideline = {
+      ...guideline,
+      id: Date.now().toString(),
+      name,
+      extractedAt: new Date().toISOString()
+    };
+
+    const existing = this.getAll();
+    existing.push(stored);
+    
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(existing));
+    return stored.id;
+  }
+
+  static getAll(): StoredBrandGuideline[] {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  static getById(id: string): StoredBrandGuideline | null {
+    const all = this.getAll();
+    return all.find(g => g.id === id) || null;
+  }
+
+  static delete(id: string): boolean {
+    const existing = this.getAll();
+    const filtered = existing.filter(g => g.id !== id);
+    
+    if (filtered.length !== existing.length) {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(filtered));
+      return true;
+    }
+    return false;
+  }
+
+  static clear(): void {
+    localStorage.removeItem(this.STORAGE_KEY);
+  }
+}
+
+// Export additional utility functions
+export const extractBrandGuidelinesFromPDF = async (file: File): Promise<BrandGuideline> => {
+  const extractor = createBrandGuidelineExtractor();
+  return extractor.extractFromPDF(file);
+};
+
+export const multimodalBrandExtractionFromPDF = async (file: File, onProgress?: (progress: { current: number; total: number; currentStep: string }) => void): Promise<BrandGuideline> => {
+  if (onProgress) {
+    onProgress({ current: 1, total: 3, currentStep: "Analyzing PDF structure" });
+  }
+  
+  const extractor = createBrandGuidelineExtractor();
+  
+  if (onProgress) {
+    onProgress({ current: 2, total: 3, currentStep: "Extracting brand elements" });
+  }
+  
+  const result = await extractor.extractFromPDF(file);
+  
+  if (onProgress) {
+    onProgress({ current: 3, total: 3, currentStep: "Processing complete" });
+  }
+  
+  return result;
+};

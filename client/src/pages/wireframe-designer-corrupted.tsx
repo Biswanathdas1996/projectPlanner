@@ -1,12 +1,97 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { NavigationBar } from '@/components/navigation-bar';
 import { useToast } from '@/hooks/use-toast';
-import { Download } from 'lucide-react';
+import { 
+  Upload, 
+  Download, 
+  Eye, 
+  RefreshCw, 
+  Palette, 
+  Type, 
+  Layout, 
+  Smartphone, 
+  Tablet, 
+  Monitor, 
+  Search,
+  Trash2,
+  Plus,
+  Settings,
+  FileText,
+  Edit,
+  Save,
+  X,
+  Code,
+  Globe,
+  Zap,
+  Sparkles,
+  Target,
+  Users,
+  Star,
+  Heart,
+  CheckCircle,
+  AlertCircle,
+  Info,
+  ChevronDown,
+  ChevronUp,
+  MoreHorizontal,
+  Filter,
+  SortAsc,
+  Grid,
+  List,
+  Maximize,
+  Minimize,
+  Copy,
+  Share,
+  BookOpen,
+  Lightbulb,
+  Wand2,
+  Layers,
+  Image,
+  MousePointer,
+  Move,
+  RotateCcw,
+  ZoomIn,
+  ZoomOut,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Bold,
+  Italic,
+  Underline,
+  Link,
+  ExternalLink,
+  Home,
+  Menu,
+  User,
+  ShoppingCart,
+  MessageCircle,
+  Bell,
+  Calendar,
+  Clock,
+  Mail,
+  Phone,
+  MapPin,
+  Camera,
+  Video,
+  Music,
+  Play,
+  Pause,
+  Stop,
+  Volume2,
+  VolumeX
+} from 'lucide-react';
 
-// Import modular components
+// Import components
 import { BrandGuidelinesModal } from '@/components/wireframe/brand-guidelines-modal';
 import { BrandUploadSection } from '@/components/wireframe/brand-upload-section';
 import { PageContentSelector } from '@/components/wireframe/page-content-selector';
@@ -17,33 +102,10 @@ import { WireframeResultsSection } from '@/components/wireframe/wireframe-result
 // Import types and utilities
 import { 
   BrandGuideline, 
-  BrandGuidelinesStorage
+  BrandGuidelinesStorage,
+  extractBrandGuidelinesFromPDF,
+  multimodalBrandExtractionFromPDF
 } from '@/lib/brand-guideline-extractor';
-
-// Type definitions
-interface PageContentCard {
-  id: string;
-  pageName: string;
-  pageType: string;
-  purpose: string;
-  stakeholders: string[];
-  headers: string[];
-  buttons: { label: string; action: string; style: string }[];
-  forms: { title: string; fields: string[]; submitAction: string }[];
-  lists: { title: string; items: string[]; type: string }[];
-  navigation: string[];
-  additionalContent: string[];
-  isEdited: boolean;
-}
-
-interface GeneratedWireframe {
-  id: string;
-  pageName: string;
-  htmlCode: string;
-  cssCode: string;
-  jsCode: string;
-  lastUpdated?: string;
-}
 
 // Main wireframe designer component
 export default function WireframeDesigner() {
@@ -375,4 +437,29 @@ export default function WireframeDesigner() {
       </div>
     </div>
   );
+}
+
+// Type definitions
+interface PageContentCard {
+  id: string;
+  pageName: string;
+  pageType: string;
+  purpose: string;
+  stakeholders: string[];
+  headers: string[];
+  buttons: { label: string; action: string; style: string }[];
+  forms: { title: string; fields: string[]; submitAction: string }[];
+  lists: { title: string; items: string[]; type: string }[];
+  navigation: string[];
+  additionalContent: string[];
+  isEdited: boolean;
+}
+
+interface GeneratedWireframe {
+  id: string;
+  pageName: string;
+  htmlCode: string;
+  cssCode: string;
+  jsCode: string;
+  lastUpdated?: string;
 }
