@@ -15,6 +15,11 @@ import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/ht
 import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeResponse } from "@/lib/ai-code-enhancer";
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
+import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
+import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
+import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
+import { createChunkedBrandAnalyzer, type FinalBrandReport } from "@/lib/chunked-brand-analyzer";
 import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -26,6 +31,8 @@ import {
   Layers,
   Grid,
   Type,
+  Layout,
+  MessageSquare,
   Image,
   Square,
   Circle,
@@ -38,16 +45,16 @@ import {
   Loader2,
   AlertTriangle,
   CheckCircle,
-  Layout,
   MousePointer,
   Zap,
   Paintbrush,
   Frame,
   Component,
+  Globe,
+  Code,
   Users,
   ShoppingCart,
   Calendar,
-  MessageSquare,
   Home,
   User,
   Search,
@@ -58,7 +65,6 @@ import {
   Edit2,
   Edit3,
   Save,
-  RefreshCw,
   Upload,
   FileText,
   Star,
@@ -85,7 +91,8 @@ import {
   Lightbulb,
   Briefcase,
   Shield,
-  Activity
+  Activity,
+  RefreshCw
 } from "lucide-react";
 
 interface WireframeData {
@@ -231,6 +238,22 @@ export default function WireframeDesigner() {
   const [selectedDesignType, setSelectedDesignType] = useState<string>('modern');
   const [selectedLayout, setSelectedLayout] = useState<string>('standard-header');
 
+  // Brand Guidelines state
+  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
+  const [isExtractingBrand, setIsExtractingBrand] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [brandExtractionError, setBrandExtractionError] = useState<string>('');
+  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
+  const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
+  const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{ html: string; css: string; js: string } | null>(null);
+  
+  // Multimodal brand analysis state
+  const [multimodalBrandReport, setMultimodalBrandReport] = useState<ComprehensiveBrandReport | null>(null);
+  const [finalBrandReport, setFinalBrandReport] = useState<FinalBrandReport | null>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
+
   // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
   const getBestWireframeVersion = (pageName: string) => {
     const enhancedWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
@@ -264,8 +287,18 @@ export default function WireframeDesigner() {
     return null;
   };
 
-  // Load saved data
+  // Load saved data and stored brand guidelines
   useEffect(() => {
+    // Load stored brand guidelines
+    const stored = BrandGuidelinesStorage.getAll();
+    setStoredBrandGuidelines(stored);
+    
+    // Load the most recent brand guidelines if available
+    const latest = BrandGuidelinesStorage.getLatest();
+    if (latest && !brandGuidelines) {
+      setBrandGuidelines(latest);
+    }
+    
     const savedWireframes = storage.getItem('wireframe_designs');
     const savedPageContent = storage.getItem('page_content_cards');
     const savedGeneratedWireframes = storage.getItem('generated_wireframes');
@@ -755,6 +788,522 @@ export default function WireframeDesigner() {
     });
   };
 
+  // Generate individual brand-compliant wireframes for each page content section
+  const generateUnifiedHTML = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Missing Requirements",
+        description: "Please ensure you have both brand guidelines and page content sections before generating wireframes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingUnifiedHTML(true);
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+    
+    try {
+      const newWireframes = [];
+      
+      // Generate individual wireframes for each page content section
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+
+        // Create a complete, modern HTML page for this section with embedded CSS and JS
+        const primaryColor = brandGuidelines.colors.primary[0] || '#DA291C';
+        const accentColor = brandGuidelines.colors.accent[0] || '#FFC72C';
+        const secondaryColor = brandGuidelines.colors.secondary[0] || '#264A2B';
+        const neutralColor = brandGuidelines.colors.neutral[0] || '#f8fafc';
+        const brandFont = brandGuidelines.typography.fonts[0] || 'Helvetica Neue';
+
+        const htmlCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${card.pageName} - Brand Compliant</title>
+    <style>
+        /* Brand-compliant styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: '${brandFont}', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-left: 6px solid ${accentColor};
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: ${accentColor};
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+        
+        .header h1 {
+            color: ${primaryColor};
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .stakeholders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .stakeholder-badge {
+            background: ${accentColor};
+            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .content-section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .content-section h2 {
+            color: ${primaryColor};
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .content-section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: ${accentColor};
+            border-radius: 2px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: ${neutralColor};
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: ${accentColor};
+            transform: translateY(-3px);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
+            filter: brightness(1.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: ${primaryColor};
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: ${accentColor};
+            box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.1);
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .nav-links a {
+            color: ${primaryColor};
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-links a:hover {
+            background: ${primaryColor};
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .list-items {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .list-items li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 4px solid ${accentColor};
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .list-items li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header {
+                padding: 25px;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .content-section {
+                padding: 20px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>${card.pageName}</h1>
+            <p>${card.purpose}</p>
+            ${card.stakeholders.length > 0 ? `
+            <div class="stakeholders">
+                ${card.stakeholders.map(stakeholder => `<span class="stakeholder-badge">${stakeholder}</span>`).join('')}
+            </div>
+            ` : ''}
+        </header>
+        
+        ${card.headers.length > 0 ? `
+        <section class="content-section">
+            <h2>Content Headers</h2>
+            ${card.headers.map(header => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.textContent && card.textContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Content</h2>
+            ${card.textContent.map(text => `<p style="margin-bottom: 15px; line-height: 1.7;">${text}</p>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.buttons && card.buttons.length > 0 ? `
+        <section class="content-section">
+            <h2>Actions</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                ${card.buttons.map(button => `<button class="btn">${button.label || button}</button>`).join('')}
+            </div>
+        </section>
+        ` : ''}
+        
+        ${card.forms && card.forms.length > 0 ? `
+        <section class="content-section">
+            <h2>Forms</h2>
+            ${card.forms.map(form => `
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">${form.title || form}</h3>
+                    ${form.fields ? form.fields.map(field => `
+                        <div class="form-group">
+                            <label>${field}</label>
+                            <input type="text" placeholder="Enter ${field}">
+                        </div>
+                    `).join('') : ''}
+                    <button class="btn">Submit ${form.title || 'Form'}</button>
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.lists && card.lists.length > 0 ? `
+        <section class="content-section">
+            <h2>Data & Lists</h2>
+            <div class="grid">
+                ${card.lists.map(list => `
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">${list.title || list}</h3>
+                        ${list.items ? `
+                            <ul class="list-items">
+                                ${list.items.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </section>
+        ` : ''}
+        
+        ${card.navigation && card.navigation.length > 0 ? `
+        <section class="content-section">
+            <h2>Navigation</h2>
+            <nav class="nav-links">
+                ${card.navigation.map(nav => `<a href="#" onclick="navigateTo('${nav}')">${nav}</a>`).join('')}
+            </nav>
+        </section>
+        ` : ''}
+        
+        ${card.additionalContent && card.additionalContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Additional Information</h2>
+            ${card.additionalContent.map(content => `<p style="margin-bottom: 15px; line-height: 1.7;">${content}</p>`).join('')}
+        </section>
+        ` : ''}
+    </div>
+    
+    <script>
+        // Interactive button effects with proper brand colors
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = \`
+                    position: absolute;
+                    width: \${size}px;
+                    height: \${size}px;
+                    left: \${x}px;
+                    top: \${y}px;
+                    background: rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                \`;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 600);
+                
+                // Show action feedback
+                const originalText = this.textContent;
+                this.textContent = '✓ ' + originalText;
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 1500);
+            });
+        });
+        
+        // Navigation function
+        function navigateTo(section) {
+            console.log('Navigating to:', section);
+            alert('Navigating to: ' + section);
+        }
+        
+        // Form interactions
+        document.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 199, 44, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+            });
+        });
+        
+        // Add ripple animation styles dynamically
+        const style = document.createElement('style');
+        style.textContent = \`
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+            
+            .btn:focus {
+                outline: 2px solid ${accentColor};
+                outline-offset: 2px;
+            }
+        \`;
+        document.head.appendChild(style);
+        
+        // Add hover effects for cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>`;
+
+        const wireframe = {
+          id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          pageName: card.pageName,
+          htmlCode: htmlCode,
+          cssCode: "// CSS embedded in HTML with brand colors",
+          jsCode: "// Interactive JavaScript included in HTML",
+          isEnhanced: true,
+          lastUpdated: new Date().toISOString(),
+          lastEnhancedElement: "Brand-Compliant Generator",
+          enhancementExplanation: `Generated modern, responsive wireframe for ${card.pageName} using McDonald's brand guidelines`
+        };
+
+        newWireframes.push(wireframe);
+      }
+
+      // Save all new wireframes
+      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const updatedWireframes = [...existingWireframes, ...newWireframes];
+      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      setGeneratedWireframes(updatedWireframes);
+
+      toast({
+        title: "Wireframes Generated Successfully",
+        description: `Created ${newWireframes.length} brand-compliant wireframes with working CSS and JavaScript.`,
+      });
+
+    } catch (error) {
+      console.error('Error generating brand-compliant wireframes:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate wireframes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingUnifiedHTML(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
   // Handle element selection for targeted enhancement
   const handleElementSelection = (event: React.MouseEvent) => {
     if (!selectionMode) return;
@@ -925,6 +1474,304 @@ export default function WireframeDesigner() {
       });
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  // Multimodal brand guideline extraction handler
+  const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || file.type !== 'application/pdf') {
+      setBrandExtractionError('Please select a valid PDF file');
+      return;
+    }
+
+    setIsExtractingBrand(true);
+    setIsPerformingMultimodalAnalysis(true);
+    setBrandExtractionError('');
+    setMultimodalAnalysisProgress({ current: 0, total: 100, currentStep: "Initializing multimodal PDF analysis..." });
+
+    try {
+      console.log('🚀 Starting multimodal PDF extraction for:', file.name);
+      setMultimodalAnalysisProgress({ current: 10, total: 100, currentStep: "Step 1: Converting PDF pages to images..." });
+      
+      // Step 1: Extract content using multimodal PDF extractor
+      const multimodalExtractor = createMultimodalPDFExtractor();
+      
+      setMultimodalAnalysisProgress({ current: 30, total: 100, currentStep: "Step 2: Analyzing pages with Gemini vision..." });
+      
+      const multimodalReport = await multimodalExtractor.extractFromPDF(file);
+      setMultimodalBrandReport(multimodalReport);
+      
+      setMultimodalAnalysisProgress({ current: 60, total: 100, currentStep: "Step 3: Processing content through chunked analysis..." });
+      
+      // Step 2: Process through chunked brand analyzer
+      const chunkedAnalyzer = createChunkedBrandAnalyzer();
+      const finalReport = await chunkedAnalyzer.analyzeExtractedContent(multimodalReport);
+      setFinalBrandReport(finalReport);
+      
+      setMultimodalAnalysisProgress({ current: 85, total: 100, currentStep: "Step 4: Creating comprehensive brand guidelines..." });
+      
+      // Convert to BrandGuideline format for compatibility
+      const brandGuidelines: BrandGuideline = {
+        colors: finalReport.brandGuidelines.colors,
+        typography: finalReport.brandGuidelines.typography,
+        logos: finalReport.brandGuidelines.logos,
+        layout: finalReport.brandGuidelines.layout,
+        accessibility: finalReport.brandGuidelines.accessibility,
+        tone: {
+          personality: finalReport.brandGuidelines.tone.personality,
+          voice: finalReport.brandGuidelines.tone.voice,
+          messaging: finalReport.brandGuidelines.tone.messaging,
+          doAndDont: [...finalReport.brandGuidelines.tone.doAndDonts.dos, ...finalReport.brandGuidelines.tone.doAndDonts.donts]
+        },
+        components: {
+          buttons: { primary: 'Primary button', secondary: 'Secondary button', ghost: 'Ghost button', sizes: ['sm', 'md', 'lg'], states: ['default', 'hover', 'active'], borderRadius: '6px', fontWeight: '500' },
+          forms: { inputStyles: 'Input styles', labelStyles: 'Label styles', validationStyles: 'Validation states' },
+          navigation: { primaryNav: 'Main navigation', styles: 'Navigation styles', breadcrumbs: 'Breadcrumb styles' },
+          cards: { design: 'Card layout', shadows: ['Card shadows'], spacing: 'Card spacing' },
+          tables: ['Table headers', 'Table rows', 'Table borders'],
+          modals: ['Modal overlay', 'Modal content', 'Modal actions'],
+          badges: ['Primary badge', 'Secondary badge', 'Status badges']
+        },
+        imagery: { style: 'Photography style', guidelines: ['Image guidelines'], restrictions: ['No low-res images'], aspectRatios: ['16:9', '4:3'], treatments: ['Clean', 'Professional'] },
+        keyPoints: finalReport.keyFindings.criticalRequirements,
+        keyClauses: finalReport.keyFindings.brandThemes,
+        keyHighlights: finalReport.keyFindings.designPrinciples,
+        compliance: finalReport.keyFindings.complianceNotes,
+        specifications: [...finalReport.brandGuidelines.colors.primary, ...finalReport.brandGuidelines.typography.fonts],
+        usageRules: finalReport.brandGuidelines.logos.usage
+      };
+      
+      setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
+      
+      // Generate a name for the brand guidelines based on file name
+      const guidelineName = file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      // Save to local storage with proper metadata
+      const storedGuideline = BrandGuidelinesStorage.save(brandGuidelines, guidelineName, file.name);
+      
+      // Update state
+      setBrandGuidelines(brandGuidelines);
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      setSelectedStoredGuideline(storedGuideline.id);
+      
+      // Keep legacy localStorage for backward compatibility
+      localStorage.setItem('brand_guidelines', JSON.stringify(brandGuidelines));
+      
+      setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Multimodal analysis complete!" });
+      
+      console.log('✅ Multimodal brand analysis completed:', {
+        totalPages: finalReport.documentInfo.totalPages,
+        totalChunks: finalReport.documentInfo.totalChunks,
+        confidence: Math.round(finalReport.documentInfo.averageConfidence * 100) + '%',
+        processingTime: Math.round(finalReport.documentInfo.processingTime / 1000) + 's'
+      });
+      
+      toast({
+        title: "Multimodal Brand Analysis Complete",
+        description: `Analyzed ${finalReport.documentInfo.totalPages} pages through ${finalReport.documentInfo.totalChunks} content chunks with ${Math.round(finalReport.documentInfo.averageConfidence * 100)}% confidence.`,
+      });
+      
+      setShowBrandModal(true);
+    } catch (error) {
+      console.error('Multimodal brand extraction error:', error);
+      setBrandExtractionError('Failed to extract brand guidelines. Please try again.');
+      toast({
+        title: "Extraction Failed",
+        description: "Could not extract brand guidelines from the PDF file.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtractingBrand(false);
+      setIsPerformingMultimodalAnalysis(false);
+      setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "" });
+    }
+  };
+
+  // Handle selecting stored brand guidelines
+  const handleStoredGuidelineSelection = (guidelineId: string) => {
+    if (!guidelineId || guidelineId === "none") {
+      setSelectedStoredGuideline("");
+      setBrandGuidelines(null);
+      return;
+    }
+
+    const selectedGuideline = BrandGuidelinesStorage.getById(guidelineId);
+    if (selectedGuideline) {
+      setBrandGuidelines(selectedGuideline);
+      setSelectedStoredGuideline(guidelineId);
+      
+      toast({
+        title: "Brand Guidelines Loaded",
+        description: `Using "${selectedGuideline.name}" brand guidelines for wireframe generation.`,
+      });
+    }
+  };
+
+  // Delete stored brand guidelines
+  const handleDeleteStoredGuideline = (guidelineId: string) => {
+    const success = BrandGuidelinesStorage.delete(guidelineId);
+    if (success) {
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      
+      if (selectedStoredGuideline === guidelineId) {
+        setSelectedStoredGuideline("");
+        setBrandGuidelines(null);
+      }
+      
+      toast({
+        title: "Guidelines Deleted",
+        description: "Brand guidelines have been removed from storage.",
+      });
+    }
+  };
+
+  // Regenerate single wireframe with enhanced logo variants
+  const regenerateWireframe = async (pageName: string) => {
+    if (!brandGuidelines) {
+      toast({
+        title: "Brand Guidelines Required",
+        description: "Please load brand guidelines first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pageCard = pageContentCards.find(card => card.pageName === pageName);
+    if (!pageCard) {
+      toast({
+        title: "Page Not Found",
+        description: "Could not find the page content to regenerate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 1, total: 1, currentPage: pageName });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const request: BrandedWireframeRequest = {
+        pageContent: pageCard,
+        designStyle: selectedDesignType,
+        deviceType: selectedDeviceType,
+        brandGuidelines
+      };
+
+      console.log('Regenerating wireframe with logo variants for:', pageName);
+      const result = await brandGenerator.generateBrandedWireframe(request);
+      
+      const newWireframe = {
+        id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        pageName: pageName,
+        htmlCode: result.html,
+        cssCode: result.css,
+        jsCode: '',
+        brandNotes: result.brandNotes || []
+      };
+
+      // Replace existing wireframe with same page name
+      const updatedWireframes = generatedWireframes.filter(w => w.pageName !== pageName);
+      updatedWireframes.push(newWireframe);
+      setGeneratedWireframes(updatedWireframes);
+      
+      // Save to storage
+      storage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      
+      toast({
+        title: "Wireframe Regenerated",
+        description: `${pageName} has been regenerated with enhanced logo variants.`,
+      });
+    } catch (error) {
+      console.error('Error regenerating wireframe:', error);
+      toast({
+        title: "Regeneration Failed",
+        description: "Could not regenerate the wireframe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
+  // Generate brand-aware wireframes
+  const generateBrandAwareWireframes = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Requirements Missing",
+        description: "Please upload brand guidelines and generate page content first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const brandedWireframes: Array<{
+        id: string;
+        pageName: string;
+        htmlCode: string;
+        cssCode: string;
+        jsCode: string;
+        brandNotes: string[];
+      }> = [];
+
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+
+        const request: BrandedWireframeRequest = {
+          pageContent: card,
+          designStyle: selectedDesignType,
+          deviceType: selectedDeviceType,
+          brandGuidelines,
+          finalBrandReport: finalBrandReport ?? undefined
+        };
+
+        const result = await brandGenerator.generateBrandedWireframe(request);
+        
+        brandedWireframes.push({
+          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          pageName: card.pageName,
+          htmlCode: result.html,
+          cssCode: result.css,
+          jsCode: generateWireframeJS(card, selectedDeviceType, selectedDesignType),
+          brandNotes: result.brandNotes
+        });
+
+        // Add delay between generations
+        if (i < pageContentCards.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      setGeneratedWireframes(brandedWireframes);
+      localStorage.setItem('generated_wireframes', JSON.stringify(brandedWireframes));
+
+      toast({
+        title: "Brand-Aware Wireframes Generated",
+        description: `Successfully generated ${brandedWireframes.length} wireframes following your brand guidelines.`,
+      });
+
+      setCurrentStep("results");
+    } catch (error) {
+      console.error('Brand-aware wireframe generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate brand-aware wireframes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
     }
   };
 
@@ -2568,30 +3415,9 @@ ${selectedPageCode.jsCode}
           <div className="mt-8">
             <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
             
-            {/* Wireframe Generation Progress */}
-            {isGeneratingWireframes && (
-              <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-green-700">
-                    Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
-                  </span>
-                  <span className="text-xs text-green-600">
-                    {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
-                  </span>
-                </div>
-                <div className="w-full bg-green-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
-                  ></div>
-                </div>
-                {wireframeGenerationProgress.currentPage && (
-                  <p className="text-xs text-green-600 mt-2">
-                    Currently generating: {wireframeGenerationProgress.currentPage}
-                  </p>
-                )}
-              </div>
-            )}
+
+            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {pageContentCards.map((card, index) => (
                 <Card key={card.id} className="border-2 border-gray-200">
@@ -3543,88 +4369,262 @@ ${selectedPageCode.jsCode}
               ))}
             </div>
             
-            {/* Wireframe Generation Options */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
-              <h3 className="text-lg font-semibold mb-4">Wireframe Generation Options</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {/* Device Type Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Device Type</Label>
-                  <Select value={selectedDeviceType} onValueChange={(value: 'mobile' | 'tablet' | 'desktop') => setSelectedDeviceType(value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="mobile">Mobile (375px)</SelectItem>
-                      <SelectItem value="tablet">Tablet (768px)</SelectItem>
-                      <SelectItem value="desktop">Desktop (1200px)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+            
+          </div>
+        )}
 
-                {/* Color Scheme Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Color Scheme</Label>
-                  <Select value={selectedColorScheme} onValueChange={setSelectedColorScheme}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="modern-blue">Modern Blue</SelectItem>
-                      <SelectItem value="professional-gray">Professional Gray</SelectItem>
-                      <SelectItem value="vibrant-green">Vibrant Green</SelectItem>
-                      <SelectItem value="elegant-purple">Elegant Purple</SelectItem>
-                      <SelectItem value="warm-orange">Warm Orange</SelectItem>
-                      <SelectItem value="corporate-navy">Corporate Navy</SelectItem>
-                      <SelectItem value="minimalist-black">Minimalist Black</SelectItem>
-                      <SelectItem value="fresh-teal">Fresh Teal</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+        {/* Brand Guidelines Upload Section */}
+        {pageContentCards.length > 0 && (
+          <Card className="mt-8 mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Palette className="h-5 w-5 text-purple-600" />
+                Brand Guidelines
+                {brandGuidelines && (
+                  <Badge className="bg-green-100 text-green-800 border-green-300">
+                    Loaded
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
+                </p>
 
-                {/* Design Type Selection */}
-                <div>
-                  <Label className="text-sm font-medium mb-2 block">Design Type</Label>
-                  <Select value={selectedDesignType} onValueChange={setSelectedDesignType}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="simple">Simple & Clean</SelectItem>
-                      <SelectItem value="modern">Modern & Trendy</SelectItem>
-                      <SelectItem value="corporate">Corporate & Formal</SelectItem>
-                      <SelectItem value="professional">Professional & Polished</SelectItem>
-                      <SelectItem value="creative">Creative & Artistic</SelectItem>
-                      <SelectItem value="minimal">Minimal & Elegant</SelectItem>
-                      <SelectItem value="bold">Bold & Dynamic</SelectItem>
-                      <SelectItem value="classic">Classic & Traditional</SelectItem>
-                    </SelectContent>
-                  </Select>
+                {/* Stored Brand Guidelines Selection */}
+                {storedBrandGuidelines.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="block text-sm font-medium">
+                      Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select stored brand guidelines..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None - Upload new PDF</SelectItem>
+                          {storedBrandGuidelines.map((guideline) => (
+                            <SelectItem key={guideline.id} value={guideline.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{guideline.name}</span>
+                                <span className="text-xs text-gray-500 ml-2">
+                                  {new Date(guideline.extractedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedStoredGuideline && (
+                        <Button
+                          onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
+                      Upload New Brand Guidelines PDF
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="brand-pdf"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleBrandGuidelineUpload}
+                        disabled={isExtractingBrand}
+                        className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                      />
+                      {isExtractingBrand && (
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Multimodal Analysis Progress */}
+                    {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
+                      <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                            Multimodal PDF Analysis
+                          </span>
+                          <span className="text-xs text-indigo-600">
+                            {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                          <div 
+                            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                            style={{ width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        {multimodalAnalysisProgress.currentStep && (
+                          <p className="text-xs text-indigo-600">
+                            {multimodalAnalysisProgress.currentStep}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Multimodal Brand Analysis Results */}
+                    {finalBrandReport && (
+                      <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-emerald-700">
+                            Multimodal Analysis Complete
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Pages Analyzed:</strong> {finalBrandReport.documentInfo.totalPages}
+                            </div>
+                            <div className="text-emerald-600">
+                              <strong>Content Chunks:</strong> {finalBrandReport.documentInfo.totalChunks}
+                            </div>
+                          </div>
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Confidence:</strong> {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
+                            </div>
+                            <div className="text-emerald-600">
+                              <strong>Processing Time:</strong> {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-emerald-200">
+                          <div className="text-xs text-emerald-600 space-y-1">
+                            <div><strong>Critical Requirements:</strong> {finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                            <div><strong>Brand Themes:</strong> {finalBrandReport.keyFindings.brandThemes.length}</div>
+                            <div><strong>Design Principles:</strong> {finalBrandReport.keyFindings.designPrinciples.length}</div>
+                            <div><strong>Compliance Notes:</strong> {finalBrandReport.keyFindings.complianceNotes.length}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {brandExtractionError && (
+                      <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {brandGuidelines && (
+                      <Button
+                        onClick={() => setShowBrandModal(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Guidelines
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={generateBrandAwareWireframes}
+                      disabled={!brandGuidelines || isGeneratingWireframes}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      size="sm"
+                    >
+                      {isGeneratingWireframes ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          Generate Brand Wireframes
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={generateUnifiedHTML}
+                      disabled={!brandGuidelines || isGeneratingUnifiedHTML}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      size="sm"
+                    >
+                      {isGeneratingUnifiedHTML ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Creating Wireframes...
+                        </>
+                      ) : (
+                        <>
+                          <Code className="h-4 w-4 mr-1" />
+                          Generate Section Wireframes
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
+                
+                {brandGuidelines && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Colors</div>
+                      <div className="text-sm font-medium">{(brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)}</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Typography</div>
+                      <div className="text-sm font-medium">{brandGuidelines.typography?.fonts?.length || 0} fonts</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Components</div>
+                      <div className="text-sm font-medium">{Object.keys(brandGuidelines.components || {}).length} types</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Logo Info</div>
+                      <div className="text-sm font-medium">{brandGuidelines.logos?.variations?.length || 0} variants</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Brand Voice</div>
+                      <div className="text-sm font-medium">{brandGuidelines.tone?.personality?.length || 0} traits</div>
+                    </div>
+                  </div>
+                )}
               </div>
+            </CardContent>
+          </Card>
+        )}
 
-              {/* Generate Wireframes Button */}
-              <div className="flex justify-center pt-4 border-t border-gray-200">
-                <Button
-                  onClick={handleGenerateWireframes}
-                  disabled={isGeneratingWireframes || pageContentCards.length === 0}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold text-base shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                >
-                  {isGeneratingWireframes ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                      Generating Wireframes...
-                    </>
-                  ) : (
-                    <>
-                      <Frame className="h-5 w-5 mr-2" />
-                      Generate Wireframes ({pageContentCards.length})
-                    </>
-                  )}
-                </Button>
-              </div>
+        {/* Wireframe Generation Progress */}
+        {isGeneratingWireframes && (
+          <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-green-700">
+                Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+              </span>
+              <span className="text-xs text-green-600">
+                {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+              </span>
             </div>
+            <div className="w-full bg-green-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+              ></div>
+            </div>
+            {wireframeGenerationProgress.currentPage && (
+              <p className="text-xs text-green-600 mt-2">
+                Currently generating: {wireframeGenerationProgress.currentPage}
+              </p>
+            )}
           </div>
         )}
 
@@ -3647,6 +4647,15 @@ ${selectedPageCode.jsCode}
                           {wireframe.pageName}
                         </CardTitle>
                         <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-blue-500/20 text-blue-600"
+                            onClick={() => regenerateWireframe(wireframe.pageName)}
+                            title="Regenerate with logo variants"
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -3759,6 +4768,879 @@ ${selectedPageCode.jsCode}
                     </CardContent>
                   </Card>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Brand Guidelines Modal */}
+        {showBrandModal && brandGuidelines && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-[90vw] max-w-4xl h-[90vh] overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Palette className="h-6 w-6 text-purple-600" />
+                  Brand Guidelines Overview
+                </h3>
+                <Button
+                  onClick={() => setShowBrandModal(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+                {/* Multimodal Brand Analysis Summary */}
+                {finalBrandReport && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                    <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                      Multimodal Brand Analysis Results
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{finalBrandReport.documentInfo.totalPages}</div>
+                        <div className="text-xs text-gray-600">Pages Analyzed</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-blue-600">{finalBrandReport.documentInfo.totalChunks}</div>
+                        <div className="text-xs text-gray-600">Content Chunks</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-purple-600">{finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                        <div className="text-xs text-gray-600">Critical Requirements</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-orange-600">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</div>
+                        <div className="text-xs text-gray-600">Confidence</div>
+                      </div>
+                    </div>
+                    
+                    {/* Processing Summary */}
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Processing Summary:</div>
+                      <div className="flex gap-4 text-xs text-gray-600">
+                        <span>Processing Time: {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s</span>
+                        <span>Brand Themes: {finalBrandReport.keyFindings.brandThemes.length}</span>
+                        <span>Design Principles: {finalBrandReport.keyFindings.designPrinciples.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Colors Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-blue-500"></div>
+                        Color Palette
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.primary || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Secondary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.secondary || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Text Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.text || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Accent Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.accent || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Background Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.background || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border border-gray-300"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Typography Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Typography
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Fonts</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.typography?.fonts || []).map((font, index) => (
+                            <div key={index} className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
+                              {font}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Weights</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.typography?.weights || []).map((weight, index) => (
+                            <Badge key={index} variant="outline">{weight}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Styles</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.typography?.headingStyles || []).map((style, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {style}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Layout Guidelines */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Layout className="h-4 w-4" />
+                        Layout & Spacing
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Spacing Values</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.layout?.spacing || []).map((space, index) => (
+                            <Badge key={index} variant="secondary">{space}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Grid Systems</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.layout?.gridSystems || []).map((grid, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {grid}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Breakpoints</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.layout?.breakpoints || []).map((breakpoint, index) => (
+                            <Badge key={index} variant="outline">{breakpoint}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Logo Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-400 to-red-500"></div>
+                        Logo Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Logo</h4>
+                        {brandGuidelines.logos.images?.primary ? (
+                          <div className="bg-gray-50 p-3 rounded border">
+                            <img 
+                              src={brandGuidelines.logos.images.primary} 
+                              alt="Extracted Brand Logo" 
+                              className="max-h-16 w-auto mx-auto mb-2"
+                            />
+                            <div className="text-xs text-green-600 text-center">✓ Logo extracted from PDF</div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                            {brandGuidelines.logos.primary}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Variations</h4>
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {(brandGuidelines.logos?.variations || []).map((variation, index) => (
+                              <Badge key={index} variant="outline">{variation}</Badge>
+                            ))}
+                          </div>
+                          {brandGuidelines.logos.images && Object.keys(brandGuidelines.logos.images).length > 1 && (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                              {Object.entries(brandGuidelines.logos.images).map(([type, imageData], index) => (
+                                type !== 'primary' && imageData && (
+                                  <div key={index} className="bg-gray-50 p-2 rounded border text-center">
+                                    <img 
+                                      src={imageData} 
+                                      alt={`${type} logo variant`} 
+                                      className="max-h-8 w-auto mx-auto mb-1"
+                                    />
+                                    <div className="text-xs text-gray-500 capitalize">{type}</div>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Usage Rules</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.logos?.usage || []).map((rule, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {rule}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Size & Spacing</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Min Size</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.sizes?.[0] || "24px"}</div>
+                          </div>
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Clearance</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.spacing?.[0] || "20px"}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Brand Voice & Personality */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        Brand Voice
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Personality</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.personality.map((trait, index) => (
+                            <Badge key={index} className="bg-blue-100 text-blue-800">{trait}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Voice Characteristics</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.voice.map((voice, index) => (
+                            <Badge key={index} className="bg-purple-100 text-purple-800">{voice}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Key Messages</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.tone.messaging.map((message, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {message}</div>
+                          ))}
+                        </div>
+                      </div>
+                      {brandGuidelines.tone.doAndDont && brandGuidelines.tone.doAndDont.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Communication Guidelines</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.tone.doAndDont.map((guideline, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {guideline}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Key Points & Highlights */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Points</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyPoints.map((point, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                • {point}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Highlights</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyHighlights.map((highlight, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                                ⭐ {highlight}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Important Clauses</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyClauses.map((clause, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                📋 {clause}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Dos and Don'ts */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-red-400"></div>
+                        Dos & Don'ts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.dosAndDonts && (
+                        <>
+                          {brandGuidelines.dosAndDonts.dos && brandGuidelines.dosAndDonts.dos.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">✓ Do</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.dos.map((doItem, index) => (
+                                  <div key={index} className="text-xs text-green-800 bg-green-50 p-2 rounded border-l-3 border-green-500">
+                                    ✓ {doItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.dosAndDonts.donts && brandGuidelines.dosAndDonts.donts.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">✗ Don't</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.donts.map((dontItem, index) => (
+                                  <div key={index} className="text-xs text-red-800 bg-red-50 p-2 rounded border-l-3 border-red-500">
+                                    ✗ {dontItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      
+                      {brandGuidelines.brandRules && brandGuidelines.brandRules.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Rules</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandRules.map((rule, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                📜 {rule}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Key Brand Clauses Section */}
+                {(brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Clauses
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {brandGuidelines.keyClauses.map((clause, index) => (
+                          <div key={index} className="text-sm text-gray-700 bg-amber-50 p-3 rounded border-l-4 border-amber-400">
+                            <strong>Clause {index + 1}:</strong> {clause}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Key Points and Highlights */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  {(brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-400 to-indigo-500"></div>
+                          Key Points
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyPoints.map((point, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                              • {point}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {(brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-yellow-400 to-amber-500"></div>
+                          Key Highlights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyHighlights.map((highlight, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                              ⭐ {highlight}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Brand Values and Design Principles */}
+                {(brandGuidelines.brandValues && brandGuidelines.brandValues.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Brand Values & Design Principles
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Values</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandValues.map((value, index) => (
+                              <div key={index} className="text-sm text-purple-700 bg-purple-50 px-3 py-2 rounded">
+                                {value}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                            <div className="space-y-1">
+                              {brandGuidelines.designPrinciples.map((principle, index) => (
+                                <div key={index} className="text-sm text-indigo-700 bg-indigo-50 px-3 py-2 rounded">
+                                  {principle}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* MongoDB Vector Search Key Points */}
+                {finalBrandReport && finalBrandReport.keyFindings && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-blue-500 animate-pulse"></div>
+                        Multimodal Analysis Key Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Critical Requirements */}
+                        {finalBrandReport.keyFindings.criticalRequirements.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-amber-700">Critical Requirements ({finalBrandReport.keyFindings.criticalRequirements.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.criticalRequirements.slice(0, 5).map((requirement, index) => (
+                                <div key={index} className="text-xs text-amber-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{requirement}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Design Principles */}
+                        {finalBrandReport.keyFindings.designPrinciples.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-blue-700">Design Principles ({finalBrandReport.keyFindings.designPrinciples.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.designPrinciples.slice(0, 5).map((principle, index) => (
+                                <div key={index} className="text-xs text-blue-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{principle}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Brand Themes */}
+                        {finalBrandReport.keyFindings.brandThemes.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-green-700">Brand Themes ({finalBrandReport.keyFindings.brandThemes.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.brandThemes.slice(0, 5).map((theme, index) => (
+                                <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded border-l-3 border-green-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{theme}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Compliance Notes */}
+                        {finalBrandReport.keyFindings.complianceNotes.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-purple-700">Compliance Notes ({finalBrandReport.keyFindings.complianceNotes.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.complianceNotes.slice(0, 5).map((note, index) => (
+                                <div key={index} className="text-xs text-purple-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{note}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Document Information */}
+                {finalBrandReport && finalBrandReport.documentInfo && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-teal-500 animate-pulse"></div>
+                        Document Analysis Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-emerald-700">Processing Stats</h4>
+                          <div className="space-y-2">
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Total Pages: {finalBrandReport.documentInfo.totalPages}
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Average Confidence: {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Processing Time: {finalBrandReport.documentInfo.processingTime}s
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-blue-700">Color Guidelines</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {finalBrandReport.brandGuidelines.colors.primary.slice(0, 5).map((color, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-blue-50 p-1 rounded">
+                                {color}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-purple-700">Typography Guidelines</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {finalBrandReport.brandGuidelines.typography.fonts.slice(0, 5).map((font, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-purple-50 p-1 rounded">
+                                {font}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Compliance & Usage Guidelines */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-400 to-purple-500"></div>
+                        Compliance & Requirements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.compliance && (
+                        <>
+                          {brandGuidelines.compliance.requirements && brandGuidelines.compliance.requirements.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Requirements</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.requirements.map((req, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-indigo-50 p-2 rounded">
+                                    • {req}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.restrictions && brandGuidelines.compliance.restrictions.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Restrictions</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.restrictions.map((restriction, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ⚠️ {restriction}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.guidelines && brandGuidelines.compliance.guidelines.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.guidelines.map((guideline, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-gray-50 p-2 rounded">
+                                    📋 {guideline}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-teal-400 to-cyan-500"></div>
+                        Usage Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.usageGuidelines && (
+                        <>
+                          {brandGuidelines.usageGuidelines.approved && brandGuidelines.usageGuidelines.approved.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">Approved Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.approved.map((usage, index) => (
+                                  <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded">
+                                    ✓ {usage}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.prohibited && brandGuidelines.usageGuidelines.prohibited.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">Prohibited Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.prohibited.map((prohibited, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ✗ {prohibited}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.context && brandGuidelines.usageGuidelines.context.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Context Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.context.map((context, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-teal-50 p-2 rounded">
+                                    📝 {context}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Brand Values & Accessibility */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-blue-500"></div>
+                        Brand Values
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {(brandGuidelines.brandValues || []).map((value, index) => (
+                          <Badge key={index} className="bg-green-100 text-green-800">{value}</Badge>
+                        ))}
+                      </div>
+                      {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                          <div className="space-y-1">
+                            {(brandGuidelines.designPrinciples || []).map((principle, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {principle}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Accessibility
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Contrast Requirements</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.accessibility?.contrast || []).map((contrast, index) => (
+                            <Badge key={index} variant="secondary">{contrast}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Compliance Standards</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.accessibility?.compliance || []).map((standard, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {standard}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-medium text-green-800 mb-2">Enhanced Brand Integration Status</h4>
+                  <p className="text-sm text-green-700">
+                    Comprehensive brand guidelines extracted including text colors, {brandGuidelines.logos?.images?.primary ? 'authentic logo images' : 'logo specifications'}, accessibility requirements, 
+                    and brand values. The AI will use all extracted elements including {brandGuidelines.colors?.text?.length || 0} text colors, 
+                    {brandGuidelines.logos?.variations?.length || 0} logo variations, {brandGuidelines.accessibility?.contrast?.length || 0} contrast requirements
+                    {brandGuidelines.logos?.images?.primary ? ', and extracted logo images' : ''} 
+                    to create wireframes that perfectly match your brand identity.
+                  </p>
+                  {brandGuidelines.logos?.images?.primary && (
+                    <div className="mt-3 p-3 bg-white rounded border border-green-300">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={brandGuidelines.logos.images.primary} 
+                          alt="Extracted Brand Logo" 
+                          className="h-8 w-auto"
+                        />
+                        <div className="text-sm text-green-700">
+                          <div className="font-medium">Authentic Logo Extracted</div>
+                          <div className="text-xs">Logo will be used in generated wireframes for authentic brand representation</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>

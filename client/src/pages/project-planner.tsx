@@ -443,9 +443,12 @@ export default function ProjectPlanner() {
         })));
 
         try {
-          // Generate content for this section
+          // Generate content for this section using configured AI prompts
           console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
-          const content = await planner.generateSection(section.title, config);
+          const content = await planner.generateSection(section.title, config, {
+            id: section.id,
+            aiPrompts: section.aiPrompts
+          });
           
           const generatedSection: ProjectPlanSection = {
             id: section.id,
@@ -965,8 +968,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
         additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
       };
 
-      // Generate content for this specific section
-      const content = await planner.generateSection(section.title, config);
+      // Generate content for this specific section using configured AI prompts
+      const content = await planner.generateSection(section.title, config, {
+        id: section.id,
+        aiPrompts: section.aiPrompts
+      });
       
       // Update the enhanced sections state
       setEnhancedSections(current => {
