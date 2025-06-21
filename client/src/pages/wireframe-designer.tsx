@@ -88,7 +88,7 @@ function convertExternalToBrandGuideline(data: ExternalBrandData): BrandGuidelin
   const colors = getColorsFromExternalData(data);
   const fonts = getFontsFromExternalData(data);
   
-  return {
+  const brandGuideline: BrandGuideline = {
     colors: {
       primary: colors.slice(0, 3),
       secondary: colors.slice(3, 6),
@@ -193,10 +193,22 @@ function convertExternalToBrandGuideline(data: ExternalBrandData): BrandGuidelin
       restrictions: ['Usage guidelines'],
       guidelines: ['Follow specifications']
     },
-    usageRules: [data.icons?.usage || 'Standard usage'],
     brandValues: [data.brand_name],
-    designPrinciples: data.tiles?.types || ['Professional design']
+    designPrinciples: data.tiles?.types || ['Professional design'],
+    dosAndDonts: {
+      dos: data.other_guidelines?.filter((_, i) => i % 2 === 0) || ['Follow brand guidelines'],
+      donts: data.other_guidelines?.filter((_, i) => i % 2 === 1) || ['Avoid brand violations']
+    },
+    brandRules: data.other_guidelines || ['Maintain brand consistency'],
+    usageGuidelines: {
+      approved: [data.icons?.usage || 'Standard usage guidelines'],
+      prohibited: ['Unauthorized modifications', 'Incorrect color usage'],
+      context: ['Digital applications', 'Print materials', 'Web usage']
+    },
+    logoUsage: [data.icons?.usage || 'Standard logo usage guidelines']
   };
+  
+  return brandGuideline;
 }
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
@@ -1692,7 +1704,9 @@ export default function WireframeDesigner() {
       const response = await fetch("http://127.0.0.1:5001/extract-guidelines", requestOptions);
       
       if (!response.ok) {
-        throw new Error(`External API failed with status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('External API error response:', errorText);
+        throw new Error(`External API failed with status: ${response.status} - ${errorText}`);
       }
 
       const result = await response.text();
@@ -1768,10 +1782,25 @@ export default function WireframeDesigner() {
       setShowBrandModal(true);
     } catch (error) {
       console.error('External API brand extraction error:', error);
-      setBrandExtractionError(`Failed to extract brand guidelines: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = 'Unknown error occurred';
+      let userMessage = 'Could not extract brand guidelines from the PDF file.';
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'Connection failed - extraction service unavailable';
+        userMessage = 'Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
+          userMessage = 'Network connection failed. Please verify the extraction service is accessible.';
+        }
+      }
+      
+      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
       toast({
-        title: "Extraction Failed",
-        description: "Could not extract brand guidelines from the PDF file. Please check if the extraction service is running.",
+        title: "Extraction Service Unavailable",
+        description: userMessage,
         variant: "destructive",
       });
     } finally {
