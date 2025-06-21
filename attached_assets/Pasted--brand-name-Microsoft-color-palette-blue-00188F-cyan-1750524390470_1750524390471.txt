@@ -1,0 +1,80 @@
+{
+    "brand_name": "Microsoft",
+    "color_palette": {
+        "blue": "#00188F",
+        "cyan": "#00BCF2",
+        "green": "#009E49",
+        "lime": "#BAD80A",
+        "magenta": "#EC008C",
+        "orange": "#FF8C00",
+        "purple": "#68217A",
+        "red": "#E81123",
+        "teal": "#00B294",
+        "yellow": "#FFF100"
+    },
+    "icons": {
+        "color": [
+            "white",
+            "black"
+        ],
+        "style": "UI icons",
+        "usage": "call-to-action or quick reference"
+    },
+    "illustration": {
+        "purpose": "convey ideas and tell stories",
+        "style": "simple, geometric shapes, flat colors",
+        "usage": "when photography won't work"
+    },
+    "logo": null,
+    "logotype": "Microsoft",
+    "other_guidelines": [
+        "Limit type sizes to three.",
+        "Keep it simple.",
+        "Use the 10 core colors in the right places.",
+        "The fewer tiles the better."
+    ],
+    "page_layout": {
+        "alignment": "left",
+        "breakpoints": null,
+        "grid_system": "base grid unit",
+        "margins": "one or two grid units",
+        "spacing": "one or two grid units"
+    },
+    "photography": {
+        "sources": "Microsoft photo libraries",
+        "style": "authentic, optimistic, and brave"
+    },
+    "tiles": {
+        "alignment": "align to the layout grid",
+        "max_number": "2-3",
+        "size": "any whole number of grid units",
+        "transparency": "80-100%",
+        "types": [
+            "content tile",
+            "cornerstone tile"
+        ]
+    },
+    "typography": {
+        "alignment": "flush left",
+        "case": "sentence case",
+        "font_weights": [
+            "Light",
+            "Regular",
+            "Semibold",
+            "Bold"
+        ],
+        "line_spacing": {
+            "body": "120%",
+            "headline": "120%",
+            "subhead": "110%"
+        },
+        "on_screen_font": "Segoe UI",
+        "primary_font": "Segoe",
+        "print_font": "Segoe Pro",
+        "tracking": {
+            "body": "0",
+            "headline": "-15",
+            "subhead": "-15"
+        }
+    }
+}
