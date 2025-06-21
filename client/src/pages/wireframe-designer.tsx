@@ -16,6 +16,188 @@ import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeRes
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+
+// External API Brand Data Interface
+interface ExternalBrandData {
+  brand_name: string;
+  color_palette?: { [key: string]: string };
+  typography?: {
+    primary_font?: string;
+    on_screen_font?: string;
+    print_font?: string;
+    font_weights?: string[];
+    line_spacing?: { [key: string]: string };
+    alignment?: string;
+    case?: string;
+    tracking?: { [key: string]: string };
+  };
+  page_layout?: {
+    grid_system?: string;
+    spacing?: string;
+    margins?: string;
+    alignment?: string;
+    breakpoints?: string[] | null;
+  };
+  photography?: {
+    style?: string;
+    sources?: string;
+  };
+  illustration?: {
+    purpose?: string;
+    style?: string;
+    usage?: string;
+  };
+  icons?: {
+    color?: string[];
+    style?: string;
+    usage?: string;
+  };
+  tiles?: {
+    types?: string[];
+    size?: string;
+    alignment?: string;
+    transparency?: string;
+    max_number?: string;
+  };
+  logo?: string | null;
+  logotype?: string;
+  other_guidelines?: string[];
+}
+
+// Type guard to check if brandGuidelines is ExternalBrandData
+function isExternalBrandData(data: any): data is ExternalBrandData {
+  return data && typeof data === 'object' && 'brand_name' in data;
+}
+
+// Helper function to get colors from external brand data
+function getColorsFromExternalData(data: ExternalBrandData): string[] {
+  return data.color_palette ? Object.values(data.color_palette) : [];
+}
+
+// Helper function to get fonts from external brand data
+function getFontsFromExternalData(data: ExternalBrandData): string[] {
+  const fonts: string[] = [];
+  if (data.typography?.primary_font) fonts.push(data.typography.primary_font);
+  if (data.typography?.on_screen_font) fonts.push(data.typography.on_screen_font);
+  if (data.typography?.print_font) fonts.push(data.typography.print_font);
+  return fonts.filter(Boolean);
+}
+
+// Convert external brand data to BrandGuideline format for UI compatibility
+function convertExternalToBrandGuideline(data: ExternalBrandData): BrandGuideline {
+  const colors = getColorsFromExternalData(data);
+  const fonts = getFontsFromExternalData(data);
+  
+  return {
+    colors: {
+      primary: colors.slice(0, 3),
+      secondary: colors.slice(3, 6),
+      accent: colors.slice(6),
+      neutral: ['#F8F9FA', '#E9ECEF'],
+      text: ['#000000', '#333333', '#666666'],
+      background: ['#FFFFFF', '#F8F9FA', '#F3F4F6'],
+      error: ['#DC3545'],
+      success: ['#28A745'],
+      warning: ['#FFC107']
+    },
+    typography: {
+      fonts: fonts,
+      fontFamilies: {
+        primary: data.typography?.primary_font,
+        secondary: data.typography?.on_screen_font,
+        heading: data.typography?.primary_font,
+        body: data.typography?.on_screen_font
+      },
+      headingStyles: ['32px', '24px', '20px', '18px'],
+      bodyStyles: ['16px', '14px', '12px'],
+      weights: data.typography?.font_weights || ['Light', 'Regular', 'Semibold', 'Bold'],
+      sizes: ['32px', '24px', '20px', '18px', '16px', '14px', '12px'],
+      lineHeights: ['120%', '110%'],
+      letterSpacing: ['normal', '-0.5px']
+    },
+    logos: {
+      primary: data.logotype || data.brand_name || 'Logo',
+      variations: [data.logotype || data.brand_name || 'Logo'],
+      usage: [data.icons?.usage || 'Standard usage'],
+      restrictions: ['No modifications', 'Maintain aspect ratio'],
+      spacing: ['2x logo height clearance'],
+      colors: colors.slice(0, 2),
+      sizes: ['24px digital', '0.5 inch print'],
+      formats: ['SVG', 'PNG'],
+      images: {
+        primary: data.logotype || undefined,
+        horizontal: data.logotype || undefined,
+        icon: data.logo || undefined
+      }
+    },
+    layout: {
+      spacing: [data.page_layout?.spacing || 'standard spacing'],
+      gridSystems: [data.page_layout?.grid_system || 'base grid unit'],
+      breakpoints: ['768px', '1024px', '1200px'],
+      containers: ['responsive'],
+      margins: [data.page_layout?.margins || 'standard margins'],
+      padding: ['standard padding']
+    },
+    accessibility: {
+      contrast: ['WCAG AA compliant'],
+      guidelines: ['High contrast', 'Readable fonts'],
+      compliance: ['WCAG 2.1 AA']
+    },
+    tone: {
+      personality: data.photography?.style ? data.photography.style.split(',').map(s => s.trim()) : ['professional'],
+      voice: ['consistent', 'clear'],
+      messaging: ['user-focused'],
+      doAndDont: data.other_guidelines || ['Keep it simple']
+    },
+    components: {
+      buttons: {
+        primary: 'Primary button',
+        secondary: 'Secondary button', 
+        ghost: 'Ghost button',
+        sizes: ['sm', 'md', 'lg'],
+        states: ['default', 'hover', 'active'],
+        borderRadius: '6px',
+        fontWeight: '500'
+      },
+      forms: {
+        inputStyles: 'Standard inputs',
+        labelStyles: 'Clear labels',
+        validationStyles: 'Error states'
+      },
+      navigation: {
+        primaryNav: 'Main navigation',
+        styles: 'Clean navigation',
+        breadcrumbs: 'Breadcrumb trails'
+      },
+      cards: {
+        design: 'Card layouts',
+        shadows: ['subtle shadows'],
+        spacing: 'standard spacing'
+      },
+      tables: ['headers', 'rows', 'borders'],
+      modals: ['overlay', 'content', 'actions'],
+      badges: ['primary', 'secondary', 'status']
+    },
+    imagery: {
+      style: data.photography?.style || 'Professional',
+      guidelines: [data.illustration?.purpose || 'High quality'],
+      restrictions: ['Brand consistent'],
+      aspectRatios: ['16:9', '4:3'],
+      treatments: ['Clean', 'Professional']
+    },
+    keyPoints: data.other_guidelines || [],
+    keyClauses: [data.brand_name],
+    keyHighlights: data.tiles?.types || [],
+    compliance: {
+      requirements: ['Brand compliance'],
+      restrictions: ['Usage guidelines'],
+      guidelines: ['Follow specifications']
+    },
+    usageRules: [data.icons?.usage || 'Standard usage'],
+    brandValues: [data.brand_name],
+    designPrinciples: data.tiles?.types || ['Professional design']
+  };
+}
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
 import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
 import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
@@ -240,6 +422,7 @@ export default function WireframeDesigner() {
 
   // Brand Guidelines state
   const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
+  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(null);
   const [isExtractingBrand, setIsExtractingBrand] = useState(false);
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [brandExtractionError, setBrandExtractionError] = useState<string>('');
@@ -1526,86 +1709,13 @@ export default function WireframeDesigner() {
         throw new Error('Invalid response format from extraction service');
       }
 
-      setMultimodalAnalysisProgress({ current: 85, total: 100, currentStep: "Converting to brand guidelines format..." });
+      setMultimodalAnalysisProgress({ current: 85, total: 100, currentStep: "Using brand data directly from API..." });
 
-      // Convert the external API response to our BrandGuideline interface
-      const brandGuidelines: BrandGuideline = {
-        colors: {
-          primary: extractedData.color_palette ? Object.values(extractedData.color_palette).slice(0, 3) as string[] : ['#00188F', '#00BCF2', '#009E49'],
-          secondary: extractedData.color_palette ? Object.values(extractedData.color_palette).slice(3, 6) as string[] : ['#BAD80A', '#EC008C', '#FF8C00'],
-          accent: extractedData.color_palette ? Object.values(extractedData.color_palette).slice(6) as string[] : ['#68217A', '#E81123'],
-          text: ['#000000', '#333333', '#666666'],
-          background: ['#FFFFFF', '#F8F9FA', '#F3F4F6']
-        },
-        typography: {
-          fonts: extractedData.typography ? [
-            extractedData.typography.primary_font || 'Segoe',
-            extractedData.typography.on_screen_font || 'Segoe UI',
-            extractedData.typography.print_font || 'Segoe Pro'
-          ].filter(Boolean) : ['Segoe', 'Segoe UI'],
-          headingSizes: ['32px', '24px', '20px', '18px'],
-          bodySizes: ['16px', '14px', '12px'],
-          lineHeights: extractedData.typography?.line_spacing ? Object.values(extractedData.typography.line_spacing) as string[] : ['120%', '110%'],
-          fontWeights: extractedData.typography?.font_weights || ['Light', 'Regular', 'Semibold', 'Bold']
-        },
-        logos: {
-          variations: extractedData.logo ? [extractedData.logo] : [extractedData.logotype || extractedData.brand_name || 'Logo'],
-          minimumSizes: ['24px digital', '0.5 inch print'],
-          clearSpace: ['2x logo height', '1.5x logo width'],
-          usage: ['approved backgrounds', 'proper placement'],
-          restrictions: ['no distortion', 'no rotation', 'maintain aspect ratio']
-        },
-        layout: {
-          gridSystems: extractedData.page_layout?.grid_system ? [extractedData.page_layout.grid_system] : ['base grid unit'],
-          spacing: extractedData.page_layout?.spacing ? [extractedData.page_layout.spacing] : ['one or two grid units'],
-          margins: extractedData.page_layout?.margins ? [extractedData.page_layout.margins] : ['one or two grid units'],
-          breakpoints: extractedData.page_layout?.breakpoints || ['768px', '1024px', '1200px']
-        },
-        accessibility: {
-          colorContrast: 'WCAG AA compliant',
-          fontSize: 'Minimum 16px for body text',
-          focusStates: 'Visible focus indicators',
-          altText: 'Descriptive alt text required'
-        },
-        tone: {
-          personality: extractedData.photography?.style ? extractedData.photography.style.split(',').map((s: string) => s.trim()) : ['professional', 'authentic'],
-          voice: ['consistent', 'clear', 'engaging'],
-          messaging: ['user-focused', 'accessible', 'inclusive'],
-          doAndDont: extractedData.other_guidelines || ['Keep it simple', 'Use consistent branding', 'Maintain accessibility']
-        },
-        components: {
-          buttons: { 
-            primary: 'Primary button', 
-            secondary: 'Secondary button', 
-            ghost: 'Ghost button', 
-            sizes: ['sm', 'md', 'lg'], 
-            states: ['default', 'hover', 'active'], 
-            borderRadius: '6px', 
-            fontWeight: '500' 
-          },
-          forms: { inputStyles: 'Input styles', labelStyles: 'Label styles', validationStyles: 'Validation states' },
-          navigation: { primaryNav: 'Main navigation', styles: 'Navigation styles', breadcrumbs: 'Breadcrumb styles' },
-          cards: { design: 'Card layout', shadows: ['Card shadows'], spacing: 'Card spacing' },
-          tables: ['Table headers', 'Table rows', 'Table borders'],
-          modals: ['Modal overlay', 'Modal content', 'Modal actions'],
-          badges: ['Primary badge', 'Secondary badge', 'Status badges']
-        },
-        imagery: { 
-          style: extractedData.photography?.style || 'Professional photography', 
-          guidelines: extractedData.illustration ? [extractedData.illustration.purpose] : ['High quality images'], 
-          restrictions: ['No low-res images', 'Brand consistent'], 
-          aspectRatios: ['16:9', '4:3'], 
-          treatments: ['Clean', 'Professional'] 
-        },
-        keyPoints: extractedData.other_guidelines || ['Maintain brand consistency', 'Follow design guidelines'],
-        keyClauses: [extractedData.brand_name || 'Brand Guidelines'],
-        keyHighlights: extractedData.tiles?.types || ['Professional design', 'Consistent branding'],
-        compliance: ['Brand compliance required', 'Follow usage guidelines'],
-        specifications: extractedData.color_palette ? Object.keys(extractedData.color_palette) : ['Color specifications'],
-        usageRules: extractedData.icons?.usage ? [extractedData.icons.usage] : ['Proper icon usage']
-      };
+      // Store raw data and convert to BrandGuideline format
+      setRawBrandData(extractedData);
+      const brandGuidelines = convertExternalToBrandGuideline(extractedData);
 
-      // Create mock final report for compatibility
+      // Create simplified final report for compatibility
       const finalReport = {
         documentInfo: {
           totalPages: 1,
@@ -1614,26 +1724,13 @@ export default function WireframeDesigner() {
           processingTime: 3000
         },
         keyFindings: {
-          criticalRequirements: brandGuidelines.keyPoints,
-          brandThemes: brandGuidelines.keyClauses,
-          designPrinciples: brandGuidelines.keyHighlights,
-          complianceNotes: brandGuidelines.compliance
+          criticalRequirements: extractedData.other_guidelines || [],
+          brandThemes: [extractedData.brand_name || 'Brand Guidelines'],
+          designPrinciples: extractedData.tiles?.types || [],
+          complianceNotes: []
         },
-        brandGuidelines: {
-          colors: brandGuidelines.colors,
-          typography: brandGuidelines.typography,
-          logos: brandGuidelines.logos,
-          layout: brandGuidelines.layout,
-          tone: {
-            personality: brandGuidelines.tone.personality,
-            voice: brandGuidelines.tone.voice,
-            messaging: brandGuidelines.tone.messaging,
-            doAndDonts: {
-              dos: brandGuidelines.tone.doAndDont.slice(0, Math.ceil(brandGuidelines.tone.doAndDont.length / 2)),
-              donts: brandGuidelines.tone.doAndDont.slice(Math.ceil(brandGuidelines.tone.doAndDont.length / 2))
-            }
-          }
-        }
+        brandGuidelines: extractedData,
+        chunkedAnalyses: [] // Required property for FinalBrandReport interface
       };
 
       setFinalBrandReport(finalReport);
@@ -4674,11 +4771,21 @@ ${selectedPageCode.jsCode}
                   <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Colors</div>
-                      <div className="text-sm font-medium">{(brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)}</div>
+                      <div className="text-sm font-medium">
+                        {isExternalBrandData(brandGuidelines) 
+                          ? getColorsFromExternalData(brandGuidelines).length 
+                          : (brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)
+                        }
+                      </div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Typography</div>
-                      <div className="text-sm font-medium">{brandGuidelines.typography?.fonts?.length || 0} fonts</div>
+                      <div className="text-sm font-medium">
+                        {isExternalBrandData(brandGuidelines) 
+                          ? getFontsFromExternalData(brandGuidelines).length 
+                          : brandGuidelines.typography?.fonts?.length || 0
+                        } fonts
+                      </div>
                     </div>
                     <div className="text-center p-2 bg-white/60 rounded-lg">
                       <div className="text-xs text-gray-500">Components</div>
