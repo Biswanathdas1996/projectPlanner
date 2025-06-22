@@ -207,6 +207,16 @@ Changelog:
   - Created fallback flow generation system for reliable master flow creation
   - Added visual flow statistics showing process nodes, connections, and source flows consolidated
   - Integrated master flow with existing FlowDiagramViewer for seamless visualization
+  - Enhanced master flow with detailed granular components (25+ nodes) covering all process steps:
+    * Registration phase: patient arrival, personal info, contact details, insurance collection
+    * Verification phase: ID verification, insurance verification, eligibility checking
+    * Profile setup: medical history, medications, allergies, emergency contacts, consent forms
+    * Platform selection: mobile app download, web portal access, dashboard setup
+    * Core services: appointment search, provider selection, booking confirmation, reminders
+    * Communication: secure messaging, video consultations, document sharing, test results
+    * Post-service: rating, payment processing, follow-up scheduling, care plan updates
+  - Implemented comprehensive color-coded workflow with logical positioning and flow connections
+  - Created detailed AI prompts for generating 25-35 granular workflow components with specific healthcare process steps
 ```
 
 ## User Preferences

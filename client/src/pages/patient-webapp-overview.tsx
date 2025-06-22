@@ -1166,50 +1166,86 @@ export function PatientWebappOverviewPage() {
       }));
 
       const consolidationPrompt = `
-        Analyze the following healthcare application flows and create a consolidated master flow diagram that combines all processes into a single comprehensive workflow:
+        Analyze the following healthcare application flows and create a comprehensive master flow diagram with detailed granular components:
 
         Flows to consolidate:
         ${JSON.stringify(flowSummaries, null, 2)}
 
-        Create a master flow that:
-        1. Starts with patient onboarding/registration
-        2. Includes core healthcare processes (appointments, communication, records)
-        3. Incorporates mobile app usage patterns
-        4. Shows decision points and parallel processes
-        5. Ends with completion/follow-up actions
+        Create a detailed master flow with ALL small components including:
 
-        Return a JSON object with this structure:
-        {
-          "title": "Consolidated Healthcare Platform Flow",
-          "description": "Master workflow combining all patient and provider processes",
-          "nodes": [
-            {
-              "id": "unique-id",
-              "position": {"x": number, "y": number},
-              "data": {"label": "Process Step"},
-              "type": "input|default|output",
-              "style": {"backgroundColor": "#color", "color": "white"}
-            }
-          ],
-          "edges": [
-            {
-              "id": "edge-id",
-              "source": "node-id",
-              "target": "node-id",
-              "animated": false
-            }
-          ]
-        }
+        REGISTRATION PHASE (detailed steps):
+        - Patient arrival/initial contact
+        - Personal information entry (name, DOB, address)
+        - Contact details (phone, email, emergency contacts)
+        - Insurance information collection
+        - ID verification process
+        - Insurance verification
+        - Eligibility checking
+        - Photo capture/document upload
 
-        Use these color schemes:
-        - Start/Registration: #10B981 (green)
-        - Core Processes: #1E88E5 (blue)
+        PROFILE SETUP PHASE (detailed steps):
+        - Medical history questionnaire
+        - Current medications list
+        - Allergies and conditions
+        - Emergency contact information
+        - Communication preferences
+        - Language preferences
+        - Consent forms signing
+        - Privacy policy acknowledgment
+
+        PLATFORM SELECTION (detailed steps):
+        - Platform choice (mobile vs web)
+        - App download (if mobile)
+        - Account setup/login
+        - Dashboard orientation
+        - Feature tutorials
+        - Notification settings
+
+        CORE SERVICES (detailed steps):
+        - Appointment searching/filtering
+        - Provider selection and review
+        - Available time slot viewing
+        - Appointment booking confirmation
+        - Calendar integration
+        - Reminder setup
+        - Pre-visit preparation
+
+        COMMUNICATION (detailed steps):
+        - Secure messaging with providers
+        - Video consultation setup
+        - Document sharing
+        - Test result viewing
+        - Prescription management
+        - Care plan access
+
+        POST-SERVICE (detailed steps):
+        - Service rating and feedback
+        - Payment processing
+        - Insurance claims
+        - Follow-up scheduling
+        - Care plan updates
+        - Download/print summaries
+
+        Requirements:
+        - Create 25-35 detailed nodes covering ALL granular steps
+        - Use clear, specific labels for each component
+        - Include validation steps, error handling, and decision points
+        - Show parallel processes and alternative paths
+        - Position nodes logically (x: 0-1400, y: 50-500)
+        - Connect all nodes with proper flow logic
+
+        Color coding:
+        - Registration: #10B981 (green)
+        - Verification: #FF6B35 (orange) 
+        - Profile Setup: #9C27B0 (purple)
+        - Platform/Tech: #E91E63 (pink) for mobile, #2196F3 (blue) for web
+        - Core Services: #795548 (brown)
+        - Communication: #607D8B (blue-grey)
+        - Post-Service: #FF9800 (amber)
         - Decision Points: #FFC107 (yellow)
-        - Mobile Features: #9C27B0 (purple)
-        - Provider Actions: #FF6B35 (orange)
         - Completion: #4CAF50 (success green)
 
-        Create approximately 15-20 nodes with logical positioning (x: 0-1200, y: 50-400).
+        Return valid JSON with the structure provided earlier.
       `;
 
       const response = await fetch('/api/generate-bpmn', {
@@ -1269,86 +1305,296 @@ export function PatientWebappOverviewPage() {
 
   const createFallbackConsolidatedFlow = (flows: PatientFlow[]) => {
     const nodes = [
+      // Patient Registration Phase - Detailed Components
       {
         id: 'start',
-        position: { x: 50, y: 100 },
-        data: { label: 'Patient Registration' },
+        position: { x: 50, y: 50 },
+        data: { label: 'Patient Arrives' },
         type: 'input',
         style: { backgroundColor: '#10B981', color: 'white' }
       },
       {
-        id: 'verification',
-        position: { x: 250, y: 100 },
-        data: { label: 'Identity Verification' },
+        id: 'personal-info',
+        position: { x: 200, y: 50 },
+        data: { label: 'Enter Personal Info' },
         type: 'default',
         style: { backgroundColor: '#1E88E5', color: 'white' }
       },
       {
-        id: 'profile-setup',
-        position: { x: 450, y: 100 },
-        data: { label: 'Profile Setup' },
+        id: 'contact-details',
+        position: { x: 350, y: 50 },
+        data: { label: 'Contact Details' },
         type: 'default',
         style: { backgroundColor: '#1E88E5', color: 'white' }
       },
       {
-        id: 'decision-platform',
-        position: { x: 650, y: 100 },
-        data: { label: 'Choose Platform' },
+        id: 'insurance-info',
+        position: { x: 500, y: 50 },
+        data: { label: 'Insurance Information' },
         type: 'default',
-        style: { backgroundColor: '#FFC107', color: 'black' }
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      
+      // Verification Phase - Detailed Components
+      {
+        id: 'id-verification',
+        position: { x: 650, y: 50 },
+        data: { label: 'ID Verification' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
       },
       {
-        id: 'mobile-app',
-        position: { x: 500, y: 250 },
-        data: { label: 'Mobile App Usage' },
+        id: 'insurance-verification',
+        position: { x: 800, y: 50 },
+        data: { label: 'Insurance Verification' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'eligibility-check',
+        position: { x: 950, y: 50 },
+        data: { label: 'Eligibility Check' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+
+      // Profile Setup Phase - Detailed Components
+      {
+        id: 'medical-history',
+        position: { x: 200, y: 150 },
+        data: { label: 'Medical History' },
         type: 'default',
         style: { backgroundColor: '#9C27B0', color: 'white' }
       },
       {
-        id: 'web-portal',
-        position: { x: 800, y: 250 },
-        data: { label: 'Web Portal Access' },
+        id: 'emergency-contacts',
+        position: { x: 350, y: 150 },
+        data: { label: 'Emergency Contacts' },
         type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        style: { backgroundColor: '#9C27B0', color: 'white' }
       },
       {
-        id: 'appointment-booking',
+        id: 'preferences',
+        position: { x: 500, y: 150 },
+        data: { label: 'Communication Preferences' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'consent-forms',
+        position: { x: 650, y: 150 },
+        data: { label: 'Consent Forms' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+
+      // Platform Decision
+      {
+        id: 'platform-choice',
+        position: { x: 800, y: 150 },
+        data: { label: 'Choose Platform' },
+        type: 'default',
+        style: { backgroundColor: '#FFC107', color: 'black' }
+      },
+
+      // Mobile App Path - Detailed Components
+      {
+        id: 'mobile-download',
+        position: { x: 650, y: 250 },
+        data: { label: 'Download Mobile App' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'mobile-login',
+        position: { x: 500, y: 250 },
+        data: { label: 'Mobile Login' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'mobile-dashboard',
+        position: { x: 350, y: 250 },
+        data: { label: 'Mobile Dashboard' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'mobile-notifications',
+        position: { x: 200, y: 250 },
+        data: { label: 'Enable Push Notifications' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+
+      // Web Portal Path - Detailed Components
+      {
+        id: 'web-login',
+        position: { x: 950, y: 250 },
+        data: { label: 'Web Portal Login' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+      {
+        id: 'web-dashboard',
+        position: { x: 1100, y: 250 },
+        data: { label: 'Web Dashboard' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+      {
+        id: 'document-upload',
+        position: { x: 1250, y: 250 },
+        data: { label: 'Document Upload' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+
+      // Core Services - Detailed Components
+      {
+        id: 'appointment-search',
+        position: { x: 350, y: 350 },
+        data: { label: 'Search Appointments' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'provider-selection',
+        position: { x: 500, y: 350 },
+        data: { label: 'Select Provider' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'time-booking',
         position: { x: 650, y: 350 },
-        data: { label: 'Appointment Booking' },
+        data: { label: 'Book Time Slot' },
         type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        style: { backgroundColor: '#795548', color: 'white' }
       },
       {
-        id: 'provider-communication',
-        position: { x: 850, y: 350 },
-        data: { label: 'Provider Communication' },
+        id: 'appointment-confirmation',
+        position: { x: 800, y: 350 },
+        data: { label: 'Appointment Confirmation' },
         type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        style: { backgroundColor: '#795548', color: 'white' }
       },
+
+      // Communication - Detailed Components
+      {
+        id: 'message-provider',
+        position: { x: 950, y: 350 },
+        data: { label: 'Message Provider' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'video-consultation',
+        position: { x: 1100, y: 350 },
+        data: { label: 'Video Consultation' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'test-results',
+        position: { x: 1250, y: 350 },
+        data: { label: 'View Test Results' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+
+      // Post-Service - Detailed Components
+      {
+        id: 'service-rating',
+        position: { x: 650, y: 450 },
+        data: { label: 'Rate Service' },
+        type: 'default',
+        style: { backgroundColor: '#FF9800', color: 'white' }
+      },
+      {
+        id: 'payment-processing',
+        position: { x: 800, y: 450 },
+        data: { label: 'Payment Processing' },
+        type: 'default',
+        style: { backgroundColor: '#FF9800', color: 'white' }
+      },
+      {
+        id: 'follow-up-schedule',
+        position: { x: 950, y: 450 },
+        data: { label: 'Schedule Follow-up' },
+        type: 'default',
+        style: { backgroundColor: '#FF9800', color: 'white' }
+      },
+
+      // Completion
       {
         id: 'completion',
-        position: { x: 1050, y: 250 },
-        data: { label: 'Service Completion' },
+        position: { x: 1100, y: 450 },
+        data: { label: 'Service Complete' },
         type: 'output',
         style: { backgroundColor: '#4CAF50', color: 'white' }
       }
     ];
 
     const edges = [
-      { id: 'e1', source: 'start', target: 'verification' },
-      { id: 'e2', source: 'verification', target: 'profile-setup' },
-      { id: 'e3', source: 'profile-setup', target: 'decision-platform' },
-      { id: 'e4', source: 'decision-platform', target: 'mobile-app' },
-      { id: 'e5', source: 'decision-platform', target: 'web-portal' },
-      { id: 'e6', source: 'mobile-app', target: 'appointment-booking' },
-      { id: 'e7', source: 'web-portal', target: 'provider-communication' },
-      { id: 'e8', source: 'appointment-booking', target: 'completion' },
-      { id: 'e9', source: 'provider-communication', target: 'completion' }
+      // Registration Flow
+      { id: 'e1', source: 'start', target: 'personal-info' },
+      { id: 'e2', source: 'personal-info', target: 'contact-details' },
+      { id: 'e3', source: 'contact-details', target: 'insurance-info' },
+      { id: 'e4', source: 'insurance-info', target: 'id-verification' },
+      
+      // Verification Flow
+      { id: 'e5', source: 'id-verification', target: 'insurance-verification' },
+      { id: 'e6', source: 'insurance-verification', target: 'eligibility-check' },
+      
+      // Profile Setup Flow
+      { id: 'e7', source: 'eligibility-check', target: 'medical-history' },
+      { id: 'e8', source: 'personal-info', target: 'medical-history' },
+      { id: 'e9', source: 'medical-history', target: 'emergency-contacts' },
+      { id: 'e10', source: 'emergency-contacts', target: 'preferences' },
+      { id: 'e11', source: 'preferences', target: 'consent-forms' },
+      { id: 'e12', source: 'consent-forms', target: 'platform-choice' },
+      
+      // Platform Branching
+      { id: 'e13', source: 'platform-choice', target: 'mobile-download' },
+      { id: 'e14', source: 'platform-choice', target: 'web-login' },
+      
+      // Mobile Flow
+      { id: 'e15', source: 'mobile-download', target: 'mobile-login' },
+      { id: 'e16', source: 'mobile-login', target: 'mobile-dashboard' },
+      { id: 'e17', source: 'mobile-dashboard', target: 'mobile-notifications' },
+      { id: 'e18', source: 'mobile-notifications', target: 'appointment-search' },
+      
+      // Web Flow
+      { id: 'e19', source: 'web-login', target: 'web-dashboard' },
+      { id: 'e20', source: 'web-dashboard', target: 'document-upload' },
+      { id: 'e21', source: 'document-upload', target: 'message-provider' },
+      
+      // Core Services Flow
+      { id: 'e22', source: 'appointment-search', target: 'provider-selection' },
+      { id: 'e23', source: 'provider-selection', target: 'time-booking' },
+      { id: 'e24', source: 'time-booking', target: 'appointment-confirmation' },
+      { id: 'e25', source: 'appointment-confirmation', target: 'message-provider' },
+      
+      // Communication Flow
+      { id: 'e26', source: 'message-provider', target: 'video-consultation' },
+      { id: 'e27', source: 'video-consultation', target: 'test-results' },
+      { id: 'e28', source: 'test-results', target: 'service-rating' },
+      
+      // Post-Service Flow
+      { id: 'e29', source: 'service-rating', target: 'payment-processing' },
+      { id: 'e30', source: 'payment-processing', target: 'follow-up-schedule' },
+      { id: 'e31', source: 'follow-up-schedule', target: 'completion' },
+      
+      // Alternative paths
+      { id: 'e32', source: 'appointment-confirmation', target: 'service-rating' },
+      { id: 'e33', source: 'mobile-dashboard', target: 'provider-selection' },
+      { id: 'e34', source: 'web-dashboard', target: 'appointment-search' }
     ];
 
     return {
-      title: "Consolidated Healthcare Platform Flow",
-      description: "Master workflow combining patient registration, platform usage, and core healthcare processes",
+      title: "Detailed Healthcare Platform Master Flow",
+      description: "Comprehensive workflow with detailed components covering patient registration, verification, platform usage, core services, communication, and completion processes",
       flowData: { nodes, edges }
     };
   };
