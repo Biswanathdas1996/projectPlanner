@@ -137,6 +137,8 @@ export function PatientWebappOverviewPage() {
   const [comprehensiveProjectPlan, setComprehensiveProjectPlan] = useState<ComprehensiveProjectPlan | null>(null);
   const [allLocalStorageData, setAllLocalStorageData] = useState<Record<string, any>>({});
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [consolidatedFlow, setConsolidatedFlow] = useState<any>(null);
+  const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] = useState(false);
 
   useEffect(() => {
     loadPatientAppData();
@@ -1141,6 +1143,216 @@ export function PatientWebappOverviewPage() {
     }
   };
 
+  const generateConsolidatedFlow = async () => {
+    if (flows.length === 0) return;
+
+    setIsGeneratingConsolidatedFlow(true);
+    try {
+      // Prepare flow data for AI analysis
+      const flowSummaries = flows.map(flow => ({
+        title: flow.title,
+        description: flow.description,
+        category: flow.category,
+        priority: flow.priority,
+        nodes: flow.flowData.nodes?.map((node: any) => ({
+          id: node.id,
+          label: node.data?.label || 'Node',
+          type: node.type
+        })) || [],
+        edges: flow.flowData.edges?.map((edge: any) => ({
+          source: edge.source,
+          target: edge.target
+        })) || []
+      }));
+
+      const consolidationPrompt = `
+        Analyze the following healthcare application flows and create a consolidated master flow diagram that combines all processes into a single comprehensive workflow:
+
+        Flows to consolidate:
+        ${JSON.stringify(flowSummaries, null, 2)}
+
+        Create a master flow that:
+        1. Starts with patient onboarding/registration
+        2. Includes core healthcare processes (appointments, communication, records)
+        3. Incorporates mobile app usage patterns
+        4. Shows decision points and parallel processes
+        5. Ends with completion/follow-up actions
+
+        Return a JSON object with this structure:
+        {
+          "title": "Consolidated Healthcare Platform Flow",
+          "description": "Master workflow combining all patient and provider processes",
+          "nodes": [
+            {
+              "id": "unique-id",
+              "position": {"x": number, "y": number},
+              "data": {"label": "Process Step"},
+              "type": "input|default|output",
+              "style": {"backgroundColor": "#color", "color": "white"}
+            }
+          ],
+          "edges": [
+            {
+              "id": "edge-id",
+              "source": "node-id",
+              "target": "node-id",
+              "animated": false
+            }
+          ]
+        }
+
+        Use these color schemes:
+        - Start/Registration: #10B981 (green)
+        - Core Processes: #1E88E5 (blue)
+        - Decision Points: #FFC107 (yellow)
+        - Mobile Features: #9C27B0 (purple)
+        - Provider Actions: #FF6B35 (orange)
+        - Completion: #4CAF50 (success green)
+
+        Create approximately 15-20 nodes with logical positioning (x: 0-1200, y: 50-400).
+      `;
+
+      const response = await fetch('/api/generate-bpmn', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: consolidationPrompt,
+          context: 'consolidated-flow'
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate consolidated flow');
+      }
+
+      const result = await response.text();
+      
+      // Parse the AI response
+      try {
+        // Extract JSON from the response
+        const jsonMatch = result.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const flowData = JSON.parse(jsonMatch[0]);
+          
+          // Validate and set the consolidated flow
+          if (flowData.nodes && flowData.edges) {
+            setConsolidatedFlow({
+              title: flowData.title || "Consolidated Healthcare Platform Flow",
+              description: flowData.description || "Master workflow combining all processes",
+              flowData: {
+                nodes: flowData.nodes,
+                edges: flowData.edges
+              }
+            });
+          }
+        }
+      } catch (parseError) {
+        console.error('Error parsing consolidated flow:', parseError);
+        
+        // Fallback: Create a simplified consolidated flow
+        const fallbackFlow = createFallbackConsolidatedFlow(flows);
+        setConsolidatedFlow(fallbackFlow);
+      }
+
+    } catch (error) {
+      console.error('Error generating consolidated flow:', error);
+      
+      // Create fallback consolidated flow
+      const fallbackFlow = createFallbackConsolidatedFlow(flows);
+      setConsolidatedFlow(fallbackFlow);
+    } finally {
+      setIsGeneratingConsolidatedFlow(false);
+    }
+  };
+
+  const createFallbackConsolidatedFlow = (flows: PatientFlow[]) => {
+    const nodes = [
+      {
+        id: 'start',
+        position: { x: 50, y: 100 },
+        data: { label: 'Patient Registration' },
+        type: 'input',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'verification',
+        position: { x: 250, y: 100 },
+        data: { label: 'Identity Verification' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'profile-setup',
+        position: { x: 450, y: 100 },
+        data: { label: 'Profile Setup' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'decision-platform',
+        position: { x: 650, y: 100 },
+        data: { label: 'Choose Platform' },
+        type: 'default',
+        style: { backgroundColor: '#FFC107', color: 'black' }
+      },
+      {
+        id: 'mobile-app',
+        position: { x: 500, y: 250 },
+        data: { label: 'Mobile App Usage' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'web-portal',
+        position: { x: 800, y: 250 },
+        data: { label: 'Web Portal Access' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'appointment-booking',
+        position: { x: 650, y: 350 },
+        data: { label: 'Appointment Booking' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'provider-communication',
+        position: { x: 850, y: 350 },
+        data: { label: 'Provider Communication' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'completion',
+        position: { x: 1050, y: 250 },
+        data: { label: 'Service Completion' },
+        type: 'output',
+        style: { backgroundColor: '#4CAF50', color: 'white' }
+      }
+    ];
+
+    const edges = [
+      { id: 'e1', source: 'start', target: 'verification' },
+      { id: 'e2', source: 'verification', target: 'profile-setup' },
+      { id: 'e3', source: 'profile-setup', target: 'decision-platform' },
+      { id: 'e4', source: 'decision-platform', target: 'mobile-app' },
+      { id: 'e5', source: 'decision-platform', target: 'web-portal' },
+      { id: 'e6', source: 'mobile-app', target: 'appointment-booking' },
+      { id: 'e7', source: 'web-portal', target: 'provider-communication' },
+      { id: 'e8', source: 'appointment-booking', target: 'completion' },
+      { id: 'e9', source: 'provider-communication', target: 'completion' }
+    ];
+
+    return {
+      title: "Consolidated Healthcare Platform Flow",
+      description: "Master workflow combining patient registration, platform usage, and core healthcare processes",
+      flowData: { nodes, edges }
+    };
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header Section */}
@@ -1465,6 +1677,93 @@ export function PatientWebappOverviewPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Consolidated Master Flow Section */}
+      <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Activity className="h-6 w-6 text-purple-600" />
+              AI-Generated Master Flow Diagram
+            </div>
+            <Button 
+              onClick={generateConsolidatedFlow}
+              disabled={isGeneratingConsolidatedFlow || flows.length === 0}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {isGeneratingConsolidatedFlow ? (
+                <>
+                  <Clock className="mr-2 h-4 w-4 animate-spin" />
+                  Consolidating Flows...
+                </>
+              ) : (
+                <>
+                  <Settings className="mr-2 h-4 w-4" />
+                  Generate Master Flow
+                </>
+              )}
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!consolidatedFlow && !isGeneratingConsolidatedFlow && (
+            <div className="text-center py-8">
+              <div className="text-gray-500 mb-4">
+                Consolidate all individual flows into a single comprehensive master workflow diagram using AI analysis.
+              </div>
+              <div className="text-sm text-gray-400">
+                {flows.length === 0 
+                  ? "No flows available to consolidate. Please generate some flows first."
+                  : `Ready to consolidate ${flows.length} flows into a master diagram.`
+                }
+              </div>
+            </div>
+          )}
+          
+          {isGeneratingConsolidatedFlow && (
+            <div className="text-center py-8">
+              <div className="text-purple-600 mb-4">
+                AI is analyzing and consolidating all flows into a master workflow...
+              </div>
+              <div className="text-sm text-gray-500">
+                This may take a moment as we merge {flows.length} individual flows.
+              </div>
+            </div>
+          )}
+
+          {consolidatedFlow && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h4 className="font-semibold text-purple-900 mb-2">{consolidatedFlow.title}</h4>
+                <p className="text-sm text-gray-600 mb-4">{consolidatedFlow.description}</p>
+                
+                <div className="bg-gray-50 rounded-lg p-2 mb-4">
+                  <FlowDiagramViewer
+                    flowData={consolidatedFlow.flowData}
+                    title="Master Healthcare Platform Flow"
+                    className="h-96"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="bg-green-50 p-3 rounded border border-green-200">
+                    <div className="font-medium text-green-800">Process Nodes</div>
+                    <div className="text-green-600">{consolidatedFlow.flowData.nodes?.length || 0} steps</div>
+                  </div>
+                  <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                    <div className="font-medium text-blue-800">Connections</div>
+                    <div className="text-blue-600">{consolidatedFlow.flowData.edges?.length || 0} transitions</div>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                    <div className="font-medium text-purple-800">Source Flows</div>
+                    <div className="text-purple-600">{flows.length} consolidated</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* App Overview Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

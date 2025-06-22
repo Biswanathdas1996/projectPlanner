@@ -200,6 +200,13 @@ Changelog:
     * Current project data quality analysis
   - Integrated brand-aware planning using extracted color schemes and typography
   - Created professional PDF export with comprehensive documentation for Replit development workflow
+- June 22, 2025. AI-Powered Master Flow Consolidation feature added
+  - Built consolidated flow generator that analyzes all individual flows using AI
+  - Added new section on /mapping page for generating single comprehensive master flow diagram
+  - Implemented AI analysis to merge multiple healthcare workflows into unified process
+  - Created fallback flow generation system for reliable master flow creation
+  - Added visual flow statistics showing process nodes, connections, and source flows consolidated
+  - Integrated master flow with existing FlowDiagramViewer for seamless visualization
 ```
 
 ## User Preferences
