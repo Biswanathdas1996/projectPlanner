@@ -395,32 +395,110 @@ export function FlowWireframeMappingPage() {
         // Wait for React to re-render
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Capture flow diagram with exact colors
+        // Capture flow diagram with exact colors and full dimensions
         const flowElement = document.querySelector('.react-flow') as HTMLElement;
         if (flowElement) {
           try {
+            // First, fit the view to show all nodes
+            const fitViewButton = document.querySelector('[data-testid="rf__controls-fitview"]') as HTMLButtonElement;
+            if (fitViewButton) {
+              fitViewButton.click();
+              await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            // Get all node and edge elements to calculate bounds
+            const nodeElements = flowElement.querySelectorAll('.react-flow__node');
+            const edgeElements = flowElement.querySelectorAll('.react-flow__edge');
+            
+            // Calculate bounding box of all elements
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            let hasElements = false;
+            
+            [...nodeElements, ...edgeElements].forEach((element) => {
+              const rect = element.getBoundingClientRect();
+              const containerRect = flowElement.getBoundingClientRect();
+              
+              const relativeX = rect.left - containerRect.left;
+              const relativeY = rect.top - containerRect.top;
+              
+              minX = Math.min(minX, relativeX);
+              maxX = Math.max(maxX, relativeX + rect.width);
+              minY = Math.min(minY, relativeY);
+              maxY = Math.max(maxY, relativeY + rect.height);
+              hasElements = true;
+            });
+            
+            // Set minimum dimensions if no elements found
+            if (!hasElements) {
+              minX = 0;
+              minY = 0;
+              maxX = flowElement.clientWidth;
+              maxY = flowElement.clientHeight;
+            }
+            
+            // Add generous padding
+            const padding = 100;
+            const contentWidth = maxX - minX + padding * 2;
+            const contentHeight = maxY - minY + padding * 2;
+            
+            // Use larger dimensions to ensure nothing is cut off
+            const captureWidth = Math.max(flowElement.clientWidth, contentWidth, 1200);
+            const captureHeight = Math.max(flowElement.clientHeight, contentHeight, 800);
+            
             const canvas = await html2canvas(flowElement, {
-              scale: 2,
+              scale: 1,
               useCORS: true,
               allowTaint: true,
               backgroundColor: '#ffffff',
               logging: false,
-              height: flowElement.scrollHeight,
-              width: flowElement.scrollWidth
+              width: captureWidth,
+              height: captureHeight,
+              scrollX: -Math.max(0, minX - padding),
+              scrollY: -Math.max(0, minY - padding),
+              foreignObjectRendering: true,
+              removeContainer: false,
+              imageTimeout: 5000
             });
             
             const imgData = canvas.toDataURL('image/png', 1.0);
-            const imgWidth = Math.min(170, pageWidth - 40);
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
-            // Check if we need a new page for the diagram
-            if (yPosition + imgHeight > pageHeight - 20) {
-              pdf.addPage();
-              yPosition = 20;
+            // Calculate optimal size for PDF - use landscape orientation if needed
+            const maxPdfWidth = pageWidth - 40;
+            const maxPdfHeight = pageHeight - 100;
+            
+            let imgWidth = maxPdfWidth;
+            let imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // If height exceeds page, scale down
+            if (imgHeight > maxPdfHeight) {
+              imgHeight = maxPdfHeight;
+              imgWidth = (canvas.width * imgHeight) / canvas.height;
             }
             
-            pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
-            yPosition += imgHeight + 20;
+            // For very wide diagrams, create a new page in landscape
+            if (imgWidth < maxPdfWidth * 0.6 && canvas.width > canvas.height * 1.5) {
+              pdf.addPage('a4', 'landscape');
+              const landscapeWidth = pdf.internal.pageSize.getHeight(); // swapped for landscape
+              const landscapeHeight = pdf.internal.pageSize.getWidth();
+              
+              imgWidth = Math.min(landscapeWidth - 40, (canvas.width * (landscapeHeight - 100)) / canvas.height);
+              imgHeight = (canvas.height * imgWidth) / canvas.width;
+              
+              const xPos = (landscapeWidth - imgWidth) / 2;
+              pdf.addImage(imgData, 'PNG', xPos, 20, imgWidth, imgHeight);
+              yPosition = 20;
+            } else {
+              // Check if we need a new page for the diagram
+              if (yPosition + imgHeight > pageHeight - 20) {
+                pdf.addPage();
+                yPosition = 20;
+              }
+              
+              // Center the image horizontally
+              const xPosition = (pageWidth - imgWidth) / 2;
+              pdf.addImage(imgData, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
+              yPosition += imgHeight + 20;
+            }
           } catch (error) {
             console.warn('Could not capture flow diagram:', error);
             pdf.setFontSize(10);
