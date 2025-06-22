@@ -19,7 +19,14 @@ import {
   ExternalLink,
   UserPlus,
   Activity,
-  Settings
+  Settings,
+  Loader2,
+  Target,
+  Code,
+  Server,
+  Database,
+  Palette,
+  Layers
 } from "lucide-react";
 
 interface PatientFlow {
@@ -65,12 +72,71 @@ interface ProjectAnalysis {
   nextSteps: string[];
 }
 
+interface ComprehensiveProjectPlan {
+  executiveSummary: {
+    projectTitle: string;
+    projectDescription: string;
+    targetAudience: string[];
+    keyObjectives: string[];
+    timeline: string;
+    budget: string;
+  };
+  technicalArchitecture: {
+    frontend: string[];
+    backend: string[];
+    database: string[];
+    infrastructure: string[];
+    integrations: string[];
+  };
+  userJourneys: {
+    primary: string[];
+    secondary: string[];
+    edge_cases: string[];
+  };
+  featureMatrix: {
+    core: string[];
+    secondary: string[];
+    future: string[];
+  };
+  brandGuidelines: {
+    colors: string[];
+    typography: string[];
+    logoUsage: string[];
+    designPrinciples: string[];
+  };
+  developmentPhases: {
+    phase: string;
+    duration: string;
+    deliverables: string[];
+    dependencies: string[];
+  }[];
+  riskAssessment: {
+    technical: string[];
+    business: string[];
+    mitigation: string[];
+  };
+  testingStrategy: {
+    unit: string[];
+    integration: string[];
+    userAcceptance: string[];
+    security: string[];
+  };
+  deploymentPlan: {
+    environments: string[];
+    pipeline: string[];
+    monitoring: string[];
+  };
+}
+
 export function PatientWebappOverviewPage() {
   const [flows, setFlows] = useState<PatientFlow[]>([]);
   const [wireframes, setWireframes] = useState<PatientWireframe[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [projectAnalysis, setProjectAnalysis] = useState<ProjectAnalysis | null>(null);
+  const [comprehensiveProjectPlan, setComprehensiveProjectPlan] = useState<ComprehensiveProjectPlan | null>(null);
+  const [allLocalStorageData, setAllLocalStorageData] = useState<Record<string, any>>({});
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     loadPatientAppData();
@@ -128,9 +194,27 @@ export function PatientWebappOverviewPage() {
     console.log('Final loaded flows:', loadedFlows);
     console.log('Final loaded wireframes:', loadedWireframes);
 
+    // Store all localStorage data for comprehensive analysis
+    const allData: Record<string, any> = {};
+    allKeys.forEach(key => {
+      try {
+        const data = localStorage.getItem(key);
+        if (data) {
+          allData[key] = JSON.parse(data);
+        }
+      } catch (error) {
+        console.error(`Error parsing ${key}:`, error);
+      }
+    });
+    setAllLocalStorageData(allData);
+
     // Generate comprehensive project analysis
     const analysis = generateProjectAnalysis(loadedFlows, loadedWireframes, allKeys);
     setProjectAnalysis(analysis);
+
+    // Generate comprehensive project plan
+    const projectPlan = generateComprehensiveProjectPlan(allData, loadedFlows, loadedWireframes);
+    setComprehensiveProjectPlan(projectPlan);
 
     setFlows(loadedFlows);
     setWireframes(loadedWireframes);
@@ -405,6 +489,249 @@ export function PatientWebappOverviewPage() {
     return { nodes, edges };
   };
 
+  const generateComprehensiveProjectPlan = (allData: Record<string, any>, flows: PatientFlow[], wireframes: PatientWireframe[]): ComprehensiveProjectPlan => {
+    // Extract brand guidelines
+    const brandData = allData['brand-guidelines'] || allData['brand-guidelines-external'] || {};
+    const brandColors = brandData.colors?.primary || ['#0066CC', '#00AA44', '#FF6B35'];
+    const brandFonts = brandData.typography?.fonts || ['Helvetica Neue', 'Arial', 'Open Sans'];
+
+    return {
+      executiveSummary: {
+        projectTitle: "Patient Healthcare WebApp Platform",
+        projectDescription: `Comprehensive healthcare platform enabling patient account management, appointment scheduling, and secure provider communication. The system integrates ${flows.length} process flows with ${wireframes.length} UI wireframes for seamless user experience.`,
+        targetAudience: [
+          "Primary Care Patients seeking digital health management",
+          "Healthcare Providers managing patient relationships",
+          "Healthcare Administrators overseeing operations"
+        ],
+        keyObjectives: [
+          "Streamline patient account creation and verification process",
+          "Enable secure appointment scheduling and management",
+          "Facilitate HIPAA-compliant provider-patient communication",
+          "Implement mobile-first responsive design approach",
+          "Ensure brand-consistent user interface across all touchpoints"
+        ],
+        timeline: "12-16 weeks development cycle",
+        budget: "Medium-scale healthcare application development"
+      },
+      technicalArchitecture: {
+        frontend: [
+          "React 18+ with TypeScript for type safety",
+          "Tailwind CSS with shadcn/ui component library",
+          "React Query for server state management",
+          "Wouter for client-side routing",
+          "Progressive Web App (PWA) capabilities"
+        ],
+        backend: [
+          "Node.js with Express.js REST API",
+          "TypeScript for backend type safety",
+          "JWT-based authentication system",
+          "HIPAA-compliant data encryption",
+          "Real-time WebSocket connections"
+        ],
+        database: [
+          "PostgreSQL primary database",
+          "Drizzle ORM for type-safe database operations",
+          "Redis for session management and caching",
+          "Encrypted patient data storage",
+          "Audit logging for compliance"
+        ],
+        infrastructure: [
+          "Replit deployment platform",
+          "Auto-scaling containerized services",
+          "SSL/TLS encryption for all communications",
+          "CDN for static asset delivery",
+          "Monitoring and error tracking"
+        ],
+        integrations: [
+          "Electronic Health Records (EHR) systems",
+          "Payment processing (Stripe/PayPal)",
+          "SMS/Email notification services",
+          "Insurance verification APIs",
+          "Calendar synchronization services"
+        ]
+      },
+      userJourneys: {
+        primary: flows.filter(f => f.priority === 'high').map(f => f.title),
+        secondary: flows.filter(f => f.priority === 'medium').map(f => f.title),
+        edge_cases: [
+          "Account recovery and password reset",
+          "Emergency contact notifications",
+          "System maintenance communication",
+          "Data export and portability requests"
+        ]
+      },
+      featureMatrix: {
+        core: [
+          "Patient account creation and verification",
+          "Secure login with multi-factor authentication",
+          "Appointment scheduling and management",
+          "Basic profile and medical history",
+          "Provider communication portal"
+        ],
+        secondary: [
+          "Insurance verification and billing",
+          "Prescription management",
+          "Medical document upload",
+          "Family member account linking",
+          "Notification preferences"
+        ],
+        future: [
+          "Telemedicine video consultations",
+          "AI-powered health insights",
+          "Wearable device integration",
+          "Medication adherence tracking",
+          "Health goal setting and tracking"
+        ]
+      },
+      brandGuidelines: {
+        colors: brandColors,
+        typography: brandFonts,
+        logoUsage: [
+          "Primary logo in header navigation",
+          "Icon variants for mobile applications",
+          "Monochrome versions for documents",
+          "Minimum clear space requirements"
+        ],
+        designPrinciples: [
+          "Clean, medical-grade interface design",
+          "Accessibility-first approach (WCAG 2.1 AA)",
+          "Trust-building visual elements",
+          "Consistent spacing and typography hierarchy",
+          "Mobile-first responsive design"
+        ]
+      },
+      developmentPhases: [
+        {
+          phase: "Phase 1: Foundation & Authentication",
+          duration: "3-4 weeks",
+          deliverables: [
+            "User authentication system",
+            "Basic patient registration flow",
+            "Core database schema",
+            "Brand-consistent UI components"
+          ],
+          dependencies: [
+            "Brand guidelines finalization",
+            "HIPAA compliance review",
+            "Development environment setup"
+          ]
+        },
+        {
+          phase: "Phase 2: Core Features",
+          duration: "4-5 weeks",
+          deliverables: [
+            "Appointment scheduling system",
+            "Patient dashboard and profile",
+            "Provider communication portal",
+            "Mobile-responsive interface"
+          ],
+          dependencies: [
+            "Phase 1 completion",
+            "EHR integration specifications",
+            "Payment gateway configuration"
+          ]
+        },
+        {
+          phase: "Phase 3: Advanced Features",
+          duration: "3-4 weeks",
+          deliverables: [
+            "Document upload and management",
+            "Insurance verification",
+            "Notification systems",
+            "Administrative dashboard"
+          ],
+          dependencies: [
+            "Core features testing",
+            "Third-party API integrations",
+            "Security audit completion"
+          ]
+        },
+        {
+          phase: "Phase 4: Testing & Deployment",
+          duration: "2-3 weeks",
+          deliverables: [
+            "Comprehensive testing suite",
+            "Security penetration testing",
+            "Performance optimization",
+            "Production deployment"
+          ],
+          dependencies: [
+            "All features development complete",
+            "HIPAA compliance certification",
+            "User acceptance testing"
+          ]
+        }
+      ],
+      riskAssessment: {
+        technical: [
+          "HIPAA compliance complexity",
+          "EHR integration challenges",
+          "Real-time communication scalability",
+          "Mobile browser compatibility"
+        ],
+        business: [
+          "Healthcare regulation changes",
+          "Patient data privacy concerns",
+          "Provider adoption resistance",
+          "Insurance integration complexity"
+        ],
+        mitigation: [
+          "Early HIPAA compliance consultation",
+          "Gradual rollout with pilot groups",
+          "Comprehensive security testing",
+          "Regular stakeholder communication"
+        ]
+      },
+      testingStrategy: {
+        unit: [
+          "Component-level React testing",
+          "API endpoint validation",
+          "Database operation testing",
+          "Authentication flow verification"
+        ],
+        integration: [
+          "End-to-end user journey testing",
+          "EHR system integration testing",
+          "Payment processing validation",
+          "Cross-browser compatibility"
+        ],
+        userAcceptance: [
+          "Patient workflow validation",
+          "Provider interface usability",
+          "Mobile device testing",
+          "Accessibility compliance verification"
+        ],
+        security: [
+          "Penetration testing for vulnerabilities",
+          "HIPAA compliance audit",
+          "Data encryption verification",
+          "Authentication system security review"
+        ]
+      },
+      deploymentPlan: {
+        environments: [
+          "Development environment on Replit",
+          "Staging environment for testing",
+          "Production environment with auto-scaling",
+          "Disaster recovery environment"
+        ],
+        pipeline: [
+          "Automated CI/CD with GitHub Actions",
+          "Code quality gates and security scanning",
+          "Automated testing before deployment",
+          "Blue-green deployment strategy"
+        ],
+        monitoring: [
+          "Application performance monitoring",
+          "Error tracking and alerting",
+          "User behavior analytics",
+          "HIPAA audit logging"
+        ]
+      }
+    };
+  };
+
   const generateProjectAnalysis = (flows: PatientFlow[], wireframes: PatientWireframe[], allKeys: string[]): ProjectAnalysis => {
     // Calculate completion metrics
     const flowsScore = Math.min(100, flows.length * 20);
@@ -474,6 +801,8 @@ export function PatientWebappOverviewPage() {
       nextSteps
     };
   };
+
+
 
   const getFlowDescription = (key: string): string => {
     const descriptions: Record<string, string> = {
@@ -590,6 +919,225 @@ export function PatientWebappOverviewPage() {
     if (newWindow) {
       newWindow.document.write(wireframe.htmlContent);
       newWindow.document.close();
+    }
+  };
+
+  const exportComprehensiveProjectPlan = async () => {
+    if (!comprehensiveProjectPlan) return;
+
+    setIsGeneratingPDF(true);
+    try {
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF();
+      
+      // Title Page
+      pdf.setFontSize(24);
+      pdf.text('Healthcare WebApp Development Plan', 20, 30);
+      pdf.setFontSize(12);
+      pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 20, 45);
+      pdf.text('Comprehensive Project Analysis for Replit Development', 20, 55);
+
+      let yPosition = 80;
+
+      // Executive Summary
+      pdf.setFontSize(16);
+      pdf.text('Executive Summary', 20, yPosition);
+      yPosition += 15;
+      
+      pdf.setFontSize(10);
+      const summaryLines = pdf.splitTextToSize(comprehensiveProjectPlan.executiveSummary.projectDescription, 170);
+      pdf.text(summaryLines, 20, yPosition);
+      yPosition += summaryLines.length * 5 + 10;
+
+      // Technical Architecture
+      if (yPosition > 250) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.setFontSize(14);
+      pdf.text('Technical Architecture', 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(10);
+      pdf.text('Frontend Stack:', 20, yPosition);
+      yPosition += 5;
+      comprehensiveProjectPlan.technicalArchitecture.frontend.forEach(item => {
+        pdf.text(`• ${item}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      yPosition += 5;
+      pdf.text('Backend Stack:', 20, yPosition);
+      yPosition += 5;
+      comprehensiveProjectPlan.technicalArchitecture.backend.forEach(item => {
+        pdf.text(`• ${item}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      // Development Phases
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.text('Development Phases', 20, yPosition);
+      yPosition += 15;
+
+      comprehensiveProjectPlan.developmentPhases.forEach(phase => {
+        if (yPosition > 250) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+
+        pdf.setFontSize(12);
+        pdf.text(`${phase.phase} (${phase.duration})`, 20, yPosition);
+        yPosition += 10;
+
+        pdf.setFontSize(10);
+        pdf.text('Deliverables:', 25, yPosition);
+        yPosition += 5;
+        phase.deliverables.forEach(deliverable => {
+          pdf.text(`• ${deliverable}`, 30, yPosition);
+          yPosition += 5;
+        });
+
+        yPosition += 5;
+        pdf.text('Dependencies:', 25, yPosition);
+        yPosition += 5;
+        phase.dependencies.forEach(dependency => {
+          pdf.text(`• ${dependency}`, 30, yPosition);
+          yPosition += 5;
+        });
+        yPosition += 10;
+      });
+
+      // Brand Guidelines Integration
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.text('Brand Guidelines Integration', 20, yPosition);
+      yPosition += 15;
+
+      pdf.setFontSize(12);
+      pdf.text('Color Palette:', 20, yPosition);
+      yPosition += 8;
+      pdf.setFontSize(10);
+      comprehensiveProjectPlan.brandGuidelines.colors.forEach(color => {
+        pdf.text(`• ${color}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      yPosition += 10;
+      pdf.setFontSize(12);
+      pdf.text('Typography:', 20, yPosition);
+      yPosition += 8;
+      pdf.setFontSize(10);
+      comprehensiveProjectPlan.brandGuidelines.typography.forEach(font => {
+        pdf.text(`• ${font}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      // Feature Matrix
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.text('Feature Implementation Matrix', 20, yPosition);
+      yPosition += 15;
+
+      ['core', 'secondary', 'future'].forEach(category => {
+        pdf.setFontSize(12);
+        pdf.text(`${category.charAt(0).toUpperCase() + category.slice(1)} Features:`, 20, yPosition);
+        yPosition += 8;
+        
+        pdf.setFontSize(10);
+        const features = comprehensiveProjectPlan.featureMatrix[category as keyof typeof comprehensiveProjectPlan.featureMatrix];
+        features.forEach(feature => {
+          if (yPosition > 280) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+          pdf.text(`• ${feature}`, 25, yPosition);
+          yPosition += 5;
+        });
+        yPosition += 10;
+      });
+
+      // Risk Assessment & Testing Strategy
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.text('Risk Assessment & Testing Strategy', 20, yPosition);
+      yPosition += 15;
+
+      pdf.setFontSize(12);
+      pdf.text('Technical Risks:', 20, yPosition);
+      yPosition += 8;
+      pdf.setFontSize(10);
+      comprehensiveProjectPlan.riskAssessment.technical.forEach(risk => {
+        pdf.text(`• ${risk}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      yPosition += 10;
+      pdf.setFontSize(12);
+      pdf.text('Mitigation Strategies:', 20, yPosition);
+      yPosition += 8;
+      pdf.setFontSize(10);
+      comprehensiveProjectPlan.riskAssessment.mitigation.forEach(strategy => {
+        pdf.text(`• ${strategy}`, 25, yPosition);
+        yPosition += 5;
+      });
+
+      // Data Quality Analysis
+      pdf.addPage();
+      yPosition = 20;
+      
+      pdf.setFontSize(16);
+      pdf.text('Current Project Data Analysis', 20, yPosition);
+      yPosition += 15;
+
+      if (projectAnalysis) {
+        pdf.setFontSize(12);
+        pdf.text(`Project Readiness: ${projectAnalysis.readinessLevel} (${projectAnalysis.completionScore}%)`, 20, yPosition);
+        yPosition += 15;
+
+        pdf.text('Data Quality Metrics:', 20, yPosition);
+        yPosition += 8;
+        pdf.setFontSize(10);
+        pdf.text(`• Process Flows: ${projectAnalysis.dataQuality.flows}%`, 25, yPosition);
+        yPosition += 5;
+        pdf.text(`• UI Wireframes: ${projectAnalysis.dataQuality.wireframes}%`, 25, yPosition);
+        yPosition += 5;
+        pdf.text(`• Content Data: ${projectAnalysis.dataQuality.content}%`, 25, yPosition);
+        yPosition += 5;
+        pdf.text(`• Overall Quality: ${projectAnalysis.dataQuality.overall}%`, 25, yPosition);
+        yPosition += 15;
+
+        pdf.setFontSize(12);
+        pdf.text('Immediate Next Steps:', 20, yPosition);
+        yPosition += 8;
+        pdf.setFontSize(10);
+        projectAnalysis.nextSteps.forEach(step => {
+          if (yPosition > 280) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+          const stepLines = pdf.splitTextToSize(`• ${step}`, 165);
+          pdf.text(stepLines, 25, yPosition);
+          yPosition += stepLines.length * 5;
+        });
+      }
+
+      // Save PDF
+      const timestamp = new Date().toISOString().slice(0, 10);
+      pdf.save(`Healthcare-WebApp-Development-Plan-${timestamp}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -746,6 +1294,171 @@ export function PatientWebappOverviewPage() {
                       <span className="text-gray-700">{step}</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Comprehensive Project Plan Dashboard */}
+      {comprehensiveProjectPlan && (
+        <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="h-6 w-6 text-blue-600" />
+                Comprehensive Development Plan
+              </div>
+              <Button 
+                onClick={exportComprehensiveProjectPlan}
+                disabled={isGeneratingPDF}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {isGeneratingPDF ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    Generating PDF...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    Export Development Plan
+                  </>
+                )}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Executive Summary */}
+            <div className="bg-white rounded-lg p-4 border border-blue-200">
+              <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Executive Summary
+              </h4>
+              <div className="text-sm text-gray-700 space-y-2">
+                <div><strong>Project:</strong> {comprehensiveProjectPlan.executiveSummary.projectTitle}</div>
+                <div><strong>Timeline:</strong> {comprehensiveProjectPlan.executiveSummary.timeline}</div>
+                <div className="mt-3">
+                  <strong>Key Objectives:</strong>
+                  <ul className="list-disc list-inside mt-1 space-y-1">
+                    {comprehensiveProjectPlan.executiveSummary.keyObjectives.slice(0, 3).map((objective, index) => (
+                      <li key={index} className="text-gray-600">{objective}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            {/* Development Phases */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {comprehensiveProjectPlan.developmentPhases.map((phase, index) => (
+                <div key={index} className="bg-white rounded-lg p-4 border border-blue-200">
+                  <h5 className="font-semibold text-blue-900 mb-2">{phase.phase}</h5>
+                  <div className="text-sm text-gray-600 mb-2">{phase.duration}</div>
+                  <div className="text-xs text-gray-500">
+                    {phase.deliverables.length} deliverables, {phase.dependencies.length} dependencies
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Technical Architecture Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-white rounded-lg p-4 border border-green-200">
+                <h5 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                  <Monitor className="h-4 w-4" />
+                  Frontend
+                </h5>
+                <div className="text-xs text-gray-600 space-y-1">
+                  {comprehensiveProjectPlan.technicalArchitecture.frontend.slice(0, 3).map((tech, index) => (
+                    <div key={index}>• {tech}</div>
+                  ))}
+                  {comprehensiveProjectPlan.technicalArchitecture.frontend.length > 3 && (
+                    <div className="text-gray-500">+{comprehensiveProjectPlan.technicalArchitecture.frontend.length - 3} more</div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg p-4 border border-purple-200">
+                <h5 className="font-semibold text-purple-900 mb-2 flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Backend
+                </h5>
+                <div className="text-xs text-gray-600 space-y-1">
+                  {comprehensiveProjectPlan.technicalArchitecture.backend.slice(0, 3).map((tech, index) => (
+                    <div key={index}>• {tech}</div>
+                  ))}
+                  {comprehensiveProjectPlan.technicalArchitecture.backend.length > 3 && (
+                    <div className="text-gray-500">+{comprehensiveProjectPlan.technicalArchitecture.backend.length - 3} more</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg p-4 border border-orange-200">
+                <h5 className="font-semibold text-orange-900 mb-2 flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Infrastructure
+                </h5>
+                <div className="text-xs text-gray-600 space-y-1">
+                  {comprehensiveProjectPlan.technicalArchitecture.infrastructure.slice(0, 3).map((tech, index) => (
+                    <div key={index}>• {tech}</div>
+                  ))}
+                  {comprehensiveProjectPlan.technicalArchitecture.infrastructure.length > 3 && (
+                    <div className="text-gray-500">+{comprehensiveProjectPlan.technicalArchitecture.infrastructure.length - 3} more</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Brand Guidelines Integration */}
+            <div className="bg-white rounded-lg p-4 border border-indigo-200">
+              <h4 className="font-semibold text-indigo-900 mb-3 flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Brand Guidelines Integration
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <div className="text-sm font-medium text-gray-700 mb-2">Color Palette</div>
+                  <div className="flex flex-wrap gap-2">
+                    {comprehensiveProjectPlan.brandGuidelines.colors.slice(0, 4).map((color, index) => (
+                      <div key={index} className="text-xs bg-gray-100 px-2 py-1 rounded">{color}</div>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-gray-700 mb-2">Typography</div>
+                  <div className="text-xs text-gray-600">
+                    {comprehensiveProjectPlan.brandGuidelines.typography.join(', ')}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Feature Matrix Summary */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200">
+              <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Feature Implementation Matrix
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <div className="text-sm font-medium text-green-700 mb-2">Core Features ({comprehensiveProjectPlan.featureMatrix.core.length})</div>
+                  <div className="text-xs text-gray-600">
+                    Essential functionality for MVP launch
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-blue-700 mb-2">Secondary Features ({comprehensiveProjectPlan.featureMatrix.secondary.length})</div>
+                  <div className="text-xs text-gray-600">
+                    Enhanced functionality for full release
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm font-medium text-purple-700 mb-2">Future Features ({comprehensiveProjectPlan.featureMatrix.future.length})</div>
+                  <div className="text-xs text-gray-600">
+                    Long-term roadmap and expansion
+                  </div>
                 </div>
               </div>
             </div>
