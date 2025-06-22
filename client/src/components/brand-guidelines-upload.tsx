@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+import { BrandGuidelinesStorage } from "@/lib/brand-guidelines-storage";
+import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
+import { createChunkedBrandAnalyzer } from "@/lib/chunked-brand-analyzer";
+import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
+import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Palette, 
   Eye, 
@@ -12,19 +19,56 @@ import {
   Code, 
   Loader2, 
   Trash2,
-  X
+  X,
+  MessageSquare
 } from 'lucide-react';
-
-interface StoredBrandGuideline {
-  id: string;
-  name: string;
-  extractedAt: string;
-}
 
 interface MultimodalAnalysisProgress {
   current: number;
   total: number;
   currentStep?: string;
+}
+
+interface ExternalBrandData {
+  brand_name: string;
+  color_palette?: { [key: string]: string };
+  typography?: {
+    primary_font?: string;
+    on_screen_font?: string;
+    print_font?: string;
+    font_weights?: string[];
+    line_spacing?: { [key: string]: string };
+    alignment?: string;
+    case?: string;
+    tracking?: { [key: string]: string };
+  };
+  page_layout?: {
+    grid_system?: string;
+    spacing?: string;
+    margins?: string;
+    alignment?: string;
+    breakpoints?: string[] | null;
+  };
+  photography?: {
+    style?: string;
+    sources?: string;
+  };
+  illustration?: {
+    purpose?: string;
+    style?: string;
+    usage?: string;
+  };
+  icons?: {
+    style?: string;
+    usage?: string;
+  };
+  other_guidelines?: string[];
+}
+
+interface StoredBrandGuideline {
+  id: string;
+  name: string;
+  extractedAt: string;
 }
 
 interface FinalBrandReport {
@@ -44,53 +88,250 @@ interface FinalBrandReport {
 
 interface BrandGuidelinesUploadProps {
   visible: boolean;
-  brandGuidelines: any;
-  storedBrandGuidelines: StoredBrandGuideline[];
-  selectedStoredGuideline: string;
-  isExtractingBrand: boolean;
-  isPerformingMultimodalAnalysis: boolean;
-  multimodalAnalysisProgress: MultimodalAnalysisProgress;
-  finalBrandReport: FinalBrandReport | null;
-  brandExtractionError: string | null;
-  isGeneratingWireframes: boolean;
-  isGeneratingUnifiedHTML: boolean;
-  showBrandModal: boolean;
-  onStoredGuidelineSelection: (value: string) => void;
-  onDeleteStoredGuideline: (id: string) => void;
-  onBrandGuidelineUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  onShowBrandModal: () => void;
-  onCloseBrandModal: () => void;
-  onGenerateBrandAwareWireframes: () => void;
-  onGenerateUnifiedHTML: () => void;
-  isExternalBrandData: (data: any) => boolean;
-  getColorsFromExternalData: (data: any) => string[];
-  getFontsFromExternalData: (data: any) => string[];
+  pageContentCards: any[];
+  onBrandGuidelinesExtracted?: (guidelines: BrandGuideline) => void;
+  onWireframesGenerated?: (wireframes: any[]) => void;
+  onUnifiedHTMLGenerated?: (html: any) => void;
 }
 
 export function BrandGuidelinesUpload({
   visible,
-  brandGuidelines,
-  storedBrandGuidelines,
-  selectedStoredGuideline,
-  isExtractingBrand,
-  isPerformingMultimodalAnalysis,
-  multimodalAnalysisProgress,
-  finalBrandReport,
-  brandExtractionError,
-  isGeneratingWireframes,
-  isGeneratingUnifiedHTML,
-  showBrandModal,
-  onStoredGuidelineSelection,
-  onDeleteStoredGuideline,
-  onBrandGuidelineUpload,
-  onShowBrandModal,
-  onCloseBrandModal,
-  onGenerateBrandAwareWireframes,
-  onGenerateUnifiedHTML,
-  isExternalBrandData,
-  getColorsFromExternalData,
-  getFontsFromExternalData
+  pageContentCards,
+  onBrandGuidelinesExtracted,
+  onWireframesGenerated,
+  onUnifiedHTMLGenerated
 }: BrandGuidelinesUploadProps) {
+  const { toast } = useToast();
+  
+  // Brand Guidelines state
+  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
+  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(null);
+  const [isExtractingBrand, setIsExtractingBrand] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const [brandExtractionError, setBrandExtractionError] = useState<string>('');
+  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
+  const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
+  const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
+  const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  
+  // Multimodal brand analysis state
+  const [finalBrandReport, setFinalBrandReport] = useState<FinalBrandReport | null>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
+
+  // Load stored brand guidelines on component mount
+  useEffect(() => {
+    const stored = BrandGuidelinesStorage.getAll();
+    setStoredBrandGuidelines(stored);
+    
+    const latest = BrandGuidelinesStorage.getLatest();
+    if (latest && !brandGuidelines) {
+      setBrandGuidelines(latest);
+      onBrandGuidelinesExtracted?.(latest);
+    }
+  }, []);
+
+  // Helper functions
+  const isExternalBrandData = (data: any): data is ExternalBrandData => {
+    return data && typeof data === 'object' && 'brand_name' in data;
+  };
+
+  const getColorsFromExternalData = (data: ExternalBrandData): string[] => {
+    if (!data.color_palette) return [];
+    return Object.values(data.color_palette);
+  };
+
+  const getFontsFromExternalData = (data: ExternalBrandData): string[] => {
+    const fonts: string[] = [];
+    if (data.typography?.primary_font) fonts.push(data.typography.primary_font);
+    if (data.typography?.on_screen_font) fonts.push(data.typography.on_screen_font);
+    if (data.typography?.print_font) fonts.push(data.typography.print_font);
+    return fonts;
+  };
+
+  const handleStoredGuidelineSelection = (value: string) => {
+    setSelectedStoredGuideline(value);
+    if (value !== "none" && value !== "") {
+      const guideline = storedBrandGuidelines.find((g: StoredBrandGuideline) => g.id === value);
+      if (guideline) {
+        const stored = BrandGuidelinesStorage.get(value);
+        if (stored) {
+          setBrandGuidelines(stored);
+          onBrandGuidelinesExtracted?.(stored);
+          toast({
+            title: "Brand Guidelines Loaded",
+            description: `Loaded guidelines: ${guideline.name}`,
+          });
+        }
+      }
+    } else {
+      setBrandGuidelines(null);
+    }
+  };
+
+  const handleDeleteStoredGuideline = (id: string) => {
+    BrandGuidelinesStorage.delete(id);
+    const updated = BrandGuidelinesStorage.getAll();
+    setStoredBrandGuidelines(updated);
+    if (selectedStoredGuideline === id) {
+      setSelectedStoredGuideline("");
+      setBrandGuidelines(null);
+    }
+    toast({
+      title: "Guidelines Deleted",
+      description: "Brand guidelines have been removed from storage.",
+    });
+  };
+
+  const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setBrandExtractionError('Please upload a PDF file.');
+      return;
+    }
+
+    setIsExtractingBrand(true);
+    setBrandExtractionError('');
+    setIsPerformingMultimodalAnalysis(true);
+    setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "Initializing multimodal analysis..." });
+
+    try {
+      const multimodalExtractor = createMultimodalPDFExtractor();
+      const chunkedAnalyzer = createChunkedBrandAnalyzer();
+
+      const comprehensiveReport = await multimodalExtractor.extractBrandGuidelines(
+        file,
+        (progress) => {
+          setMultimodalAnalysisProgress(progress);
+        }
+      );
+
+      const finalReport = await chunkedAnalyzer.analyzeBrandDocument(comprehensiveReport);
+      setFinalBrandReport(finalReport);
+
+      const brandGuideline = comprehensiveReport.brandGuidelines;
+      setBrandGuidelines(brandGuideline);
+      onBrandGuidelinesExtracted?.(brandGuideline);
+
+      const guideline = BrandGuidelinesStorage.store(brandGuideline, file.name);
+      const updatedStored = BrandGuidelinesStorage.getAll();
+      setStoredBrandGuidelines(updatedStored);
+      setSelectedStoredGuideline(guideline.id);
+
+      toast({
+        title: "Brand Guidelines Extracted",
+        description: `Successfully extracted guidelines from ${file.name}`,
+      });
+
+    } catch (error) {
+      console.error('Brand guideline extraction failed:', error);
+      setBrandExtractionError(error instanceof Error ? error.message : 'Failed to extract brand guidelines');
+      toast({
+        title: "Extraction Failed",
+        description: "Failed to extract brand guidelines. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtractingBrand(false);
+      setIsPerformingMultimodalAnalysis(false);
+    }
+  };
+
+  const generateBrandAwareWireframes = async () => {
+    if (!brandGuidelines) return;
+
+    setIsGeneratingWireframes(true);
+    try {
+      const brandAwareGenerator = createBrandAwareWireframeGenerator();
+      const wireframes = [];
+
+      for (const page of pageContentCards) {
+        const request: BrandedWireframeRequest = {
+          pageContent: page,
+          brandGuidelines: brandGuidelines,
+          designStyle: 'modern',
+          deviceType: 'desktop'
+        };
+
+        const wireframe = await brandAwareGenerator.generateBrandedWireframe(request);
+        wireframes.push({
+          id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          pageName: page.pageName,
+          htmlCode: wireframe.htmlCode,
+          cssCode: wireframe.cssCode,
+          jsCode: wireframe.jsCode || ''
+        });
+      }
+
+      onWireframesGenerated?.(wireframes);
+      toast({
+        title: "Brand Wireframes Generated",
+        description: `Generated ${wireframes.length} brand-aware wireframes`,
+      });
+
+    } catch (error) {
+      console.error('Brand wireframe generation failed:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate brand-aware wireframes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
+    }
+  };
+
+  const generateUnifiedHTML = async () => {
+    if (!brandGuidelines) return;
+
+    setIsGeneratingUnifiedHTML(true);
+    try {
+      const htmlGenerator = createHTMLWireframeGenerator();
+      const unifiedPages = [];
+
+      for (const page of pageContentCards) {
+        const detailedContent: DetailedPageContent = {
+          pageName: page.pageName,
+          pageType: page.pageType,
+          purpose: page.purpose,
+          stakeholders: page.stakeholders,
+          headers: page.headers,
+          buttons: page.buttons,
+          forms: page.forms,
+          lists: page.lists,
+          navigation: page.navigation,
+          additionalContent: page.additionalContent
+        };
+
+        const result = await htmlGenerator.generateDetailedWireframe(detailedContent, 'modern', 'desktop');
+        unifiedPages.push({
+          pageName: page.pageName,
+          htmlCode: result.htmlContent,
+          cssCode: result.cssStyles,
+          jsCode: ''
+        });
+      }
+
+      onUnifiedHTMLGenerated?.({ pages: unifiedPages });
+      toast({
+        title: "Section Wireframes Generated",
+        description: `Generated ${unifiedPages.length} unified wireframes`,
+      });
+
+    } catch (error) {
+      console.error('Unified HTML generation failed:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate section wireframes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingUnifiedHTML(false);
+    }
+  };
+
   if (!visible) return null;
 
   return (
@@ -121,7 +362,7 @@ export function BrandGuidelinesUpload({
                   Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
                 </Label>
                 <div className="flex gap-2">
-                  <Select value={selectedStoredGuideline} onValueChange={onStoredGuidelineSelection}>
+                  <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select stored brand guidelines..." />
                     </SelectTrigger>
@@ -141,7 +382,7 @@ export function BrandGuidelinesUpload({
                   </Select>
                   {selectedStoredGuideline && (
                     <Button
-                      onClick={() => onDeleteStoredGuideline(selectedStoredGuideline)}
+                      onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
                       variant="outline"
                       size="sm"
                       className="border-red-300 text-red-700 hover:bg-red-50"
@@ -163,7 +404,7 @@ export function BrandGuidelinesUpload({
                     id="brand-pdf"
                     type="file"
                     accept=".pdf"
-                    onChange={onBrandGuidelineUpload}
+                    onChange={handleBrandGuidelineUpload}
                     disabled={isExtractingBrand}
                     className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                   />
@@ -245,7 +486,7 @@ export function BrandGuidelinesUpload({
               <div className="flex gap-2">
                 {brandGuidelines && (
                   <Button
-                    onClick={onShowBrandModal}
+                    onClick={() => setShowBrandModal(true)}
                     variant="outline"
                     size="sm"
                     className="border-purple-300 text-purple-700 hover:bg-purple-50"
@@ -256,7 +497,7 @@ export function BrandGuidelinesUpload({
                 )}
                 
                 <Button
-                  onClick={onGenerateBrandAwareWireframes}
+                  onClick={generateBrandAwareWireframes}
                   disabled={!brandGuidelines || isGeneratingWireframes}
                   className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                   size="sm"
@@ -275,7 +516,7 @@ export function BrandGuidelinesUpload({
                 </Button>
                 
                 <Button
-                  onClick={onGenerateUnifiedHTML}
+                  onClick={generateUnifiedHTML}
                   disabled={!brandGuidelines || isGeneratingUnifiedHTML}
                   className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
                   size="sm"
@@ -343,7 +584,7 @@ export function BrandGuidelinesUpload({
                 Brand Guidelines Overview
               </h3>
               <Button
-                onClick={onCloseBrandModal}
+                onClick={() => setShowBrandModal(false)}
                 variant="ghost"
                 size="sm"
               >

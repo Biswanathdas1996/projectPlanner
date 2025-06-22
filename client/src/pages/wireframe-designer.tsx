@@ -4599,27 +4599,10 @@ ${selectedPageCode.jsCode}
         {/* Brand Guidelines Upload Section */}
         <BrandGuidelinesUpload
           visible={pageContentCards.length > 0}
-          brandGuidelines={brandGuidelines}
-          storedBrandGuidelines={storedBrandGuidelines}
-          selectedStoredGuideline={selectedStoredGuideline}
-          isExtractingBrand={isExtractingBrand}
-          isPerformingMultimodalAnalysis={isPerformingMultimodalAnalysis}
-          multimodalAnalysisProgress={multimodalAnalysisProgress}
-          finalBrandReport={finalBrandReport}
-          brandExtractionError={brandExtractionError}
-          isGeneratingWireframes={isGeneratingWireframes}
-          isGeneratingUnifiedHTML={isGeneratingUnifiedHTML}
-          showBrandModal={showBrandModal}
-          onStoredGuidelineSelection={handleStoredGuidelineSelection}
-          onDeleteStoredGuideline={handleDeleteStoredGuideline}
-          onBrandGuidelineUpload={handleBrandGuidelineUpload}
-          onShowBrandModal={() => setShowBrandModal(true)}
-          onCloseBrandModal={() => setShowBrandModal(false)}
-          onGenerateBrandAwareWireframes={generateBrandAwareWireframes}
-          onGenerateUnifiedHTML={generateUnifiedHTML}
-          isExternalBrandData={isExternalBrandData}
-          getColorsFromExternalData={getColorsFromExternalData}
-          getFontsFromExternalData={getFontsFromExternalData}
+          pageContentCards={pageContentCards}
+          onBrandGuidelinesExtracted={(guidelines) => setBrandGuidelines(guidelines)}
+          onWireframesGenerated={(wireframes) => setGeneratedWireframes(wireframes)}
+          onUnifiedHTMLGenerated={(html) => setUnifiedHTMLResult(html)}
         />
 
         {/* Wireframe Generation Progress */}
