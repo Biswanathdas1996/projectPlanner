@@ -211,7 +211,7 @@ export function BrandGuidelinesUpload({
         console.log(`Generating wireframe for: ${page.pageName}`);
         
         // Combine page content with brand guidelines
-        const combinedPrompt = `You are a senior web developer creating a modern, brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript that showcases advanced design elements.
+        const combinedPrompt = `You are a senior web developer creating a brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
 
 PAGE CONTENT:
 ${JSON.stringify({
@@ -230,47 +230,20 @@ ${JSON.stringify({
 BRAND GUIDELINES:
 ${JSON.stringify(brandGuidelines, null, 2)}
 
-ENHANCED DESIGN REQUIREMENTS:
+REQUIREMENTS:
 1. Create a complete HTML document with embedded CSS and JavaScript
-2. Use the brand colors, fonts, and styling from the guidelines strictly
+2. Use the brand colors, fonts, and styling from the guidelines
 3. Implement all page elements (headers, buttons, forms, lists, navigation)
-4. Make it fully responsive and modern with mobile-first approach
-
-MODERN DESIGN ELEMENTS TO INCLUDE:
-5. Add elegant card components with subtle shadows and rounded corners
-6. Implement brand-compliant background patterns, gradients, or textures
-7. Create visual hierarchy with proper spacing and typography scaling
-8. Add modern UI components: progress bars, badges, tooltips, modals
-9. Include subtle animations and micro-interactions
-10. Use CSS Grid and Flexbox for advanced layouts
-11. Add brand-consistent icons and visual elements
-12. Implement modern button styles with hover states and animations
-13. Create attractive form designs with floating labels and validation states
-14. Add loading states, skeleton screens, and empty states
-15. Include brand-appropriate hero sections with compelling visuals
-
-TECHNICAL REQUIREMENTS:
-16. Add interactive JavaScript for forms, modals, and dynamic content
-17. Follow the brand's visual identity and personality strictly
-18. Use semantic HTML5 elements with proper structure
-19. Ensure accessibility (ARIA labels, proper contrast, keyboard navigation)
-20. Include smooth hover effects, transitions, and subtle animations
-21. Make forms functional with real-time validation and feedback
-22. Add responsive navigation with mobile menu functionality
-23. Implement modern CSS features: custom properties, backdrop-filter, etc.
-24. Create engaging user interactions that match brand personality
-25. Add appropriate spacing, margins, and visual breathing room
-
-BRAND COMPLIANCE:
-- Extract and use exact brand colors from the guidelines
-- Apply specified fonts and typography hierarchy
-- Follow brand personality traits in design choices
-- Implement brand-specific design patterns and styles
-- Maintain visual consistency with brand identity
-- Use brand-appropriate imagery placeholders and content
+4. Make it responsive and modern
+5. Add interactive JavaScript for forms and buttons
+6. Follow the brand's visual identity strictly
+7. Use semantic HTML5 elements
+8. Ensure accessibility (ARIA labels, proper contrast)
+9. Include hover effects and transitions
+10. Make forms functional with validation
 
 RESPONSE FORMAT:
-Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Create a stunning, modern design that perfectly represents the brand. Do not include any explanations or markdown formatting.`;
+Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Do not include any explanations or markdown formatting.`;
 
         const result = await model.generateContent(combinedPrompt);
         const response = result.response.text();
