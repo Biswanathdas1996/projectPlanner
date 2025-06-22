@@ -725,31 +725,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                         </div>
                       </div>
 
-                      {/* Color Preview */}
-                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 0 && (
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-700">Colors:</span>
-                          <div className="flex items-center gap-2">
-                            {BrandGuidelinesStorage.getBrandColors(stored)
-                              ?.slice(0, 6)
-                              ?.map((color, index) => (
-                                <div
-                                  key={index}
-                                  className="w-6 h-6 rounded-lg border border-gray-200 shadow-sm"
-                                  style={{ backgroundColor: color.hex }}
-                                  title={`${color.name}: ${color.hex}`}
-                                />
-                              ))}
-                            {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 6 && (
-                              <div className="w-6 h-6 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                                <span className="text-xs font-medium text-gray-600">
-                                  +{(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) - 6}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                      
                     </div>
                   ))}
                 </div>
