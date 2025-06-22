@@ -16,7 +16,205 @@ import { createAICodeEnhancer, type CodeEnhancementRequest, type EnhancedCodeRes
 import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/precise-element-enhancer";
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+
+// External API Brand Data Interface
+interface ExternalBrandData {
+  brand_name: string;
+  color_palette?: { [key: string]: string };
+  typography?: {
+    primary_font?: string;
+    on_screen_font?: string;
+    print_font?: string;
+    font_weights?: string[];
+    line_spacing?: { [key: string]: string };
+    alignment?: string;
+    case?: string;
+    tracking?: { [key: string]: string };
+  };
+  page_layout?: {
+    grid_system?: string;
+    spacing?: string;
+    margins?: string;
+    alignment?: string;
+    breakpoints?: string[] | null;
+  };
+  photography?: {
+    style?: string;
+    sources?: string;
+  };
+  illustration?: {
+    purpose?: string;
+    style?: string;
+    usage?: string;
+  };
+  icons?: {
+    color?: string[];
+    style?: string;
+    usage?: string;
+  };
+  tiles?: {
+    types?: string[];
+    size?: string;
+    alignment?: string;
+    transparency?: string;
+    max_number?: string;
+  };
+  logo?: string | null;
+  logotype?: string;
+  other_guidelines?: string[];
+}
+
+// Type guard to check if brandGuidelines is ExternalBrandData
+function isExternalBrandData(data: any): data is ExternalBrandData {
+  return data && typeof data === 'object' && 'brand_name' in data;
+}
+
+// Helper function to get colors from external brand data
+function getColorsFromExternalData(data: ExternalBrandData): string[] {
+  return data.color_palette ? Object.values(data.color_palette) : [];
+}
+
+// Helper function to get fonts from external brand data
+function getFontsFromExternalData(data: ExternalBrandData): string[] {
+  const fonts: string[] = [];
+  if (data.typography?.primary_font) fonts.push(data.typography.primary_font);
+  if (data.typography?.on_screen_font) fonts.push(data.typography.on_screen_font);
+  if (data.typography?.print_font) fonts.push(data.typography.print_font);
+  return fonts.filter(Boolean);
+}
+
+// Convert external brand data to BrandGuideline format for UI compatibility
+function convertExternalToBrandGuideline(data: ExternalBrandData): BrandGuideline {
+  const colors = getColorsFromExternalData(data);
+  const fonts = getFontsFromExternalData(data);
+  
+  const brandGuideline: BrandGuideline = {
+    colors: {
+      primary: colors.slice(0, 3),
+      secondary: colors.slice(3, 6),
+      accent: colors.slice(6),
+      neutral: ['#F8F9FA', '#E9ECEF'],
+      text: ['#000000', '#333333', '#666666'],
+      background: ['#FFFFFF', '#F8F9FA', '#F3F4F6'],
+      error: ['#DC3545'],
+      success: ['#28A745'],
+      warning: ['#FFC107']
+    },
+    typography: {
+      fonts: fonts,
+      fontFamilies: {
+        primary: data.typography?.primary_font,
+        secondary: data.typography?.on_screen_font,
+        heading: data.typography?.primary_font,
+        body: data.typography?.on_screen_font
+      },
+      headingStyles: ['32px', '24px', '20px', '18px'],
+      bodyStyles: ['16px', '14px', '12px'],
+      weights: data.typography?.font_weights || ['Light', 'Regular', 'Semibold', 'Bold'],
+      sizes: ['32px', '24px', '20px', '18px', '16px', '14px', '12px'],
+      lineHeights: ['120%', '110%'],
+      letterSpacing: ['normal', '-0.5px']
+    },
+    logos: {
+      primary: data.logotype || data.brand_name || 'Logo',
+      variations: [data.logotype || data.brand_name || 'Logo'],
+      usage: [data.icons?.usage || 'Standard usage'],
+      restrictions: ['No modifications', 'Maintain aspect ratio'],
+      spacing: ['2x logo height clearance'],
+      colors: colors.slice(0, 2),
+      sizes: ['24px digital', '0.5 inch print'],
+      formats: ['SVG', 'PNG'],
+      images: {
+        primary: data.logotype || undefined,
+        horizontal: data.logotype || undefined,
+        icon: data.logo || undefined
+      }
+    },
+    layout: {
+      spacing: [data.page_layout?.spacing || 'standard spacing'],
+      gridSystems: [data.page_layout?.grid_system || 'base grid unit'],
+      breakpoints: ['768px', '1024px', '1200px'],
+      containers: ['responsive'],
+      margins: [data.page_layout?.margins || 'standard margins'],
+      padding: ['standard padding']
+    },
+    accessibility: {
+      contrast: ['WCAG AA compliant'],
+      guidelines: ['High contrast', 'Readable fonts'],
+      compliance: ['WCAG 2.1 AA']
+    },
+    tone: {
+      personality: data.photography?.style ? data.photography.style.split(',').map(s => s.trim()) : ['professional'],
+      voice: ['consistent', 'clear'],
+      messaging: ['user-focused'],
+      doAndDont: data.other_guidelines || ['Keep it simple']
+    },
+    components: {
+      buttons: {
+        primary: 'Primary button',
+        secondary: 'Secondary button', 
+        ghost: 'Ghost button',
+        sizes: ['sm', 'md', 'lg'],
+        states: ['default', 'hover', 'active'],
+        borderRadius: '6px',
+        fontWeight: '500'
+      },
+      forms: {
+        inputStyles: 'Standard inputs',
+        labelStyles: 'Clear labels',
+        validationStyles: 'Error states'
+      },
+      navigation: {
+        primaryNav: 'Main navigation',
+        styles: 'Clean navigation',
+        breadcrumbs: 'Breadcrumb trails'
+      },
+      cards: {
+        design: 'Card layouts',
+        shadows: ['subtle shadows'],
+        spacing: 'standard spacing'
+      },
+      tables: ['headers', 'rows', 'borders'],
+      modals: ['overlay', 'content', 'actions'],
+      badges: ['primary', 'secondary', 'status']
+    },
+    imagery: {
+      style: data.photography?.style || 'Professional',
+      guidelines: [data.illustration?.purpose || 'High quality'],
+      restrictions: ['Brand consistent'],
+      aspectRatios: ['16:9', '4:3'],
+      treatments: ['Clean', 'Professional']
+    },
+    keyPoints: data.other_guidelines || [],
+    keyClauses: [data.brand_name],
+    keyHighlights: data.tiles?.types || [],
+    compliance: {
+      requirements: ['Brand compliance'],
+      restrictions: ['Usage guidelines'],
+      guidelines: ['Follow specifications']
+    },
+    brandValues: [data.brand_name],
+    designPrinciples: data.tiles?.types || ['Professional design'],
+    dosAndDonts: {
+      dos: data.other_guidelines?.filter((_, i) => i % 2 === 0) || ['Follow brand guidelines'],
+      donts: data.other_guidelines?.filter((_, i) => i % 2 === 1) || ['Avoid brand violations']
+    },
+    brandRules: data.other_guidelines || ['Maintain brand consistency'],
+    usageGuidelines: {
+      approved: [data.icons?.usage || 'Standard usage guidelines'],
+      prohibited: ['Unauthorized modifications', 'Incorrect color usage'],
+      context: ['Digital applications', 'Print materials', 'Web usage']
+    },
+    logoUsage: [data.icons?.usage || 'Standard logo usage guidelines']
+  };
+  
+  return brandGuideline;
+}
 import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
+import { BrandGuidelinesStorage, type StoredBrandGuideline } from "@/lib/brand-guidelines-storage";
+import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
+import { createChunkedBrandAnalyzer, type FinalBrandReport } from "@/lib/chunked-brand-analyzer";
+import { storage } from "@/lib/storage-utils";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import {
@@ -236,220 +434,2235 @@ export default function WireframeDesigner() {
 
   // Brand Guidelines state
   const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
+  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(null);
   const [isExtractingBrand, setIsExtractingBrand] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
   const [brandExtractionError, setBrandExtractionError] = useState<string>('');
+  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
+  const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
+  const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{ html: string; css: string; js: string } | null>(null);
+  
+  // Multimodal brand analysis state
+  const [multimodalBrandReport, setMultimodalBrandReport] = useState<ComprehensiveBrandReport | null>(null);
+  const [finalBrandReport, setFinalBrandReport] = useState<FinalBrandReport | null>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
 
-  // Load stored data on component mount
+  // Helper function to get the best version of a wireframe (enhanced if available, original otherwise)
+  const getBestWireframeVersion = (pageName: string) => {
+    const enhancedWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+    const enhancedVersion = enhancedWireframes.find((w: any) => w.pageName === pageName && w.isEnhanced);
+    
+    if (enhancedVersion) {
+      return {
+        pageName: enhancedVersion.pageName,
+        htmlCode: enhancedVersion.htmlCode,
+        cssCode: enhancedVersion.cssCode,
+        jsCode: enhancedVersion.jsCode,
+        isEnhanced: true,
+        lastUpdated: enhancedVersion.lastUpdated,
+        lastEnhancedElement: enhancedVersion.lastEnhancedElement,
+        enhancementExplanation: enhancedVersion.enhancementExplanation
+      };
+    }
+    
+    // Fallback to original if no enhanced version exists
+    const originalPage = detailedWireframes.find(page => page.pageName === pageName);
+    if (originalPage) {
+      return {
+        pageName: originalPage.pageName,
+        htmlCode: originalPage.htmlContent,
+        cssCode: originalPage.cssStyles,
+        jsCode: '',
+        isEnhanced: false
+      };
+    }
+    
+    return null;
+  };
+
+  // Load saved data and stored brand guidelines
   useEffect(() => {
-    const stored = localStorage.getItem('generated_wireframes');
-    if (stored) {
-      try {
-        const parsedWireframes = JSON.parse(stored);
-        setGeneratedWireframes(parsedWireframes);
-      } catch (error) {
-        console.error('Error parsing stored wireframes:', error);
+    // Load stored brand guidelines
+    const stored = BrandGuidelinesStorage.getAll();
+    setStoredBrandGuidelines(stored);
+    
+    // Load the most recent brand guidelines if available
+    const latest = BrandGuidelinesStorage.getLatest();
+    if (latest && !brandGuidelines) {
+      setBrandGuidelines(latest);
+    }
+    
+    const savedWireframes = storage.getItem('wireframe_designs');
+    const savedPageContent = storage.getItem('page_content_cards');
+    const savedGeneratedWireframes = storage.getItem('generated_wireframes');
+    const savedAnalysisResult = storage.getItem('analysis_result');
+    const savedPageLayouts = storage.getItem('page_layouts');
+    
+    if (savedWireframes) {
+      setWireframes(savedWireframes);
+    }
+    if (savedPageContent) {
+      setPageContentCards(savedPageContent);
+    }
+    if (savedGeneratedWireframes) {
+      // Ensure we have a valid array
+      let parsedWireframes = savedGeneratedWireframes;
+      
+      if (!Array.isArray(parsedWireframes)) {
+        console.log('Loading generated wireframes from localStorage:', parsedWireframes, 'wireframes found');
+        // If it's not an array, try to convert or initialize as empty array
+        parsedWireframes = [];
+      } else {
+        console.log('Loading generated wireframes from storage:', parsedWireframes.length, 'wireframes found');
+      }
+      
+      if (parsedWireframes.length > 0) {
+        // Check if wireframes have IDs, if not, add them (migration)
+        const wireframesWithIds = parsedWireframes.map((wireframe: any) => {
+          if (!wireframe.id) {
+            console.log('Adding missing ID to wireframe:', wireframe.pageName);
+            wireframe.id = `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          }
+          return wireframe;
+        });
+        
+        // Save back to storage if we added IDs
+        const needsUpdate = wireframesWithIds.some((w: any, idx: number) => w.id !== parsedWireframes[idx]?.id);
+        if (needsUpdate) {
+          console.log('Updating storage with IDs for existing wireframes');
+          storage.setItem('generated_wireframes', wireframesWithIds);
+        }
+        
+        // Check for enhanced wireframes
+        const enhancedCount = wireframesWithIds.filter((w: any) => w.isEnhanced).length;
+        if (enhancedCount > 0) {
+          console.log(`Found ${enhancedCount} enhanced wireframes in localStorage`);
+          console.log('Enhanced wireframes:', wireframesWithIds.filter((w: any) => w.isEnhanced).map((w: any) => ({ 
+            id: w.id,
+            pageName: w.pageName, 
+            isEnhanced: w.isEnhanced, 
+            lastUpdated: w.lastUpdated 
+          })));
+        }
+        
+        console.log('All wireframes with IDs:', wireframesWithIds.map((w: any) => ({ id: w.id, pageName: w.pageName })));
+        setGeneratedWireframes(wireframesWithIds);
       }
     }
-  }, []);
-
-  const analyzeRequirements = async () => {
-    if (!designPrompt.projectType.trim()) {
-      setError("Please provide a project type to analyze.");
-      return;
+    if (savedAnalysisResult) {
+      setAnalysisResult(savedAnalysisResult);
     }
+    if (savedPageLayouts) {
+      setPageLayouts(savedPageLayouts);
+    }
+  }, [detailedWireframes]);
 
+  // Listen for changes in HTML editor data and update wireframes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const updatedWireframes = storage.getItem('generated_wireframes');
+      if (updatedWireframes && Array.isArray(updatedWireframes)) {
+        setGeneratedWireframes(updatedWireframes);
+      }
+    };
+
+    // Listen for storage events (cross-tab communication)
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Set up polling to check for updates every 500ms for immediate sync
+    const pollInterval = setInterval(() => {
+      const currentWireframes = storage.getItem('generated_wireframes');
+      if (currentWireframes && Array.isArray(currentWireframes)) {
+        // Check if any wireframe has been updated since last check
+        const hasUpdates = currentWireframes.some((wireframe: any) => {
+          const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+          return existing && wireframe.lastUpdated && existing.lastUpdated !== wireframe.lastUpdated;
+        });
+        
+        // Also check for HTML editor specific updates
+        const hasEditorUpdates = currentWireframes.some((wireframe: any) => {
+          const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+          if (editorData) {
+            const existing = generatedWireframes.find((w: any) => w.id === wireframe.id);
+            return existing && editorData.lastSaved && 
+                   (!existing.lastEditorSync || editorData.lastSaved > existing.lastEditorSync);
+          }
+          return false;
+        });
+        
+        if (hasUpdates || hasEditorUpdates) {
+          console.log('Detected wireframe updates, refreshing preview...');
+          setIsRefreshing(true);
+          
+          // Merge HTML editor data with wireframes
+          const syncedWireframes = currentWireframes.map((wireframe: any) => {
+            const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+            if (editorData && editorData.lastSaved) {
+              return {
+                ...wireframe,
+                htmlCode: editorData.htmlCode || wireframe.htmlCode,
+                cssCode: editorData.cssCode || wireframe.cssCode,
+                jsCode: editorData.jsCode || wireframe.jsCode,
+                lastUpdated: editorData.lastSaved,
+                lastEditorSync: editorData.lastSaved
+              };
+            }
+            return wireframe;
+          });
+          
+          setGeneratedWireframes(syncedWireframes);
+          
+          // Reset refresh indicator after a short delay
+          setTimeout(() => setIsRefreshing(false), 500);
+        }
+      }
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
+  }, [generatedWireframes]);
+
+  // Save wireframes to storage
+  useEffect(() => {
+    if (wireframes.length > 0) {
+      storage.setItem('wireframe_designs', wireframes);
+    }
+  }, [wireframes]);
+
+  // Save page content cards to storage
+  useEffect(() => {
+    if (pageContentCards.length > 0) {
+      storage.setItem('page_content_cards', pageContentCards);
+    }
+  }, [pageContentCards]);
+
+  // Save generated wireframes to storage
+  useEffect(() => {
+    if (generatedWireframes.length > 0) {
+      storage.setItem('generated_wireframes', generatedWireframes);
+    }
+  }, [generatedWireframes]);
+
+  // Save page layouts to storage
+  useEffect(() => {
+    storage.setItem('page_layouts', pageLayouts);
+  }, [pageLayouts]);
+
+  // Save analysis results to storage
+  useEffect(() => {
+    if (analysisResult) {
+      storage.setItem('analysis_result', analysisResult);
+    }
+  }, [analysisResult]);
+
+  // Analyze stakeholder flows using AI
+  const analyzeStakeholderFlows = async () => {
     setIsAnalyzing(true);
     setError("");
-    setCurrentStep("generating");
-
+    
     try {
+      const stakeholderFlows = storage.getItem('stakeholder_flows') || [];
+      const flowTypes = storage.getItem('flow_types') || {};
+      const projectDescription = storage.getItem('project_description') || '';
+
       const analysisAgent = createWireframeAnalysisAgent();
-      const result = await analysisAgent.analyze({
-        projectType: designPrompt.projectType,
-        targetAudience: designPrompt.targetAudience,
-        primaryFeatures: designPrompt.primaryFeatures,
-        designStyle: designPrompt.designStyle,
-        deviceType: designPrompt.deviceType,
-        screenTypes: designPrompt.screenTypes
-      });
+      const result = await analysisAgent.analyzeStakeholderFlows();
 
       setAnalysisResult(result);
-      setCurrentStep("results");
-      
-      toast({
-        title: "Analysis Complete",
-        description: `Found ${result.pageRequirements?.length || 0} recommended pages for your project.`,
-      });
-    } catch (error) {
-      console.error('Analysis error:', error);
-      setError("Failed to analyze requirements. Please try again.");
       setCurrentStep("input");
+      
+    } catch (err) {
+      console.error("Error analyzing stakeholder flows:", err);
+      setError(err instanceof Error ? err.message : "Failed to analyze stakeholder flows");
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  const generateDetailedContent = async () => {
-    if (!analysisResult?.pageRequirements) return;
-
+  // Generate detailed page content
+  const handleGeneratePageContent = async () => {
+    if (!analysisResult) return;
+    
     setIsGeneratingContent(true);
+    setError("");
     setContentGenerationProgress({ current: 0, total: analysisResult.pageRequirements.length, currentPage: "" });
-
+    
     try {
+      // Get flow data from localStorage
+      const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
+      const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
+      const projectDescription = localStorage.getItem('project_description') || '';
+      
+      // Create content generation agent
       const contentAgent = createPageContentAgent();
-      const results: DetailedPageContent[] = [];
-
+      
+      const contentCards: PageContentCard[] = [];
+      
+      // Generate content for each page with progress tracking
       for (let i = 0; i < analysisResult.pageRequirements.length; i++) {
-        const page = analysisResult.pageRequirements[i];
+        const pageReq = analysisResult.pageRequirements[i];
+        
         setContentGenerationProgress({ 
           current: i + 1, 
           total: analysisResult.pageRequirements.length, 
-          currentPage: page.pageName || `Page ${i + 1}` 
+          currentPage: pageReq.pageName 
         });
-
-        const content = await contentAgent.generatePageContent({
-          pageName: page.pageName,
-          pageType: page.pageType,
-          purpose: page.purpose,
-          projectContext: {
-            projectType: designPrompt.projectType,
-            targetAudience: designPrompt.targetAudience,
-            primaryFeatures: designPrompt.primaryFeatures
-          }
+        
+        const content = await contentAgent.generateSinglePageContent(pageReq, {
+          stakeholderFlows,
+          flowTypes,
+          projectDescription
         });
-
-        results.push(content);
+        
+        contentCards.push({
+          id: `page-${i}`,
+          ...content,
+          isEdited: false
+        });
       }
-
-      setDetailedWireframes(results);
-      toast({
-        title: "Content Generated",
-        description: `Created detailed content for ${results.length} pages.`,
-      });
-    } catch (error) {
-      console.error('Content generation error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate detailed content. Please try again.",
-        variant: "destructive"
-      });
+      
+      setPageContentCards(contentCards);
+      
+    } catch (err) {
+      console.error("Error generating page content:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate page content");
     } finally {
       setIsGeneratingContent(false);
+      setContentGenerationProgress({ current: 0, total: 0, currentPage: "" });
     }
   };
 
-  const generateWireframes = async () => {
-    if (detailedWireframes.length === 0) return;
-
+  // Generate HTML wireframes from page content
+  const handleGenerateWireframes = async () => {
+    if (pageContentCards.length === 0) {
+      toast({
+        title: "No Content Available",
+        description: "Please generate page content first before creating wireframes.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsGeneratingWireframes(true);
-    setWireframeGenerationProgress({ current: 0, total: detailedWireframes.length, currentPage: "" });
-
+    setError("");
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+    
     try {
-      const generator = brandGuidelines 
-        ? createBrandAwareWireframeGenerator() 
-        : createHTMLWireframeGenerator();
+      const wireframes: { id: string; pageName: string; htmlCode: string; cssCode: string; jsCode: string; isEnhanced: boolean }[] = [];
       
-      const results: typeof generatedWireframes = [];
-
-      for (let i = 0; i < detailedWireframes.length; i++) {
-        const page = detailedWireframes[i];
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        
         setWireframeGenerationProgress({ 
           current: i + 1, 
-          total: detailedWireframes.length, 
-          currentPage: page.pageName 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
         });
-
-        let wireframeData;
         
-        if (brandGuidelines) {
-          const brandAwareRequest: BrandedWireframeRequest = {
-            pageContent: {
-              id: `page-${i}`,
-              pageName: page.pageName,
-              pageType: page.pageType || 'standard',
-              purpose: page.purpose,
-              stakeholders: [],
-              headers: [],
-              buttons: [],
-              forms: [],
-              lists: [],
-              navigation: [],
-              additionalContent: [],
-              isEdited: false
-            },
-            brandGuidelines,
-            designStyle: selectedDesignType,
-            deviceType: selectedDeviceType
-          };
-          wireframeData = await (generator as any).generateBrandedWireframe(brandAwareRequest);
-        } else {
-          wireframeData = await (generator as any).generateWireframe({
-            pageContent: page,
-            designStyle: selectedDesignType,
-            deviceType: selectedDeviceType
-          });
-        }
-
-        const wireframe = {
-          id: `wireframe-${Date.now()}-${i}`,
-          pageName: page.pageName,
-          htmlCode: wireframeData.html,
-          cssCode: wireframeData.css,
-          jsCode: wireframeData.js || '',
-          lastUpdated: new Date().toISOString()
+        const wireframe = await generatePageWireframe(card);
+        const wireframeWithId = {
+          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          ...wireframe,
+          isEnhanced: false
         };
-
-        results.push(wireframe);
+        wireframes.push(wireframeWithId);
       }
-
-      setGeneratedWireframes(results);
-      localStorage.setItem('generated_wireframes', JSON.stringify(results));
+      
+      // Save wireframes to localStorage with complete data
+      const wireframeData = wireframes.map(w => ({
+        ...w,
+        deviceType: selectedDeviceType,
+        colorScheme: selectedColorScheme,
+        designType: selectedDesignType,
+        timestamp: new Date().toISOString()
+      }));
+      console.log('Saving initial wireframes to localStorage:', wireframeData);
+      localStorage.setItem('generated_wireframes', JSON.stringify(wireframes));
+      
+      setGeneratedWireframes(wireframes);
       
       toast({
         title: "Wireframes Generated",
-        description: `Created ${results.length} wireframes successfully.`,
+        description: `Successfully created ${wireframes.length} wireframe(s).`,
       });
-    } catch (error) {
-      console.error('Wireframe generation error:', error);
+      
+    } catch (err) {
+      console.error("Error generating wireframes:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate wireframes");
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate wireframes. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
+  // AI Code Enhancement Function
+  const handleEnhanceCode = async () => {
+    if (!selectedPageCode || !enhancementPrompt.trim()) {
+      toast({
+        title: "Invalid Request",
+        description: "Please enter an enhancement prompt.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsEnhancing(true);
+    setError("");
+
+    try {
+      // First, check for HTML editor data to get the latest code
+      const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+      let latestHtmlCode = selectedPageCode.htmlCode;
+      let latestCssCode = selectedPageCode.cssCode;
+      let latestJsCode = selectedPageCode.jsCode;
+      
+      if (wireframe?.id) {
+        const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+        if (editorData && editorData.lastSaved) {
+          console.log('Using latest HTML editor data for enhancement');
+          latestHtmlCode = editorData.htmlCode || selectedPageCode.htmlCode;
+          latestCssCode = editorData.cssCode || selectedPageCode.cssCode;
+          latestJsCode = editorData.jsCode || selectedPageCode.jsCode;
+        }
+      }
+
+      const enhancer = createAICodeEnhancer();
+      const request: CodeEnhancementRequest = {
+        htmlCode: latestHtmlCode,
+        cssCode: latestCssCode,
+        prompt: enhancementPrompt,
+        pageName: selectedPageCode.pageName
+      };
+
+      const enhanced = await enhancer.enhanceCode(request);
+      setEnhancedCode(enhanced);
+
+      // Update the selected page code with enhanced versions
+      const updatedPageCode = {
+        pageName: selectedPageCode.pageName,
+        htmlCode: enhanced.html,
+        cssCode: enhanced.css,
+        jsCode: enhanced.js
+      };
+      setSelectedPageCode(updatedPageCode);
+
+      // Update localStorage with enhanced wireframe data
+      const existingWireframes = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      console.log('Existing wireframes:', existingWireframes);
+      console.log('Looking for page:', selectedPageCode.pageName);
+      
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          console.log('Found matching wireframe, updating...');
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString()
+          };
+        }
+        return wireframe;
+      });
+      
+      console.log('Updated wireframes:', updatedWireframes);
+      localStorage.setItem('wireframeData', JSON.stringify(updatedWireframes));
+      
+      // Verify data was saved correctly
+      const savedData = JSON.parse(localStorage.getItem('wireframeData') || '[]');
+      const savedPage = savedData.find((w: any) => w.pageName === selectedPageCode.pageName);
+      console.log('Verification - saved enhanced page:', savedPage);
+      
+      // Also update the current generated wireframes state
+      setGeneratedWireframes(prev => prev.map(wireframe => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js
+          };
+        }
+        return wireframe;
+      }));
+
+      toast({
+        title: "Code Enhanced Successfully",
+        description: "Enhanced code saved to localStorage and tabs updated.",
+      });
+    } catch (err) {
+      console.error("Error enhancing code:", err);
+      // Set fallback enhanced code with original content
+      setEnhancedCode({
+        html: selectedPageCode.htmlCode,
+        css: selectedPageCode.cssCode,
+        js: '// Enhancement failed - showing original code\n// Please check API configuration and try again',
+        explanation: 'Enhancement failed. Showing original code instead.',
+        improvements: ['Original HTML preserved', 'Original CSS preserved', 'Please try again with a different prompt']
+      });
+      setError(err instanceof Error ? err.message : "Failed to enhance code");
+      toast({
+        title: "Enhancement Failed",
+        description: "Showing original code. Please check your prompt and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  // Save HTML Editor data to wireframes
+  const handleSaveEditorData = () => {
+    if (!selectedPageCode) return;
+
+    const wireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+    if (!wireframe?.id) {
       toast({
         title: "Error",
+        description: "Could not find wireframe ID for this page.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Get latest HTML editor data
+    const editorData = storage.getItem(`html_editor_${wireframe.id}`);
+    if (!editorData) {
+      toast({
+        title: "No Changes Found",
+        description: "No HTML editor data found for this wireframe.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('Saving HTML editor data to wireframes:', editorData);
+
+    // Update the wireframes with HTML editor data
+    const updatedWireframes = generatedWireframes.map(w => {
+      if (w.id === wireframe.id) {
+        return {
+          ...w,
+          htmlCode: editorData.htmlCode || w.htmlCode,
+          cssCode: editorData.cssCode || w.cssCode,
+          jsCode: editorData.jsCode || w.jsCode,
+          isEnhanced: true,
+          lastUpdated: editorData.lastSaved || new Date().toISOString(),
+          lastEnhancedElement: 'HTML Editor',
+          lastEditorSync: editorData.lastSaved
+        };
+      }
+      return w;
+    });
+
+    // Update storage and state
+    storage.setItem('generated_wireframes', updatedWireframes);
+    setGeneratedWireframes(updatedWireframes);
+
+    // Update selected page code for immediate preview
+    setSelectedPageCode({
+      pageName: selectedPageCode.pageName,
+      htmlCode: editorData.htmlCode || selectedPageCode.htmlCode,
+      cssCode: editorData.cssCode || selectedPageCode.cssCode,
+      jsCode: editorData.jsCode || selectedPageCode.jsCode
+    });
+
+    toast({
+      title: "Code Saved Successfully",
+      description: "HTML editor changes have been saved to the wireframe.",
+    });
+  };
+
+  // Generate individual brand-compliant wireframes for each page content section
+  const generateUnifiedHTML = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Missing Requirements",
+        description: "Please ensure you have both brand guidelines and page content sections before generating wireframes.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingUnifiedHTML(true);
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+    
+    try {
+      const newWireframes = [];
+      
+      // Generate individual wireframes for each page content section
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+
+        // Create a complete, modern HTML page for this section with embedded CSS and JS
+        const primaryColor = brandGuidelines.colors.primary[0] || '#DA291C';
+        const accentColor = brandGuidelines.colors.accent[0] || '#FFC72C';
+        const secondaryColor = brandGuidelines.colors.secondary[0] || '#264A2B';
+        const neutralColor = brandGuidelines.colors.neutral[0] || '#f8fafc';
+        const brandFont = brandGuidelines.typography.fonts[0] || 'Helvetica Neue';
+
+        const htmlCode = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${card.pageName} - Brand Compliant</title>
+    <style>
+        /* Brand-compliant styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: '${brandFont}', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333333;
+            background: linear-gradient(135deg, ${neutralColor} 0%, #ffffff 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            border-left: 6px solid ${accentColor};
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: ${accentColor};
+            opacity: 0.1;
+            border-radius: 50%;
+            transform: translate(50%, -50%);
+        }
+        
+        .header h1 {
+            color: ${primaryColor};
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+        }
+        
+        .stakeholders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+        
+        .stakeholder-badge {
+            background: ${accentColor};
+            color: ${primaryColor === '#DA291C' ? 'white' : '#333'};
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .content-section {
+            background: white;
+            margin-bottom: 25px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .content-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .content-section h2 {
+            color: ${primaryColor};
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .content-section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: ${accentColor};
+            border-radius: 2px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .card {
+            background: ${neutralColor};
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            border-color: ${accentColor};
+            transform: translateY(-3px);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, ${primaryColor}, ${secondaryColor});
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(218, 41, 28, 0.4);
+            filter: brightness(1.1);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: ${primaryColor};
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: ${accentColor};
+            box-shadow: 0 0 0 3px rgba(255, 199, 44, 0.1);
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 15px;
+        }
+        
+        .nav-links a {
+            color: ${primaryColor};
+            text-decoration: none;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .nav-links a:hover {
+            background: ${primaryColor};
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .list-items {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .list-items li {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 4px solid ${accentColor};
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+        
+        .list-items li:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .header {
+                padding: 25px;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .content-section {
+                padding: 20px;
+            }
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            .nav-links {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>${card.pageName}</h1>
+            <p>${card.purpose}</p>
+            ${card.stakeholders.length > 0 ? `
+            <div class="stakeholders">
+                ${card.stakeholders.map(stakeholder => `<span class="stakeholder-badge">${stakeholder}</span>`).join('')}
+            </div>
+            ` : ''}
+        </header>
+        
+        ${card.headers.length > 0 ? `
+        <section class="content-section">
+            <h2>Content Headers</h2>
+            ${card.headers.map(header => `<h3 style="color: ${primaryColor}; margin-bottom: 15px;">${header}</h3>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.textContent && card.textContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Content</h2>
+            ${card.textContent.map(text => `<p style="margin-bottom: 15px; line-height: 1.7;">${text}</p>`).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.buttons && card.buttons.length > 0 ? `
+        <section class="content-section">
+            <h2>Actions</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                ${card.buttons.map(button => `<button class="btn">${button.label || button}</button>`).join('')}
+            </div>
+        </section>
+        ` : ''}
+        
+        ${card.forms && card.forms.length > 0 ? `
+        <section class="content-section">
+            <h2>Forms</h2>
+            ${card.forms.map(form => `
+                <div class="card">
+                    <h3 style="margin-bottom: 20px;">${form.title || form}</h3>
+                    ${form.fields ? form.fields.map(field => `
+                        <div class="form-group">
+                            <label>${field}</label>
+                            <input type="text" placeholder="Enter ${field}">
+                        </div>
+                    `).join('') : ''}
+                    <button class="btn">Submit ${form.title || 'Form'}</button>
+                </div>
+            `).join('')}
+        </section>
+        ` : ''}
+        
+        ${card.lists && card.lists.length > 0 ? `
+        <section class="content-section">
+            <h2>Data & Lists</h2>
+            <div class="grid">
+                ${card.lists.map(list => `
+                    <div class="card">
+                        <h3 style="margin-bottom: 15px;">${list.title || list}</h3>
+                        ${list.items ? `
+                            <ul class="list-items">
+                                ${list.items.map(item => `<li>${item}</li>`).join('')}
+                            </ul>
+                        ` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        </section>
+        ` : ''}
+        
+        ${card.navigation && card.navigation.length > 0 ? `
+        <section class="content-section">
+            <h2>Navigation</h2>
+            <nav class="nav-links">
+                ${card.navigation.map(nav => `<a href="#" onclick="navigateTo('${nav}')">${nav}</a>`).join('')}
+            </nav>
+        </section>
+        ` : ''}
+        
+        ${card.additionalContent && card.additionalContent.length > 0 ? `
+        <section class="content-section">
+            <h2>Additional Information</h2>
+            ${card.additionalContent.map(content => `<p style="margin-bottom: 15px; line-height: 1.7;">${content}</p>`).join('')}
+        </section>
+        ` : ''}
+    </div>
+    
+    <script>
+        // Interactive button effects with proper brand colors
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Ripple effect
+                const ripple = document.createElement('span');
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                
+                ripple.style.cssText = \`
+                    position: absolute;
+                    width: \${size}px;
+                    height: \${size}px;
+                    left: \${x}px;
+                    top: \${y}px;
+                    background: rgba(255, 255, 255, 0.6);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: ripple 0.6s linear;
+                    pointer-events: none;
+                \`;
+                
+                this.style.position = 'relative';
+                this.style.overflow = 'hidden';
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    if (ripple.parentNode) {
+                        ripple.parentNode.removeChild(ripple);
+                    }
+                }, 600);
+                
+                // Show action feedback
+                const originalText = this.textContent;
+                this.textContent = '✓ ' + originalText;
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 1500);
+            });
+        });
+        
+        // Navigation function
+        function navigateTo(section) {
+            console.log('Navigating to:', section);
+            alert('Navigating to: ' + section);
+        }
+        
+        // Form interactions
+        document.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.boxShadow = '0 0 0 3px rgba(255, 199, 44, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.boxShadow = 'none';
+            });
+        });
+        
+        // Add ripple animation styles dynamically
+        const style = document.createElement('style');
+        style.textContent = \`
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+            
+            .btn:focus {
+                outline: 2px solid ${accentColor};
+                outline-offset: 2px;
+            }
+        \`;
+        document.head.appendChild(style);
+        
+        // Add hover effects for cards
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.borderColor = '${accentColor}';
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.borderColor = '#e2e8f0';
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>`;
+
+        const wireframe = {
+          id: `section_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          pageName: card.pageName,
+          htmlCode: htmlCode,
+          cssCode: "// CSS embedded in HTML with brand colors",
+          jsCode: "// Interactive JavaScript included in HTML",
+          isEnhanced: true,
+          lastUpdated: new Date().toISOString(),
+          lastEnhancedElement: "Brand-Compliant Generator",
+          enhancementExplanation: `Generated modern, responsive wireframe for ${card.pageName} using McDonald's brand guidelines`
+        };
+
+        newWireframes.push(wireframe);
+      }
+
+      // Save all new wireframes
+      const existingWireframes = JSON.parse(localStorage.getItem('generated_wireframes') || '[]');
+      const updatedWireframes = [...existingWireframes, ...newWireframes];
+      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      setGeneratedWireframes(updatedWireframes);
+
+      toast({
+        title: "Wireframes Generated Successfully",
+        description: `Created ${newWireframes.length} brand-compliant wireframes with working CSS and JavaScript.`,
+      });
+
+    } catch (error) {
+      console.error('Error generating brand-compliant wireframes:', error);
+      toast({
+        title: "Generation Failed",
         description: "Failed to generate wireframes. Please try again.",
-        variant: "destructive"
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingUnifiedHTML(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
+  // Handle element selection for targeted enhancement
+  const handleElementSelection = (event: React.MouseEvent) => {
+    if (!selectionMode) return;
+    
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const target = event.target as HTMLElement;
+    
+    // Create unique identifier for the element
+    const uniqueId = `enhanced-${Date.now()}`;
+    target.setAttribute('data-enhance-id', uniqueId);
+    
+    // Create user-friendly element description
+    let elementInfo = '';
+    const tagName = target.tagName.toLowerCase();
+    const textContent = target.textContent?.trim().substring(0, 30) || '';
+    
+    // Simplify element identification
+    if (tagName === 'button') {
+      elementInfo = `Button: "${textContent}"`;
+    } else if (tagName === 'h1' || tagName === 'h2' || tagName === 'h3') {
+      elementInfo = `Header: "${textContent}"`;
+    } else if (tagName === 'form') {
+      elementInfo = 'Form section';
+    } else if (tagName === 'input') {
+      elementInfo = `Input field: ${target.getAttribute('placeholder') || 'text input'}`;
+    } else if (tagName === 'nav') {
+      elementInfo = 'Navigation menu';
+    } else if (target.className.includes('button')) {
+      elementInfo = `Button: "${textContent}"`;
+    } else {
+      elementInfo = textContent ? `${tagName}: "${textContent}"` : tagName;
+    }
+    
+    // Store both display name and technical details
+    setSelectedElement(JSON.stringify({
+      displayName: elementInfo,
+      tagName: tagName,
+      className: target.className,
+      id: target.id,
+      uniqueId: uniqueId,
+      textContent: textContent
+    }));
+    setSelectionMode(false);
+    
+    // Persistent visual selection with green border
+    // Clear any previous selections
+    const previousSelected = document.querySelector('[data-selected-for-enhancement="true"]');
+    if (previousSelected) {
+      previousSelected.removeAttribute('data-selected-for-enhancement');
+      if (previousSelected instanceof HTMLElement) {
+        previousSelected.style.outline = '';
+        previousSelected.style.outlineOffset = '';
+      }
+    }
+    
+    // Mark current element as selected
+    target.setAttribute('data-selected-for-enhancement', 'true');
+    target.style.outline = '3px solid #10B981';
+    target.style.outlineOffset = '2px';
+    
+    toast({
+      title: "Element Selected",
+      description: `Selected: ${elementInfo}`,
+    });
+  };
+
+  // Handle selective element enhancement
+  const handleEnhanceSelectedElement = async () => {
+    if (!selectedPageCode || !selectedElement || !selectedElementPrompt.trim()) return;
+    
+    setIsEnhancing(true);
+    
+    try {
+      const elementData = JSON.parse(selectedElement);
+      const preciseEnhancer = createPreciseElementEnhancer();
+      
+      const request: PreciseElementRequest = {
+        htmlCode: selectedPageCode.htmlCode,
+        cssCode: selectedPageCode.cssCode,
+        elementData: elementData,
+        enhancementPrompt: selectedElementPrompt.trim(),
+        pageName: selectedPageCode.pageName
+      };
+
+      const enhanced = await preciseEnhancer.enhanceElement(request);
+
+      // Update the selected page code with enhanced versions
+      const updatedPageCode = {
+        pageName: selectedPageCode.pageName,
+        htmlCode: enhanced.html,
+        cssCode: enhanced.css,
+        jsCode: enhanced.js
+      };
+      setSelectedPageCode(updatedPageCode);
+
+      // Update storage with enhanced wireframe data using correct key
+      const existingWireframes = storage.getItem('generated_wireframes') || [];
+      console.log('Precise element enhancement - Looking for page:', selectedPageCode.pageName);
+      
+      const updatedWireframes = existingWireframes.map((wireframe: any) => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          console.log('Found matching wireframe, updating with precise element enhancement...');
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js,
+            isEnhanced: true,
+            lastUpdated: new Date().toISOString(),
+            lastEnhancedElement: elementData.displayName,
+            enhancementExplanation: enhanced.explanation
+          };
+        }
+        return wireframe;
+      });
+      
+      storage.setItem('generated_wireframes', updatedWireframes);
+      
+      // Verify storage was updated correctly
+      const verifyData = storage.getItem('generated_wireframes') || [];
+      const verifyPage = verifyData.find((w: any) => w.pageName === selectedPageCode.pageName);
+      console.log('Verification - Enhanced wireframe saved to storage:', {
+        pageName: verifyPage?.pageName,
+        isEnhanced: verifyPage?.isEnhanced,
+        lastUpdated: verifyPage?.lastUpdated,
+        lastEnhancedElement: verifyPage?.lastEnhancedElement,
+        htmlLength: verifyPage?.htmlCode?.length,
+        cssLength: verifyPage?.cssCode?.length
+      });
+      
+      // Also update the current generated wireframes state
+      setGeneratedWireframes(prev => prev.map(wireframe => {
+        if (wireframe.pageName === selectedPageCode.pageName) {
+          return {
+            ...wireframe,
+            htmlCode: enhanced.html,
+            cssCode: enhanced.css,
+            jsCode: enhanced.js
+          };
+        }
+        return wireframe;
+      }));
+
+      // Clear selection after enhancement
+      const selectedElementDOM = document.querySelector('[data-selected-for-enhancement="true"]');
+      if (selectedElementDOM) {
+        selectedElementDOM.removeAttribute('data-selected-for-enhancement');
+        if (selectedElementDOM instanceof HTMLElement) {
+          selectedElementDOM.style.outline = '';
+          selectedElementDOM.style.outlineOffset = '';
+        }
+      }
+      setSelectedElement(null);
+      setSelectedElementPrompt('');
+
+      toast({
+        title: "Element Enhanced Successfully",
+        description: enhanced.explanation,
+      });
+    } catch (err) {
+      console.error("Error enhancing selected element:", err);
+      toast({
+        title: "Enhancement Failed",
+        description: "Failed to enhance the selected element. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
+
+  // Multimodal brand guideline extraction handler
+  const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || file.type !== 'application/pdf') {
+      setBrandExtractionError('Please select a valid PDF file');
+      return;
+    }
+
+    setIsExtractingBrand(true);
+    setIsPerformingMultimodalAnalysis(true);
+    setBrandExtractionError('');
+    setMultimodalAnalysisProgress({ current: 0, total: 100, currentStep: "Preparing PDF for extraction..." });
+
+    try {
+      console.log('🚀 Starting external API PDF extraction for:', file.name);
+      setMultimodalAnalysisProgress({ current: 20, total: 100, currentStep: "Uploading PDF to extraction service..." });
+      
+      // Use FormData to send file to external API
+      const formData = new FormData();
+      formData.append("file", file, file.name);
+
+      const requestOptions = {
+        method: 'POST',
+        body: formData,
+        redirect: 'follow' as RequestRedirect
+      };
+
+      setMultimodalAnalysisProgress({ current: 40, total: 100, currentStep: "Processing PDF with external service..." });
+
+      const response = await fetch("http://127.0.0.1:5001/extract-guidelines", requestOptions);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('External API error response:', errorText);
+        throw new Error(`External API failed with status: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.text();
+      console.log('External API response:', result);
+
+      setMultimodalAnalysisProgress({ current: 70, total: 100, currentStep: "Processing extracted guidelines..." });
+
+      // Parse the response - expecting JSON format like the sample you provided
+      let extractedData;
+      try {
+        extractedData = JSON.parse(result);
+      } catch (parseError) {
+        console.error('Failed to parse API response:', parseError);
+        throw new Error('Invalid response format from extraction service');
+      }
+
+      setMultimodalAnalysisProgress({ current: 85, total: 100, currentStep: "Using brand data directly from API..." });
+
+      // Store raw data and convert to BrandGuideline format
+      setRawBrandData(extractedData);
+      const brandGuidelines = convertExternalToBrandGuideline(extractedData);
+
+      // Create simplified final report for compatibility
+      const finalReport = {
+        documentInfo: {
+          totalPages: 1,
+          totalChunks: 1,
+          averageConfidence: 0.95,
+          processingTime: 3000
+        },
+        keyFindings: {
+          criticalRequirements: extractedData.other_guidelines || [],
+          brandThemes: [extractedData.brand_name || 'Brand Guidelines'],
+          designPrinciples: extractedData.tiles?.types || [],
+          complianceNotes: []
+        },
+        brandGuidelines: extractedData,
+        chunkedAnalyses: [] // Required property for FinalBrandReport interface
+      };
+
+      setFinalBrandReport(finalReport);
+      
+      setMultimodalAnalysisProgress({ current: 95, total: 100, currentStep: "Saving brand guidelines..." });
+      
+      // Generate a name for the brand guidelines
+      const guidelineName = extractedData.brand_name || file.name.replace('.pdf', '').replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      
+      // Save to local storage with proper metadata
+      const storedGuideline = BrandGuidelinesStorage.save(brandGuidelines, guidelineName, file.name);
+      
+      // Update state
+      setBrandGuidelines(brandGuidelines);
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      setSelectedStoredGuideline(storedGuideline.id);
+      
+      // Keep legacy localStorage for backward compatibility
+      localStorage.setItem('brand_guidelines', JSON.stringify(brandGuidelines));
+      
+      setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Brand guidelines extraction complete!" });
+      
+      console.log('✅ External API brand analysis completed:', {
+        brandName: extractedData.brand_name,
+        colorsFound: Object.keys(extractedData.color_palette || {}).length,
+        typographyFound: extractedData.typography ? 'Yes' : 'No',
+        processingTime: '3s'
+      });
+      
+      toast({
+        title: "Brand Guidelines Extracted",
+        description: `Successfully extracted ${extractedData.brand_name || 'brand'} guidelines with ${Object.keys(extractedData.color_palette || {}).length} colors and typography rules.`,
+      });
+      
+      setShowBrandModal(true);
+    } catch (error) {
+      console.error('External API brand extraction error:', error);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = 'Unknown error occurred';
+      let userMessage = 'Could not extract brand guidelines from the PDF file.';
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'Connection failed - extraction service unavailable';
+        userMessage = 'Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
+          userMessage = 'Network connection failed. Please verify the extraction service is accessible.';
+        }
+      }
+      
+      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
+      toast({
+        title: "Extraction Service Unavailable",
+        description: userMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtractingBrand(false);
+      setIsPerformingMultimodalAnalysis(false);
+      setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "" });
+    }
+  };
+
+  // Handle selecting stored brand guidelines
+  const handleStoredGuidelineSelection = (guidelineId: string) => {
+    if (!guidelineId || guidelineId === "none") {
+      setSelectedStoredGuideline("");
+      setBrandGuidelines(null);
+      return;
+    }
+
+    const selectedGuideline = BrandGuidelinesStorage.getById(guidelineId);
+    if (selectedGuideline) {
+      setBrandGuidelines(selectedGuideline);
+      setSelectedStoredGuideline(guidelineId);
+      
+      toast({
+        title: "Brand Guidelines Loaded",
+        description: `Using "${selectedGuideline.name}" brand guidelines for wireframe generation.`,
+      });
+    }
+  };
+
+  // Delete stored brand guidelines
+  const handleDeleteStoredGuideline = (guidelineId: string) => {
+    const success = BrandGuidelinesStorage.delete(guidelineId);
+    if (success) {
+      setStoredBrandGuidelines(BrandGuidelinesStorage.getAll());
+      
+      if (selectedStoredGuideline === guidelineId) {
+        setSelectedStoredGuideline("");
+        setBrandGuidelines(null);
+      }
+      
+      toast({
+        title: "Guidelines Deleted",
+        description: "Brand guidelines have been removed from storage.",
+      });
+    }
+  };
+
+  // Regenerate single wireframe with enhanced logo variants
+  const regenerateWireframe = async (pageName: string) => {
+    if (!brandGuidelines) {
+      toast({
+        title: "Brand Guidelines Required",
+        description: "Please load brand guidelines first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const pageCard = pageContentCards.find(card => card.pageName === pageName);
+    if (!pageCard) {
+      toast({
+        title: "Page Not Found",
+        description: "Could not find the page content to regenerate.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 1, total: 1, currentPage: pageName });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const request: BrandedWireframeRequest = {
+        pageContent: pageCard,
+        designStyle: selectedDesignType,
+        deviceType: selectedDeviceType,
+        brandGuidelines
+      };
+
+      console.log('Regenerating wireframe with logo variants for:', pageName);
+      const result = await brandGenerator.generateBrandedWireframe(request);
+      
+      const newWireframe = {
+        id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        pageName: pageName,
+        htmlCode: result.html,
+        cssCode: result.css,
+        jsCode: '',
+        brandNotes: result.brandNotes || []
+      };
+
+      // Replace existing wireframe with same page name
+      const updatedWireframes = generatedWireframes.filter(w => w.pageName !== pageName);
+      updatedWireframes.push(newWireframe);
+      setGeneratedWireframes(updatedWireframes);
+      
+      // Save to storage
+      storage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      
+      toast({
+        title: "Wireframe Regenerated",
+        description: `${pageName} has been regenerated with enhanced logo variants.`,
+      });
+    } catch (error) {
+      console.error('Error regenerating wireframe:', error);
+      toast({
+        title: "Regeneration Failed",
+        description: "Could not regenerate the wireframe. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingWireframes(false);
+      setWireframeGenerationProgress({ current: 0, total: 0, currentPage: "" });
+    }
+  };
+
+  // Generate brand-aware wireframes
+  const generateBrandAwareWireframes = async () => {
+    if (!brandGuidelines || pageContentCards.length === 0) {
+      toast({
+        title: "Requirements Missing",
+        description: "Please upload brand guidelines and generate page content first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingWireframes(true);
+    setWireframeGenerationProgress({ current: 0, total: pageContentCards.length, currentPage: "" });
+
+    try {
+      const brandGenerator = createBrandAwareWireframeGenerator();
+      const brandedWireframes: Array<{
+        id: string;
+        pageName: string;
+        htmlCode: string;
+        cssCode: string;
+        jsCode: string;
+        brandNotes: string[];
+      }> = [];
+
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const card = pageContentCards[i];
+        setWireframeGenerationProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: card.pageName 
+        });
+
+        const request: BrandedWireframeRequest = {
+          pageContent: card,
+          designStyle: selectedDesignType,
+          deviceType: selectedDeviceType,
+          brandGuidelines,
+          finalBrandReport: finalBrandReport ?? undefined
+        };
+
+        const result = await brandGenerator.generateBrandedWireframe(request);
+        
+        brandedWireframes.push({
+          id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          pageName: card.pageName,
+          htmlCode: result.html,
+          cssCode: result.css,
+          jsCode: generateWireframeJS(card, selectedDeviceType, selectedDesignType),
+          brandNotes: result.brandNotes
+        });
+
+        // Add delay between generations
+        if (i < pageContentCards.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+
+      setGeneratedWireframes(brandedWireframes);
+      localStorage.setItem('generated_wireframes', JSON.stringify(brandedWireframes));
+
+      toast({
+        title: "Brand-Aware Wireframes Generated",
+        description: `Successfully generated ${brandedWireframes.length} wireframes following your brand guidelines.`,
+      });
+
+      setCurrentStep("results");
+    } catch (error) {
+      console.error('Brand-aware wireframe generation error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate brand-aware wireframes. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setIsGeneratingWireframes(false);
     }
   };
 
-  const handleBrandFileUpload = async (file: File) => {
-    if (!file.type.includes('pdf')) {
-      setBrandExtractionError('Please upload a PDF file.');
-      return;
+  const generateWireframeJS = (card: PageContentCard, deviceType: string, designType: string, layout: string = 'standard-header'): string => {
+    const interactiveElements = [];
+    
+    // Add form validation
+    if (card.forms && card.forms.length > 0) {
+      interactiveElements.push(`
+// Form validation and submission
+document.addEventListener('DOMContentLoaded', function() {
+  const forms = document.querySelectorAll('form');
+  forms.forEach(form => {
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const formData = new FormData(this);
+      console.log('Form submitted:', Object.fromEntries(formData));
+      alert('Form submitted successfully!');
+    });
+  });
+});`);
     }
 
-    setIsExtractingBrand(true);
-    setBrandExtractionError('');
+    // Add button click handlers
+    if (card.buttons && card.buttons.length > 0) {
+      interactiveElements.push(`
+// Button click handlers
+document.addEventListener('DOMContentLoaded', function() {
+  const buttons = document.querySelectorAll('button:not([type="submit"])');
+  buttons.forEach(button => {
+    button.addEventListener('click', function() {
+      console.log('Button clicked:', this.textContent);
+      this.style.transform = 'scale(0.98)';
+      setTimeout(() => this.style.transform = 'scale(1)', 150);
+    });
+  });
+});`);
+    }
+
+    return interactiveElements.join('\n\n');
+  };
+
+  const generatePageWireframe = async (card: PageContentCard): Promise<{ pageName: string; htmlCode: string; cssCode: string; jsCode: string }> => {
+    const pageLayout = pageLayouts[card.id] || 'standard-header';
+    const htmlCode = generateWireframeHTML(card, selectedDeviceType, selectedColorScheme, selectedDesignType, pageLayout);
+    const cssCode = generateWireframeCSS(card, selectedDeviceType, selectedColorScheme, selectedDesignType, pageLayout);
+    const jsCode = generateWireframeJS(card, selectedDeviceType, selectedDesignType, pageLayout);
+    
+    return {
+      pageName: card.pageName,
+      htmlCode,
+      cssCode,
+      jsCode
+    };
+  };
+
+  const generateWireframeHTML = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string, layout: string = 'standard-header'): string => {
+    const viewportWidth = deviceType === 'mobile' ? '375' : deviceType === 'tablet' ? '768' : '1200';
+    
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${card.pageName}</title>
+    <style>
+        ${generateWireframeCSS(card, deviceType, colorScheme, designType, layout)}
+    </style>
+</head>
+<body>
+    <div class="wireframe-container layout-${layout}">
+        <!-- Header -->
+        <header class="page-header">
+            <h1>${card.headers[0] || card.pageName}</h1>
+            <nav class="navigation">
+                ${card.navigation.map(item => `<a href="#" class="nav-item">${item}</a>`).join('')}
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Headers -->
+            <div class="content-section">
+                ${card.headers.slice(1).map(header => `<h2 class="section-header">${header}</h2>`).join('')}
+            </div>
+
+            <!-- Text Content -->
+            <div class="content-section">
+                ${card.textContent.map(text => `<p class="content-text">${text}</p>`).join('')}
+            </div>
+
+            <!-- Forms -->
+            ${card.forms.map(form => `
+                <div class="form-section">
+                    <h3 class="form-title">${form.title}</h3>
+                    <form class="wireframe-form">
+                        ${form.fields.map(field => `
+                            <div class="form-field">
+                                <label class="field-label">${field}</label>
+                                <input type="text" class="field-input" placeholder="Enter ${field.toLowerCase()}" />
+                            </div>
+                        `).join('')}
+                        <button type="submit" class="form-button primary">${form.submitAction}</button>
+                    </form>
+                </div>
+            `).join('')}
+
+            <!-- Input Fields -->
+            <div class="inputs-section">
+                ${card.inputs.map(input => `
+                    <div class="input-group">
+                        <label class="input-label">${input.label}${input.required ? ' *' : ''}</label>
+                        <input type="${input.type}" class="input-field" placeholder="${input.placeholder}" ${input.required ? 'required' : ''} />
+                    </div>
+                `).join('')}
+            </div>
+
+            <!-- Buttons -->
+            <div class="buttons-section">
+                ${card.buttons.map(button => `
+                    <button class="wireframe-button ${button.style}" data-action="${button.action}">
+                        ${button.label}
+                    </button>
+                `).join('')}
+            </div>
+
+            <!-- Lists -->
+            ${card.lists.map(list => `
+                <div class="list-section">
+                    <h4 class="list-title">${list.title}</h4>
+                    <ul class="wireframe-list ${list.type}">
+                        ${list.items.map(item => `<li class="list-item">${item}</li>`).join('')}
+                    </ul>
+                </div>
+            `).join('')}
+
+            <!-- Images Placeholders -->
+            <div class="images-section">
+                ${card.images.map(image => `
+                    <div class="image-placeholder ${image.position}">
+                        <div class="image-box">
+                            <span class="image-text">${image.alt}</span>
+                            <small class="image-description">${image.description}</small>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="page-footer">
+            ${card.additionalContent.map(content => `<p class="footer-text">${content}</p>`).join('')}
+        </footer>
+    </div>
+</body>
+</html>`;
+  };
+
+  const generateWireframeCSS = (card: PageContentCard, deviceType: string, colorScheme: string, designType: string, layout: string = 'standard-header'): string => {
+    // Color scheme definitions
+    const colorSchemes = {
+      'modern-blue': { primary: '#3B82F6', secondary: '#1E40AF', accent: '#60A5FA', bg: '#F8FAFC', text: '#1F2937' },
+      'professional-gray': { primary: '#6B7280', secondary: '#374151', accent: '#9CA3AF', bg: '#F9FAFB', text: '#111827' },
+      'vibrant-green': { primary: '#10B981', secondary: '#047857', accent: '#34D399', bg: '#F0FDF4', text: '#1F2937' },
+      'elegant-purple': { primary: '#8B5CF6', secondary: '#6D28D9', accent: '#A78BFA', bg: '#FAF5FF', text: '#1F2937' },
+      'warm-orange': { primary: '#F59E0B', secondary: '#D97706', accent: '#FBBF24', bg: '#FFFBEB', text: '#1F2937' },
+      'corporate-navy': { primary: '#1E3A8A', secondary: '#1E40AF', accent: '#3B82F6', bg: '#F8FAFC', text: '#1F2937' },
+      'minimalist-black': { primary: '#1F2937', secondary: '#111827', accent: '#6B7280', bg: '#FFFFFF', text: '#1F2937' },
+      'fresh-teal': { primary: '#0D9488', secondary: '#0F766E', accent: '#2DD4BF', bg: '#F0FDFA', text: '#1F2937' }
+    };
+
+    const colors = colorSchemes[colorScheme as keyof typeof colorSchemes] || colorSchemes['modern-blue'];
+    
+    // Device-specific styling
+    const maxWidth = deviceType === 'mobile' ? '375px' : deviceType === 'tablet' ? '768px' : '1200px';
+    const padding = deviceType === 'mobile' ? '1rem' : deviceType === 'tablet' ? '1.5rem' : '2rem';
+    const fontSize = deviceType === 'mobile' ? '14px' : '16px';
+    
+    // Design type specific styling
+    const borderRadius = designType === 'minimal' ? '0' : designType === 'modern' ? '12px' : designType === 'classic' ? '4px' : '8px';
+    const shadows = designType === 'minimal' ? 'none' : designType === 'bold' ? '0 8px 32px rgba(0,0,0,0.12)' : '0 4px 16px rgba(0,0,0,0.08)';
+    
+    return `
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: ${designType === 'classic' ? 'Georgia, serif' : designType === 'modern' ? "'Inter', sans-serif" : "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"};
+            line-height: 1.6;
+            color: ${colors.text};
+            background-color: ${colors.bg};
+            font-size: ${fontSize};
+        }
+
+        .wireframe-container {
+            max-width: ${maxWidth};
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: ${shadows};
+            border-radius: ${borderRadius};
+            overflow: hidden;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, ${colors.primary} 0%, ${colors.secondary} 100%);
+            color: white;
+            padding: ${padding};
+            text-align: center;
+        }
+
+        .page-header h1 {
+            font-size: ${deviceType === 'mobile' ? '1.8rem' : deviceType === 'tablet' ? '2.2rem' : '2.5rem'};
+            margin-bottom: 1rem;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        .nav-item {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(255,255,255,0.2);
+        }
+
+        .main-content {
+            padding: ${padding};
+        }
+
+        .content-section {
+            margin-bottom: ${deviceType === 'mobile' ? '1rem' : '2rem'};
+        }
+
+        .section-header {
+            color: ${colors.secondary};
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid ${colors.accent};
+        }
+
+        .content-text {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            color: ${colors.text};
+        }
+
+        .form-section {
+            background: ${colors.bg};
+            padding: ${padding};
+            border-radius: ${borderRadius};
+            margin-bottom: ${deviceType === 'mobile' ? '1rem' : '2rem'};
+            border: 1px solid ${colors.accent};
+        }
+
+        .form-title {
+            color: #333;
+            margin-bottom: 1.5rem;
+        }
+
+        .wireframe-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .field-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .field-input {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .inputs-section {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        .input-field {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .buttons-section {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+
+        .wireframe-button {
+            padding: ${deviceType === 'mobile' ? '0.5rem 1rem' : '0.75rem 1.5rem'};
+            border: none;
+            border-radius: ${borderRadius};
+            font-size: ${deviceType === 'mobile' ? '0.875rem' : '1rem'};
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .wireframe-button.primary {
+            background-color: ${colors.primary};
+            color: white;
+        }
+
+        .wireframe-button.secondary {
+            background-color: ${colors.secondary};
+            color: white;
+        }
+
+        .wireframe-button.outline {
+            background-color: transparent;
+            color: ${colors.primary};
+            border: 1px solid ${colors.primary};
+        }
+
+        .wireframe-button.ghost {
+            background-color: transparent;
+            color: ${colors.accent};
+        }
+
+        .wireframe-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .list-section {
+            margin-bottom: 2rem;
+        }
+
+        .list-title {
+            color: ${colors.secondary};
+            margin-bottom: 1rem;
+        }
+
+        .wireframe-list {
+            list-style: none;
+            background: ${colors.bg};
+            border-radius: ${borderRadius};
+            padding: 1rem;
+            border: 1px solid ${colors.accent};
+        }
+
+        .list-item {
+            padding: 0.5rem;
+            border-bottom: 1px solid ${colors.accent};
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        .images-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .image-placeholder {
+            background: ${colors.bg};
+            border: 2px dashed ${colors.accent};
+            border-radius: ${borderRadius};
+            padding: ${padding};
+            text-align: center;
+            min-height: ${deviceType === 'mobile' ? '150px' : '200px'};
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-box {
+            text-align: center;
+        }
+
+        .image-text {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .image-description {
+            color: #999;
+            font-size: 0.875rem;
+        }
+
+        .page-footer {
+            background: #333;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Layout-specific styles */
+        .layout-hero-banner .page-header {
+            background: transparent;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 1rem 2rem;
+        }
+
+        .layout-hero-banner .main-content {
+            background: linear-gradient(135deg, ${colors.primary}20 0%, ${colors.secondary}20 100%);
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 2rem 2rem;
+        }
+
+        .layout-sidebar-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .layout-sidebar-layout .page-header {
+            width: 250px;
+            background: ${colors.secondary};
+            padding: 2rem 1rem;
+            position: fixed;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .layout-sidebar-layout .main-content {
+            margin-left: 250px;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .layout-dashboard-grid .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+
+        .layout-dashboard-grid .content-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: ${borderRadius};
+            box-shadow: ${shadows};
+            border: 1px solid ${colors.accent}30;
+        }
+
+        .layout-centered-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .layout-centered-content .main-content {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+
+        .layout-landing-page .main-content {
+            background: linear-gradient(180deg, ${colors.bg} 0%, ${colors.accent}10 100%);
+        }
+
+        .layout-landing-page .content-section:first-child {
+            background: linear-gradient(135deg, ${colors.primary}15 0%, ${colors.secondary}15 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            border-radius: ${borderRadius};
+        }
+
+        .layout-blog-layout {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .layout-blog-layout .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 3rem;
+            padding: 2rem;
+        }
+
+        .layout-ecommerce-grid .main-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .layout-ecommerce-grid .content-section {
+            background: white;
+            border-radius: ${borderRadius};
+            overflow: hidden;
+            box-shadow: ${shadows};
+            transition: transform 0.2s ease;
+            border: 1px solid ${colors.accent}20;
+        }
+
+        .layout-ecommerce-grid .content-section:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .navigation {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .main-content {
+                padding: 1rem;
+            }
+            
+            .buttons-section {
+                flex-direction: column;
+            }
+
+            .layout-sidebar-layout {
+                flex-direction: column;
+            }
+            
+            .layout-sidebar-layout .page-header {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            
+            .layout-sidebar-layout .main-content {
+                margin-left: 0;
+            }
+            
+            .layout-dashboard-grid .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .layout-blog-layout .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .layout-ecommerce-grid .main-content {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .layout-hero-banner .page-header {
+                position: static;
+                background: ${colors.primary};
+            }
+
+            .layout-hero-banner .main-content {
+                padding: 2rem 1rem;
+            }
+        }
+    `;
+  };
+
+  // Generate wireframes from analysis
+  const generateWireframes = async () => {
+    if (!analysisResult) return;
+    
+    setIsGenerating(true);
+    setError("");
+    setCurrentStep("generating");
+    setGenerationProgress({ current: 0, total: analysisResult.totalPages, status: "Generating wireframes..." });
 
     try {
-      const extractor = createBrandGuidelineExtractor();
-      const guidelines = await extractor.extractFromPDF(file);
-      setBrandGuidelines(guidelines);
+      const generator = createHTMLWireframeGenerator();
+      const newWireframes: DetailedPageContent[] = [];
+
+      for (let i = 0; i < analysisResult.pageRequirements.length; i++) {
+        const pageReq = analysisResult.pageRequirements[i];
+        setGenerationProgress({ 
+          current: i + 1, 
+          total: analysisResult.pageRequirements.length, 
+          status: `Generating ${pageReq.pageName}...` 
+        });
+
+        const stakeholderFlows = JSON.parse(localStorage.getItem('stakeholder_flows') || '[]');
+        const flowTypes = JSON.parse(localStorage.getItem('flow_types') || '{}');
+        const projectDescription = localStorage.getItem('project_description') || '';
+        
+        const result = await generator.generateDetailedWireframes(
+          stakeholderFlows,
+          flowTypes,
+          projectDescription
+        );
+
+        newWireframes.push(...result);
+      }
+
+      setDetailedWireframes(newWireframes);
+      setCurrentStep("results");
       
-      toast({
-        title: "Brand Guidelines Extracted",
-        description: "Successfully extracted brand guidelines from PDF",
-      });
-    } catch (error) {
-      console.error('Brand extraction error:', error);
-      setBrandExtractionError('Failed to extract brand guidelines. Please try again.');
+    } catch (err) {
+      console.error("Error generating wireframes:", err);
+      setError(err instanceof Error ? err.message : "Failed to generate wireframes");
     } finally {
-      setIsExtractingBrand(false);
+      setIsGenerating(false);
     }
   };
 
+  const exportWireframe = (wireframe: WireframeData) => {
+    const dataStr = JSON.stringify(wireframe, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${wireframe.name.replace(/\s+/g, '_')}.json`;
+    link.click();
+  };
+
   const clearAllWireframes = () => {
-    setGeneratedWireframes([]);
-    localStorage.removeItem('generated_wireframes');
+    setWireframes([]);
+    localStorage.removeItem('wireframe_designs');
   };
 
   const commonFeatures = [
@@ -463,324 +2676,2870 @@ export default function WireframeDesigner() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="Wireframe Designer" showBackButton={true} />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <WorkflowProgress currentStep="wireframes" />
+        <WorkflowProgress currentStep="diagram" />
 
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8 bg-white rounded-lg p-6 shadow-sm">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Layout className="h-5 w-5 text-white" />
+              </div>
+              AI Wireframe Designer
+            </h1>
+            <p className="text-gray-600 mt-2">
+              Generate interactive wireframes from your stakeholder flows
+            </p>
+          </div>
+          {wireframes.length > 0 && (
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                {wireframes.length} wireframes
+              </Badge>
+              <Button
+                onClick={clearAllWireframes}
+                variant="outline"
+                size="sm"
+                className="text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Clear All
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Error Display */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+            <AlertTriangle className="h-5 w-5 text-red-500 flex-shrink-0" />
+            <p className="text-red-700">{error}</p>
+          </div>
+        )}
+
+        {/* AI Analysis Section */}
         {currentStep === "input" && (
-          <Card className="w-full max-w-4xl mx-auto">
-            <CardHeader className="text-center pb-4">
-              <CardTitle className="text-2xl font-bold text-gray-800 flex items-center justify-center gap-2">
-                <Sparkles className="h-6 w-6 text-blue-600" />
-                Project Requirements
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5" />
+                AI-Powered Stakeholder Flow Analysis
               </CardTitle>
-              <p className="text-gray-600 mt-2">
-                Describe your project to generate tailored wireframes and content
+              <p className="text-sm text-gray-600">
+                Analyze your stakeholder flows to automatically generate contextual wireframes
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                  {error}
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="projectType" className="text-sm font-medium text-gray-700">
-                    Project Type
-                  </Label>
-                  <Input
-                    id="projectType"
-                    placeholder="e.g., E-commerce Platform, Social Media App"
-                    value={designPrompt.projectType}
-                    onChange={(e) => setDesignPrompt({ ...designPrompt, projectType: e.target.value })}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="targetAudience" className="text-sm font-medium text-gray-700">
-                    Target Audience
-                  </Label>
-                  <Input
-                    id="targetAudience"
-                    placeholder="e.g., Young professionals, Small businesses"
-                    value={designPrompt.targetAudience}
-                    onChange={(e) => setDesignPrompt({ ...designPrompt, targetAudience: e.target.value })}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium text-gray-700">Primary Features</Label>
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {designPrompt.primaryFeatures.map((feature) => (
-                    <Badge 
-                      key={feature} 
-                      variant="secondary" 
-                      className="px-3 py-1 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
-                    >
-                      {feature}
-                      <X 
-                        className="h-3 w-3 ml-1" 
-                        onClick={() => setDesignPrompt({
-                          ...designPrompt,
-                          primaryFeatures: designPrompt.primaryFeatures.filter(f => f !== feature)
-                        })}
-                      />
-                    </Badge>
-                  ))}
-                </div>
+            <CardContent className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  onClick={analyzeStakeholderFlows}
+                  disabled={isAnalyzing}
+                  className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Analyzing Flows...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Analyze Stakeholder Flows
+                    </>
+                  )}
+                </Button>
                 
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {commonFeatures.filter(feature => !designPrompt.primaryFeatures.includes(feature)).map((feature) => (
-                    <Badge 
-                      key={feature} 
-                      variant="outline" 
-                      className="cursor-pointer hover:bg-gray-100"
-                      onClick={() => setDesignPrompt({
-                        ...designPrompt,
-                        primaryFeatures: [...designPrompt.primaryFeatures, feature]
-                      })}
-                    >
-                      {feature}
+                {analysisResult && (
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-green-50 text-green-700">
+                      {analysisResult.totalPages} pages analyzed
                     </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="colorPreference" className="text-sm font-medium text-gray-700">
-                    Color Preference
-                  </Label>
-                  <Select value={designPrompt.colorPreference} onValueChange={(value) => setDesignPrompt({ ...designPrompt, colorPreference: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose color scheme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="blue">Blue</SelectItem>
-                      <SelectItem value="green">Green</SelectItem>
-                      <SelectItem value="purple">Purple</SelectItem>
-                      <SelectItem value="orange">Orange</SelectItem>
-                      <SelectItem value="red">Red</SelectItem>
-                      <SelectItem value="neutral">Neutral/Gray</SelectItem>
-                      <SelectItem value="custom">Custom</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="designStyle" className="text-sm font-medium text-gray-700">
-                    Design Style
-                  </Label>
-                  <Select value={designPrompt.designStyle} onValueChange={(value) => setDesignPrompt({ ...designPrompt, designStyle: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Choose design style" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="modern">Modern</SelectItem>
-                      <SelectItem value="minimal">Minimal</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="creative">Creative</SelectItem>
-                      <SelectItem value="playful">Playful</SelectItem>
-                      <SelectItem value="professional">Professional</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">Device Type</Label>
-                <div className="flex gap-4">
-                  {[
-                    { value: 'mobile', label: 'Mobile', icon: Smartphone },
-                    { value: 'tablet', label: 'Tablet', icon: Tablet },
-                    { value: 'desktop', label: 'Desktop', icon: Monitor }
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      onClick={() => setDesignPrompt({ ...designPrompt, deviceType: value })}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-all ${
-                        designPrompt.deviceType === value
-                          ? 'bg-blue-100 border-blue-300 text-blue-700'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                      }`}
+                    <Button
+                      onClick={generateWireframes}
+                      disabled={isGenerating}
+                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
                     >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <Label className="text-sm font-medium text-gray-700">Screen Types</Label>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {[
-                    "Home/Landing", "Product List", "Product Detail", "Shopping Cart",
-                    "User Profile", "Settings", "Login/Register", "Dashboard",
-                    "Search Results", "Contact/About", "Blog/News", "FAQ/Help"
-                  ].map((screenType) => (
-                    <button
-                      key={screenType}
-                      onClick={() => {
-                        const updatedScreenTypes = designPrompt.screenTypes.includes(screenType)
-                          ? designPrompt.screenTypes.filter(type => type !== screenType)
-                          : [...designPrompt.screenTypes, screenType];
-                        
-                        setDesignPrompt({
-                          ...designPrompt,
-                          screenTypes: updatedScreenTypes
-                        });
-                      }}
-                      className={`px-3 py-2 text-sm rounded-lg border transition-all ${
-                        designPrompt.screenTypes.includes(screenType)
-                          ? 'bg-blue-100 border-blue-300 text-blue-700'
-                          : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                      }`}
-                    >
-                      {screenType}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Button 
-                onClick={analyzeRequirements}
-                disabled={isAnalyzing || !designPrompt.projectType.trim()}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3"
-              >
-                {isAnalyzing ? (
-                  <div className="flex items-center gap-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Analyzing Requirements...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    Analyze Requirements
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Grid className="h-4 w-4 mr-2" />
+                          Generate Wireframes
+                        </>
+                      )}
+                    </Button>
                   </div>
                 )}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === "generating" && (
-          <Card className="w-full max-w-2xl mx-auto">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-              <h3 className="text-lg font-medium text-gray-800 mb-2">Analyzing Your Requirements</h3>
-              <p className="text-gray-600 text-center">
-                We're analyzing your project requirements to create the perfect wireframe structure...
-              </p>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === "results" && (
-          <div className="space-y-6">
-            <Tabs defaultValue="analysis" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="analysis">Analysis & Content</TabsTrigger>
-                <TabsTrigger value="brand">Brand Guidelines</TabsTrigger>
-                <TabsTrigger value="wireframes">Generated Wireframes</TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="analysis" className="space-y-6">
-                {analysisResult && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Lightbulb className="h-5 w-5 text-yellow-600" />
-                        Project Analysis Results
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-3">
-                            <h4 className="font-medium text-gray-800">Recommended Pages ({analysisResult.pageRequirements?.length || 0})</h4>
-                            <div className="space-y-2">
-                              {analysisResult.pageRequirements?.map((page, index) => (
-                                <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <span className="font-medium">{page.pageName}</span>
-                                    <Badge variant="outline" className="text-xs">{page.pageType}</Badge>
-                                  </div>
-                                  <p className="text-sm text-gray-600">{page.purpose}</p>
-                                </div>
-                              ))}
+              </div>
+              
+              {analysisResult && (
+                <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <h3 className="font-semibold text-blue-900 mb-3">Analysis Results</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-blue-700 mb-2">
+                        <strong>Project Context:</strong> {analysisResult.projectContext}
+                      </p>
+                      <p className="text-sm text-blue-700">
+                        <strong>Total Pages:</strong> {analysisResult.totalPages}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-blue-700 mb-2">
+                        <strong>Identified Stakeholders:</strong>
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {analysisResult.stakeholders?.map((stakeholder, idx) => (
+                          <Badge key={idx} variant="secondary" className="text-xs">
+                            {stakeholder}
+                          </Badge>
+                        )) || <span className="text-xs text-gray-500">No stakeholders identified</span>}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <p className="text-sm text-blue-700 mb-2">
+                      <strong>Page Types Identified:</strong>
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      {analysisResult.pageRequirements.map((page, idx) => (
+                        <div key={idx} className="bg-white p-3 rounded border border-gray-200 hover:border-blue-300 transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm text-gray-900 truncate">{page.pageName}</p>
+                              <p className="text-xs text-gray-600 mt-1">{page.pageType}</p>
+                              {page.purpose && (
+                                <p className="text-xs text-gray-500 mt-1 line-clamp-2">{page.purpose}</p>
+                              )}
+                            </div>
+                            <div className="flex gap-1 ml-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-blue-100"
+                                onClick={() => {
+                                  // Toggle edit mode for this page
+                                  const updatedResult = { ...analysisResult };
+                                  updatedResult.pageRequirements[idx] = {
+                                    ...page,
+                                    isEditing: !page.isEditing
+                                  } as PageRequirement;
+                                  setAnalysisResult(updatedResult);
+                                }}
+                              >
+                                <Edit2 className="h-3 w-3 text-blue-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 hover:bg-red-100"
+                                onClick={() => {
+                                  // Remove this page from analysis results
+                                  const updatedResult = { ...analysisResult };
+                                  updatedResult.pageRequirements = updatedResult.pageRequirements.filter((_, i) => i !== idx);
+                                  updatedResult.totalPages = updatedResult.pageRequirements.length;
+                                  setAnalysisResult(updatedResult);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3 text-red-600" />
+                              </Button>
                             </div>
                           </div>
-
-                          <div className="space-y-3">
-                            <h4 className="font-medium text-gray-800">Actions</h4>
-                            <div className="space-y-2">
-                              <Button
-                                onClick={generateDetailedContent}
-                                disabled={isGeneratingContent}
-                                className="w-full"
-                                variant="outline"
-                              >
-                                {isGeneratingContent ? (
-                                  <div className="flex items-center gap-2">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Generating Content...
-                                  </div>
-                                ) : (
-                                  "Generate Detailed Content"
-                                )}
-                              </Button>
-                              
-                              <Button
-                                onClick={generateWireframes}
-                                disabled={isGeneratingWireframes || detailedWireframes.length === 0}
-                                className="w-full"
-                              >
-                                {isGeneratingWireframes ? (
-                                  <div className="flex items-center gap-2">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Creating Wireframes...
-                                  </div>
-                                ) : (
-                                  <div className="flex items-center gap-2">
-                                    <ArrowRight className="h-4 w-4" />
-                                    Generate Wireframes
-                                  </div>
-                                )}
-                              </Button>
+                          
+                          {page.isEditing && (
+                            <div className="mt-3 space-y-2 border-t pt-2">
+                              <div>
+                                <Label className="text-xs font-medium text-gray-700">Page Name</Label>
+                                <Input
+                                  value={page.pageName}
+                                  onChange={(e) => {
+                                    const updatedResult = { ...analysisResult };
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.pageName = e.target.value;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                  className="text-xs h-7 mt-1"
+                                  placeholder="Enter page name"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs font-medium text-gray-700">Page Type</Label>
+                                <Input
+                                  value={page.pageType}
+                                  onChange={(e) => {
+                                    const updatedResult = { ...analysisResult };
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.pageType = e.target.value;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                  className="text-xs h-7 mt-1"
+                                  placeholder="Enter page type"
+                                />
+                              </div>
+                              {page.purpose !== undefined && (
+                                <div>
+                                  <Label className="text-xs font-medium text-gray-700">Purpose</Label>
+                                  <Textarea
+                                    value={page.purpose || ''}
+                                    onChange={(e) => {
+                                      const updatedResult = { ...analysisResult };
+                                      const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                      updatedPage.purpose = e.target.value;
+                                      updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                      setAnalysisResult(updatedResult);
+                                    }}
+                                    className="text-xs min-h-[60px] mt-1"
+                                    placeholder="Enter page purpose"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex gap-2 pt-1">
+                                <Button
+                                  size="sm"
+                                  className="h-6 text-xs px-2 bg-green-600 hover:bg-green-700"
+                                  onClick={() => {
+                                    const updatedResult = { ...analysisResult };
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.isEditing = false;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                >
+                                  Save
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="h-6 text-xs px-2"
+                                  onClick={() => {
+                                    const updatedResult = { ...analysisResult };
+                                    const updatedPage = { ...updatedResult.pageRequirements[idx] };
+                                    updatedPage.isEditing = false;
+                                    updatedResult.pageRequirements[idx] = updatedPage as PageRequirement;
+                                    setAnalysisResult(updatedResult);
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
                             </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Add New Page Button */}
+                    <div className="mt-3 flex justify-center">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 text-xs border-dashed border-blue-300 text-blue-600 hover:bg-blue-50"
+                        onClick={() => {
+                          const updatedResult = { ...analysisResult };
+                          const newPage: PageRequirement = {
+                            pageName: "New Page",
+                            pageType: "Custom",
+                            purpose: "Enter page purpose",
+                            stakeholders: [],
+                            contentElements: [],
+                            userInteractions: [],
+                            dataRequirements: [],
+                            priority: "medium" as const,
+                            isEditing: true
+                          };
+                          updatedResult.pageRequirements.push(newPage);
+                          updatedResult.totalPages = updatedResult.pageRequirements.length;
+                          setAnalysisResult(updatedResult);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 mr-1" />
+                        Add New Page
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Generate Content Button */}
+                  <div className="mt-6 flex justify-center">
+                    <Button 
+                      onClick={handleGeneratePageContent}
+                      disabled={isGeneratingContent}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {isGeneratingContent ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Generating Content...
+                        </>
+                      ) : (
+                        'Generate content of all pages'
+                      )}
+                    </Button>
+                  </div>
+                  
+                  {/* Content Generation Progress */}
+                  {isGeneratingContent && (
+                    <div className="mt-4 p-4 bg-purple-50 rounded-lg border border-purple-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-purple-700">
+                          Generating Page Content ({contentGenerationProgress.current}/{contentGenerationProgress.total})
+                        </span>
+                        <span className="text-xs text-purple-600">
+                          {Math.round((contentGenerationProgress.current / contentGenerationProgress.total) * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-purple-200 rounded-full h-2">
+                        <div 
+                          className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                          style={{ width: `${(contentGenerationProgress.current / contentGenerationProgress.total) * 100}%` }}
+                        ></div>
+                      </div>
+                      {contentGenerationProgress.currentPage && (
+                        <p className="text-xs text-purple-600 mt-2">
+                          Currently generating: {contentGenerationProgress.currentPage}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Generation Progress */}
+        {currentStep === "generating" && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Generating Wireframes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between text-sm">
+                  <span>{generationProgress.status}</span>
+                  <span>{generationProgress.current} of {generationProgress.total}</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${(generationProgress.current / generationProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Results */}
+        {currentStep === "results" && detailedWireframes.length > 0 && (
+          <div className="space-y-6 mb-8">
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">AI-Generated Wireframes</h2>
+              <p className="text-gray-600">
+                {detailedWireframes.length} wireframes generated from your stakeholder flows
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+              {detailedWireframes.map((page, index) => (
+                <Card key={index} className="overflow-hidden hover:shadow-lg transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-lg">{page.pageName}</CardTitle>
+                      <Badge variant="outline" className="text-xs">
+                        {page.pageType}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">{page.purpose}</p>
+                  </CardHeader>
+                  
+                  <CardContent className="p-0">
+                    {/* HTML Preview */}
+                    <div className="border-t bg-gray-50 p-4">
+                      <div className="bg-white rounded border shadow-sm overflow-hidden relative">
+                        <div 
+                          className="h-48 w-full overflow-hidden relative"
+                          style={{ 
+                            transform: 'scale(0.25)', 
+                            transformOrigin: 'top left', 
+                            width: '400%', 
+                            height: '400%' 
+                          }}
+                        >
+                          <style dangerouslySetInnerHTML={{ __html: page.cssStyles }} />
+                          <div dangerouslySetInnerHTML={{ __html: page.htmlContent }} />
+                        </div>
+                        <div className="absolute inset-0 bg-transparent hover:bg-black hover:bg-opacity-10 transition-colors cursor-pointer" 
+                             onClick={() => {
+                               setSelectedPageCode({
+                                 pageName: page.pageName,
+                                 htmlCode: page.htmlContent,
+                                 cssCode: page.cssStyles
+                               });
+                               setShowCodeModal(true);
+                             }}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Content Summary */}
+                    <div className="p-4 space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-800 mb-2">Content Elements</h4>
+                        <div className="space-y-1 text-xs text-gray-600">
+                          {page.contentDetails.headers.length > 0 && (
+                            <div><strong>Headers:</strong> {page.contentDetails.headers.slice(0, 2).join(', ')}</div>
+                          )}
+                          {page.contentDetails.buttons.length > 0 && (
+                            <div><strong>Actions:</strong> {page.contentDetails.buttons.slice(0, 3).map(b => safeRenderContent(b.label || b)).join(', ')}</div>
+                          )}
+                          {page.contentDetails.forms.length > 0 && (
+                            <div><strong>Forms:</strong> {page.contentDetails.forms.length} form(s)</div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {page.stakeholders.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm text-gray-800 mb-1">Target Users</h4>
+                          <div className="flex flex-wrap gap-1">
+                            {page.stakeholders.map((stakeholder, i) => (
+                              <Badge key={i} variant="secondary" className="text-xs">
+                                {safeRenderContent(stakeholder)}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            const htmlContent = `<!DOCTYPE html>
+<html>
+<head>
+  <title>${page.pageName}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>${page.cssStyles}</style>
+</head>
+<body>${page.htmlContent}</body>
+</html>`;
+                            const htmlBlob = new Blob([htmlContent], { type: 'text/html' });
+                            const url = URL.createObjectURL(htmlBlob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${page.pageName.replace(/\s+/g, '_').toLowerCase()}.html`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                          }}
+                        >
+                          <Download className="h-3 w-3 mr-1" />
+                          Download
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-xs flex-1"
+                          onClick={() => {
+                            navigator.clipboard.writeText(`<!-- ${page.pageName} -->\n${page.htmlContent}\n\n/* CSS for ${page.pageName} */\n${page.cssStyles}`);
+                          }}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="text-xs flex-1 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                          onClick={() => {
+                            const bestVersion = getBestWireframeVersion(page.pageName);
+                            if (bestVersion) {
+                              console.log(`Loading ${bestVersion.isEnhanced ? 'enhanced' : 'original'} version for:`, page.pageName);
+                              setSelectedPageCode(bestVersion);
+                            } else {
+                              // Final fallback to current page data
+                              console.log('Loading fallback version for:', page.pageName);
+                              setSelectedPageCode({
+                                pageName: page.pageName,
+                                htmlCode: page.htmlContent,
+                                cssCode: page.cssStyles,
+                                jsCode: '',
+                                isEnhanced: false
+                              });
+                            }
+                            setShowCodeModal(true);
+                          }}
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          View Code
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="text-xs flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700"
+                          onClick={() => {
+                            // Find wireframe ID for this page
+                            const wireframe = generatedWireframes.find(w => w.pageName === page.pageName);
+                            const wireframeId = wireframe?.id || encodeURIComponent(page.pageName);
+                            window.location.href = `/html-editor?id=${wireframeId}`;
+                          }}
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          HTML Editor
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Start Over Button */}
+            <div className="text-center pt-6">
+              <Button
+                onClick={() => {
+                  setCurrentStep("input");
+                  setAnalysisResult(null);
+                  setDetailedWireframes([]);
+                }}
+                variant="outline"
+                className="px-6"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Start Over
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Code Modal */}
+        {showCodeModal && selectedPageCode && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-[90vw] h-[90vh] overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h3 className="text-lg font-semibold">{selectedPageCode.pageName} - Code</h3>
+                <Button
+                  onClick={() => {
+                    setShowCodeModal(false);
+                    setSelectedPageCode(null);
+                  }}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+                {/* AI Enhancement Section - Always Visible */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                  <h4 className="font-semibold text-blue-800 mb-2">🤖 AI Code Enhancement</h4>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Describe how you'd like to enhance this page. The AI will improve the HTML, CSS, and add JavaScript functionality while preserving all content.
+                  </p>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm font-medium">Enhancement Prompt</Label>
+                      <Textarea
+                        value={enhancementPrompt}
+                        onChange={(e) => setEnhancementPrompt(e.target.value)}
+                        placeholder="e.g., Make it more modern with better animations, improve mobile responsiveness, add interactive elements, enhance the color scheme..."
+                        className="mt-1 min-h-[100px] resize-none"
+                        disabled={isEnhancing}
+                      />
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSaveEditorData}
+                        variant="outline"
+                        className="flex-1 bg-green-50 border-green-200 hover:bg-green-100 text-green-700"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        Save HTML Editor Changes
+                      </Button>
+                      <Button
+                        onClick={handleEnhanceCode}
+                        disabled={isEnhancing || !enhancementPrompt.trim()}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        {isEnhancing ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Enhancing Code...
+                          </>
+                        ) : (
+                          <>
+                            <span className="mr-2">🚀</span>
+                            Enhance Code
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Enhancement Success Message */}
+                {enhancedCode && (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                    <h4 className="font-semibold text-green-800 mb-2">✨ Enhancement Complete</h4>
+                    <p className="text-sm text-green-700 mb-2">{enhancedCode.explanation}</p>
+                    {enhancedCode.improvements && enhancedCode.improvements.length > 0 && (
+                      <div>
+                        <p className="text-sm font-medium text-green-800 mb-1">Key Improvements:</p>
+                        <ul className="text-sm text-green-700 space-y-1">
+                          {enhancedCode.improvements.map((improvement: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-green-500 mt-0.5">•</span>
+                              {improvement}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <p className="text-sm text-green-600 mt-2 font-medium">
+                      The HTML and CSS tabs below now show your enhanced code.
+                    </p>
+                  </div>
+                )}
+
+                <Tabs defaultValue="preview" className="space-y-4">
+                  <TabsList className={selectedPageCode?.jsCode ? "grid grid-cols-4" : "grid grid-cols-3"}>
+                    <TabsTrigger value="preview" className="flex items-center gap-2">
+                      Preview
+                      {(() => {
+                        const currentWireframe = generatedWireframes.find(w => w.pageName === selectedPageCode.pageName);
+                        return currentWireframe?.isEnhanced ? (
+                          <div className="w-2 h-2 bg-green-500 rounded-full" title="Enhanced with AI"></div>
+                        ) : null;
+                      })()}
+                    </TabsTrigger>
+                    <TabsTrigger value="html">HTML</TabsTrigger>
+                    <TabsTrigger value="css">CSS</TabsTrigger>
+                    {selectedPageCode?.jsCode && <TabsTrigger value="javascript">JavaScript</TabsTrigger>}
+                  </TabsList>
+                  
+                  <TabsContent value="html">
+                    <div className="relative">
+                      <Button
+                        onClick={() => navigator.clipboard.writeText(selectedPageCode.htmlCode)}
+                        className="absolute top-2 right-2 z-10"
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
+                        <code>{selectedPageCode.htmlCode}</code>
+                      </pre>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="css">
+                    <div className="relative">
+                      <Button
+                        onClick={() => navigator.clipboard.writeText(selectedPageCode.cssCode)}
+                        className="absolute top-2 right-2 z-10"
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Copy className="h-3 w-3" />
+                      </Button>
+                      <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
+                        <code>{selectedPageCode.cssCode}</code>
+                      </pre>
+                    </div>
+                  </TabsContent>
+                  
+                  {selectedPageCode?.jsCode && (
+                    <TabsContent value="javascript">
+                      <div className="relative">
+                        <Button
+                          onClick={() => navigator.clipboard.writeText(selectedPageCode.jsCode || '')}
+                          className="absolute top-2 right-2 z-10"
+                          size="sm"
+                          variant="outline"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <pre className="bg-gray-100 p-4 rounded-lg overflow-auto text-sm">
+                          <code>{selectedPageCode.jsCode}</code>
+                        </pre>
+                      </div>
+                    </TabsContent>
+                  )}
+                  
+                  <TabsContent value="preview">
+                    <div className="space-y-4">
+                      {selectedPageCode?.jsCode && (
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => {
+                              const combinedHtml = `${selectedPageCode.htmlCode}
+<style>
+${selectedPageCode.cssCode}
+</style>
+<script>
+${selectedPageCode.jsCode}
+</script>`;
+                              const newWindow = window.open('', '_blank');
+                              if (newWindow) {
+                                newWindow.document.write(combinedHtml);
+                                newWindow.document.close();
+                              }
+                            }}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Frame className="h-4 w-4 mr-2" />
+                            Preview with JavaScript
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const combinedHtml = `${selectedPageCode.htmlCode}
+<style>
+${selectedPageCode.cssCode}
+</style>
+<script>
+${selectedPageCode.jsCode}
+</script>`;
+                              const blob = new Blob([combinedHtml], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${selectedPageCode.pageName.replace(/\s+/g, '_')}.html`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                            variant="outline"
+                            className="flex-1"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Download Complete
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Simplified Element Selection */}
+                      <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-blue-800">Enhance Specific Elements</h4>
+                          <Button
+                            onClick={() => {
+                              setSelectionMode(!selectionMode);
+                              setSelectedElement(null);
+                              setSelectedElementPrompt('');
+                            }}
+                            variant={selectionMode ? "destructive" : "default"}
+                            size="sm"
+                          >
+                            {selectionMode ? "Cancel" : "Start Selecting"}
+                          </Button>
+                        </div>
+                        {selectionMode ? (
+                          <div className="space-y-2">
+                            <p className="text-sm text-blue-700">
+                              <span className="font-medium">Click any element below</span> to target it for enhancement
+                            </p>
+                            <div className="flex items-center gap-4 text-xs text-blue-600">
+                              <div className="flex items-center gap-1">
+                                <div className="w-3 h-1 bg-blue-400 rounded"></div>
+                                <span>Basic elements</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <div className="w-3 h-1 bg-green-500 rounded"></div>
+                                <span>Interactive elements (buttons, forms, headers)</span>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-blue-600">
+                            Target specific page elements for AI enhancement instead of the entire page
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Selected Element Enhancement */}
+                      {selectedElement && (
+                        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-3">
+                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                            <span className="text-sm font-medium text-green-800">Selected Element</span>
+                            <code className="bg-green-100 px-2 py-1 rounded text-xs text-green-700">
+                              {(() => {
+                                try {
+                                  const elementData = JSON.parse(selectedElement);
+                                  return elementData.displayName;
+                                } catch {
+                                  return selectedElement;
+                                }
+                              })()}
+                            </code>
+                          </div>
+                          <div className="mb-3">
+                            <div className="grid grid-cols-2 gap-2 mb-2">
+                              <span className="col-span-2 text-xs text-gray-600 mb-1">Quick enhancement options:</span>
+                              {[
+                                "Make it more modern",
+                                "Add hover effects", 
+                                "Improve colors",
+                                "Better typography",
+                                "Add subtle animations",
+                                "Enhanced styling"
+                              ].map((option) => (
+                                <Button
+                                  key={option}
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 px-2 text-xs justify-start"
+                                  onClick={() => setSelectedElementPrompt(option)}
+                                >
+                                  {option}
+                                </Button>
+                              ))}
+                            </div>
+                            <Textarea
+                              value={selectedElementPrompt}
+                              onChange={(e) => setSelectedElementPrompt(e.target.value)}
+                              placeholder="Describe enhancement or use quick options above"
+                              className="text-sm min-h-[50px]"
+                            />
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={handleEnhanceSelectedElement}
+                              disabled={isEnhancing || !selectedElementPrompt.trim()}
+                              size="sm"
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              {isEnhancing ? (
+                                <>
+                                  <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                  Enhancing...
+                                </>
+                              ) : (
+                                "Enhance This Element"
+                              )}
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                // Clear visual selection
+                                const selectedElementDOM = document.querySelector('[data-selected-for-enhancement="true"]');
+                                if (selectedElementDOM) {
+                                  selectedElementDOM.removeAttribute('data-selected-for-enhancement');
+                                  if (selectedElementDOM instanceof HTMLElement) {
+                                    selectedElementDOM.style.outline = '';
+                                    selectedElementDOM.style.outlineOffset = '';
+                                  }
+                                }
+                                setSelectedElement(null);
+                                setSelectedElementPrompt('');
+                              }}
+                              variant="outline"
+                              size="sm"
+                            >
+                              Clear Selection
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="border rounded-lg overflow-hidden">
+                        <style dangerouslySetInnerHTML={{ 
+                          __html: selectedPageCode.cssCode + `
+                            /* Selected Element Styling */
+                            [data-selected-for-enhancement="true"] {
+                              outline: 3px solid #10B981 !important;
+                              outline-offset: 2px !important;
+                              position: relative !important;
+                            }
+                            [data-selected-for-enhancement="true"]::before {
+                              content: "Selected for Enhancement" !important;
+                              position: absolute !important;
+                              top: -30px !important;
+                              left: 0 !important;
+                              background: #10B981 !important;
+                              color: white !important;
+                              padding: 2px 8px !important;
+                              border-radius: 4px !important;
+                              font-size: 11px !important;
+                              font-weight: 500 !important;
+                              white-space: nowrap !important;
+                              z-index: 1000 !important;
+                              pointer-events: none !important;
+                            }
+                          ` + (selectionMode ? `
+                            /* Precise Element Selection Mode */
+                            .wireframe-container * {
+                              cursor: pointer !important;
+                              transition: all 0.2s ease !important;
+                              position: relative !important;
+                            }
+                            .wireframe-container *:hover:not([data-selected-for-enhancement="true"]) {
+                              outline: 2px dashed #3B82F6 !important;
+                              outline-offset: 2px !important;
+                              background-color: rgba(59, 130, 246, 0.05) !important;
+                            }
+                            .wireframe-container *:hover:not([data-selected-for-enhancement="true"])::after {
+                              content: "Click to enhance this element" !important;
+                              position: absolute !important;
+                              top: -25px !important;
+                              left: 0 !important;
+                              background: #3B82F6 !important;
+                              color: white !important;
+                              padding: 2px 6px !important;
+                              border-radius: 3px !important;
+                              font-size: 10px !important;
+                              white-space: nowrap !important;
+                              z-index: 1000 !important;
+                              pointer-events: none !important;
+                            }
+                            /* Enhanced targeting for interactive elements */
+                            .wireframe-container button:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container input:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container textarea:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h1:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h2:hover:not([data-selected-for-enhancement="true"]),
+                            .wireframe-container h3:hover:not([data-selected-for-enhancement="true"]) {
+                              outline: 3px solid #10B981 !important;
+                              background-color: rgba(16, 185, 129, 0.1) !important;
+                            }
+                          ` : '')
+                        }} />
+                        <div 
+                          dangerouslySetInnerHTML={{ __html: selectedPageCode.htmlCode }}
+                          className={selectionMode ? "cursor-pointer relative" : ""}
+                          onClick={selectionMode ? handleElementSelection : undefined}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Page Content Cards Display */}
+        {pageContentCards.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold mb-6">Generated Page Content</h2>
+            
+
+            
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {pageContentCards.map((card, index) => (
+                <Card key={card.id} className="border-2 border-gray-200">
+                  <CardHeader className="bg-gradient-to-r from-purple-50 to-blue-50 py-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <CardTitle className="text-base font-semibold text-purple-700">
+                          {card.pageName}
+                        </CardTitle>
+                        <p className="text-xs text-gray-600 mt-1">
+                          {card.pageType} • {card.purpose}
+                        </p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {card.stakeholders.slice(0, 3).map((stakeholder, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs px-1 py-0">
+                              {safeRenderContent(stakeholder)}
+                            </Badge>
+                          ))}
+                          {card.stakeholders.length > 3 && (
+                            <Badge variant="secondary" className="text-xs px-1 py-0">
+                              +{card.stakeholders.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {/* Page Layout Selector with Visual Previews */}
+                        <div className="pt-2 border-t border-gray-200 w-full mt-[16px] mb-[16px] text-justify ml-[20px] mr-[20px] pl-[0px] pr-[0px]">
+                          <Accordion type="single" collapsible className="w-full">
+                            <AccordionItem value="layout" className="border-0 w-full">
+                              <AccordionTrigger className="text-xs font-medium text-gray-700 py-2 hover:no-underline w-full">
+                                <div className="flex items-center gap-2 w-full">
+                                  🎨 Page Layout: {(() => {
+                                    const layoutNames = {
+                                      'standard-header': 'Standard Header',
+                                      'hero-banner': 'Hero Banner',
+                                      'sidebar-layout': 'Sidebar Layout',
+                                      'dashboard-grid': 'Dashboard Grid',
+                                      'centered-content': 'Centered Content',
+                                      'landing-page': 'Landing Page',
+                                      'blog-layout': 'Blog Layout',
+                                      'ecommerce-grid': 'E-commerce Grid'
+                                    };
+                                    return layoutNames[pageLayouts[card.id] as keyof typeof layoutNames] || 'Standard Header';
+                                  })()}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="pt-2 w-full">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 w-full">
+                                  {[
+                                    {
+                                      id: 'standard-header',
+                                      name: 'Standard Header',
+                                      description: 'Traditional layout',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-2 bg-blue-500"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded w-1/2"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-2/3"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'hero-banner',
+                                      name: 'Hero Banner',
+                                      description: 'Large hero section',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-purple-500"></div>
+                                          <div className="h-5 bg-gradient-to-r from-purple-100 to-blue-100"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-200 rounded w-1/3 mx-auto"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'sidebar-layout',
+                                      name: 'Sidebar Layout',
+                                      description: 'Side navigation',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden flex">
+                                          <div className="w-1/4 bg-gray-600"></div>
+                                          <div className="flex-1 p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-2/3"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'dashboard-grid',
+                                      name: 'Dashboard Grid',
+                                      description: 'Card-based layout',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-green-500"></div>
+                                          <div className="p-0.5 grid grid-cols-2 gap-0.5">
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'centered-content',
+                                      name: 'Centered Content',
+                                      description: 'Clean centered',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-indigo-500"></div>
+                                          <div className="p-1.5 flex justify-center">
+                                            <div className="w-3/4 space-y-0.5">
+                                              <div className="h-0.5 bg-gray-300 rounded mx-auto"></div>
+                                              <div className="h-0.5 bg-gray-200 rounded w-2/3 mx-auto"></div>
+                                              <div className="h-0.5 bg-gray-200 rounded w-1/2 mx-auto"></div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'landing-page',
+                                      name: 'Landing Page',
+                                      description: 'Marketing focus',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-0.5 bg-orange-500"></div>
+                                          <div className="h-4 bg-gradient-to-b from-orange-50 to-yellow-50"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-300 rounded w-1/2 mx-auto"></div>
+                                            <div className="h-0.5 bg-orange-300 rounded w-1/4 mx-auto"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'blog-layout',
+                                      name: 'Blog Layout',
+                                      description: 'Article focused',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-teal-500"></div>
+                                          <div className="p-1 space-y-0.5">
+                                            <div className="h-0.5 bg-gray-400 rounded w-3/4"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded"></div>
+                                            <div className="h-0.5 bg-gray-200 rounded w-5/6"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    },
+                                    {
+                                      id: 'ecommerce-grid',
+                                      name: 'E-commerce Grid',
+                                      description: 'Product showcase',
+                                      preview: (
+                                        <div className="w-full h-12 bg-white border border-gray-200 rounded-sm overflow-hidden">
+                                          <div className="h-1 bg-pink-500"></div>
+                                          <div className="p-0.5 grid grid-cols-3 gap-0.5">
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                            <div className="h-2.5 bg-gray-100 border border-gray-200 rounded-sm"></div>
+                                          </div>
+                                        </div>
+                                      )
+                                    }
+                                  ].map((layout) => (
+                                    <div
+                                      key={layout.id}
+                                      className={`cursor-pointer border rounded-md p-2 transition-all duration-200 hover:shadow-sm ${
+                                        (pageLayouts[card.id] || 'standard-header') === layout.id
+                                          ? 'border-blue-500 bg-blue-50 shadow-sm'
+                                          : 'border-gray-200 bg-white hover:border-gray-300'
+                                      }`}
+                                      onClick={() => {
+                                        setPageLayouts(prev => ({
+                                          ...prev,
+                                          [card.id]: layout.id
+                                        }));
+                                      }}
+                                    >
+                                      <div className="mb-1">
+                                        {layout.preview}
+                                      </div>
+                                      <div className="text-center">
+                                        <h4 className="text-xs font-medium text-gray-800 mb-0.5">{layout.name}</h4>
+                                        <p className="text-xs text-gray-500">{layout.description}</p>
+                                      </div>
+                                      {(pageLayouts[card.id] || 'standard-header') === layout.id && (
+                                        <div className="mt-1 flex justify-center">
+                                          <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          const updatedCards = [...pageContentCards];
+                          updatedCards[index] = { ...card, isEdited: !card.isEdited };
+                          setPageContentCards(updatedCards);
+                        }}
+                      >
+                        {card.isEdited ? "Save" : "Edit"}
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="p-3">
+                    <Tabs defaultValue="content" className="w-full">
+                      <TabsList className="grid w-full grid-cols-5 h-7 bg-gray-50">
+                        <TabsTrigger value="content" className="text-xs py-1">📝 Content</TabsTrigger>
+                        <TabsTrigger value="forms" className="text-xs py-1">📋 Forms</TabsTrigger>
+                        <TabsTrigger value="buttons" className="text-xs py-1">🔘 Buttons</TabsTrigger>
+                        <TabsTrigger value="media" className="text-xs py-1">🖼️ Media</TabsTrigger>
+                        <TabsTrigger value="navigation" className="text-xs py-1">🧭 Nav</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="content" className="mt-2 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📰 Headers
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-blue-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].headers.push("New Header");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-blue-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.headers.map((header, idx) => (
+                              <div key={idx} className="group flex items-center gap-1">
+                                <div className="flex-1 px-2 py-1 bg-blue-50 border border-blue-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={header}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].headers[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-5 border-0 bg-transparent p-0"
+                                      placeholder="Header text"
+                                    />
+                                  ) : (
+                                    safeRenderContent(header)
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].headers.splice(idx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
                           </div>
                         </div>
 
-                        {isGeneratingContent && (
-                          <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                              <span className="font-medium text-blue-800">Generating Content</span>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📝 Text Content
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-green-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].textContent.push("New text content");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-green-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.textContent.map((text, idx) => (
+                              <div key={idx} className="group flex gap-1">
+                                <div className="flex-1 px-2 py-1 bg-green-50 border border-green-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Textarea
+                                      value={text}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].textContent[idx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs min-h-[40px] border-0 bg-transparent p-0 resize-none"
+                                      placeholder="Enter text content"
+                                    />
+                                  ) : (
+                                    <span className="break-words">{safeRenderContent(text)}</span>
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50 self-start mt-1"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].textContent.splice(idx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="forms" className="mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                          📋 Forms
+                          {card.isEdited && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 hover:bg-purple-50"
+                              onClick={() => {
+                                const updatedCards = [...pageContentCards];
+                                updatedCards[index].forms.push({
+                                  title: "New Form",
+                                  fields: ["Field 1"],
+                                  submitAction: "Submit"
+                                });
+                                setPageContentCards(updatedCards);
+                              }}
+                            >
+                              <Plus className="h-3 w-3 text-purple-500" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          {card.forms.map((form, formIdx) => (
+                            <div key={formIdx} className="group border border-purple-100 rounded p-2 bg-purple-50 relative">
+                              <div className="flex items-center justify-between mb-1">
+                                <div className="flex-1">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={form.title}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].forms[formIdx].title = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-5 border-0 bg-transparent p-0 font-medium"
+                                      placeholder="Form title"
+                                    />
+                                  ) : (
+                                    <span className="text-xs font-medium">{form.title}</span>
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].forms.splice(formIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2 w-2 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="flex gap-2 text-xs">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-1 mb-1">
+                                    <span className="text-gray-600">Fields:</span>
+                                    {card.isEdited && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-3 w-3 p-0 hover:bg-blue-50"
+                                        onClick={() => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].forms[formIdx].fields.push("New Field");
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                      >
+                                        <Plus className="h-2 w-2 text-blue-400" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                  <div className="space-y-0.5">
+                                    {form.fields.map((field, fieldIdx) => (
+                                      <div key={fieldIdx} className="flex items-center gap-1">
+                                        <div className="flex-1 px-1 py-0.5 bg-white border border-purple-200 rounded text-xs">
+                                          {card.isEdited ? (
+                                            <Input
+                                              value={field}
+                                              onChange={(e) => {
+                                                const updatedCards = [...pageContentCards];
+                                                updatedCards[index].forms[formIdx].fields[fieldIdx] = e.target.value;
+                                                setPageContentCards(updatedCards);
+                                              }}
+                                              className="text-xs h-4 border-0 bg-transparent p-0"
+                                              placeholder="Field name"
+                                            />
+                                          ) : (
+                                            field
+                                          )}
+                                        </div>
+                                        {card.isEdited && (
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-3 w-3 p-0 hover:bg-red-50"
+                                            onClick={() => {
+                                              const updatedCards = [...pageContentCards];
+                                              updatedCards[index].forms[formIdx].fields.splice(fieldIdx, 1);
+                                              setPageContentCards(updatedCards);
+                                            }}
+                                          >
+                                            <Trash2 className="h-1.5 w-1.5 text-red-400" />
+                                          </Button>
+                                        )}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="w-20">
+                                  <div className="text-gray-600 mb-1">Action:</div>
+                                  <div className="px-1 py-0.5 bg-white border border-purple-200 rounded text-xs">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={form.submitAction}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].forms[formIdx].submitAction = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0"
+                                        placeholder="Submit"
+                                      />
+                                    ) : (
+                                      form.submitAction
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-sm text-blue-700">
-                              {contentGenerationProgress.currentPage && (
-                                <div>Current: {contentGenerationProgress.currentPage}</div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="buttons" className="mt-2 space-y-2">
+                        <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                          🔘 Buttons
+                          {card.isEdited && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-5 w-5 p-0 hover:bg-orange-50"
+                              onClick={() => {
+                                const updatedCards = [...pageContentCards];
+                                updatedCards[index].buttons.push({
+                                  label: "New Button",
+                                  action: "Click action",
+                                  style: "primary"
+                                });
+                                setPageContentCards(updatedCards);
+                              }}
+                            >
+                              <Plus className="h-3 w-3 text-orange-500" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-1">
+                          {card.buttons.map((button, btnIdx) => (
+                            <div key={btnIdx} className="group flex items-center gap-2 p-2 border border-orange-100 rounded bg-orange-50">
+                              <div className="flex-1 space-y-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="flex-1">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={button.label}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].buttons[btnIdx].label = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
+                                        placeholder="Button label"
+                                      />
+                                    ) : (
+                                      <span className="text-xs font-medium">{button.label}</span>
+                                    )}
+                                  </div>
+                                  <div className="w-16">
+                                    {card.isEdited ? (
+                                      <Select 
+                                        value={button.style} 
+                                        onValueChange={(value) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].buttons[btnIdx].style = value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-5 text-xs border-orange-200">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="primary">Primary</SelectItem>
+                                          <SelectItem value="secondary">Secondary</SelectItem>
+                                          <SelectItem value="outline">Outline</SelectItem>
+                                          <SelectItem value="ghost">Ghost</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <span className="text-xs px-1 py-0.5 bg-orange-200 rounded">{button.style}</span>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-xs text-gray-600">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={button.action}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].buttons[btnIdx].action = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-4 border-0 bg-transparent p-0"
+                                      placeholder="Button action"
+                                    />
+                                  ) : (
+                                    button.action
+                                  )}
+                                </div>
+                              </div>
+                              {card.isEdited && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                  onClick={() => {
+                                    const updatedCards = [...pageContentCards];
+                                    updatedCards[index].buttons.splice(btnIdx, 1);
+                                    setPageContentCards(updatedCards);
+                                  }}
+                                >
+                                  <Trash2 className="h-2 w-2 text-red-500" />
+                                </Button>
                               )}
-                              <div>Progress: {contentGenerationProgress.current} / {contentGenerationProgress.total}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="media" className="mt-2 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            🖼️ Images
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-indigo-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].images.push({
+                                    alt: "New Image",
+                                    description: "Image description",
+                                    position: "center"
+                                  });
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-indigo-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.images.map((image, imgIdx) => (
+                              <div key={imgIdx} className="group flex gap-2 p-2 border border-indigo-100 rounded bg-indigo-50">
+                                <div className="flex-1 space-y-1">
+                                  <div className="flex items-center gap-1">
+                                    <div className="flex-1">
+                                      {card.isEdited ? (
+                                        <Input
+                                          value={image.alt}
+                                          onChange={(e) => {
+                                            const updatedCards = [...pageContentCards];
+                                            updatedCards[index].images[imgIdx].alt = e.target.value;
+                                            setPageContentCards(updatedCards);
+                                          }}
+                                          className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
+                                          placeholder="Alt text"
+                                        />
+                                      ) : (
+                                        <span className="text-xs font-medium">{image.alt}</span>
+                                      )}
+                                    </div>
+                                    <div className="w-16">
+                                      {card.isEdited ? (
+                                        <Select 
+                                          value={image.position} 
+                                          onValueChange={(value) => {
+                                            const updatedCards = [...pageContentCards];
+                                            updatedCards[index].images[imgIdx].position = value;
+                                            setPageContentCards(updatedCards);
+                                          }}
+                                        >
+                                          <SelectTrigger className="h-5 text-xs border-indigo-200">
+                                            <SelectValue />
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            <SelectItem value="top">Top</SelectItem>
+                                            <SelectItem value="center">Center</SelectItem>
+                                            <SelectItem value="bottom">Bottom</SelectItem>
+                                            <SelectItem value="left">Left</SelectItem>
+                                            <SelectItem value="right">Right</SelectItem>
+                                          </SelectContent>
+                                        </Select>
+                                      ) : (
+                                        <span className="text-xs px-1 py-0.5 bg-indigo-200 rounded">{image.position}</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={image.description}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].images[imgIdx].description = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0"
+                                        placeholder="Description"
+                                      />
+                                    ) : (
+                                      image.description
+                                    )}
+                                  </div>
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].images.splice(imgIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2 w-2 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            📋 Lists
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-teal-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].lists.push({
+                                    title: "New List",
+                                    type: "unordered",
+                                    items: ["Item 1"]
+                                  });
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-teal-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.lists.map((list, listIdx) => (
+                              <div key={listIdx} className="group border border-teal-100 rounded p-2 bg-teal-50">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="flex-1">
+                                    {card.isEdited ? (
+                                      <Input
+                                        value={list.title}
+                                        onChange={(e) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].lists[listIdx].title = e.target.value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                        className="text-xs h-4 border-0 bg-transparent p-0 font-medium"
+                                        placeholder="List title"
+                                      />
+                                    ) : (
+                                      <span className="text-xs font-medium">{list.title}</span>
+                                    )}
+                                  </div>
+                                  {card.isEdited && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-4 w-4 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                      onClick={() => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].lists.splice(listIdx, 1);
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                    >
+                                      <Trash2 className="h-2 w-2 text-red-500" />
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-1 mb-1">
+                                  <div className="flex-1">
+                                    {card.isEdited ? (
+                                      <Select 
+                                        value={list.type} 
+                                        onValueChange={(value) => {
+                                          const updatedCards = [...pageContentCards];
+                                          updatedCards[index].lists[listIdx].type = value;
+                                          setPageContentCards(updatedCards);
+                                        }}
+                                      >
+                                        <SelectTrigger className="h-5 text-xs border-teal-200">
+                                          <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem value="ordered">Ordered</SelectItem>
+                                          <SelectItem value="unordered">Unordered</SelectItem>
+                                          <SelectItem value="checklist">Checklist</SelectItem>
+                                        </SelectContent>
+                                      </Select>
+                                    ) : (
+                                      <span className="text-xs text-gray-600">{list.type} • {list.items.length} items</span>
+                                    )}
+                                  </div>
+                                  {card.isEdited && (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 hover:bg-blue-50"
+                                      onClick={() => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].lists[listIdx].items.push("New item");
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                    >
+                                      <Plus className="h-2 w-2 text-blue-400" />
+                                    </Button>
+                                  )}
+                                </div>
+                                <div className="space-y-0.5">
+                                  {list.items.map((item, itemIdx) => (
+                                    <div key={itemIdx} className="flex items-center gap-1">
+                                      <div className="flex-1 px-1 py-0.5 bg-white border border-teal-200 rounded text-xs">
+                                        {card.isEdited ? (
+                                          <Input
+                                            value={item}
+                                            onChange={(e) => {
+                                              const updatedCards = [...pageContentCards];
+                                              updatedCards[index].lists[listIdx].items[itemIdx] = e.target.value;
+                                              setPageContentCards(updatedCards);
+                                            }}
+                                            className="text-xs h-4 border-0 bg-transparent p-0"
+                                            placeholder="List item"
+                                          />
+                                        ) : (
+                                          `• ${item}`
+                                        )}
+                                      </div>
+                                      {card.isEdited && (
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-4 w-4 p-0 hover:bg-red-50"
+                                          onClick={() => {
+                                            const updatedCards = [...pageContentCards];
+                                            updatedCards[index].lists[listIdx].items.splice(itemIdx, 1);
+                                            setPageContentCards(updatedCards);
+                                          }}
+                                        >
+                                          <Trash2 className="h-1.5 w-1.5 text-red-400" />
+                                        </Button>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="navigation" className="mt-2 space-y-3">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            🧭 Navigation
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-cyan-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].navigation.push("New Nav Item");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-cyan-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.navigation.map((navItem, navIdx) => (
+                              <div key={navIdx} className="group flex items-center gap-1">
+                                <div className="flex-1 px-2 py-1 bg-cyan-50 border border-cyan-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Input
+                                      value={navItem}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].navigation[navIdx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs h-5 border-0 bg-transparent p-0"
+                                      placeholder="Navigation item"
+                                    />
+                                  ) : (
+                                    safeRenderContent(navItem)
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].navigation.splice(navIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-xs font-medium text-gray-700">
+                            ➕ Additional Content
+                            {card.isEdited && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-5 w-5 p-0 hover:bg-pink-50"
+                                onClick={() => {
+                                  const updatedCards = [...pageContentCards];
+                                  updatedCards[index].additionalContent.push("New content");
+                                  setPageContentCards(updatedCards);
+                                }}
+                              >
+                                <Plus className="h-3 w-3 text-pink-500" />
+                              </Button>
+                            )}
+                          </div>
+                          <div className="space-y-1">
+                            {card.additionalContent.map((content, contentIdx) => (
+                              <div key={contentIdx} className="group flex gap-1">
+                                <div className="flex-1 px-2 py-1 bg-pink-50 border border-pink-100 rounded text-xs">
+                                  {card.isEdited ? (
+                                    <Textarea
+                                      value={content}
+                                      onChange={(e) => {
+                                        const updatedCards = [...pageContentCards];
+                                        updatedCards[index].additionalContent[contentIdx] = e.target.value;
+                                        setPageContentCards(updatedCards);
+                                      }}
+                                      className="text-xs min-h-[40px] border-0 bg-transparent p-0 resize-none"
+                                      placeholder="Additional content"
+                                    />
+                                  ) : (
+                                    <span className="break-words">{safeRenderContent(content)}</span>
+                                  )}
+                                </div>
+                                {card.isEdited && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 hover:bg-red-50 self-start mt-1"
+                                    onClick={() => {
+                                      const updatedCards = [...pageContentCards];
+                                      updatedCards[index].additionalContent.splice(contentIdx, 1);
+                                      setPageContentCards(updatedCards);
+                                    }}
+                                  >
+                                    <Trash2 className="h-2.5 w-2.5 text-red-500" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            
+          </div>
+        )}
+
+        {/* Brand Guidelines Upload Section */}
+        {pageContentCards.length > 0 && (
+          <Card className="mt-8 mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
+            <CardHeader className="pb-4">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Palette className="h-5 w-5 text-purple-600" />
+                Brand Guidelines
+                {brandGuidelines && (
+                  <Badge className="bg-green-100 text-green-800 border-green-300">
+                    Loaded
+                  </Badge>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">
+                  Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
+                </p>
+
+                {/* Stored Brand Guidelines Selection */}
+                {storedBrandGuidelines.length > 0 && (
+                  <div className="space-y-2">
+                    <Label className="block text-sm font-medium">
+                      Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select stored brand guidelines..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None - Upload new PDF</SelectItem>
+                          {storedBrandGuidelines.map((guideline) => (
+                            <SelectItem key={guideline.id} value={guideline.id}>
+                              <div className="flex items-center justify-between w-full">
+                                <span>{guideline.name}</span>
+                                <span className="text-xs text-gray-500 ml-2">
+                                  {new Date(guideline.extractedAt).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {selectedStoredGuideline && (
+                        <Button
+                          onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
+                          variant="outline"
+                          size="sm"
+                          className="border-red-300 text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex-1">
+                    <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
+                      Upload New Brand Guidelines PDF
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="brand-pdf"
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleBrandGuidelineUpload}
+                        disabled={isExtractingBrand}
+                        className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                      />
+                      {isExtractingBrand && (
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+                          <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Multimodal Analysis Progress */}
+                    {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
+                      <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                            Multimodal PDF Analysis
+                          </span>
+                          <span className="text-xs text-indigo-600">
+                            {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                          <div 
+                            className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                            style={{ width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%` }}
+                          ></div>
+                        </div>
+                        {multimodalAnalysisProgress.currentStep && (
+                          <p className="text-xs text-indigo-600">
+                            {multimodalAnalysisProgress.currentStep}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                    
+                    {/* Multimodal Brand Analysis Results */}
+                    {finalBrandReport && (
+                      <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                          <span className="text-sm font-medium text-emerald-700">
+                            Multimodal Analysis Complete
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Pages Analyzed:</strong> {finalBrandReport.documentInfo.totalPages}
+                            </div>
+                            <div className="text-emerald-600">
+                              <strong>Content Chunks:</strong> {finalBrandReport.documentInfo.totalChunks}
                             </div>
                           </div>
-                        )}
-
-                        {isGeneratingWireframes && (
-                          <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Loader2 className="h-4 w-4 animate-spin text-green-600" />
-                              <span className="font-medium text-green-800">Generating Wireframes</span>
+                          <div className="space-y-1">
+                            <div className="text-emerald-600">
+                              <strong>Confidence:</strong> {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
                             </div>
-                            <div className="text-sm text-green-700">
-                              {wireframeGenerationProgress.currentPage && (
-                                <div>Current: {wireframeGenerationProgress.currentPage}</div>
-                              )}
-                              <div>Progress: {wireframeGenerationProgress.current} / {wireframeGenerationProgress.total}</div>
+                            <div className="text-emerald-600">
+                              <strong>Processing Time:</strong> {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2 pt-2 border-t border-emerald-200">
+                          <div className="text-xs text-emerald-600 space-y-1">
+                            <div><strong>Critical Requirements:</strong> {finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                            <div><strong>Brand Themes:</strong> {finalBrandReport.keyFindings.brandThemes.length}</div>
+                            <div><strong>Design Principles:</strong> {finalBrandReport.keyFindings.designPrinciples.length}</div>
+                            <div><strong>Compliance Notes:</strong> {finalBrandReport.keyFindings.complianceNotes.length}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {brandExtractionError && (
+                      <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {brandGuidelines && (
+                      <Button
+                        onClick={() => setShowBrandModal(true)}
+                        variant="outline"
+                        size="sm"
+                        className="border-purple-300 text-purple-700 hover:bg-purple-50"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View Guidelines
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={generateBrandAwareWireframes}
+                      disabled={!brandGuidelines || isGeneratingWireframes}
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                      size="sm"
+                    >
+                      {isGeneratingWireframes ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-1" />
+                          Generate Brand Wireframes
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button
+                      onClick={generateUnifiedHTML}
+                      disabled={!brandGuidelines || isGeneratingUnifiedHTML}
+                      className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                      size="sm"
+                    >
+                      {isGeneratingUnifiedHTML ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                          Creating Wireframes...
+                        </>
+                      ) : (
+                        <>
+                          <Code className="h-4 w-4 mr-1" />
+                          Generate Section Wireframes
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {brandGuidelines && (
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Colors</div>
+                      <div className="text-sm font-medium">
+                        {isExternalBrandData(brandGuidelines) 
+                          ? getColorsFromExternalData(brandGuidelines).length 
+                          : (brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)
+                        }
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Typography</div>
+                      <div className="text-sm font-medium">
+                        {isExternalBrandData(brandGuidelines) 
+                          ? getFontsFromExternalData(brandGuidelines).length 
+                          : brandGuidelines.typography?.fonts?.length || 0
+                        } fonts
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Components</div>
+                      <div className="text-sm font-medium">{Object.keys(brandGuidelines.components || {}).length} types</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Logo Info</div>
+                      <div className="text-sm font-medium">{brandGuidelines.logos?.variations?.length || 0} variants</div>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <div className="text-xs text-gray-500">Brand Voice</div>
+                      <div className="text-sm font-medium">{brandGuidelines.tone?.personality?.length || 0} traits</div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Wireframe Generation Progress */}
+        {isGeneratingWireframes && (
+          <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-green-700">
+                Generating Wireframes ({wireframeGenerationProgress.current}/{wireframeGenerationProgress.total})
+              </span>
+              <span className="text-xs text-green-600">
+                {Math.round((wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100)}%
+              </span>
+            </div>
+            <div className="w-full bg-green-200 rounded-full h-2">
+              <div 
+                className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${(wireframeGenerationProgress.current / wireframeGenerationProgress.total) * 100}%` }}
+              ></div>
+            </div>
+            {wireframeGenerationProgress.currentPage && (
+              <p className="text-xs text-green-600 mt-2">
+                Currently generating: {wireframeGenerationProgress.currentPage}
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Generated Wireframes Display */}
+        {generatedWireframes.length > 0 && (
+          <div className="mt-8">
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-100">
+              <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Generated Wireframes ({generatedWireframes.length})
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {generatedWireframes.map((wireframe, index) => (
+                  <Card key={index} className="group hover:shadow-xl transition-all duration-300 border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                    <CardHeader className="bg-gray-200 text-gray-700 py-3 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gray-200/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      <div className="flex justify-between items-center relative z-10">
+                        <CardTitle className="text-sm font-semibold truncate flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-gray-500 animate-pulse"></div>
+                          {wireframe.pageName}
+                        </CardTitle>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-blue-500/20 text-blue-600"
+                            onClick={() => regenerateWireframe(wireframe.pageName)}
+                            title="Regenerate with logo variants"
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-gray-300/50 text-gray-600"
+                            onClick={() => {
+                              setSelectedPageCode({
+                                pageName: wireframe.pageName,
+                                htmlCode: wireframe.htmlCode,
+                                cssCode: wireframe.cssCode,
+                                jsCode: wireframe.jsCode
+                              });
+                              setShowCodeModal(true);
+                            }}
+                          >
+                            <Eye className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 w-7 p-0 hover:bg-gray-300/50 text-gray-600"
+                            onClick={() => {
+                              const blob = new Blob([wireframe.htmlCode], { type: 'text/html' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `${wireframe.pageName.replace(/\s+/g, '_')}.html`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    
+                    <CardContent className="p-4 bg-[#f0f6ff]">
+                      <div className="relative bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden border border-gray-200 group-hover:border-blue-200 transition-colors duration-300">
+                        <div className="bg-gradient-to-r from-gray-200 to-gray-300 px-3 py-2 border-b border-gray-300">
+                          <div className="flex items-center gap-2">
+                            <div className="flex gap-1">
+                              <div className="w-3 h-3 rounded-full bg-red-500 shadow-sm"></div>
+                              <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-sm"></div>
+                              <div className="w-3 h-3 rounded-full bg-green-500 shadow-sm"></div>
+                            </div>
+                            <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 truncate font-mono">
+                              {wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html
+                            </div>
+                            {isRefreshing && (
+                              <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
+                                <RefreshCw className="h-3 w-3 animate-spin" />
+                                <span>Updating</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="relative h-80 bg-white">
+                          <iframe
+                            key={`${wireframe.id}-${wireframe.lastUpdated || Date.now()}`}
+                            srcDoc={wireframe.htmlCode}
+                            className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
+                            style={{ 
+                              width: '250%', 
+                              height: '250%',
+                              overflow: 'hidden'
+                            }}
+                            title={`Preview of ${wireframe.pageName}`}
+                            sandbox="allow-same-origin"
+                            scrolling="no"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                          onClick={() => {
+                            const newWindow = window.open('', '_blank');
+                            if (newWindow) {
+                              newWindow.document.write(wireframe.htmlCode);
+                              newWindow.document.close();
+                            }
+                          }}
+                        >
+                          <Frame className="h-3 w-3 mr-1" />
+                          Preview
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
+                          onClick={() => {
+                            console.log('Edit button clicked for wireframe:', wireframe);
+                            console.log('Wireframe ID:', wireframe.id);
+                            console.log('Full wireframe object keys:', Object.keys(wireframe));
+                            if (!wireframe.id) {
+                              console.error('Wireframe ID is missing! Wireframe object:', wireframe);
+                            }
+                            window.location.href = `/html-editor?id=${wireframe.id}`;
+                          }}
+                        >
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Brand Guidelines Modal */}
+        {showBrandModal && brandGuidelines && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg w-[90vw] max-w-4xl h-[90vh] overflow-hidden">
+              <div className="flex justify-between items-center p-4 border-b">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Palette className="h-6 w-6 text-purple-600" />
+                  Brand Guidelines Overview
+                </h3>
+                <Button
+                  onClick={() => setShowBrandModal(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+                {/* Multimodal Brand Analysis Summary */}
+                {finalBrandReport && (
+                  <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                    <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                      Multimodal Brand Analysis Results
+                    </h3>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-emerald-600">{finalBrandReport.documentInfo.totalPages}</div>
+                        <div className="text-xs text-gray-600">Pages Analyzed</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-blue-600">{finalBrandReport.documentInfo.totalChunks}</div>
+                        <div className="text-xs text-gray-600">Content Chunks</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-purple-600">{finalBrandReport.keyFindings.criticalRequirements.length}</div>
+                        <div className="text-xs text-gray-600">Critical Requirements</div>
+                      </div>
+                      <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
+                        <div className="text-2xl font-bold text-orange-600">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</div>
+                        <div className="text-xs text-gray-600">Confidence</div>
+                      </div>
+                    </div>
+                    
+                    {/* Processing Summary */}
+                    <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                      <div className="text-sm font-medium text-gray-700 mb-2">Processing Summary:</div>
+                      <div className="flex gap-4 text-xs text-gray-600">
+                        <span>Processing Time: {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s</span>
+                        <span>Brand Themes: {finalBrandReport.keyFindings.brandThemes.length}</span>
+                        <span>Design Principles: {finalBrandReport.keyFindings.designPrinciples.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Colors Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-blue-500"></div>
+                        Color Palette
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.primary || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Secondary Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.secondary || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Text Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.text || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Accent Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.accent || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Background Colors</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.colors?.background || []).map((color, index) => (
+                            <div key={index} className="flex items-center gap-1">
+                              <div 
+                                className="w-6 h-6 rounded border border-gray-300"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Typography Section */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Typography
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Fonts</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.typography?.fonts || []).map((font, index) => (
+                            <div key={index} className="text-sm font-mono bg-gray-50 px-2 py-1 rounded">
+                              {font}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Weights</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.typography?.weights || []).map((weight, index) => (
+                            <Badge key={index} variant="outline">{weight}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Styles</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.typography?.headingStyles || []).map((style, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {style}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Layout Guidelines */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Layout className="h-4 w-4" />
+                        Layout & Spacing
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Spacing Values</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.layout?.spacing || []).map((space, index) => (
+                            <Badge key={index} variant="secondary">{space}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Grid Systems</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.layout?.gridSystems || []).map((grid, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {grid}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Breakpoints</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.layout?.breakpoints || []).map((breakpoint, index) => (
+                            <Badge key={index} variant="outline">{breakpoint}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Logo Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-orange-400 to-red-500"></div>
+                        Logo Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Primary Logo</h4>
+                        {brandGuidelines.logos.images?.primary ? (
+                          <div className="bg-gray-50 p-3 rounded border">
+                            <img 
+                              src={brandGuidelines.logos.images.primary} 
+                              alt="Extracted Brand Logo" 
+                              className="max-h-16 w-auto mx-auto mb-2"
+                            />
+                            <div className="text-xs text-green-600 text-center">✓ Logo extracted from PDF</div>
+                          </div>
+                        ) : (
+                          <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded">
+                            {brandGuidelines.logos.primary}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Variations</h4>
+                        <div className="space-y-2">
+                          <div className="flex flex-wrap gap-2">
+                            {(brandGuidelines.logos?.variations || []).map((variation, index) => (
+                              <Badge key={index} variant="outline">{variation}</Badge>
+                            ))}
+                          </div>
+                          {brandGuidelines.logos.images && Object.keys(brandGuidelines.logos.images).length > 1 && (
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                              {Object.entries(brandGuidelines.logos.images).map(([type, imageData], index) => (
+                                type !== 'primary' && imageData && (
+                                  <div key={index} className="bg-gray-50 p-2 rounded border text-center">
+                                    <img 
+                                      src={imageData} 
+                                      alt={`${type} logo variant`} 
+                                      className="max-h-8 w-auto mx-auto mb-1"
+                                    />
+                                    <div className="text-xs text-gray-500 capitalize">{type}</div>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Usage Rules</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.logos?.usage || []).map((rule, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {rule}</div>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Size & Spacing</h4>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Min Size</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.sizes?.[0] || "24px"}</div>
+                          </div>
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-xs font-medium">Clearance</div>
+                            <div className="text-xs text-gray-600">{brandGuidelines.logos?.spacing?.[0] || "20px"}</div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Brand Voice & Personality */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        Brand Voice
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Personality</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.personality.map((trait, index) => (
+                            <Badge key={index} className="bg-blue-100 text-blue-800">{trait}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Voice Characteristics</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {brandGuidelines.tone.voice.map((voice, index) => (
+                            <Badge key={index} className="bg-purple-100 text-purple-800">{voice}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Key Messages</h4>
+                        <div className="space-y-1">
+                          {brandGuidelines.tone.messaging.map((message, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {message}</div>
+                          ))}
+                        </div>
+                      </div>
+                      {brandGuidelines.tone.doAndDont && brandGuidelines.tone.doAndDont.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Communication Guidelines</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.tone.doAndDont.map((guideline, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {guideline}</div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                  
+                  {/* Key Points & Highlights */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Points</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyPoints.map((point, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                • {point}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Key Highlights</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyHighlights.map((highlight, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                                ⭐ {highlight}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Important Clauses</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.keyClauses.map((clause, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                📋 {clause}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Dos and Don'ts */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-red-400"></div>
+                        Dos & Don'ts
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.dosAndDonts && (
+                        <>
+                          {brandGuidelines.dosAndDonts.dos && brandGuidelines.dosAndDonts.dos.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">✓ Do</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.dos.map((doItem, index) => (
+                                  <div key={index} className="text-xs text-green-800 bg-green-50 p-2 rounded border-l-3 border-green-500">
+                                    ✓ {doItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.dosAndDonts.donts && brandGuidelines.dosAndDonts.donts.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">✗ Don't</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.dosAndDonts.donts.map((dontItem, index) => (
+                                  <div key={index} className="text-xs text-red-800 bg-red-50 p-2 rounded border-l-3 border-red-500">
+                                    ✗ {dontItem}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      
+                      {brandGuidelines.brandRules && brandGuidelines.brandRules.length > 0 && (
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Rules</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandRules.map((rule, index) => (
+                              <div key={index} className="text-xs text-gray-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                📜 {rule}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Key Brand Clauses Section */}
+                {(brandGuidelines.keyClauses && brandGuidelines.keyClauses.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-orange-500"></div>
+                        Key Brand Clauses
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {brandGuidelines.keyClauses.map((clause, index) => (
+                          <div key={index} className="text-sm text-gray-700 bg-amber-50 p-3 rounded border-l-4 border-amber-400">
+                            <strong>Clause {index + 1}:</strong> {clause}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Key Points and Highlights */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  {(brandGuidelines.keyPoints && brandGuidelines.keyPoints.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-blue-400 to-indigo-500"></div>
+                          Key Points
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyPoints.map((point, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                              • {point}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {(brandGuidelines.keyHighlights && brandGuidelines.keyHighlights.length > 0) && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <div className="w-4 h-4 rounded bg-gradient-to-br from-yellow-400 to-amber-500"></div>
+                          Key Highlights
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2">
+                          {brandGuidelines.keyHighlights.map((highlight, index) => (
+                            <div key={index} className="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-3 border-yellow-400">
+                              ⭐ {highlight}
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+
+                {/* Brand Values and Design Principles */}
+                {(brandGuidelines.brandValues && brandGuidelines.brandValues.length > 0) && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Brand Values & Design Principles
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2">Brand Values</h4>
+                          <div className="space-y-1">
+                            {brandGuidelines.brandValues.map((value, index) => (
+                              <div key={index} className="text-sm text-purple-700 bg-purple-50 px-3 py-2 rounded">
+                                {value}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                            <div className="space-y-1">
+                              {brandGuidelines.designPrinciples.map((principle, index) => (
+                                <div key={index} className="text-sm text-indigo-700 bg-indigo-50 px-3 py-2 rounded">
+                                  {principle}
+                                </div>
+                              ))}
                             </div>
                           </div>
                         )}
@@ -788,194 +5547,334 @@ export default function WireframeDesigner() {
                     </CardContent>
                   </Card>
                 )}
-              </TabsContent>
 
-              <TabsContent value="brand" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Palette className="h-5 w-5 text-purple-600" />
-                      Brand Guidelines
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      {isExtractingBrand ? (
-                        <div className="flex flex-col items-center gap-3">
-                          <Loader2 className="h-8 w-8 text-blue-600 animate-spin" />
-                          <p className="text-sm text-gray-600">Extracting brand guidelines...</p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-3">
-                          <Upload className="h-8 w-8 text-gray-400" />
+                {/* MongoDB Vector Search Key Points */}
+                {finalBrandReport && finalBrandReport.keyFindings && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-cyan-400 to-blue-500 animate-pulse"></div>
+                        Multimodal Analysis Key Points
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Critical Requirements */}
+                        {finalBrandReport.keyFindings.criticalRequirements.length > 0 && (
                           <div>
-                            <p className="text-sm text-gray-600 mb-1">
-                              Drag and drop your PDF here, or{" "}
-                              <label className="text-blue-600 hover:text-blue-700 cursor-pointer underline">
-                                browse files
-                                <input
-                                  type="file"
-                                  accept=".pdf"
-                                  onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                      handleBrandFileUpload(e.target.files[0]);
-                                    }
-                                  }}
-                                  className="hidden"
-                                />
-                              </label>
-                            </p>
-                            <p className="text-xs text-gray-400">PDF files only</p>
+                            <h4 className="font-medium text-sm mb-2 text-amber-700">Critical Requirements ({finalBrandReport.keyFindings.criticalRequirements.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.criticalRequirements.slice(0, 5).map((requirement, index) => (
+                                <div key={index} className="text-xs text-amber-700 bg-amber-50 p-2 rounded border-l-3 border-amber-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{requirement}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Design Principles */}
+                        {finalBrandReport.keyFindings.designPrinciples.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-blue-700">Design Principles ({finalBrandReport.keyFindings.designPrinciples.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.designPrinciples.slice(0, 5).map((principle, index) => (
+                                <div key={index} className="text-xs text-blue-700 bg-blue-50 p-2 rounded border-l-3 border-blue-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{principle}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Brand Themes */}
+                        {finalBrandReport.keyFindings.brandThemes.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-green-700">Brand Themes ({finalBrandReport.keyFindings.brandThemes.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.brandThemes.slice(0, 5).map((theme, index) => (
+                                <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded border-l-3 border-green-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{theme}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Compliance Notes */}
+                        {finalBrandReport.keyFindings.complianceNotes.length > 0 && (
+                          <div>
+                            <h4 className="font-medium text-sm mb-2 text-purple-700">Compliance Notes ({finalBrandReport.keyFindings.complianceNotes.length})</h4>
+                            <div className="max-h-32 overflow-y-auto space-y-1">
+                              {finalBrandReport.keyFindings.complianceNotes.slice(0, 5).map((note, index) => (
+                                <div key={index} className="text-xs text-purple-700 bg-purple-50 p-2 rounded border-l-3 border-purple-400">
+                                  <div className="flex justify-between items-start">
+                                    <span>{note}</span>
+                                    <Badge variant="outline" className="ml-2 text-xs">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</Badge>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Document Information */}
+                {finalBrandReport && finalBrandReport.documentInfo && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-teal-500 animate-pulse"></div>
+                        Document Analysis Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-emerald-700">Processing Stats</h4>
+                          <div className="space-y-2">
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Total Pages: {finalBrandReport.documentInfo.totalPages}
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Average Confidence: {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
+                            </div>
+                            <div className="text-xs text-gray-600 bg-emerald-50 p-2 rounded">
+                              Processing Time: {finalBrandReport.documentInfo.processingTime}s
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-blue-700">Color Guidelines</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {finalBrandReport.brandGuidelines.colors.primary.slice(0, 5).map((color, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-blue-50 p-1 rounded">
+                                {color}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium text-sm mb-2 text-purple-700">Typography Guidelines</h4>
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {finalBrandReport.brandGuidelines.typography.fonts.slice(0, 5).map((font, index) => (
+                              <div key={index} className="text-xs text-gray-600 bg-purple-50 p-1 rounded">
+                                {font}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Compliance & Usage Guidelines */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-indigo-400 to-purple-500"></div>
+                        Compliance & Requirements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.compliance && (
+                        <>
+                          {brandGuidelines.compliance.requirements && brandGuidelines.compliance.requirements.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Requirements</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.requirements.map((req, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-indigo-50 p-2 rounded">
+                                    • {req}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.restrictions && brandGuidelines.compliance.restrictions.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Restrictions</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.restrictions.map((restriction, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ⚠️ {restriction}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.compliance.guidelines && brandGuidelines.compliance.guidelines.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.compliance.guidelines.map((guideline, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-gray-50 p-2 rounded">
+                                    📋 {guideline}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-teal-400 to-cyan-500"></div>
+                        Usage Guidelines
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {brandGuidelines.usageGuidelines && (
+                        <>
+                          {brandGuidelines.usageGuidelines.approved && brandGuidelines.usageGuidelines.approved.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-green-700">Approved Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.approved.map((usage, index) => (
+                                  <div key={index} className="text-xs text-green-700 bg-green-50 p-2 rounded">
+                                    ✓ {usage}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.prohibited && brandGuidelines.usageGuidelines.prohibited.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2 text-red-700">Prohibited Usage</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.prohibited.map((prohibited, index) => (
+                                  <div key={index} className="text-xs text-red-700 bg-red-50 p-2 rounded">
+                                    ✗ {prohibited}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {brandGuidelines.usageGuidelines.context && brandGuidelines.usageGuidelines.context.length > 0 && (
+                            <div>
+                              <h4 className="font-medium text-sm mb-2">Context Guidelines</h4>
+                              <div className="space-y-1">
+                                {brandGuidelines.usageGuidelines.context.map((context, index) => (
+                                  <div key={index} className="text-xs text-gray-700 bg-teal-50 p-2 rounded">
+                                    📝 {context}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Brand Values & Accessibility */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-green-400 to-blue-500"></div>
+                        Brand Values
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {(brandGuidelines.brandValues || []).map((value, index) => (
+                          <Badge key={index} className="bg-green-100 text-green-800">{value}</Badge>
+                        ))}
+                      </div>
+                      {brandGuidelines.designPrinciples && brandGuidelines.designPrinciples.length > 0 && (
+                        <div className="mt-3">
+                          <h4 className="font-medium text-sm mb-2">Design Principles</h4>
+                          <div className="space-y-1">
+                            {(brandGuidelines.designPrinciples || []).map((principle, index) => (
+                              <div key={index} className="text-xs text-gray-600">• {principle}</div>
+                            ))}
                           </div>
                         </div>
                       )}
-                    </div>
+                    </CardContent>
+                  </Card>
 
-                    {brandExtractionError && (
-                      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-                        {brandExtractionError}
-                      </div>
-                    )}
-
-                    {brandGuidelines && (
-                      <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <span className="font-medium text-green-700">Brand Guidelines Loaded</span>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded bg-gradient-to-br from-purple-400 to-pink-500"></div>
+                        Accessibility
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Contrast Requirements</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(brandGuidelines.accessibility?.contrast || []).map((contrast, index) => (
+                            <Badge key={index} variant="secondary">{contrast}</Badge>
+                          ))}
                         </div>
-                        <p className="text-sm text-green-600">
-                          Brand guidelines have been successfully extracted and will be used in wireframe generation.
-                        </p>
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="wireframes" className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Generated Wireframes ({generatedWireframes.length})
-                  </h3>
-                  {generatedWireframes.length > 0 && (
-                    <Button
-                      variant="outline"
-                      onClick={clearAllWireframes}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4 mr-1" />
-                      Clear All
-                    </Button>
-                  )}
+                      <div>
+                        <h4 className="font-medium text-sm mb-2">Compliance Standards</h4>
+                        <div className="space-y-1">
+                          {(brandGuidelines.accessibility?.compliance || []).map((standard, index) => (
+                            <div key={index} className="text-xs text-gray-600">• {standard}</div>
+                          ))}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                {generatedWireframes.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-gray-400 mb-4">
-                      <Frame className="h-16 w-16 mx-auto" />
+                <div className="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                  <h4 className="font-medium text-green-800 mb-2">Enhanced Brand Integration Status</h4>
+                  <p className="text-sm text-green-700">
+                    Comprehensive brand guidelines extracted including text colors, {brandGuidelines.logos?.images?.primary ? 'authentic logo images' : 'logo specifications'}, accessibility requirements, 
+                    and brand values. The AI will use all extracted elements including {brandGuidelines.colors?.text?.length || 0} text colors, 
+                    {brandGuidelines.logos?.variations?.length || 0} logo variations, {brandGuidelines.accessibility?.contrast?.length || 0} contrast requirements
+                    {brandGuidelines.logos?.images?.primary ? ', and extracted logo images' : ''} 
+                    to create wireframes that perfectly match your brand identity.
+                  </p>
+                  {brandGuidelines.logos?.images?.primary && (
+                    <div className="mt-3 p-3 bg-white rounded border border-green-300">
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={brandGuidelines.logos.images.primary} 
+                          alt="Extracted Brand Logo" 
+                          className="h-8 w-auto"
+                        />
+                        <div className="text-sm text-green-700">
+                          <div className="font-medium">Authentic Logo Extracted</div>
+                          <div className="text-xs">Logo will be used in generated wireframes for authentic brand representation</div>
+                        </div>
+                      </div>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Wireframes Generated</h3>
-                    <p className="text-gray-500">Generate your first wireframe to see it here</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {generatedWireframes.map((wireframe) => (
-                      <Card key={wireframe.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                        <CardContent className="p-0">
-                          <div className="bg-gradient-to-r from-slate-50 to-blue-50 px-4 py-3 border-b">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                              </div>
-                              <div className="flex-1 bg-white rounded px-2 py-1 text-xs text-gray-600 truncate font-mono">
-                                {wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html
-                              </div>
-                              {isRefreshing && (
-                                <div className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">
-                                  <RefreshCw className="h-3 w-3 animate-spin" />
-                                  <span>Updating</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          
-                          <div className="relative h-80 bg-white">
-                            <iframe
-                              key={`${wireframe.id}-${wireframe.lastUpdated || Date.now()}`}
-                              srcDoc={wireframe.htmlCode}
-                              className="w-full h-full border-0 transform scale-[0.4] origin-top-left"
-                              style={{ 
-                                width: '250%', 
-                                height: '250%',
-                                overflow: 'hidden'
-                              }}
-                              title={`Preview of ${wireframe.pageName}`}
-                              sandbox="allow-same-origin"
-                              scrolling="no"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-white/5 to-transparent pointer-events-none"></div>
-                          </div>
-                          
-                          <div className="p-4 space-y-3">
-                            <div className="flex items-center justify-between">
-                              <h4 className="font-medium text-gray-800 truncate">{wireframe.pageName}</h4>
-                              {wireframe.isEnhanced && (
-                                <Badge variant="secondary" className="bg-green-100 text-green-700 text-xs">
-                                  Enhanced
-                                </Badge>
-                              )}
-                            </div>
-                            
-                            {wireframe.lastEnhancedElement && (
-                              <div className="text-xs text-gray-600 bg-gray-50 px-2 py-1 rounded">
-                                Last enhanced: {wireframe.lastEnhancedElement}
-                              </div>
-                            )}
-                            
-                            <div className="mt-4 flex justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                                onClick={() => {
-                                  const newWindow = window.open('', '_blank');
-                                  if (newWindow) {
-                                    newWindow.document.write(wireframe.htmlCode);
-                                    newWindow.document.close();
-                                  }
-                                }}
-                              >
-                                <Frame className="h-3 w-3 mr-1" />
-                                Preview
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
-                                onClick={() => {
-                                  console.log('Edit button clicked for wireframe:', wireframe);
-                                  console.log('Wireframe ID:', wireframe.id);
-                                  console.log('Full wireframe object keys:', Object.keys(wireframe));
-                                  if (!wireframe.id) {
-                                    console.error('Wireframe ID is missing! Wireframe object:', wireframe);
-                                  }
-                                  window.location.href = `/html-editor?id=${wireframe.id}`;
-                                }}
-                              >
-                                <Edit3 className="h-3 w-3 mr-1" />
-                                Edit
-                              </Button>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </div>
