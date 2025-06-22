@@ -444,58 +444,68 @@ export function FlowWireframeMappingPage() {
             pdf.text(`Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 20, yPosition);
             yPosition += 10;
 
-            // Create wireframe preview with exact colors
+            // Create wireframe preview using a more reliable approach
             try {
-              // Create a hidden iframe to render the wireframe
-              const iframe = document.createElement('iframe');
-              iframe.style.width = '1200px';
-              iframe.style.height = '800px';
-              iframe.style.position = 'absolute';
-              iframe.style.left = '-9999px';
-              iframe.style.border = 'none';
-              iframe.srcdoc = wireframe.htmlContent;
-              document.body.appendChild(iframe);
-
-              // Wait for iframe to load and render
-              await new Promise((resolve) => {
-                iframe.onload = () => {
-                  // Give extra time for CSS and rendering
-                  setTimeout(resolve, 2000);
-                };
-                // Fallback timeout
-                setTimeout(resolve, 3000);
-              });
-
-              // Capture the iframe content
-              const canvas = await html2canvas(iframe.contentDocument?.body || iframe.contentWindow?.document.body!, {
+              console.log(`Attempting to capture wireframe: ${wireframe.pageName}`);
+              
+              // Create a visible temporary container for better rendering
+              const tempContainer = document.createElement('div');
+              tempContainer.style.position = 'fixed';
+              tempContainer.style.top = '0';
+              tempContainer.style.left = '0';
+              tempContainer.style.width = '1200px';
+              tempContainer.style.height = '800px';
+              tempContainer.style.zIndex = '-1000';
+              tempContainer.style.backgroundColor = '#ffffff';
+              tempContainer.style.overflow = 'hidden';
+              tempContainer.innerHTML = wireframe.htmlContent;
+              
+              // Add to document for rendering
+              document.body.appendChild(tempContainer);
+              
+              // Wait for rendering to complete
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              
+              // Capture using html2canvas with improved settings
+              const canvas = await html2canvas(tempContainer, {
                 width: 1200,
                 height: 800,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: '#ffffff',
-                scale: 0.8,
-                logging: false,
+                scale: 0.6,
+                logging: true,
                 foreignObjectRendering: true,
-                ignoreElements: (element) => {
-                  return element.tagName === 'SCRIPT';
+                removeContainer: false,
+                onclone: (clonedDoc, element) => {
+                  // Ensure all styles are preserved in clone
+                  const clonedContainer = clonedDoc.querySelector('div');
+                  if (clonedContainer) {
+                    clonedContainer.style.position = 'static';
+                    clonedContainer.style.width = '1200px';
+                    clonedContainer.style.height = '800px';
+                    clonedContainer.style.backgroundColor = '#ffffff';
+                  }
                 }
               });
 
-              // Clean up iframe
-              document.body.removeChild(iframe);
+              // Clean up temporary container
+              document.body.removeChild(tempContainer);
 
-              if (canvas.width > 10 && canvas.height > 10) {
-                const imgData = canvas.toDataURL('image/png', 0.9);
+              console.log(`Canvas captured for ${wireframe.pageName}: ${canvas.width}x${canvas.height}`);
+
+              if (canvas.width > 100 && canvas.height > 100) {
+                const imgData = canvas.toDataURL('image/png', 0.95);
                 
-                // Calculate size for PDF - make wireframes reasonably sized
+                // Calculate optimal size for PDF
                 const maxWireframeWidth = pageWidth - 40;
-                const maxWireframeHeight = 100; // Limit height for better layout
+                const maxWireframeHeight = 120;
                 const aspectRatio = canvas.width / canvas.height;
                 
-                let imgWidth = Math.min(maxWireframeWidth, canvas.width * 0.2);
+                let imgWidth = Math.min(maxWireframeWidth, 160); // Fixed reasonable width
                 let imgHeight = imgWidth / aspectRatio;
                 
-                // If height is too much, scale down further
+                // Ensure height doesn't exceed limit
                 if (imgHeight > maxWireframeHeight) {
                   imgHeight = maxWireframeHeight;
                   imgWidth = imgHeight * aspectRatio;
@@ -504,20 +514,20 @@ export function FlowWireframeMappingPage() {
                 // Center the wireframe image
                 const xPosition = (pageWidth - imgWidth) / 2;
                 pdf.addImage(imgData, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
-                yPosition += imgHeight + 15;
+                yPosition += imgHeight + 20;
                 
-                console.log(`Wireframe "${wireframe.pageName}" added to PDF: ${imgWidth}x${imgHeight}`);
+                console.log(`✓ Wireframe "${wireframe.pageName}" added to PDF: ${imgWidth}x${imgHeight}`);
               } else {
-                document.body.removeChild(iframe);
+                console.warn(`Canvas too small for ${wireframe.pageName}: ${canvas.width}x${canvas.height}`);
                 pdf.setFontSize(9);
-                pdf.text('Wireframe preview not available', 25, yPosition);
-                yPosition += 10;
+                pdf.text('Wireframe preview could not be generated (canvas too small)', 25, yPosition);
+                yPosition += 15;
               }
             } catch (error) {
-              console.warn('Could not capture wireframe:', error);
+              console.error('Wireframe capture failed:', error);
               pdf.setFontSize(9);
-              pdf.text('Wireframe image could not be captured', 25, yPosition);
-              yPosition += 10;
+              pdf.text(`Wireframe preview failed: ${error.message || 'Unknown error'}`, 25, yPosition);
+              yPosition += 15;
             }
           }
         } else {
