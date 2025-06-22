@@ -161,6 +161,8 @@ Changelog:
   - Enhanced export captures wireframes in hidden iframes to preserve exact HTML/CSS styling and color accuracy
   - Added loading state with spinner indicator during PDF generation process
   - Export button integrated into header with automatic date-based file naming
+  - Fixed flow diagram visibility issues in PDF export with improved capture logic and debugging
+  - Added comprehensive error handling and fallback text for flow diagram capture failures
 ```
 
 ## User Preferences
