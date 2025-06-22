@@ -1146,7 +1146,7 @@ RESPONSE FORMAT - Return ONLY valid JSON:
             {consolidatedFlow && (
               <div className="space-y-4">
                 <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  <p className="text-sm text-gray-600 mb-4">{consolidatedFlow.description}</p>
+                  
                   
                   <div className="bg-gray-50 rounded-lg p-2 mb-4">
                     <FlowDiagramViewer
