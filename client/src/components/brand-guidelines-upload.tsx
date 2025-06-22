@@ -154,7 +154,7 @@ export function BrandGuidelinesUpload({
     if (value !== "none" && value !== "") {
       const guideline = storedBrandGuidelines.find((g: StoredBrandGuideline) => g.id === value);
       if (guideline) {
-        const stored = BrandGuidelinesStorage.get(value);
+        const stored = BrandGuidelinesStorage.getById(value);
         if (stored) {
           setBrandGuidelines(stored);
           onBrandGuidelinesExtracted?.(stored);
@@ -201,21 +201,45 @@ export function BrandGuidelinesUpload({
       const multimodalExtractor = createMultimodalPDFExtractor();
       const chunkedAnalyzer = createChunkedBrandAnalyzer();
 
-      const comprehensiveReport = await multimodalExtractor.extractBrandGuidelines(
-        file,
-        (progress) => {
-          setMultimodalAnalysisProgress(progress);
-        }
-      );
+      const comprehensiveReport = await multimodalExtractor.extractFromPDF(file);
 
-      const finalReport = await chunkedAnalyzer.analyzeBrandDocument(comprehensiveReport);
+      const finalReport = await chunkedAnalyzer.analyzeExtractedContent(comprehensiveReport);
       setFinalBrandReport(finalReport);
 
-      const brandGuideline = comprehensiveReport.brandGuidelines;
+      // Convert the analyzer output to the expected BrandGuideline format
+      const brandGuideline: BrandGuideline = {
+        ...finalReport.brandGuidelines,
+        imagery: {
+          style: "Professional and consistent",
+          guidelines: ["High-quality images", "Consistent style"],
+          restrictions: ["No low-quality images", "No conflicting styles"],
+          aspectRatios: ["16:9", "4:3", "1:1"],
+          treatments: ["Consistent filtering", "Brand-aligned composition"]
+        },
+        keyPoints: finalReport.keyFindings.criticalRequirements,
+        keyClauses: finalReport.keyFindings.brandThemes,
+        keyHighlights: finalReport.keyFindings.designPrinciples,
+        dosAndDonts: finalReport.brandGuidelines.tone.doAndDonts,
+        brandRules: {
+          requirements: finalReport.keyFindings.criticalRequirements,
+          restrictions: finalReport.keyFindings.complianceNotes,
+          guidelines: finalReport.keyFindings.brandThemes
+        },
+        compliance: {
+          approved: finalReport.keyFindings.designPrinciples,
+          prohibited: finalReport.keyFindings.complianceNotes,
+          context: finalReport.keyFindings.brandThemes
+        },
+        usageGuidelines: finalReport.brandGuidelines.logos.usage,
+        brandValues: finalReport.keyFindings.brandThemes,
+        voiceAndTone: finalReport.brandGuidelines.tone.personality.join(', '),
+        applications: finalReport.brandGuidelines.components.buttons
+      };
+      
       setBrandGuidelines(brandGuideline);
       onBrandGuidelinesExtracted?.(brandGuideline);
 
-      const guideline = BrandGuidelinesStorage.store(brandGuideline, file.name);
+      const guideline = BrandGuidelinesStorage.save(brandGuideline, file.name);
       const updatedStored = BrandGuidelinesStorage.getAll();
       setStoredBrandGuidelines(updatedStored);
       setSelectedStoredGuideline(guideline.id);
@@ -259,9 +283,9 @@ export function BrandGuidelinesUpload({
         wireframes.push({
           id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           pageName: page.pageName,
-          htmlCode: wireframe.htmlCode,
-          cssCode: wireframe.cssCode,
-          jsCode: wireframe.jsCode || ''
+          htmlCode: wireframe.html,
+          cssCode: wireframe.css,
+          jsCode: ''
         });
       }
 
@@ -297,19 +321,23 @@ export function BrandGuidelinesUpload({
           pageType: page.pageType,
           purpose: page.purpose,
           stakeholders: page.stakeholders,
-          headers: page.headers,
-          buttons: page.buttons,
-          forms: page.forms,
-          lists: page.lists,
-          navigation: page.navigation,
-          additionalContent: page.additionalContent
+          htmlContent: '',
+          cssStyles: '',
+          contentDetails: {
+            headers: page.headers || [],
+            texts: page.additionalContent || [],
+            buttons: page.buttons || [],
+            forms: page.forms || [],
+            lists: page.lists || [],
+            images: []
+          }
         };
 
-        const result = await htmlGenerator.generateDetailedWireframe(detailedContent, 'modern', 'desktop');
+        const result = await htmlGenerator.generateDetailedWireframes([detailedContent], 'modern', 'desktop');
         unifiedPages.push({
           pageName: page.pageName,
-          htmlCode: result.htmlContent,
-          cssCode: result.cssStyles,
+          htmlCode: result[0].htmlContent,
+          cssCode: result[0].cssStyles,
           jsCode: ''
         });
       }
