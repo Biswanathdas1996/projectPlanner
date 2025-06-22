@@ -163,6 +163,10 @@ Changelog:
   - Export button integrated into header with automatic date-based file naming
   - Fixed flow diagram visibility issues in PDF export with improved capture logic and debugging
   - Added comprehensive error handling and fallback text for flow diagram capture failures
+  - Completely modernized Flow & Wireframe Mapping UI with contemporary design elements
+  - Added gradient backgrounds, glass morphism effects, and smooth hover animations
+  - Enhanced wireframe previews with browser-style chrome and proper aspect ratios
+  - Improved statistics cards with animated progress bars and interactive hover effects
 ```
 
 ## User Preferences

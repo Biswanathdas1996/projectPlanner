@@ -771,98 +771,138 @@ export function FlowWireframeMappingPage() {
                 </CardContent>
               </Card>
 
-              {/* Compact Mapped Wireframes */}
+              {/* Modern Mapped Wireframes */}
               {(() => {
                 const mappedWireframes = getMappedWireframes(selectedFlow.id);
                 
                 return mappedWireframes.length > 0 ? (
-                  <Card className="border-l-4 border-l-green-500">
-                    <CardHeader className="pb-3">
+                  <Card className="border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300">
+                    <CardHeader className="pb-4 bg-white/80 backdrop-blur-sm rounded-t-lg">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2 text-lg">
-                          <Code className="h-4 w-4 text-green-600" />
-                          UI Implementations ({mappedWireframes.length})
+                        <CardTitle className="flex items-center gap-3 text-xl font-semibold">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <Code className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <span className="text-gray-900">UI Implementations</span>
+                            <div className="text-sm font-normal text-green-600">
+                              {mappedWireframes.length} wireframe{mappedWireframes.length !== 1 ? 's' : ''} connected
+                            </div>
+                          </div>
                         </CardTitle>
-                        <div className="flex gap-1">
+                        <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
                           <Button
-                            variant={viewMode === "desktop" ? "default" : "outline"}
+                            variant={viewMode === "desktop" ? "default" : "ghost"}
                             size="sm"
-                            className="h-8 px-3"
+                            className={`h-9 px-4 transition-all duration-200 ${
+                              viewMode === "desktop" 
+                                ? "bg-white shadow-sm" 
+                                : "hover:bg-white/50"
+                            }`}
                             onClick={() => setViewMode("desktop")}
                           >
-                            <Monitor className="h-3 w-3 mr-1" />
+                            <Monitor className="h-4 w-4 mr-2" />
                             Desktop
                           </Button>
                           <Button
-                            variant={viewMode === "mobile" ? "default" : "outline"}
+                            variant={viewMode === "mobile" ? "default" : "ghost"}
                             size="sm"
-                            className="h-8 px-3"
+                            className={`h-9 px-4 transition-all duration-200 ${
+                              viewMode === "mobile" 
+                                ? "bg-white shadow-sm" 
+                                : "hover:bg-white/50"
+                            }`}
                             onClick={() => setViewMode("mobile")}
                           >
-                            <Smartphone className="h-3 w-3 mr-1" />
+                            <Smartphone className="h-4 w-4 mr-2" />
                             Mobile
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent className="pt-0">
-                      <Tabs defaultValue={mappedWireframes[0]?.id}>
-                        <TabsList className="grid w-full grid-cols-auto mb-3">
-                          {mappedWireframes.map((wireframe) => (
-                            <TabsTrigger key={wireframe.id} value={wireframe.id} className="text-xs">
-                              {wireframe.pageName}
+                    <CardContent className="p-6">
+                      <Tabs defaultValue={mappedWireframes[0]?.id} className="space-y-4">
+                        <TabsList className="grid w-full bg-white/70 backdrop-blur-sm p-1 rounded-lg shadow-sm" style={{gridTemplateColumns: `repeat(${mappedWireframes.length}, 1fr)`}}>
+                          {mappedWireframes.map((wireframe, index) => (
+                            <TabsTrigger 
+                              key={wireframe.id} 
+                              value={wireframe.id} 
+                              className="text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-2 h-2 rounded-full bg-green-400"></div>
+                                {wireframe.pageName}
+                              </div>
                             </TabsTrigger>
                           ))}
                         </TabsList>
                         
                         {mappedWireframes.map((wireframe) => (
-                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-3">
-                            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
-                              <div>
-                                <h4 className="font-medium text-sm text-gray-900">
-                                  {wireframe.pageName}
-                                </h4>
-                                <p className="text-xs text-gray-500">
-                                  {new Date(wireframe.createdAt).toLocaleDateString()}
-                                </p>
+                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-4">
+                            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-3">
+                                  <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
+                                    <ExternalLink className="h-4 w-4 text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                      {wireframe.pageName}
+                                    </h4>
+                                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
+                                      Created {new Date(wireframe.createdAt).toLocaleDateString()}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-4 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                                    onClick={() => openWireframePreview(wireframe)}
+                                  >
+                                    <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                                    Preview
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 px-4 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all duration-200"
+                                    onClick={() => downloadWireframe(wireframe)}
+                                  >
+                                    <Download className="h-3.5 w-3.5 mr-2" />
+                                    Download
+                                  </Button>
+                                </div>
                               </div>
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 px-3"
-                                  onClick={() => openWireframePreview(wireframe)}
-                                >
-                                  <ExternalLink className="h-3 w-3 mr-1" />
-                                  Preview
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 px-3"
-                                  onClick={() => downloadWireframe(wireframe)}
-                                >
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Download
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            {/* Compact Wireframe Preview */}
-                            <div className={`border rounded-lg overflow-hidden shadow-sm ${
-                              viewMode === "mobile" 
-                                ? "max-w-xs mx-auto" 
-                                : "w-full"
-                            }`}>
-                              <iframe
-                                srcDoc={wireframe.htmlContent}
-                                className={`w-full border-0 ${
+                              
+                              {/* Modern Wireframe Preview */}
+                              <div className={`relative group ${
+                                viewMode === "mobile" 
+                                  ? "max-w-sm mx-auto" 
+                                  : "w-full"
+                              }`}>
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl blur-sm opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                                <div className={`relative border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white ${
                                   viewMode === "mobile" 
-                                    ? "h-80" 
-                                    : "h-96"
-                                }`}
-                                title={wireframe.pageName}
-                              />
+                                    ? "aspect-[9/16]" 
+                                    : "aspect-[16/10]"
+                                }`}>
+                                  <div className="absolute top-0 left-0 right-0 h-8 bg-gray-50 border-b border-gray-200 flex items-center justify-center">
+                                    <div className="flex gap-1.5">
+                                      <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                    </div>
+                                  </div>
+                                  <iframe
+                                    srcDoc={wireframe.htmlContent}
+                                    className="w-full h-full border-0 pt-8"
+                                    title={wireframe.pageName}
+                                  />
+                                </div>
+                              </div>
                             </div>
                           </TabsContent>
                         ))}
@@ -870,14 +910,25 @@ export function FlowWireframeMappingPage() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <Card className="border-l-4 border-l-gray-300">
-                    <CardContent className="py-8">
-                      <div className="text-center text-gray-500">
-                        <Code className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                        <p className="text-sm">No wireframes mapped to this flow</p>
-                        <p className="text-xs mt-1 text-gray-400">
-                          Generate wireframes to see them here
+                  <Card className="border-2 border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-300 transition-all duration-300">
+                    <CardContent className="py-12">
+                      <div className="text-center">
+                        <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
+                          <Code className="h-8 w-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                          No wireframes mapped
+                        </h3>
+                        <p className="text-gray-500 mb-4 max-w-sm mx-auto">
+                          This process flow doesn't have any UI wireframes connected yet. Generate wireframes to see them here.
                         </p>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="border-dashed border-gray-300 text-gray-600 hover:bg-gray-50"
+                        >
+                          Generate Wireframes
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -885,14 +936,26 @@ export function FlowWireframeMappingPage() {
               })()}
             </>
           ) : (
-            <Card className="border-l-4 border-l-gray-300">
-              <CardContent className="py-8">
-                <div className="text-center text-gray-500">
-                  <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-                  <p className="text-sm">Select a process flow to view details</p>
-                  <p className="text-xs mt-1 text-gray-400">
-                    Choose from the flows on the left
+            <Card className="border-2 border-dashed border-gray-200 bg-gradient-to-br from-slate-50 to-gray-50 hover:border-gray-300 transition-all duration-300">
+              <CardContent className="py-16">
+                <div className="text-center">
+                  <div className="relative mb-6">
+                    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full w-fit mx-auto">
+                      <MapPin className="h-10 w-10 text-blue-400" />
+                    </div>
+                    <div className="absolute top-0 right-0 w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                    Ready to explore your flows
+                  </h3>
+                  <p className="text-gray-500 mb-4 max-w-md mx-auto leading-relaxed">
+                    Select any process flow from the left panel to view its details, diagrams, and connected wireframes.
                   </p>
+                  <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                    <span>Choose a flow to get started</span>
+                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -900,39 +963,111 @@ export function FlowWireframeMappingPage() {
         </div>
       </div>
 
-      {/* Compact Summary Statistics */}
-      <Card className="border-l-4 border-l-purple-500">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Layers className="h-4 w-4 text-purple-600" />
-            Project Overview
+      {/* Modern Summary Statistics */}
+      <Card className="border border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+        <CardHeader className="pb-4 bg-white/90 backdrop-blur-sm">
+          <CardTitle className="flex items-center gap-3 text-xl font-semibold">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Layers className="h-5 w-5 text-purple-600" />
+            </div>
+            <div>
+              <span className="text-gray-900">Project Analytics</span>
+              <div className="text-sm font-normal text-purple-600">
+                Comprehensive project overview
+              </div>
+            </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
-            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-              <div className="text-xl font-bold text-blue-600">{allData.flows.length}</div>
-              <div className="text-xs text-blue-700">Flows</div>
+        <CardContent className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-blue-100 hover:shadow-md hover:border-blue-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-blue-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {allData.flows.length}
+                </div>
+                <div className="text-xs font-medium text-blue-700 uppercase tracking-wide">
+                  Process Flows
+                </div>
+                <div className="mt-2 h-1 bg-blue-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.flows.length / 10) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-              <div className="text-xl font-bold text-green-600">{allData.wireframes.length}</div>
-              <div className="text-xs text-green-700">Wireframes</div>
+
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-green-100 hover:shadow-md hover:border-green-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-green-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {allData.wireframes.length}
+                </div>
+                <div className="text-xs font-medium text-green-700 uppercase tracking-wide">
+                  UI Wireframes
+                </div>
+                <div className="mt-2 h-1 bg-green-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.wireframes.length / 10) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
-              <div className="text-xl font-bold text-purple-600">{allData.projects.length}</div>
-              <div className="text-xs text-purple-700">Projects</div>
+
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-purple-100 hover:shadow-md hover:border-purple-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-purple-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {allData.projects.length}
+                </div>
+                <div className="text-xs font-medium text-purple-700 uppercase tracking-wide">
+                  Projects
+                </div>
+                <div className="mt-2 h-1 bg-purple-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.projects.length / 5) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
-              <div className="text-xl font-bold text-indigo-600">{allData.userStories.length}</div>
-              <div className="text-xs text-indigo-700">Stories</div>
+
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-indigo-100 hover:shadow-md hover:border-indigo-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-indigo-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {allData.userStories.length}
+                </div>
+                <div className="text-xs font-medium text-indigo-700 uppercase tracking-wide">
+                  User Stories
+                </div>
+                <div className="mt-2 h-1 bg-indigo-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.userStories.length / 5) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-3 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg border border-teal-200">
-              <div className="text-xl font-bold text-teal-600">{allData.brandGuidelines.length}</div>
-              <div className="text-xs text-teal-700">Brands</div>
+
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-teal-100 hover:shadow-md hover:border-teal-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-teal-100 to-teal-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-teal-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {allData.brandGuidelines.length}
+                </div>
+                <div className="text-xs font-medium text-teal-700 uppercase tracking-wide">
+                  Brand Guides
+                </div>
+                <div className="mt-2 h-1 bg-teal-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.brandGuidelines.length / 3) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
-            <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
-              <div className="text-xl font-bold text-orange-600">{mappings.length}</div>
-              <div className="text-xs text-orange-700">Mappings</div>
+
+            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-orange-100 hover:shadow-md hover:border-orange-200 transition-all duration-300">
+              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-bl-3xl opacity-50"></div>
+              <div className="relative">
+                <div className="text-2xl font-bold text-orange-600 mb-1 group-hover:scale-110 transition-transform duration-200">
+                  {mappings.length}
+                </div>
+                <div className="text-xs font-medium text-orange-700 uppercase tracking-wide">
+                  Flow Mappings
+                </div>
+                <div className="mt-2 h-1 bg-orange-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (mappings.length / 5) * 100)}%`}}></div>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
