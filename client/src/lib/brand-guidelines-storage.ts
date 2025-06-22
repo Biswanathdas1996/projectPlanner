@@ -111,7 +111,14 @@ export class BrandGuidelinesStorage {
   static getBrandColors(guideline: StoredBrandGuideline): Array<{name: string, hex: string}> {
     const colors: Array<{name: string, hex: string}> = [];
     
-    for (const section of guideline.brandData.sections) {
+    // Ensure sections is iterable (array) or convert it
+    const sections = Array.isArray(guideline.brandData.sections) 
+      ? guideline.brandData.sections 
+      : guideline.brandData.sections 
+        ? Object.values(guideline.brandData.sections) 
+        : [];
+    
+    for (const section of sections) {
       // Handle new format (content array)
       if (section.content) {
         for (const contentItem of section.content) {
@@ -141,7 +148,14 @@ export class BrandGuidelinesStorage {
   static getBrandFonts(guideline: StoredBrandGuideline): Array<{name: string, type?: string}> {
     const fonts: Array<{name: string, type?: string}> = [];
     
-    for (const section of guideline.brandData.sections) {
+    // Ensure sections is iterable (array) or convert it
+    const sections = Array.isArray(guideline.brandData.sections) 
+      ? guideline.brandData.sections 
+      : guideline.brandData.sections 
+        ? Object.values(guideline.brandData.sections) 
+        : [];
+    
+    for (const section of sections) {
       // Handle new format (content array)
       if (section.content) {
         for (const contentItem of section.content) {
