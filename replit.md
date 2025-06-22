@@ -165,6 +165,8 @@ Changelog:
   - Added comprehensive error handling and fallback text for flow diagram capture failures
   - Implemented fullscreen capture approach for flow diagrams to ensure complete visibility in PDF exports
   - System temporarily makes flow diagrams fullscreen, captures high-quality screenshots, then restores original layout
+  - Created custom canvas rendering system for flow diagrams to bypass DOM capture issues
+  - Flow diagrams now render directly from stored data with exact colors, shapes, and connections in PDF exports
 ```
 
 ## User Preferences
