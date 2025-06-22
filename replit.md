@@ -127,6 +127,8 @@ Changelog:
   - Progress tracking includes current/total count and current page being processed
   - Fixed undefined length errors with comprehensive null checks and optional chaining
   - Fixed "sections is not iterable" error by handling object/array data structure variations
+  - Updated regenerateWireframe function to use same Gemini-based logic as Generate Brand Wireframes
+  - Both generation methods now use identical AI prompting and response parsing for consistency
 ```
 
 ## User Preferences

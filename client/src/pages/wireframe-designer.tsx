@@ -17,6 +17,7 @@ import { createPreciseElementEnhancer, type PreciseElementRequest } from "@/lib/
 import { createPageContentAgent, type PageContentCard } from "@/lib/page-content-agent";
 import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // External API Brand Data Interface
 interface ExternalBrandData {
@@ -1871,27 +1872,75 @@ export default function WireframeDesigner() {
     }
 
     setIsGeneratingWireframes(true);
-    setWireframeGenerationProgress({ current: 1, total: 1, currentPage: pageName });
+    setWireframeGenerationProgress({ current: 0, total: 1, currentPage: pageName });
 
     try {
-      const brandGenerator = createBrandAwareWireframeGenerator();
-      const request: BrandedWireframeRequest = {
-        pageContent: pageCard,
-        designStyle: selectedDesignType,
-        deviceType: selectedDeviceType,
-        brandGuidelines
-      };
-
       console.log('Regenerating wireframe with logo variants for:', pageName);
-      const result = await brandGenerator.generateBrandedWireframe(request);
+      console.log('Generating branded wireframe for:', pageName);
+      
+      // Initialize Gemini AI (same as Generate Brand Wireframes)
+      const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      // Update progress
+      setWireframeGenerationProgress({ current: 0, total: 1, currentPage: pageName });
+      
+      // Combine page content with brand guidelines (same as Generate Brand Wireframes)
+      const combinedPrompt = `You are a senior web developer creating a brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
+
+PAGE CONTENT:
+${JSON.stringify({
+  pageName: pageCard.pageName,
+  pageType: pageCard.pageType,
+  purpose: pageCard.purpose,
+  stakeholders: pageCard.stakeholders,
+  headers: pageCard.headers || [],
+  buttons: pageCard.buttons || [],
+  forms: pageCard.forms || [],
+  lists: pageCard.lists || [],
+  navigation: pageCard.navigation || [],
+  additionalContent: pageCard.additionalContent || []
+}, null, 2)}
+
+BRAND GUIDELINES:
+${JSON.stringify(brandGuidelines, null, 2)}
+
+REQUIREMENTS:
+1. Create a complete HTML document with embedded CSS and JavaScript
+2. Use the brand colors, fonts, and styling from the guidelines
+3. Implement all page elements (headers, buttons, forms, lists, navigation)
+4. Make it responsive and modern
+5. Add interactive JavaScript for forms and buttons
+6. Follow the brand's visual identity strictly
+7. Use semantic HTML5 elements
+8. Ensure accessibility (ARIA labels, proper contrast)
+9. Include hover effects and transitions
+10. Make forms functional with validation
+
+RESPONSE FORMAT:
+Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Do not include any explanations or markdown formatting.`;
+
+      const result = await model.generateContent(combinedPrompt);
+      const response = result.response.text();
+      
+      console.log(`Generated wireframe for ${pageName}, length: ${response.length}`);
+
+      // Extract HTML, CSS, and JS from response (same as Generate Brand Wireframes)
+      const htmlMatch = response.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
+      const cssMatch = response.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+      const jsMatch = response.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+
+      const htmlCode = htmlMatch ? htmlMatch[0] : response;
+      const cssCode = cssMatch ? cssMatch[1] : '';
+      const jsCode = jsMatch ? jsMatch[1] : '';
       
       const newWireframe = {
         id: `wireframe_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         pageName: pageName,
-        htmlCode: result.html,
-        cssCode: result.css,
-        jsCode: '',
-        brandNotes: result.brandNotes || []
+        htmlCode: htmlCode,
+        cssCode: cssCode,
+        jsCode: jsCode
       };
 
       // Replace existing wireframe with same page name
@@ -1900,11 +1949,14 @@ export default function WireframeDesigner() {
       setGeneratedWireframes(updatedWireframes);
       
       // Save to storage
-      storage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      localStorage.setItem('generated_wireframes', JSON.stringify(updatedWireframes));
+      
+      // Update progress after completion
+      setWireframeGenerationProgress({ current: 1, total: 1, currentPage: pageName });
       
       toast({
         title: "Wireframe Regenerated",
-        description: `${pageName} has been regenerated with enhanced logo variants.`,
+        description: `${pageName} has been regenerated using AI with brand guidelines.`,
       });
     } catch (error) {
       console.error('Error regenerating wireframe:', error);
