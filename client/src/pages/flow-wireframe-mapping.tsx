@@ -303,45 +303,45 @@ export function FlowWireframeMappingPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto p-4 space-y-4">
+      {/* Compact Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <MapPin className="h-8 w-8 text-blue-600" />
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <MapPin className="h-6 w-6 text-blue-600" />
             Flow & Wireframe Mapping
           </h1>
-          <p className="text-gray-600 mt-2">
-            Visualize process flows alongside their corresponding wireframe implementations
+          <p className="text-sm text-gray-600 mt-0.5">
+            Visualize process flows alongside their wireframe implementations
           </p>
         </div>
-        <div className="flex gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Workflow className="h-4 w-4" />
+        <div className="flex flex-wrap gap-1.5">
+          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+            <Workflow className="h-3 w-3" />
             {allData.flows.length} Flows
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Code className="h-4 w-4" />
-            {allData.wireframes.length} Wireframes
+          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+            <Code className="h-3 w-3" />
+            {allData.wireframes.length} UIs
           </Badge>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Layers className="h-4 w-4" />
-            {mappings.length} Mappings
+          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+            <Layers className="h-3 w-3" />
+            {mappings.length} Maps
           </Badge>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Flow Selection Panel */}
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Workflow className="h-5 w-5 text-blue-600" />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Compact Flow Selection Panel */}
+        <Card className="lg:col-span-1 border-l-4 border-l-blue-500">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Workflow className="h-4 w-4 text-blue-600" />
               Process Flows
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 pt-0">
             {allData.flows.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Workflow className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -396,19 +396,19 @@ export function FlowWireframeMappingPage() {
         </Card>
 
         {/* Flow Visualization & Wireframe Details */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4">
           {selectedFlow ? (
             <>
-              {/* Flow Diagram */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Workflow className="h-5 w-5 text-blue-600" />
+              {/* Compact Flow Diagram */}
+              <Card className="border-l-4 border-l-blue-500">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Workflow className="h-4 w-4 text-blue-600" />
                     {selectedFlow.title}
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="h-96 border rounded-lg">
+                <CardContent className="pt-0">
+                  <div className="h-80 border rounded-md overflow-hidden bg-gradient-to-br from-gray-50 to-white">
                     <FlowDiagramViewer
                       flowData={selectedFlow.flowData}
                       title={selectedFlow.title}
@@ -418,96 +418,98 @@ export function FlowWireframeMappingPage() {
                 </CardContent>
               </Card>
 
-              {/* Mapped Wireframes */}
+              {/* Compact Mapped Wireframes */}
               {(() => {
                 const mappedWireframes = getMappedWireframes(selectedFlow.id);
                 
                 return mappedWireframes.length > 0 ? (
-                  <Card>
-                    <CardHeader>
+                  <Card className="border-l-4 border-l-green-500">
+                    <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-2">
-                          <Code className="h-5 w-5 text-green-600" />
-                          Mapped Wireframes ({mappedWireframes.length})
+                        <CardTitle className="flex items-center gap-2 text-lg">
+                          <Code className="h-4 w-4 text-green-600" />
+                          UI Implementations ({mappedWireframes.length})
                         </CardTitle>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1">
                           <Button
                             variant={viewMode === "desktop" ? "default" : "outline"}
                             size="sm"
+                            className="h-8 px-3"
                             onClick={() => setViewMode("desktop")}
                           >
-                            <Monitor className="h-4 w-4 mr-1" />
+                            <Monitor className="h-3 w-3 mr-1" />
                             Desktop
                           </Button>
                           <Button
                             variant={viewMode === "mobile" ? "default" : "outline"}
                             size="sm"
+                            className="h-8 px-3"
                             onClick={() => setViewMode("mobile")}
                           >
-                            <Smartphone className="h-4 w-4 mr-1" />
+                            <Smartphone className="h-3 w-3 mr-1" />
                             Mobile
                           </Button>
                         </div>
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <Tabs defaultValue={mappedWireframes[0]?.id}>
-                        <TabsList className="grid w-full grid-cols-auto">
+                        <TabsList className="grid w-full grid-cols-auto mb-3">
                           {mappedWireframes.map((wireframe) => (
-                            <TabsTrigger key={wireframe.id} value={wireframe.id}>
+                            <TabsTrigger key={wireframe.id} value={wireframe.id} className="text-xs">
                               {wireframe.pageName}
                             </TabsTrigger>
                           ))}
                         </TabsList>
                         
                         {mappedWireframes.map((wireframe) => (
-                          <TabsContent key={wireframe.id} value={wireframe.id}>
-                            <div className="space-y-4">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <h4 className="font-semibold text-gray-900">
-                                    {wireframe.pageName}
-                                  </h4>
-                                  <p className="text-sm text-gray-500">
-                                    Generated: {new Date(wireframe.createdAt).toLocaleDateString()}
-                                  </p>
-                                </div>
-                                <div className="flex gap-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => openWireframePreview(wireframe)}
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-1" />
-                                    Preview
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => downloadWireframe(wireframe)}
-                                  >
-                                    <Download className="h-4 w-4 mr-1" />
-                                    Download
-                                  </Button>
-                                </div>
+                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-3">
+                            <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                              <div>
+                                <h4 className="font-medium text-sm text-gray-900">
+                                  {wireframe.pageName}
+                                </h4>
+                                <p className="text-xs text-gray-500">
+                                  {new Date(wireframe.createdAt).toLocaleDateString()}
+                                </p>
                               </div>
-                              
-                              {/* Wireframe Preview */}
-                              <div className={`border rounded-lg ${
-                                viewMode === "mobile" 
-                                  ? "max-w-sm mx-auto" 
-                                  : "w-full"
-                              }`}>
-                                <iframe
-                                  srcDoc={wireframe.htmlContent}
-                                  className={`w-full border-0 rounded-lg ${
-                                    viewMode === "mobile" 
-                                      ? "h-96" 
-                                      : "h-[500px]"
-                                  }`}
-                                  title={wireframe.pageName}
-                                />
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-3"
+                                  onClick={() => openWireframePreview(wireframe)}
+                                >
+                                  <ExternalLink className="h-3 w-3 mr-1" />
+                                  Preview
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-3"
+                                  onClick={() => downloadWireframe(wireframe)}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
                               </div>
+                            </div>
+                            
+                            {/* Compact Wireframe Preview */}
+                            <div className={`border rounded-lg overflow-hidden shadow-sm ${
+                              viewMode === "mobile" 
+                                ? "max-w-xs mx-auto" 
+                                : "w-full"
+                            }`}>
+                              <iframe
+                                srcDoc={wireframe.htmlContent}
+                                className={`w-full border-0 ${
+                                  viewMode === "mobile" 
+                                    ? "h-80" 
+                                    : "h-96"
+                                }`}
+                                title={wireframe.pageName}
+                              />
                             </div>
                           </TabsContent>
                         ))}
@@ -515,13 +517,13 @@ export function FlowWireframeMappingPage() {
                     </CardContent>
                   </Card>
                 ) : (
-                  <Card>
-                    <CardContent className="py-12">
+                  <Card className="border-l-4 border-l-gray-300">
+                    <CardContent className="py-8">
                       <div className="text-center text-gray-500">
-                        <Code className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                        <p>No wireframes mapped to this flow</p>
-                        <p className="text-sm mt-1">
-                          Generate wireframes in the Wireframe Designer to see them here
+                        <Code className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                        <p className="text-sm">No wireframes mapped to this flow</p>
+                        <p className="text-xs mt-1 text-gray-400">
+                          Generate wireframes to see them here
                         </p>
                       </div>
                     </CardContent>
@@ -530,13 +532,13 @@ export function FlowWireframeMappingPage() {
               })()}
             </>
           ) : (
-            <Card>
-              <CardContent className="py-12">
+            <Card className="border-l-4 border-l-gray-300">
+              <CardContent className="py-8">
                 <div className="text-center text-gray-500">
-                  <MapPin className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                  <p>Select a process flow to view details</p>
-                  <p className="text-sm mt-1">
-                    Choose from the flows on the left to see mapped wireframes
+                  <MapPin className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">Select a process flow to view details</p>
+                  <p className="text-xs mt-1 text-gray-400">
+                    Choose from the flows on the left
                   </p>
                 </div>
               </CardContent>
@@ -545,39 +547,39 @@ export function FlowWireframeMappingPage() {
         </div>
       </div>
 
-      {/* Summary Statistics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Layers className="h-5 w-5 text-purple-600" />
-            Mapping Summary
+      {/* Compact Summary Statistics */}
+      <Card className="border-l-4 border-l-purple-500">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Layers className="h-4 w-4 text-purple-600" />
+            Project Overview
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{allData.flows.length}</div>
-              <div className="text-sm text-blue-700">Process Flows</div>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+              <div className="text-xl font-bold text-blue-600">{allData.flows.length}</div>
+              <div className="text-xs text-blue-700">Flows</div>
             </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{allData.wireframes.length}</div>
-              <div className="text-sm text-green-700">Wireframes</div>
+            <div className="text-center p-3 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
+              <div className="text-xl font-bold text-green-600">{allData.wireframes.length}</div>
+              <div className="text-xs text-green-700">Wireframes</div>
             </div>
-            <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{allData.projects.length}</div>
-              <div className="text-sm text-purple-700">Projects</div>
+            <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <div className="text-xl font-bold text-purple-600">{allData.projects.length}</div>
+              <div className="text-xs text-purple-700">Projects</div>
             </div>
-            <div className="text-center p-4 bg-indigo-50 rounded-lg">
-              <div className="text-2xl font-bold text-indigo-600">{allData.userStories.length}</div>
-              <div className="text-sm text-indigo-700">User Stories</div>
+            <div className="text-center p-3 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg border border-indigo-200">
+              <div className="text-xl font-bold text-indigo-600">{allData.userStories.length}</div>
+              <div className="text-xs text-indigo-700">Stories</div>
             </div>
-            <div className="text-center p-4 bg-teal-50 rounded-lg">
-              <div className="text-2xl font-bold text-teal-600">{allData.brandGuidelines.length}</div>
-              <div className="text-sm text-teal-700">Brand Guidelines</div>
+            <div className="text-center p-3 bg-gradient-to-br from-teal-50 to-teal-100 rounded-lg border border-teal-200">
+              <div className="text-xl font-bold text-teal-600">{allData.brandGuidelines.length}</div>
+              <div className="text-xs text-teal-700">Brands</div>
             </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{mappings.length}</div>
-              <div className="text-sm text-orange-700">Active Mappings</div>
+            <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg border border-orange-200">
+              <div className="text-xl font-bold text-orange-600">{mappings.length}</div>
+              <div className="text-xs text-orange-700">Mappings</div>
             </div>
           </div>
         </CardContent>
