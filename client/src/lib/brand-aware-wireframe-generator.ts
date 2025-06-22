@@ -13,23 +13,25 @@ export interface BrandedWireframeResponse {
 
 export interface ExternalBrandData {
     brand: string;
-    date: string;
+    guide_date?: string;
+    guide_title?: string;
     sections: Array<{
-        title: string;
-        items: Array<{
+        title?: string;
+        content?: Array<{
+            subtitle: string;
+            details: string;
+            colors?: { [key: string]: { HEX: string; CMYK?: string; RGB?: string } };
+            fonts?: Array<{ name: string; type?: string; weight?: string }>;
+        }>;
+        items?: Array<{
             title: string;
             description: string;
-            colors?: Array<{
-                name: string;
-                hex: string;
-                cmyk?: string;
-                rgb?: string;
-            }>;
-            fonts?: Array<{
-                name: string;
-                type?: string;
-                weight?: string;
-            }>;
+            colors?: { [key: string]: { HEX: string; CMYK?: string; RGB?: string } };
+            fonts?: Array<{ name: string; type?: string; weight?: string }>;
+        }>;
+        assets?: Array<{
+            name: string;
+            url: string;
         }>;
     }>;
 }
@@ -72,7 +74,8 @@ export class BrandAwareWireframeGenerator {
 
         return {
             brand: guidelines.brand || "Brand",
-            date: guidelines.date || new Date().toISOString(),
+            guide_date: guidelines.guide_date || new Date().toISOString(),
+            guide_title: guidelines.guide_title,
             sections: guidelines.sections || []
         };
     }
@@ -503,37 +506,74 @@ body {
             background: '#ffffff'
         };
 
-        // Extract colors from sections
+        // Extract colors from sections - handle both old and new API formats
         for (const section of brandData.sections) {
-            for (const item of section.items) {
-                if (item.colors && item.colors.length > 0) {
-                    const colorList = item.colors;
-                    
-                    // Find primary color (usually first non-white color)
-                    const primaryColor = colorList.find(c => 
-                        c.hex && c.hex.toLowerCase() !== '#ffffff' && c.hex.toLowerCase() !== '#fff'
-                    );
-                    if (primaryColor) {
-                        colors.primary = primaryColor.hex;
-                    }
-                    
-                    // Find secondary color (second color or a lighter variant)
-                    if (colorList.length > 1) {
-                        const secondaryColor = colorList[1];
-                        if (secondaryColor && secondaryColor.hex) {
-                            colors.secondary = secondaryColor.hex;
+            // Check content array (new format)
+            if (section.content) {
+                for (const contentItem of section.content) {
+                    if (contentItem.colors) {
+                        const colorEntries = Object.entries(contentItem.colors);
+                        if (colorEntries.length > 0) {
+                            // Find primary color (first non-white color)
+                            const primaryColorEntry = colorEntries.find(([name, colorData]) => 
+                                colorData.HEX && colorData.HEX.toLowerCase() !== '#ffffff' && colorData.HEX.toLowerCase() !== '#fff'
+                            );
+                            if (primaryColorEntry) {
+                                colors.primary = primaryColorEntry[1].HEX;
+                            }
+                            
+                            // Find secondary color (second color)
+                            if (colorEntries.length > 1) {
+                                const secondaryColorEntry = colorEntries[1];
+                                if (secondaryColorEntry && secondaryColorEntry[1].HEX) {
+                                    colors.secondary = secondaryColorEntry[1].HEX;
+                                }
+                            }
+                            
+                            // Find background color (white color)
+                            const bgColorEntry = colorEntries.find(([name, colorData]) => 
+                                colorData.HEX && (colorData.HEX.toLowerCase() === '#ffffff' || colorData.HEX.toLowerCase() === '#fff')
+                            );
+                            if (bgColorEntry) {
+                                colors.background = bgColorEntry[1].HEX;
+                            }
+                            
+                            break; // Use first color set found
                         }
                     }
-                    
-                    // Find background color (white or light color)
-                    const bgColor = colorList.find(c => 
-                        c.hex && (c.hex.toLowerCase() === '#ffffff' || c.hex.toLowerCase() === '#fff')
-                    );
-                    if (bgColor) {
-                        colors.background = bgColor.hex;
+                }
+            }
+            
+            // Check items array (old format compatibility)
+            if (section.items) {
+                for (const item of section.items) {
+                    if (item.colors) {
+                        const colorEntries = Object.entries(item.colors);
+                        if (colorEntries.length > 0) {
+                            const primaryColorEntry = colorEntries.find(([name, colorData]) => 
+                                colorData.HEX && colorData.HEX.toLowerCase() !== '#ffffff' && colorData.HEX.toLowerCase() !== '#fff'
+                            );
+                            if (primaryColorEntry) {
+                                colors.primary = primaryColorEntry[1].HEX;
+                            }
+                            
+                            if (colorEntries.length > 1) {
+                                const secondaryColorEntry = colorEntries[1];
+                                if (secondaryColorEntry && secondaryColorEntry[1].HEX) {
+                                    colors.secondary = secondaryColorEntry[1].HEX;
+                                }
+                            }
+                            
+                            const bgColorEntry = colorEntries.find(([name, colorData]) => 
+                                colorData.HEX && (colorData.HEX.toLowerCase() === '#ffffff' || colorData.HEX.toLowerCase() === '#fff')
+                            );
+                            if (bgColorEntry) {
+                                colors.background = bgColorEntry[1].HEX;
+                            }
+                            
+                            break;
+                        }
                     }
-                    
-                    break; // Use first color set found
                 }
             }
         }
@@ -547,21 +587,43 @@ body {
             secondary: 'Arial, sans-serif'
         };
 
-        // Extract fonts from sections
+        // Extract fonts from sections - handle both old and new API formats
         for (const section of brandData.sections) {
-            for (const item of section.items) {
-                if (item.fonts && item.fonts.length > 0) {
-                    const fontList = item.fonts;
-                    
-                    if (fontList[0] && fontList[0].name) {
-                        fonts.primary = `"${fontList[0].name}", sans-serif`;
+            // Check content array (new format)
+            if (section.content) {
+                for (const contentItem of section.content) {
+                    if (contentItem.fonts && contentItem.fonts.length > 0) {
+                        const fontList = contentItem.fonts;
+                        
+                        if (fontList[0] && fontList[0].name) {
+                            fonts.primary = `"${fontList[0].name}", sans-serif`;
+                        }
+                        
+                        if (fontList.length > 1 && fontList[1].name) {
+                            fonts.secondary = `"${fontList[1].name}", sans-serif`;
+                        }
+                        
+                        break; // Use first font set found
                     }
-                    
-                    if (fontList.length > 1 && fontList[1].name) {
-                        fonts.secondary = `"${fontList[1].name}", sans-serif`;
+                }
+            }
+            
+            // Check items array (old format compatibility)
+            if (section.items) {
+                for (const item of section.items) {
+                    if (item.fonts && item.fonts.length > 0) {
+                        const fontList = item.fonts;
+                        
+                        if (fontList[0] && fontList[0].name) {
+                            fonts.primary = `"${fontList[0].name}", sans-serif`;
+                        }
+                        
+                        if (fontList.length > 1 && fontList[1].name) {
+                            fonts.secondary = `"${fontList[1].name}", sans-serif`;
+                        }
+                        
+                        break; // Use first font set found
                     }
-                    
-                    break; // Use first font set found
                 }
             }
         }
@@ -573,14 +635,31 @@ body {
         const notes: string[] = [];
         
         notes.push(`Generated wireframe for ${brandData.brand}`);
+        if (brandData.guide_title) {
+            notes.push(`Based on ${brandData.guide_title}`);
+        }
         
-        // Extract brand guidelines notes
+        // Extract brand guidelines notes from both formats
         for (const section of brandData.sections) {
-            notes.push(`${section.title} guidelines applied`);
+            if (section.title) {
+                notes.push(`${section.title} guidelines applied`);
+            }
             
-            for (const item of section.items) {
-                if (item.description) {
-                    notes.push(`${item.title}: ${item.description.substring(0, 100)}...`);
+            // Handle new format (content array)
+            if (section.content) {
+                for (const contentItem of section.content) {
+                    if (contentItem.details) {
+                        notes.push(`${contentItem.subtitle}: ${contentItem.details.substring(0, 100)}...`);
+                    }
+                }
+            }
+            
+            // Handle old format (items array)
+            if (section.items) {
+                for (const item of section.items) {
+                    if (item.description) {
+                        notes.push(`${item.title}: ${item.description.substring(0, 100)}...`);
+                    }
                 }
             }
         }

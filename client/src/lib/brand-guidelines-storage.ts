@@ -4,13 +4,23 @@ export interface ExternalBrandJSON {
   guide_date?: string;
   guide_title?: string;
   sections: Array<{
-    title: string;
-    items: Array<{
+    title?: string;
+    content?: Array<{
+      subtitle: string;
+      details: string;
+      colors?: { [key: string]: { HEX: string; CMYK?: string; RGB?: string } };
+      fonts?: Array<{ name: string; type?: string; weight?: string }>;
+    }>;
+    items?: Array<{
       title: string;
       description: string;
       colors?: { [key: string]: { HEX: string; CMYK?: string; RGB?: string } };
       fonts?: Array<{ name: string; type?: string; weight?: string }>;
       types?: string[];
+    }>;
+    assets?: Array<{
+      name: string;
+      url: string;
     }>;
   }>;
 }
@@ -102,11 +112,25 @@ export class BrandGuidelinesStorage {
     const colors: Array<{name: string, hex: string}> = [];
     
     for (const section of guideline.brandData.sections) {
-      for (const item of section.items) {
-        if (item.colors) {
-          Object.entries(item.colors).forEach(([name, colorData]) => {
-            colors.push({ name, hex: colorData.HEX });
-          });
+      // Handle new format (content array)
+      if (section.content) {
+        for (const contentItem of section.content) {
+          if (contentItem.colors) {
+            Object.entries(contentItem.colors).forEach(([name, colorData]) => {
+              colors.push({ name, hex: colorData.HEX });
+            });
+          }
+        }
+      }
+      
+      // Handle old format (items array)
+      if (section.items) {
+        for (const item of section.items) {
+          if (item.colors) {
+            Object.entries(item.colors).forEach(([name, colorData]) => {
+              colors.push({ name, hex: colorData.HEX });
+            });
+          }
         }
       }
     }
@@ -118,9 +142,21 @@ export class BrandGuidelinesStorage {
     const fonts: Array<{name: string, type?: string}> = [];
     
     for (const section of guideline.brandData.sections) {
-      for (const item of section.items) {
-        if (item.fonts) {
-          fonts.push(...item.fonts);
+      // Handle new format (content array)
+      if (section.content) {
+        for (const contentItem of section.content) {
+          if (contentItem.fonts) {
+            fonts.push(...contentItem.fonts);
+          }
+        }
+      }
+      
+      // Handle old format (items array)
+      if (section.items) {
+        for (const item of section.items) {
+          if (item.fonts) {
+            fonts.push(...item.fonts);
+          }
         }
       }
     }
