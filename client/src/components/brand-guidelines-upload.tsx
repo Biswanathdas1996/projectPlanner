@@ -183,7 +183,7 @@ export function BrandGuidelinesUpload({
   };
 
   const generateBrandAwareWireframes = async () => {
-    if (!brandGuidelines) return;
+    if (!brandGuidelines || !pageContentCards || pageContentCards.length === 0) return;
 
     setIsGeneratingWireframes(true);
     setWireframeProgress({ current: 0, total: pageContentCards.length, currentPage: '' });
@@ -508,7 +508,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               <div className="flex gap-2">
                 <Button
                   onClick={generateBrandAwareWireframes}
-                  disabled={!brandGuidelines || isGeneratingWireframes}
+                  disabled={!brandGuidelines || isGeneratingWireframes || !pageContentCards || pageContentCards.length === 0}
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-1"
