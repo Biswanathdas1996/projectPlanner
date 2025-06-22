@@ -127,6 +127,8 @@ Changelog:
   - Progress tracking includes current/total count and current page being processed
   - Fixed undefined length errors with comprehensive null checks and optional chaining
   - Fixed "sections is not iterable" error by handling object/array data structure variations
+  - Enhanced prompt with modern design elements: cards, backgrounds, textures, animations
+  - Added comprehensive brand compliance instructions for professional wireframe output
 ```
 
 ## User Preferences
