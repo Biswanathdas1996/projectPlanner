@@ -866,110 +866,59 @@ export function FlowWireframeMappingPage() {
                         const index = mappedWireframes.findIndex(w => w.id === value);
                         if (index !== -1) setActiveTabIndex(index);
                       }} className="space-y-6">
-                        <div className="relative mb-2">
-                          {/* Tabs Navigation with enhanced UX */}
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-lg">
-                                <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
-                              </div>
-                              <div>
-                                <h5 className="font-semibold text-gray-900">Wireframe Gallery</h5>
-                                <p className="text-xs text-gray-500">{mappedWireframes.length} implementation{mappedWireframes.length !== 1 ? 's' : ''} available</p>
-                              </div>
-                            </div>
-                            <div className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-                              Tab to switch
-                            </div>
+                        <div className="relative">
+                          {/* Compact Tabs Header */}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-gray-600">{mappedWireframes.length} wireframe{mappedWireframes.length !== 1 ? 's' : ''}</span>
+                            <div className="text-xs text-gray-400">Use ← → to navigate</div>
                           </div>
 
-                          <TabsList className="flex w-full bg-white/90 backdrop-blur-sm p-1 rounded-2xl shadow-lg border border-gray-200/60 relative overflow-hidden">
-                            {/* Animated background indicator */}
-                            <div className="absolute inset-1 bg-gradient-to-r from-blue-50/40 to-indigo-50/40 rounded-xl transition-all duration-500"></div>
+                          <TabsList className="flex w-full bg-white/90 backdrop-blur-sm p-0.5 rounded-xl shadow-md border border-gray-200/50 relative overflow-hidden">
+                            {/* Subtle background indicator */}
+                            <div className="absolute inset-0.5 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-lg transition-all duration-300"></div>
                             
                             {mappedWireframes.map((wireframe, index) => (
                               <TabsTrigger 
                                 key={wireframe.id} 
                                 value={wireframe.id} 
-                                className="relative flex-1 text-sm font-medium px-4 py-3.5 rounded-xl transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-white data-[state=active]:to-gray-50 data-[state=active]:shadow-lg data-[state=active]:shadow-blue-100/50 data-[state=active]:scale-[1.02] data-[state=active]:z-20 hover:bg-white/60 hover:scale-[1.01] group cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:ring-offset-2"
+                                className="relative flex-1 text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:z-10 hover:bg-white/60 group cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400"
                                 tabIndex={0}
                               >
-                                <div className="flex flex-col items-center gap-2 relative z-10">
-                                  {/* Enhanced status indicator with better visual hierarchy */}
-                                  <div className="relative flex items-center gap-2">
-                                    <div className="relative">
-                                      <div className={`w-3 h-3 rounded-full shadow-md transition-all duration-300 ${
-                                        index === activeTabIndex 
-                                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-200/60 scale-110' 
-                                          : 'bg-gradient-to-br from-emerald-400 to-green-500'
-                                      }`}></div>
-                                      <div className={`absolute inset-0 w-3 h-3 rounded-full transition-all duration-300 ${
-                                        index === activeTabIndex 
-                                          ? 'bg-gradient-to-br from-blue-500 to-indigo-600 animate-ping opacity-30'
-                                          : 'bg-gradient-to-br from-emerald-400 to-green-500 animate-ping opacity-0 group-data-[state=active]:opacity-30'
-                                      }`}></div>
-                                    </div>
-                                    {/* Active indicator badge with pulse animation */}
-                                    <div className={`transition-all duration-300 ${
-                                      index === activeTabIndex ? 'opacity-100' : 'opacity-0'
-                                    }`}>
-                                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* Enhanced tab text with tooltip support */}
-                                  <div className="text-center" title={wireframe.pageName}>
-                                    <span className={`transition-all duration-300 text-xs leading-tight block ${
-                                      index === activeTabIndex 
-                                        ? 'text-gray-900 font-bold' 
-                                        : 'text-gray-700 group-data-[state=active]:text-gray-900 group-data-[state=active]:font-bold'
-                                    }`}>
-                                      {wireframe.pageName.length > 12 
-                                        ? `${wireframe.pageName.substring(0, 12)}...` 
-                                        : wireframe.pageName
-                                      }
-                                    </span>
-                                    <div className={`mt-1 transition-all duration-300 ${
-                                      index === activeTabIndex ? 'opacity-100' : 'opacity-0 group-data-[state=active]:opacity-100'
-                                    }`}>
-                                      <div className="h-0.5 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full transform transition-transform duration-300 scale-x-100"></div>
-                                    </div>
-                                    {/* Subtle metadata display */}
-                                    <div className={`text-xs text-gray-400 mt-0.5 transition-all duration-300 ${
-                                      index === activeTabIndex ? 'opacity-100' : 'opacity-0'
-                                    }`}>
-                                      {new Date(wireframe.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                    </div>
-                                  </div>
-
-                                  {/* Enhanced number indicator with better styling */}
-                                  <div className={`absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br text-white text-xs rounded-full flex items-center justify-center transition-all duration-300 shadow-md font-semibold ${
+                                <div className="flex items-center gap-2 relative z-10">
+                                  {/* Compact status indicator */}
+                                  <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
                                     index === activeTabIndex 
-                                      ? 'from-blue-500 to-indigo-600 opacity-100 scale-110' 
-                                      : 'from-gray-400 to-gray-500 opacity-0 group-data-[state=active]:opacity-100'
+                                      ? 'bg-blue-500 shadow-sm' 
+                                      : 'bg-green-400'
+                                  }`}></div>
+                                  
+                                  {/* Compact tab text */}
+                                  <span className={`transition-all duration-200 text-xs leading-tight truncate ${
+                                    index === activeTabIndex 
+                                      ? 'text-gray-900 font-semibold' 
+                                      : 'text-gray-700 group-data-[state=active]:text-gray-900'
+                                  }`} title={wireframe.pageName}>
+                                    {wireframe.pageName.length > 10 
+                                      ? `${wireframe.pageName.substring(0, 10)}...` 
+                                      : wireframe.pageName
+                                    }
+                                  </span>
+
+                                  {/* Compact number indicator */}
+                                  <div className={`w-4 h-4 bg-gradient-to-br text-white text-xs rounded-full flex items-center justify-center transition-all duration-200 font-medium ${
+                                    index === activeTabIndex 
+                                      ? 'from-blue-500 to-indigo-600 opacity-100' 
+                                      : 'from-gray-400 to-gray-500 opacity-60 group-data-[state=active]:opacity-100'
                                   }`}>
                                     {index + 1}
                                   </div>
                                 </div>
 
-                                {/* Enhanced hover and focus effects */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-100/20 to-indigo-100/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-200/10 to-purple-200/10 rounded-xl opacity-0 group-focus:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
+                                {/* Subtle hover effect */}
+                                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
                               </TabsTrigger>
                             ))}
                           </TabsList>
-
-                          {/* Navigation hints */}
-                          <div className="flex items-center justify-between mt-3">
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <div className="w-1 h-1 bg-green-400 rounded-full"></div>
-                              <span>Active wireframes</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-gray-400">
-                              <span>Use ← → keys to navigate</span>
-                              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                            </div>
-                          </div>
                         </div>
                         
                         {mappedWireframes.map((wireframe) => (
