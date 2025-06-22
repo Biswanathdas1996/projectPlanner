@@ -235,6 +235,16 @@ Changelog:
   - Built comprehensive createFallbackConsolidatedFlow with simplified node structure
   - Integrated master flow visualization directly in code generation workflow
   - Users can now visualize consolidated workflows before generating code
+- June 22, 2025. Enhanced AI-Generated Master Flow with Gemini AI integration
+  - Replaced manual flow consolidation with Gemini AI-powered analysis using API key AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM
+  - Implemented comprehensive localStorage workflow extraction capturing ALL flow-related data
+  - Enhanced workflow detection to find flowDetails, flowDiagrams, bpmn-persona-flow-types, and bpmn-stakeholder-flows
+  - Built generateAIConsolidatedFlow function with detailed prompt engineering for 25-35 granular nodes
+  - Added color-coded node categorization and logical positioning requirements
+  - System now loads 18+ workflows from localStorage and analyzes them with Gemini 1.5 Flash
+  - AI creates comprehensive master flow diagrams with specific actionable labels and proper flow connections
+  - Added fallback mechanism to manual consolidation if AI analysis fails
+  - Enhanced error handling and JSON parsing for robust AI response processing
 ```
 
 ## User Preferences

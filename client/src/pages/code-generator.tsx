@@ -109,29 +109,53 @@ export default function CodeGenerator() {
       (data) => data && data.trim()
     );
 
-    // Load flows from localStorage
-    const flowKeys = Object.keys(localStorage).filter(key => 
-      key.startsWith('flowDiagrams') || key.startsWith('sectionFlowDiagrams')
-    );
-    
+    // Load ALL flows from localStorage - comprehensive workflow extraction
     const loadedFlows: ProjectFlow[] = [];
     
-    flowKeys.forEach(key => {
+    // Get all localStorage keys that might contain workflow data
+    const allKeys = Object.keys(localStorage);
+    const workflowKeys = allKeys.filter(key => 
+      key.includes('flow') || key.includes('Flow') || 
+      key.includes('diagram') || key.includes('Diagram') ||
+      key.includes('workflow') || key.includes('Workflow') ||
+      key.includes('process') || key.includes('Process')
+    );
+
+    console.log('Found workflow keys in localStorage:', workflowKeys);
+
+    workflowKeys.forEach(key => {
       try {
-        const data = JSON.parse(localStorage.getItem(key) || '{}');
+        const rawData = localStorage.getItem(key);
+        if (!rawData || rawData.trim() === '') return;
+
+        const data = JSON.parse(rawData);
+        console.log(`Processing ${key}:`, data);
+
+        // Handle different data structures
         if (typeof data === 'object' && data !== null) {
-          Object.keys(data).forEach(subKey => {
-            const flowData = data[subKey];
-            if (flowData && typeof flowData === 'object') {
-              loadedFlows.push(createFlowFromData(subKey, flowData));
-            }
-          });
+          // Case 1: Direct flow data with nodes/edges
+          if (data.nodes && data.edges) {
+            loadedFlows.push(createFlowFromData(key, data));
+          }
+          // Case 2: Object containing multiple flows
+          else if (typeof data === 'object') {
+            Object.keys(data).forEach(subKey => {
+              const flowData = data[subKey];
+              if (flowData && typeof flowData === 'object') {
+                // Check if it has flow structure
+                if (flowData.nodes || flowData.flowData || flowData.title) {
+                  loadedFlows.push(createFlowFromData(`${key}-${subKey}`, flowData));
+                }
+              }
+            });
+          }
         }
       } catch (error) {
         console.error(`Error parsing ${key}:`, error);
       }
     });
 
+    console.log('Total flows loaded:', loadedFlows.length);
     setFlows(loadedFlows);
 
     if (savedProjectPlan) {
@@ -174,9 +198,10 @@ export default function CodeGenerator() {
     setIsGeneratingConsolidatedFlow(true);
     
     try {
-      const masterFlow = createFallbackConsolidatedFlow(flows);
+      // Use Gemini AI to analyze and consolidate all flows
+      const masterFlow = await generateAIConsolidatedFlow(flows);
       const consolidatedFlowData: ProjectFlow = {
-        id: 'consolidated-master-flow',
+        id: 'ai-consolidated-master-flow',
         title: masterFlow.title,
         description: masterFlow.description,
         flowData: masterFlow.flowData,
@@ -186,7 +211,8 @@ export default function CodeGenerator() {
       };
       setConsolidatedFlow(consolidatedFlowData);
     } catch (error) {
-      console.error('Error generating consolidated flow:', error);
+      console.error('Error generating AI consolidated flow:', error);
+      // Fallback to manual consolidation if AI fails
       const fallbackFlow = createFallbackConsolidatedFlow(flows);
       const fallbackFlowData: ProjectFlow = {
         id: 'fallback-master-flow',
@@ -201,6 +227,144 @@ export default function CodeGenerator() {
     } finally {
       setIsGeneratingConsolidatedFlow(false);
     }
+  };
+
+  const generateAIConsolidatedFlow = async (flows: ProjectFlow[]) => {
+    const API_KEY = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+    
+    // Prepare flow data for AI analysis
+    const flowSummaries = flows.map(flow => ({
+      id: flow.id,
+      title: flow.title,
+      description: flow.description,
+      category: flow.category,
+      priority: flow.priority,
+      nodeCount: flow.flowData?.nodes?.length || 0,
+      edgeCount: flow.flowData?.edges?.length || 0,
+      nodes: flow.flowData?.nodes?.map((node: any) => ({
+        id: node.id,
+        label: node.data?.label,
+        type: node.type,
+        position: node.position
+      })) || [],
+      edges: flow.flowData?.edges?.map((edge: any) => ({
+        source: edge.source,
+        target: edge.target,
+        id: edge.id
+      })) || []
+    }));
+
+    const prompt = `Analyze these ${flows.length} application workflows and create a single comprehensive master flow diagram that consolidates all processes into one unified workflow.
+
+INPUT WORKFLOWS:
+${JSON.stringify(flowSummaries, null, 2)}
+
+REQUIREMENTS:
+1. Create 25-35 detailed granular nodes that represent ALL major process steps from all input workflows
+2. Each node should have a specific, actionable label (not generic terms)
+3. Include proper flow connections showing logical sequence and branching
+4. Use appropriate node types: 'input' for start, 'output' for end, 'default' for process steps
+5. Position nodes in a logical grid layout (x increments of 150-200, y increments of 100-150)
+6. Color-code nodes by category:
+   - Start/Trigger: #10B981 (green)
+   - User Actions: #1E88E5 (blue) 
+   - System Processing: #9C27B0 (purple)
+   - Decision Points: #FFC107 (yellow, use black text)
+   - External Services: #FF6B35 (orange)
+   - Mobile Features: #E91E63 (pink)
+   - Web Features: #2196F3 (blue)
+   - Data Operations: #795548 (brown)
+   - Communication: #607D8B (blue-grey)
+   - Completion: #4CAF50 (green)
+
+7. Create meaningful connections between nodes that represent the actual user/system journey
+8. Include parallel paths where users can choose different platforms or approaches
+9. Ensure the flow covers the complete end-to-end process from initial trigger to final completion
+10. Make sure all critical business logic and decision points are represented
+
+RESPONSE FORMAT - Return ONLY valid JSON:
+{
+  "title": "Comprehensive Master Application Flow",
+  "description": "Unified workflow consolidating all application processes and user journeys",
+  "flowData": {
+    "nodes": [
+      {
+        "id": "unique-node-id",
+        "position": {"x": number, "y": number},
+        "data": {"label": "Specific Action Description"},
+        "type": "input|default|output",
+        "style": {"backgroundColor": "#colorcode", "color": "white|black"}
+      }
+    ],
+    "edges": [
+      {
+        "id": "unique-edge-id",
+        "source": "source-node-id",
+        "target": "target-node-id"
+      }
+    ]
+  }
+}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: prompt }]
+        }],
+        generationConfig: {
+          temperature: 0.1,
+          topK: 1,
+          topP: 1,
+          maxOutputTokens: 4000,
+        }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Gemini API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    
+    if (!aiResponse) {
+      throw new Error('No response from Gemini AI');
+    }
+
+    // Clean and parse the AI response
+    const cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, '').trim();
+    let parsedResponse;
+    
+    try {
+      parsedResponse = JSON.parse(cleanResponse);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', cleanResponse);
+      throw new Error('Invalid JSON response from AI');
+    }
+
+    // Validate the response structure
+    if (!parsedResponse.flowData || !parsedResponse.flowData.nodes || !parsedResponse.flowData.edges) {
+      throw new Error('Invalid flow structure from AI');
+    }
+
+    // Ensure all nodes have proper IDs and edges have valid connections
+    const nodeIds = new Set(parsedResponse.flowData.nodes.map((node: any) => node.id));
+    const validEdges = parsedResponse.flowData.edges.filter((edge: any) => 
+      nodeIds.has(edge.source) && nodeIds.has(edge.target)
+    );
+
+    return {
+      title: parsedResponse.title,
+      description: parsedResponse.description,
+      flowData: {
+        nodes: parsedResponse.flowData.nodes,
+        edges: validEdges
+      }
+    };
   };
 
   const createFallbackConsolidatedFlow = (flows: ProjectFlow[]) => {
@@ -631,7 +795,7 @@ export default function CodeGenerator() {
                 <div className="text-sm text-gray-400">
                   {flows.length === 0 
                     ? "No flows available to consolidate. Please generate some flows first."
-                    : `Ready to consolidate ${flows.length} flows into a master diagram.`
+                    : `Ready to consolidate ${flows.length} flows into a master diagram using Gemini AI.`
                   }
                 </div>
               </div>
