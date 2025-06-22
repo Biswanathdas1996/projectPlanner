@@ -254,33 +254,94 @@ export default function CodeGenerator() {
       })) || []
     }));
 
-    const prompt = `Analyze these ${flows.length} application workflows and create a single comprehensive master flow diagram that consolidates all processes into one unified workflow.
+    const prompt = `Analyze these ${flows.length} application workflows and create a single comprehensive master flow diagram that consolidates ALL processes into one unified, detailed workflow.
 
 INPUT WORKFLOWS:
 ${JSON.stringify(flowSummaries, null, 2)}
 
-REQUIREMENTS:
-1. Create 25-35 detailed granular nodes that represent ALL major process steps from all input workflows
-2. Each node should have a specific, actionable label (not generic terms)
-3. Include proper flow connections showing logical sequence and branching
-4. Use appropriate node types: 'input' for start, 'output' for end, 'default' for process steps
-5. Position nodes in a logical grid layout (x increments of 150-200, y increments of 100-150)
-6. Color-code nodes by category:
-   - Start/Trigger: #10B981 (green)
-   - User Actions: #1E88E5 (blue) 
-   - System Processing: #9C27B0 (purple)
-   - Decision Points: #FFC107 (yellow, use black text)
-   - External Services: #FF6B35 (orange)
-   - Mobile Features: #E91E63 (pink)
-   - Web Features: #2196F3 (blue)
-   - Data Operations: #795548 (brown)
-   - Communication: #607D8B (blue-grey)
-   - Completion: #4CAF50 (green)
+CRITICAL REQUIREMENTS - CREATE 30-40 DETAILED GRANULAR NODES:
 
-7. Create meaningful connections between nodes that represent the actual user/system journey
-8. Include parallel paths where users can choose different platforms or approaches
-9. Ensure the flow covers the complete end-to-end process from initial trigger to final completion
-10. Make sure all critical business logic and decision points are represented
+PHASE 1 - INITIAL REGISTRATION & ONBOARDING (8-10 nodes):
+- Patient/User arrival and initial registration
+- Personal information collection (name, DOB, address)
+- Contact details validation (email, phone)
+- Insurance information capture
+- Identity verification process
+- Document upload and validation
+- Emergency contact setup
+- Initial profile creation
+
+PHASE 2 - AUTHENTICATION & VERIFICATION (6-8 nodes):
+- Login credential setup
+- Multi-factor authentication
+- Identity document verification
+- Insurance eligibility verification
+- Medical history intake
+- Consent forms completion
+- Privacy policy acceptance
+- Account activation
+
+PHASE 3 - PLATFORM SELECTION & ACCESS (4-6 nodes):
+- Platform choice (mobile vs web)
+- Mobile app download and setup
+- Web portal dashboard access
+- Feature navigation tutorial
+- Preference settings configuration
+- Notification setup
+
+PHASE 4 - CORE HEALTHCARE SERVICES (8-12 nodes):
+- Provider search and selection
+- Appointment scheduling interface
+- Calendar integration
+- Appointment confirmation
+- Pre-visit questionnaire
+- Telemedicine setup and testing
+- Video call initiation
+- Virtual consultation session
+- Post-visit follow-up
+- Prescription management
+- Lab results viewing
+
+PHASE 5 - ADMINISTRATIVE & BILLING (6-8 nodes):
+- Insurance claim preparation
+- Claim submission to provider
+- Payment processing
+- Bill generation
+- Payment confirmation
+- Receipt delivery
+- Billing reconciliation
+- Financial reporting
+
+PHASE 6 - COMMUNICATION & SUPPORT (4-6 nodes):
+- Secure messaging system
+- Provider communication
+- Support ticket creation
+- Incident management
+- Feedback collection
+- Rating and review system
+
+COLOR CODING AND POSITIONING:
+- Position nodes in logical rows: y=50 (registration), y=150 (verification), y=250 (platform), y=350 (services), y=450 (billing), y=550 (communication)
+- X positions: start at 50, increment by 180-200 for horizontal flow
+- Use specific colors:
+  * Registration: #10B981 (green)
+  * Verification: #1E88E5 (blue)
+  * Platform Setup: #9C27B0 (purple)
+  * Decision Points: #FFC107 (yellow with black text)
+  * Healthcare Services: #FF6B35 (orange)
+  * Mobile Features: #E91E63 (pink)
+  * Web Features: #2196F3 (blue)
+  * Billing/Admin: #795548 (brown)
+  * Communication: #607D8B (blue-grey)
+  * Completion: #4CAF50 (green)
+
+MANDATORY ELEMENTS TO INCLUDE:
+- Every stakeholder type: Patient, Provider, Administrator, Billing Staff, Insurance Provider
+- All major flow types: Account Creation, Appointment Scheduling, Telemedicine, Claims, Billing
+- Decision gates for validation, authentication, platform choice
+- Parallel processing paths for mobile vs web
+- Error handling and retry mechanisms
+- Notification and communication touchpoints
 
 RESPONSE FORMAT - Return ONLY valid JSON:
 {
@@ -368,87 +429,357 @@ RESPONSE FORMAT - Return ONLY valid JSON:
   };
 
   const createFallbackConsolidatedFlow = (flows: ProjectFlow[]) => {
+    // Create comprehensive detailed master flow with 35+ nodes
     const nodes = [
+      // PHASE 1 - INITIAL REGISTRATION & ONBOARDING (y=50)
       {
         id: 'start',
         position: { x: 50, y: 50 },
-        data: { label: 'User Arrives' },
+        data: { label: 'Patient Arrival' },
         type: 'input',
         style: { backgroundColor: '#10B981', color: 'white' }
       },
       {
-        id: 'account-setup',
-        position: { x: 200, y: 50 },
-        data: { label: 'Account Setup' },
+        id: 'personal-info',
+        position: { x: 250, y: 50 },
+        data: { label: 'Personal Information Collection' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'contact-validation',
+        position: { x: 450, y: 50 },
+        data: { label: 'Contact Details Validation' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'insurance-capture',
+        position: { x: 650, y: 50 },
+        data: { label: 'Insurance Information Capture' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'document-upload',
+        position: { x: 850, y: 50 },
+        data: { label: 'Document Upload & Validation' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'emergency-contact',
+        position: { x: 1050, y: 50 },
+        data: { label: 'Emergency Contact Setup' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'initial-profile',
+        position: { x: 1250, y: 50 },
+        data: { label: 'Initial Profile Creation' },
+        type: 'default',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+
+      // PHASE 2 - AUTHENTICATION & VERIFICATION (y=150)
+      {
+        id: 'credential-setup',
+        position: { x: 50, y: 150 },
+        data: { label: 'Login Credential Setup' },
         type: 'default',
         style: { backgroundColor: '#1E88E5', color: 'white' }
       },
       {
-        id: 'profile-creation',
-        position: { x: 350, y: 50 },
-        data: { label: 'Profile Creation' },
+        id: 'mfa-setup',
+        position: { x: 250, y: 150 },
+        data: { label: 'Multi-Factor Authentication' },
         type: 'default',
         style: { backgroundColor: '#1E88E5', color: 'white' }
       },
       {
-        id: 'verification',
-        position: { x: 500, y: 50 },
-        data: { label: 'Verification Process' },
+        id: 'identity-verification',
+        position: { x: 450, y: 150 },
+        data: { label: 'Identity Document Verification' },
         type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        style: { backgroundColor: '#1E88E5', color: 'white' }
       },
+      {
+        id: 'insurance-eligibility',
+        position: { x: 650, y: 150 },
+        data: { label: 'Insurance Eligibility Check' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'medical-history',
+        position: { x: 850, y: 150 },
+        data: { label: 'Medical History Intake' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'consent-forms',
+        position: { x: 1050, y: 150 },
+        data: { label: 'Consent Forms Completion' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'account-activation',
+        position: { x: 1250, y: 150 },
+        data: { label: 'Account Activation' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+
+      // PHASE 3 - PLATFORM SELECTION & ACCESS (y=250)
       {
         id: 'platform-choice',
-        position: { x: 650, y: 50 },
-        data: { label: 'Platform Selection' },
+        position: { x: 200, y: 250 },
+        data: { label: 'Platform Choice Decision' },
         type: 'default',
         style: { backgroundColor: '#FFC107', color: 'black' }
       },
       {
-        id: 'mobile-app',
-        position: { x: 500, y: 150 },
-        data: { label: 'Mobile Application' },
+        id: 'mobile-download',
+        position: { x: 50, y: 350 },
+        data: { label: 'Mobile App Download' },
         type: 'default',
         style: { backgroundColor: '#E91E63', color: 'white' }
       },
       {
-        id: 'web-portal',
-        position: { x: 800, y: 150 },
-        data: { label: 'Web Portal' },
+        id: 'mobile-setup',
+        position: { x: 250, y: 350 },
+        data: { label: 'Mobile Setup & Configuration' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'web-dashboard',
+        position: { x: 450, y: 350 },
+        data: { label: 'Web Portal Dashboard Access' },
         type: 'default',
         style: { backgroundColor: '#2196F3', color: 'white' }
       },
       {
-        id: 'service-request',
-        position: { x: 650, y: 250 },
-        data: { label: 'Service Request' },
+        id: 'feature-tutorial',
+        position: { x: 650, y: 350 },
+        data: { label: 'Feature Navigation Tutorial' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'notification-setup',
+        position: { x: 850, y: 350 },
+        data: { label: 'Notification Setup' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+
+      // PHASE 4 - CORE HEALTHCARE SERVICES (y=450)
+      {
+        id: 'provider-search',
+        position: { x: 50, y: 450 },
+        data: { label: 'Provider Search & Selection' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'appointment-scheduling',
+        position: { x: 250, y: 450 },
+        data: { label: 'Appointment Scheduling Interface' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'calendar-integration',
+        position: { x: 450, y: 450 },
+        data: { label: 'Calendar Integration' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'appointment-confirmation',
+        position: { x: 650, y: 450 },
+        data: { label: 'Appointment Confirmation' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'pre-visit-questionnaire',
+        position: { x: 850, y: 450 },
+        data: { label: 'Pre-Visit Questionnaire' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'telemedicine-setup',
+        position: { x: 1050, y: 450 },
+        data: { label: 'Telemedicine Setup & Testing' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'video-consultation',
+        position: { x: 1250, y: 450 },
+        data: { label: 'Virtual Consultation Session' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'prescription-management',
+        position: { x: 1450, y: 450 },
+        data: { label: 'Prescription Management' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+
+      // PHASE 5 - ADMINISTRATIVE & BILLING (y=550)
+      {
+        id: 'claim-preparation',
+        position: { x: 50, y: 550 },
+        data: { label: 'Insurance Claim Preparation' },
         type: 'default',
         style: { backgroundColor: '#795548', color: 'white' }
       },
       {
+        id: 'claim-submission',
+        position: { x: 250, y: 550 },
+        data: { label: 'Claim Submission to Provider' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'payment-processing',
+        position: { x: 450, y: 550 },
+        data: { label: 'Payment Processing' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'bill-generation',
+        position: { x: 650, y: 550 },
+        data: { label: 'Bill Generation' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'payment-confirmation',
+        position: { x: 850, y: 550 },
+        data: { label: 'Payment Confirmation' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'billing-reconciliation',
+        position: { x: 1050, y: 550 },
+        data: { label: 'Billing Reconciliation' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+
+      // PHASE 6 - COMMUNICATION & SUPPORT (y=650)
+      {
+        id: 'secure-messaging',
+        position: { x: 200, y: 650 },
+        data: { label: 'Secure Messaging System' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'provider-communication',
+        position: { x: 400, y: 650 },
+        data: { label: 'Provider Communication' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'support-ticket',
+        position: { x: 600, y: 650 },
+        data: { label: 'Support Ticket Creation' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'feedback-collection',
+        position: { x: 800, y: 650 },
+        data: { label: 'Feedback Collection' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
         id: 'completion',
-        position: { x: 650, y: 350 },
+        position: { x: 1000, y: 650 },
         data: { label: 'Process Complete' },
         type: 'output',
         style: { backgroundColor: '#4CAF50', color: 'white' }
       }
     ];
 
+    // Create comprehensive edge connections
     const edges = [
-      { id: 'e1', source: 'start', target: 'account-setup' },
-      { id: 'e2', source: 'account-setup', target: 'profile-creation' },
-      { id: 'e3', source: 'profile-creation', target: 'verification' },
-      { id: 'e4', source: 'verification', target: 'platform-choice' },
-      { id: 'e5', source: 'platform-choice', target: 'mobile-app' },
-      { id: 'e6', source: 'platform-choice', target: 'web-portal' },
-      { id: 'e7', source: 'mobile-app', target: 'service-request' },
-      { id: 'e8', source: 'web-portal', target: 'service-request' },
-      { id: 'e9', source: 'service-request', target: 'completion' }
+      // Phase 1 connections
+      { id: 'e1', source: 'start', target: 'personal-info' },
+      { id: 'e2', source: 'personal-info', target: 'contact-validation' },
+      { id: 'e3', source: 'contact-validation', target: 'insurance-capture' },
+      { id: 'e4', source: 'insurance-capture', target: 'document-upload' },
+      { id: 'e5', source: 'document-upload', target: 'emergency-contact' },
+      { id: 'e6', source: 'emergency-contact', target: 'initial-profile' },
+      
+      // Phase 2 connections
+      { id: 'e7', source: 'initial-profile', target: 'credential-setup' },
+      { id: 'e8', source: 'credential-setup', target: 'mfa-setup' },
+      { id: 'e9', source: 'mfa-setup', target: 'identity-verification' },
+      { id: 'e10', source: 'identity-verification', target: 'insurance-eligibility' },
+      { id: 'e11', source: 'insurance-eligibility', target: 'medical-history' },
+      { id: 'e12', source: 'medical-history', target: 'consent-forms' },
+      { id: 'e13', source: 'consent-forms', target: 'account-activation' },
+      
+      // Phase 3 connections
+      { id: 'e14', source: 'account-activation', target: 'platform-choice' },
+      { id: 'e15', source: 'platform-choice', target: 'mobile-download' },
+      { id: 'e16', source: 'platform-choice', target: 'web-dashboard' },
+      { id: 'e17', source: 'mobile-download', target: 'mobile-setup' },
+      { id: 'e18', source: 'mobile-setup', target: 'feature-tutorial' },
+      { id: 'e19', source: 'web-dashboard', target: 'feature-tutorial' },
+      { id: 'e20', source: 'feature-tutorial', target: 'notification-setup' },
+      
+      // Phase 4 connections
+      { id: 'e21', source: 'notification-setup', target: 'provider-search' },
+      { id: 'e22', source: 'provider-search', target: 'appointment-scheduling' },
+      { id: 'e23', source: 'appointment-scheduling', target: 'calendar-integration' },
+      { id: 'e24', source: 'calendar-integration', target: 'appointment-confirmation' },
+      { id: 'e25', source: 'appointment-confirmation', target: 'pre-visit-questionnaire' },
+      { id: 'e26', source: 'pre-visit-questionnaire', target: 'telemedicine-setup' },
+      { id: 'e27', source: 'telemedicine-setup', target: 'video-consultation' },
+      { id: 'e28', source: 'video-consultation', target: 'prescription-management' },
+      
+      // Phase 5 connections
+      { id: 'e29', source: 'prescription-management', target: 'claim-preparation' },
+      { id: 'e30', source: 'claim-preparation', target: 'claim-submission' },
+      { id: 'e31', source: 'claim-submission', target: 'payment-processing' },
+      { id: 'e32', source: 'payment-processing', target: 'bill-generation' },
+      { id: 'e33', source: 'bill-generation', target: 'payment-confirmation' },
+      { id: 'e34', source: 'payment-confirmation', target: 'billing-reconciliation' },
+      
+      // Phase 6 connections
+      { id: 'e35', source: 'billing-reconciliation', target: 'secure-messaging' },
+      { id: 'e36', source: 'secure-messaging', target: 'provider-communication' },
+      { id: 'e37', source: 'provider-communication', target: 'support-ticket' },
+      { id: 'e38', source: 'support-ticket', target: 'feedback-collection' },
+      { id: 'e39', source: 'feedback-collection', target: 'completion' },
+      
+      // Alternative pathways
+      { id: 'e40', source: 'video-consultation', target: 'secure-messaging' },
+      { id: 'e41', source: 'appointment-confirmation', target: 'support-ticket' },
+      { id: 'e42', source: 'mobile-setup', target: 'provider-search' },
+      { id: 'e43', source: 'web-dashboard', target: 'provider-search' }
     ];
 
     return {
-      title: "Master Application Flow",
-      description: "Comprehensive workflow combining all application processes and user journeys",
+      title: "Comprehensive Master Healthcare Application Flow",
+      description: "Detailed workflow covering all 35+ process steps from patient registration through completion, including all stakeholder flows",
       flowData: { nodes, edges }
     };
   };
