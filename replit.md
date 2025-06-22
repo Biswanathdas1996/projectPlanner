@@ -123,6 +123,8 @@ Changelog:
   - Generates complete HTML with embedded CSS and JavaScript
   - Added local storage functionality for brand guidelines persistence
   - System now creates fully functional, brand-aware wireframes with interactivity
+  - Added progress bar loader showing real-time generation status for each wireframe
+  - Progress tracking includes current/total count and current page being processed
 ```
 
 ## User Preferences

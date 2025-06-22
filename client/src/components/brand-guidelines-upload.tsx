@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -65,6 +66,7 @@ export function BrandGuidelinesUpload({
   const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState<MultimodalAnalysisProgress>({ current: 0, total: 0 });
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [wireframeProgress, setWireframeProgress] = useState({ current: 0, total: 0, currentPage: '' });
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [showStoredGuidelines, setShowStoredGuidelines] = useState(false);
   const [storedGuidelines, setStoredGuidelines] = useState(BrandGuidelinesStorage.getAll());
@@ -184,6 +186,8 @@ export function BrandGuidelinesUpload({
     if (!brandGuidelines) return;
 
     setIsGeneratingWireframes(true);
+    setWireframeProgress({ current: 0, total: pageContentCards.length, currentPage: '' });
+    
     try {
       console.log('🚀 Starting Gemini-based wireframe generation');
       
@@ -194,7 +198,16 @@ export function BrandGuidelinesUpload({
 
       const wireframes = [];
 
-      for (const page of pageContentCards) {
+      for (let i = 0; i < pageContentCards.length; i++) {
+        const page = pageContentCards[i];
+        
+        // Update progress
+        setWireframeProgress({ 
+          current: i, 
+          total: pageContentCards.length, 
+          currentPage: page.pageName 
+        });
+        
         console.log(`Generating wireframe for: ${page.pageName}`);
         
         // Combine page content with brand guidelines
@@ -253,6 +266,13 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
           cssCode: cssCode,
           jsCode: jsCode
         });
+
+        // Update progress after completion
+        setWireframeProgress({ 
+          current: i + 1, 
+          total: pageContentCards.length, 
+          currentPage: page.pageName 
+        });
       }
 
       onWireframesGenerated?.(wireframes);
@@ -269,6 +289,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
       });
     } finally {
       setIsGeneratingWireframes(false);
+      setWireframeProgress({ current: 0, total: 0, currentPage: '' });
     }
   };
 
@@ -454,6 +475,34 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                 </p>
               )}
             </div>
+
+            {/* Wireframe Generation Progress */}
+            {isGeneratingWireframes && wireframeProgress.total > 0 && (
+              <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="font-semibold text-blue-800 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4" />
+                    Generating Brand Wireframes
+                  </h4>
+                  <span className="text-sm text-blue-600">
+                    {wireframeProgress.current} of {wireframeProgress.total}
+                  </span>
+                </div>
+                
+                <Progress 
+                  value={(wireframeProgress.current / wireframeProgress.total) * 100} 
+                  className="w-full mb-2"
+                />
+                
+                <div className="text-sm text-blue-700">
+                  {wireframeProgress.current < wireframeProgress.total ? (
+                    <>Processing: <span className="font-medium">{wireframeProgress.currentPage}</span></>
+                  ) : (
+                    <span className="font-medium">Finalizing wireframes...</span>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="flex gap-3 pt-3 border-t">
               <div className="flex gap-2">
