@@ -19,6 +19,10 @@ import {
   createHTMLWireframeGenerator,
   type DetailedPageContent,
 } from "@/lib/html-wireframe-generator";
+import { 
+  BrandGuidelinesStorage,
+  type ExternalBrandJSON 
+} from "@/lib/brand-guidelines-storage";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -61,6 +65,8 @@ export function BrandGuidelinesUpload({
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
   const [showBrandModal, setShowBrandModal] = useState(false);
+  const [showStoredGuidelines, setShowStoredGuidelines] = useState(false);
+  const [storedGuidelines, setStoredGuidelines] = useState(BrandGuidelinesStorage.getAll());
   const { toast } = useToast();
 
   if (!visible) return null;
@@ -126,6 +132,17 @@ export function BrandGuidelinesUpload({
       // Store the raw JSON response
       setBrandGuidelines(extractedData);
       setFinalBrandReport(null); // Clear previous report since we're using external API
+      
+      // Save to local storage
+      const stored = BrandGuidelinesStorage.save(
+        extractedData as ExternalBrandJSON, 
+        extractedData.brand || 'Brand Guidelines',
+        file.name
+      );
+      
+      // Update stored guidelines list
+      setStoredGuidelines(BrandGuidelinesStorage.getAll());
+      
       onBrandGuidelinesExtracted?.(extractedData);
 
       setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Completed!" });
@@ -258,6 +275,27 @@ export function BrandGuidelinesUpload({
     }
   };
 
+  const loadStoredGuideline = (stored: any) => {
+    setBrandGuidelines(stored.brandData);
+    onBrandGuidelinesExtracted?.(stored.brandData);
+    setShowStoredGuidelines(false);
+    
+    toast({
+      title: "Brand Guidelines Loaded",
+      description: `Loaded ${stored.name} from local storage`,
+    });
+  };
+
+  const deleteStoredGuideline = (id: string) => {
+    BrandGuidelinesStorage.delete(id);
+    setStoredGuidelines(BrandGuidelinesStorage.getAll());
+    
+    toast({
+      title: "Brand Guidelines Deleted",
+      description: "Guidelines removed from local storage",
+    });
+  };
+
   return (
     <div className="space-y-4">
       <Card className="border-dashed border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
@@ -291,6 +329,15 @@ export function BrandGuidelinesUpload({
                 >
                   <Eye className="h-4 w-4" />
                   View Guidelines
+                </Button>
+                <Button
+                  onClick={() => setShowStoredGuidelines(true)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-1"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Stored ({storedGuidelines.length})
                 </Button>
               </div>
               
@@ -436,6 +483,147 @@ export function BrandGuidelinesUpload({
                   </pre>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stored Brand Guidelines Modal */}
+      {showStoredGuidelines && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-[90vw] max-w-4xl h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="text-xl font-semibold flex items-center gap-2">
+                <MessageSquare className="h-6 w-6 text-purple-600" />
+                Stored Brand Guidelines ({storedGuidelines.length})
+              </h3>
+              <Button
+                onClick={() => setShowStoredGuidelines(false)}
+                variant="ghost"
+                size="sm"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+              {storedGuidelines.length === 0 ? (
+                <div className="text-center py-8">
+                  <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">No brand guidelines stored yet</p>
+                  <p className="text-sm text-gray-400 mt-2">Upload a PDF to save brand guidelines for future use</p>
+                </div>
+              ) : (
+                <div className="grid gap-4">
+                  {storedGuidelines.map((stored) => (
+                    <div key={stored.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold text-lg">{stored.name}</h4>
+                          <p className="text-sm text-gray-600">
+                            Extracted: {new Date(stored.extractedAt).toLocaleDateString()}
+                          </p>
+                          {stored.pdfFileName && (
+                            <p className="text-xs text-gray-500">From: {stored.pdfFileName}</p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => loadStoredGuideline(stored)}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-1"
+                          >
+                            <Eye className="h-4 w-4" />
+                            Load
+                          </Button>
+                          <Button
+                            onClick={() => deleteStoredGuideline(stored.id)}
+                            variant="outline"
+                            size="sm"
+                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Brand:</span>
+                          <p className="text-gray-600">{stored.brandData.brand}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Sections:</span>
+                          <p className="text-gray-600">{stored.brandData.sections.length}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Colors:</span>
+                          <p className="text-gray-600">
+                            {BrandGuidelinesStorage.getBrandColors(stored).length}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Fonts:</span>
+                          <p className="text-gray-600">
+                            {BrandGuidelinesStorage.getBrandFonts(stored).length}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Preview Colors */}
+                      {BrandGuidelinesStorage.getBrandColors(stored).length > 0 && (
+                        <div className="mt-3">
+                          <span className="text-xs font-medium text-gray-700">Colors:</span>
+                          <div className="flex gap-2 mt-1">
+                            {BrandGuidelinesStorage.getBrandColors(stored).slice(0, 5).map((color, index) => (
+                              <div
+                                key={index}
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color.hex }}
+                                title={`${color.name}: ${color.hex}`}
+                              />
+                            ))}
+                            {BrandGuidelinesStorage.getBrandColors(stored).length > 5 && (
+                              <span className="text-xs text-gray-500 self-center">
+                                +{BrandGuidelinesStorage.getBrandColors(stored).length - 5} more
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {storedGuidelines.length > 0 && (
+                <div className="mt-6 p-4 bg-gray-100 rounded-lg">
+                  <div className="text-sm text-gray-600">
+                    <strong>Storage Info:</strong> {BrandGuidelinesStorage.getStorageInfo().size} used, 
+                    last updated {BrandGuidelinesStorage.getStorageInfo().lastUpdated 
+                      ? new Date(BrandGuidelinesStorage.getStorageInfo().lastUpdated!).toLocaleDateString()
+                      : 'never'}
+                  </div>
+                  <Button
+                    onClick={() => {
+                      BrandGuidelinesStorage.deleteAll();
+                      setStoredGuidelines([]);
+                      toast({
+                        title: "All Guidelines Cleared",
+                        description: "Local storage has been cleared",
+                      });
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="mt-2 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Clear All Storage
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>
