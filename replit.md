@@ -117,6 +117,12 @@ Changelog:
   - Added proper parsing of colors, fonts, and brand elements from external API response
   - Implemented responsive design with mobile/desktop variants based on extracted brand guidelines
   - Generator now produces complete HTML wireframes with brand-consistent styling
+- June 22, 2025. Gemini-powered wireframe generation implemented
+  - Refactored brand wireframe generation to use Gemini AI directly
+  - Combines page content with brand guidelines JSON in single prompt
+  - Generates complete HTML with embedded CSS and JavaScript
+  - Added local storage functionality for brand guidelines persistence
+  - System now creates fully functional, brand-aware wireframes with interactivity
 ```
 
 ## User Preferences

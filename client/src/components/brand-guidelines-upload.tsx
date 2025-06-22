@@ -23,6 +23,7 @@ import {
   BrandGuidelinesStorage,
   type ExternalBrandJSON 
 } from "@/lib/brand-guidelines-storage";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -184,38 +185,86 @@ export function BrandGuidelinesUpload({
 
     setIsGeneratingWireframes(true);
     try {
-      const brandAwareGenerator = createBrandAwareWireframeGenerator();
+      console.log('🚀 Starting Gemini-based wireframe generation');
+      
+      // Initialize Gemini AI
+      const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
       const wireframes = [];
 
       for (const page of pageContentCards) {
-        const request: BrandedWireframeRequest = {
-          pageContent: page,
-          brandGuidelines: brandGuidelines,
-          designStyle: "modern",
-          deviceType: "desktop",
-        };
+        console.log(`Generating wireframe for: ${page.pageName}`);
+        
+        // Combine page content with brand guidelines
+        const combinedPrompt = `You are a senior web developer creating a brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
 
-        const wireframe =
-          await brandAwareGenerator.generateBrandedWireframe(request);
+PAGE CONTENT:
+${JSON.stringify({
+  pageName: page.pageName,
+  pageType: page.pageType,
+  purpose: page.purpose,
+  stakeholders: page.stakeholders,
+  headers: page.headers || [],
+  buttons: page.buttons || [],
+  forms: page.forms || [],
+  lists: page.lists || [],
+  navigation: page.navigation || [],
+  additionalContent: page.additionalContent || []
+}, null, 2)}
+
+BRAND GUIDELINES:
+${JSON.stringify(brandGuidelines, null, 2)}
+
+REQUIREMENTS:
+1. Create a complete HTML document with embedded CSS and JavaScript
+2. Use the brand colors, fonts, and styling from the guidelines
+3. Implement all page elements (headers, buttons, forms, lists, navigation)
+4. Make it responsive and modern
+5. Add interactive JavaScript for forms and buttons
+6. Follow the brand's visual identity strictly
+7. Use semantic HTML5 elements
+8. Ensure accessibility (ARIA labels, proper contrast)
+9. Include hover effects and transitions
+10. Make forms functional with validation
+
+RESPONSE FORMAT:
+Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Do not include any explanations or markdown formatting.`;
+
+        const result = await model.generateContent(combinedPrompt);
+        const response = result.response.text();
+        
+        console.log(`Generated wireframe for ${page.pageName}, length: ${response.length}`);
+
+        // Extract HTML, CSS, and JS from response
+        const htmlMatch = response.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
+        const cssMatch = response.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+        const jsMatch = response.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
+
+        const htmlCode = htmlMatch ? htmlMatch[0] : response;
+        const cssCode = cssMatch ? cssMatch[1] : '';
+        const jsCode = jsMatch ? jsMatch[1] : '';
+
         wireframes.push({
           id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           pageName: page.pageName,
-          htmlCode: wireframe.html,
-          cssCode: wireframe.css,
-          jsCode: ''
+          htmlCode: htmlCode,
+          cssCode: cssCode,
+          jsCode: jsCode
         });
       }
 
       onWireframesGenerated?.(wireframes);
       toast({
         title: "Brand Wireframes Generated",
-        description: `Generated ${wireframes.length} brand-aware wireframes`,
+        description: `Generated ${wireframes.length} brand-aware wireframes using AI`,
       });
     } catch (error) {
       console.error("Error generating brand wireframes:", error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate brand-aware wireframes",
+        description: "Failed to generate brand-aware wireframes with Gemini",
         variant: "destructive",
       });
     } finally {
