@@ -30,74 +30,148 @@ interface StoredWireframe {
   createdAt: string;
 }
 
+interface StoredProject {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  projectData: any;
+}
+
+interface StoredUserStory {
+  id: string;
+  title: string;
+  stories: any[];
+  createdAt: string;
+}
+
+interface StoredMarketResearch {
+  id: string;
+  title: string;
+  researchData: any;
+  createdAt: string;
+}
+
+interface StoredBrandGuideline {
+  id: string;
+  name: string;
+  brandData: any;
+  extractedAt: string;
+  pdfFileName?: string;
+}
+
 interface FlowWireframeMapping {
   flowId: string;
   wireframeIds: string[];
+  projectIds: string[];
+  storyIds: string[];
   mappingConfidence: number;
 }
 
+interface LocalStorageData {
+  flows: StoredFlow[];
+  wireframes: StoredWireframe[];
+  projects: StoredProject[];
+  userStories: StoredUserStory[];
+  marketResearch: StoredMarketResearch[];
+  brandGuidelines: StoredBrandGuideline[];
+}
+
 export function FlowWireframeMappingPage() {
-  const [storedFlows, setStoredFlows] = useState<StoredFlow[]>([]);
-  const [storedWireframes, setStoredWireframes] = useState<StoredWireframe[]>([]);
+  const [allData, setAllData] = useState<LocalStorageData>({
+    flows: [],
+    wireframes: [],
+    projects: [],
+    userStories: [],
+    marketResearch: [],
+    brandGuidelines: []
+  });
   const [mappings, setMappings] = useState<FlowWireframeMapping[]>([]);
   const [selectedFlow, setSelectedFlow] = useState<StoredFlow | null>(null);
-  const [selectedWireframe, setSelectedWireframe] = useState<StoredWireframe | null>(null);
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
 
   useEffect(() => {
-    loadStoredData();
+    loadAllStoredData();
   }, []);
 
-  const loadStoredData = () => {
+  const loadAllStoredData = () => {
     try {
-      // Load stored flows
-      const flowsData = localStorage.getItem("storedFlowDiagrams");
-      if (flowsData) {
-        const flows = JSON.parse(flowsData);
-        setStoredFlows(flows);
-      }
+      const data: LocalStorageData = {
+        flows: [],
+        wireframes: [],
+        projects: [],
+        userStories: [],
+        marketResearch: [],
+        brandGuidelines: []
+      };
 
-      // Load stored wireframes
-      const wireframesData = localStorage.getItem("generatedWireframes");
-      if (wireframesData) {
-        const wireframes = JSON.parse(wireframesData);
-        setStoredWireframes(wireframes);
-      }
+      // Load all localStorage data
+      const loadFromStorage = (key: string) => {
+        try {
+          const item = localStorage.getItem(key);
+          return item ? JSON.parse(item) : [];
+        } catch (error) {
+          console.warn(`Error parsing ${key}:`, error);
+          return [];
+        }
+      };
 
-      // Generate intelligent mappings based on content similarity
-      generateFlowWireframeMappings();
+      data.flows = loadFromStorage("storedFlowDiagrams");
+      data.wireframes = loadFromStorage("generatedWireframes"); 
+      data.projects = loadFromStorage("generatedProjectPlans");
+      data.userStories = loadFromStorage("generatedUserStories");
+      data.marketResearch = loadFromStorage("marketResearchResults");
+      data.brandGuidelines = loadFromStorage("brandGuidelines");
+
+      console.log("Loaded data:", data);
+      setAllData(data);
+      generateComprehensiveMappings(data);
     } catch (error) {
       console.error("Error loading stored data:", error);
     }
   };
 
-  const generateFlowWireframeMappings = () => {
-    const flowsData = localStorage.getItem("storedFlowDiagrams");
-    const wireframesData = localStorage.getItem("generatedWireframes");
-    
-    if (!flowsData || !wireframesData) return;
-
-    const flows = JSON.parse(flowsData);
-    const wireframes = JSON.parse(wireframesData);
-    
+  const generateComprehensiveMappings = (data: LocalStorageData) => {
     const newMappings: FlowWireframeMapping[] = [];
 
-    flows.forEach((flow: StoredFlow) => {
+    data.flows.forEach((flow: StoredFlow) => {
       const relatedWireframes: string[] = [];
+      const relatedProjects: string[] = [];
+      const relatedStories: string[] = [];
       
-      wireframes.forEach((wireframe: StoredWireframe) => {
-        // Simple matching based on page name and flow title similarity
+      // Map wireframes by content similarity
+      data.wireframes.forEach((wireframe: StoredWireframe) => {
         const similarity = calculateSimilarity(flow.title, wireframe.pageName);
-        if (similarity > 0.3) {
+        if (similarity > 0.2) {
           relatedWireframes.push(wireframe.id);
         }
       });
 
-      if (relatedWireframes.length > 0) {
+      // Map projects by title similarity
+      data.projects.forEach((project: StoredProject) => {
+        const similarity = calculateSimilarity(flow.title, project.title);
+        if (similarity > 0.3) {
+          relatedProjects.push(project.id);
+        }
+      });
+
+      // Map user stories by title similarity
+      data.userStories.forEach((story: StoredUserStory) => {
+        const similarity = calculateSimilarity(flow.title, story.title);
+        if (similarity > 0.2) {
+          relatedStories.push(story.id);
+        }
+      });
+
+      // Create mapping if any relationships found
+      if (relatedWireframes.length > 0 || relatedProjects.length > 0 || relatedStories.length > 0) {
+        const totalRelations = relatedWireframes.length + relatedProjects.length + relatedStories.length;
         newMappings.push({
           flowId: flow.id,
           wireframeIds: relatedWireframes,
-          mappingConfidence: relatedWireframes.length > 1 ? 0.8 : 0.6
+          projectIds: relatedProjects,
+          storyIds: relatedStories,
+          mappingConfidence: Math.min(0.9, 0.4 + (totalRelations * 0.15))
         });
       }
     });
@@ -123,7 +197,21 @@ export function FlowWireframeMappingPage() {
     const mapping = mappings.find(m => m.flowId === flowId);
     if (!mapping) return [];
     
-    return storedWireframes.filter(w => mapping.wireframeIds.includes(w.id));
+    return allData.wireframes.filter(w => mapping.wireframeIds.includes(w.id));
+  };
+
+  const getMappedProjects = (flowId: string): StoredProject[] => {
+    const mapping = mappings.find(m => m.flowId === flowId);
+    if (!mapping) return [];
+    
+    return allData.projects.filter(p => mapping.projectIds.includes(p.id));
+  };
+
+  const getMappedStories = (flowId: string): StoredUserStory[] => {
+    const mapping = mappings.find(m => m.flowId === flowId);
+    if (!mapping) return [];
+    
+    return allData.userStories.filter(s => mapping.storyIds.includes(s.id));
   };
 
   const downloadWireframe = (wireframe: StoredWireframe) => {
@@ -162,11 +250,11 @@ export function FlowWireframeMappingPage() {
         <div className="flex gap-2">
           <Badge variant="outline" className="flex items-center gap-1">
             <Workflow className="h-4 w-4" />
-            {storedFlows.length} Flows
+            {allData.flows.length} Flows
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Code className="h-4 w-4" />
-            {storedWireframes.length} Wireframes
+            {allData.wireframes.length} Wireframes
           </Badge>
           <Badge variant="outline" className="flex items-center gap-1">
             <Layers className="h-4 w-4" />
@@ -186,14 +274,14 @@ export function FlowWireframeMappingPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {storedFlows.length === 0 ? (
+            {allData.flows.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Workflow className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                 <p>No process flows found</p>
                 <p className="text-sm mt-1">Create flows in the BPMN Editor</p>
               </div>
             ) : (
-              storedFlows.map((flow) => {
+              allData.flows.map((flow) => {
                 const mappedWireframes = getMappedWireframes(flow.id);
                 const isSelected = selectedFlow?.id === flow.id;
                 
@@ -398,24 +486,30 @@ export function FlowWireframeMappingPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{storedFlows.length}</div>
+              <div className="text-2xl font-bold text-blue-600">{allData.flows.length}</div>
               <div className="text-sm text-blue-700">Process Flows</div>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{storedWireframes.length}</div>
-              <div className="text-sm text-green-700">Generated Wireframes</div>
+              <div className="text-2xl font-bold text-green-600">{allData.wireframes.length}</div>
+              <div className="text-sm text-green-700">Wireframes</div>
             </div>
             <div className="text-center p-4 bg-purple-50 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{mappings.length}</div>
-              <div className="text-sm text-purple-700">Active Mappings</div>
+              <div className="text-2xl font-bold text-purple-600">{allData.projects.length}</div>
+              <div className="text-sm text-purple-700">Projects</div>
+            </div>
+            <div className="text-center p-4 bg-indigo-50 rounded-lg">
+              <div className="text-2xl font-bold text-indigo-600">{allData.userStories.length}</div>
+              <div className="text-sm text-indigo-700">User Stories</div>
+            </div>
+            <div className="text-center p-4 bg-teal-50 rounded-lg">
+              <div className="text-2xl font-bold text-teal-600">{allData.brandGuidelines.length}</div>
+              <div className="text-sm text-teal-700">Brand Guidelines</div>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">
-                {mappings.reduce((sum, m) => sum + m.wireframeIds.length, 0)}
-              </div>
-              <div className="text-sm text-orange-700">Total Connections</div>
+              <div className="text-2xl font-bold text-orange-600">{mappings.length}</div>
+              <div className="text-sm text-orange-700">Active Mappings</div>
             </div>
           </div>
         </CardContent>
