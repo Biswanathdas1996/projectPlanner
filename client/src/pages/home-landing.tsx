@@ -418,7 +418,7 @@ export default function HomeLanding() {
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 border border-cyan-400/30">
                 <Shield className="h-12 w-12 text-cyan-400 mb-4" />
                 <h3 className="text-xl font-bold mb-3 text-white">Enterprise Ready</h3>
@@ -442,6 +442,16 @@ export default function HomeLanding() {
                   Industry best practices and proven methodologies built into every generated output.
                 </p>
               </div>
+
+              <Link href="/flow-mapping">
+                <div className="backdrop-blur-xl bg-white/5 rounded-2xl p-6 border border-orange-400/30 hover:border-orange-400/50 transition-all duration-300 cursor-pointer group">
+                  <GitBranch className="h-12 w-12 text-orange-400 mb-4 group-hover:scale-110 transition-transform duration-300" />
+                  <h3 className="text-xl font-bold mb-3 text-white">Flow Mapping</h3>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Visualize process flows alongside their corresponding wireframe implementations in one unified view.
+                  </p>
+                </div>
+              </Link>
             </div>
           </div>
         </section>

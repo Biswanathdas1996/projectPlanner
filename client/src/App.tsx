@@ -11,6 +11,7 @@ import CodeGenerator from "@/pages/code-generator";
 import MarketResearch from "@/pages/market-research";
 import WireframeDesigner from "@/pages/wireframe-designer";
 import HTMLEditor from "@/pages/html-editor";
+import { FlowWireframeMappingPage } from "@/pages/flow-wireframe-mapping";
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
@@ -41,6 +42,9 @@ function Router() {
       <Route path="/diagram" component={BpmnEditor} />
       <Route path="/html-editor" component={HTMLEditor} />
       <Route path="/html-editor/:wireframeId" component={HTMLEditor} />
+      <Route path="/flow-mapping" component={FlowWireframeMappingPage} />
+      <Route path="/mapping" component={FlowWireframeMappingPage} />
+      <Route path="/flows" component={FlowWireframeMappingPage} />
       <Route component={NotFound} />
     </Switch>
   );

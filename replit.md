@@ -140,6 +140,13 @@ Changelog:
   - Redesigned stored guidelines modal with modern card-based layout and improved information density
   - Added inline color previews and compact metadata display for better brand guideline overview
   - Enhanced empty state with better visual hierarchy and clearer messaging
+- June 22, 2025. Flow & Wireframe Mapping page created for consolidated workflow visualization
+  - Built comprehensive mapping system connecting process flows with corresponding wireframes
+  - Added intelligent content similarity matching to auto-map flows to related wireframes
+  - Implemented dual-view system with desktop/mobile wireframe preview modes
+  - Created unified dashboard showing flow diagrams alongside their UI implementations
+  - Added download and preview functionality for wireframes directly from flow context
+  - Integrated mapping statistics and summary analytics for project oversight
 ```
 
 ## User Preferences
