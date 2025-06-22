@@ -1908,15 +1908,19 @@ ${JSON.stringify(brandGuidelines, null, 2)}
 
 REQUIREMENTS:
 1. Create a complete HTML document with embedded CSS and JavaScript
-2. Use the brand colors, fonts, and styling from the guidelines
-3. Implement all page elements (headers, buttons, forms, lists, navigation)
+2. Use the brand colors, fonts, styling and layouts from the guidelines
+3. Implement all page elements (headers, footers, buttons, forms, lists, cards, navigation)
 4. Make it responsive and modern
-5. Add interactive JavaScript for forms and buttons
-6. Follow the brand's visual identity strictly
-7. Use semantic HTML5 elements
-8. Ensure accessibility (ARIA labels, proper contrast)
-9. Include hover effects and transitions
-10. Make forms functional with validation
+5. Follow the brand's visual identity strictly
+6. Use semantic HTML5 elements
+7. CRITICAL ACCESSIBILITY: Ensure proper color contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text)
+8. NEVER use the same color for text and background - always use contrasting brand colors
+9. For dark backgrounds, use light text colors; for light backgrounds, use dark text colors
+10. Include hover effects and transitions with maintained contrast
+11. Make forms functional with validation
+12. Use interactive UI elements with proper contrast
+13. Ensure proper spacing between elements
+14. Test all color combinations for readability before applying
 
 RESPONSE FORMAT:
 Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Do not include any explanations or markdown formatting.`;

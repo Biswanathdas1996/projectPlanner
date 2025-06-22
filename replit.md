@@ -129,6 +129,8 @@ Changelog:
   - Fixed "sections is not iterable" error by handling object/array data structure variations
   - Updated regenerateWireframe function to use same Gemini-based logic as Generate Brand Wireframes
   - Both generation methods now use identical AI prompting and response parsing for consistency
+  - Enhanced prompts with strict color contrast requirements (minimum 4.5:1 ratio for accessibility)
+  - Added explicit instructions to prevent same-color text/background combinations
 ```
 
 ## User Preferences

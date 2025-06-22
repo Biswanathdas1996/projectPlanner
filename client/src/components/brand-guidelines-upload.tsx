@@ -20,9 +20,9 @@ import {
   createHTMLWireframeGenerator,
   type DetailedPageContent,
 } from "@/lib/html-wireframe-generator";
-import { 
+import {
   BrandGuidelinesStorage,
-  type ExternalBrandJSON 
+  type ExternalBrandJSON,
 } from "@/lib/brand-guidelines-storage";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useToast } from "@/hooks/use-toast";
@@ -62,14 +62,22 @@ export function BrandGuidelinesUpload({
   const [brandExtractionError, setBrandExtractionError] = useState("");
   const [brandGuidelines, setBrandGuidelines] = useState<any>(null);
   const [finalBrandReport, setFinalBrandReport] = useState<any>(null);
-  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
-  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState<MultimodalAnalysisProgress>({ current: 0, total: 0 });
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] =
+    useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] =
+    useState<MultimodalAnalysisProgress>({ current: 0, total: 0 });
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
-  const [wireframeProgress, setWireframeProgress] = useState({ current: 0, total: 0, currentPage: '' });
+  const [wireframeProgress, setWireframeProgress] = useState({
+    current: 0,
+    total: 0,
+    currentPage: "",
+  });
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [showStoredGuidelines, setShowStoredGuidelines] = useState(false);
-  const [storedGuidelines, setStoredGuidelines] = useState(BrandGuidelinesStorage.getAll());
+  const [storedGuidelines, setStoredGuidelines] = useState(
+    BrandGuidelinesStorage.getAll(),
+  );
   const { toast } = useToast();
 
   if (!visible) return null;
@@ -95,60 +103,81 @@ export function BrandGuidelinesUpload({
     });
 
     try {
-      console.log('🚀 Starting external API PDF extraction for:', file.name);
-      setMultimodalAnalysisProgress({ current: 20, total: 100, currentStep: "Uploading PDF to extraction service..." });
-      
+      console.log("🚀 Starting external API PDF extraction for:", file.name);
+      setMultimodalAnalysisProgress({
+        current: 20,
+        total: 100,
+        currentStep: "Uploading PDF to extraction service...",
+      });
+
       // Use FormData to send file to external API
       const formData = new FormData();
       formData.append("file", file, file.name);
 
       const requestOptions = {
-        method: 'POST',
+        method: "POST",
         body: formData,
-        redirect: 'follow' as RequestRedirect
+        redirect: "follow" as RequestRedirect,
       };
 
-      setMultimodalAnalysisProgress({ current: 40, total: 100, currentStep: "Processing PDF with external service..." });
+      setMultimodalAnalysisProgress({
+        current: 40,
+        total: 100,
+        currentStep: "Processing PDF with external service...",
+      });
 
-      const response = await fetch("http://127.0.0.1:5001/extract-guidelines", requestOptions);
-      
+      const response = await fetch(
+        "http://127.0.0.1:5001/extract-guidelines",
+        requestOptions,
+      );
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('External API error response:', errorText);
-        throw new Error(`External API failed with status: ${response.status} - ${errorText}`);
+        console.error("External API error response:", errorText);
+        throw new Error(
+          `External API failed with status: ${response.status} - ${errorText}`,
+        );
       }
 
       const result = await response.text();
-      console.log('External API response:', result);
+      console.log("External API response:", result);
 
-      setMultimodalAnalysisProgress({ current: 70, total: 100, currentStep: "Processing extracted guidelines..." });
+      setMultimodalAnalysisProgress({
+        current: 70,
+        total: 100,
+        currentStep: "Processing extracted guidelines...",
+      });
 
       // Parse the response - expecting JSON format
       let extractedData;
       try {
         extractedData = JSON.parse(result);
       } catch (parseError) {
-        console.error('Failed to parse API response:', parseError);
-        throw new Error('Invalid response format from extraction service');
+        console.error("Failed to parse API response:", parseError);
+        throw new Error("Invalid response format from extraction service");
       }
 
       // Store the raw JSON response
       setBrandGuidelines(extractedData);
       setFinalBrandReport(null); // Clear previous report since we're using external API
-      
+
       // Save to local storage
       const stored = BrandGuidelinesStorage.save(
-        extractedData as ExternalBrandJSON, 
-        extractedData.brand || 'Brand Guidelines',
-        file.name
+        extractedData as ExternalBrandJSON,
+        extractedData.brand || "Brand Guidelines",
+        file.name,
       );
-      
+
       // Update stored guidelines list
       setStoredGuidelines(BrandGuidelinesStorage.getAll());
-      
+
       onBrandGuidelinesExtracted?.(extractedData);
 
-      setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Completed!" });
+      setMultimodalAnalysisProgress({
+        current: 100,
+        total: 100,
+        currentStep: "Completed!",
+      });
 
       toast({
         title: "Brand Guidelines Extracted",
@@ -156,21 +185,31 @@ export function BrandGuidelinesUpload({
       });
     } catch (error) {
       console.error("Brand guideline extraction failed:", error);
-      
-      let errorMessage = 'Unknown error occurred';
-      let userMessage = 'Could not extract brand guidelines from the PDF file.';
-      
-      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-        errorMessage = 'Connection failed - extraction service unavailable';
-        userMessage = 'Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001';
+
+      let errorMessage = "Unknown error occurred";
+      let userMessage = "Could not extract brand guidelines from the PDF file.";
+
+      if (
+        error instanceof TypeError &&
+        error.message.includes("Failed to fetch")
+      ) {
+        errorMessage = "Connection failed - extraction service unavailable";
+        userMessage =
+          "Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001";
       } else if (error instanceof Error) {
         errorMessage = error.message;
-        if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
-          userMessage = 'Network connection failed. Please verify the extraction service is accessible.';
+        if (
+          error.message.includes("NetworkError") ||
+          error.message.includes("ECONNREFUSED")
+        ) {
+          userMessage =
+            "Network connection failed. Please verify the extraction service is accessible.";
         }
       }
-      
-      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
+
+      setBrandExtractionError(
+        `Failed to extract brand guidelines: ${errorMessage}`,
+      );
       toast({
         title: "Extraction Service Unavailable",
         description: userMessage,
@@ -183,14 +222,19 @@ export function BrandGuidelinesUpload({
   };
 
   const generateBrandAwareWireframes = async () => {
-    if (!brandGuidelines || !pageContentCards || pageContentCards.length === 0) return;
+    if (!brandGuidelines || !pageContentCards || pageContentCards.length === 0)
+      return;
 
     setIsGeneratingWireframes(true);
-    setWireframeProgress({ current: 0, total: pageContentCards.length, currentPage: '' });
-    
+    setWireframeProgress({
+      current: 0,
+      total: pageContentCards.length,
+      currentPage: "",
+    });
+
     try {
-      console.log('🚀 Starting Gemini-based wireframe generation');
-      
+      console.log("🚀 Starting Gemini-based wireframe generation");
+
       // Initialize Gemini AI
       const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
       const genAI = new GoogleGenerativeAI(apiKey);
@@ -200,55 +244,66 @@ export function BrandGuidelinesUpload({
 
       for (let i = 0; i < pageContentCards.length; i++) {
         const page = pageContentCards[i];
-        
+
         // Update progress
-        setWireframeProgress({ 
-          current: i, 
-          total: pageContentCards.length, 
-          currentPage: page.pageName 
+        setWireframeProgress({
+          current: i,
+          total: pageContentCards.length,
+          currentPage: page.pageName,
         });
-        
+
         console.log(`Generating wireframe for: ${page.pageName}`);
-        
+
         // Combine page content with brand guidelines
         const combinedPrompt = `You are a senior web developer creating a brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
 
 PAGE CONTENT:
-${JSON.stringify({
-  pageName: page.pageName,
-  pageType: page.pageType,
-  purpose: page.purpose,
-  stakeholders: page.stakeholders,
-  headers: page.headers || [],
-  buttons: page.buttons || [],
-  forms: page.forms || [],
-  lists: page.lists || [],
-  navigation: page.navigation || [],
-  additionalContent: page.additionalContent || []
-}, null, 2)}
+${JSON.stringify(
+  {
+    pageName: page.pageName,
+    pageType: page.pageType,
+    purpose: page.purpose,
+    stakeholders: page.stakeholders,
+    headers: page.headers || [],
+    buttons: page.buttons || [],
+    forms: page.forms || [],
+    lists: page.lists || [],
+    navigation: page.navigation || [],
+    additionalContent: page.additionalContent || [],
+  },
+  null,
+  2,
+)}
 
 BRAND GUIDELINES:
 ${JSON.stringify(brandGuidelines, null, 2)}
 
 REQUIREMENTS:
 1. Create a complete HTML document with embedded CSS and JavaScript
-2. Use the brand colors, fonts, and styling from the guidelines
-3. Implement all page elements (headers, buttons, forms, lists, navigation)
+2. Use the brand colors, fonts, styling and layouts from the guidelines
+3. Implement all page elements (headers, footers, buttons, forms, lists, cards, navigation)
 4. Make it responsive and modern
-5. Add interactive JavaScript for forms and buttons
-6. Follow the brand's visual identity strictly
-7. Use semantic HTML5 elements
-8. Ensure accessibility (ARIA labels, proper contrast)
-9. Include hover effects and transitions
-10. Make forms functional with validation
+5. Follow the brand's visual identity strictly
+6. Use semantic HTML5 elements
+7. CRITICAL ACCESSIBILITY: Ensure proper color contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text)
+8. NEVER use the same color for text and background - always use contrasting brand colors
+9. For dark backgrounds, use light text colors; for light backgrounds, use dark text colors
+10. Include hover effects and transitions with maintained contrast
+11. Make forms functional with validation
+12. Use interactive UI elements with proper contrast
+13. Ensure proper spacing between elements
+14. Test all color combinations for readability before applying
+
 
 RESPONSE FORMAT:
 Return only the complete HTML code with embedded CSS in <style> tags and JavaScript in <script> tags. Do not include any explanations or markdown formatting.`;
 
         const result = await model.generateContent(combinedPrompt);
         const response = result.response.text();
-        
-        console.log(`Generated wireframe for ${page.pageName}, length: ${response.length}`);
+
+        console.log(
+          `Generated wireframe for ${page.pageName}, length: ${response.length}`,
+        );
 
         // Extract HTML, CSS, and JS from response
         const htmlMatch = response.match(/<!DOCTYPE html>[\s\S]*<\/html>/i);
@@ -256,22 +311,22 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
         const jsMatch = response.match(/<script[^>]*>([\s\S]*?)<\/script>/i);
 
         const htmlCode = htmlMatch ? htmlMatch[0] : response;
-        const cssCode = cssMatch ? cssMatch[1] : '';
-        const jsCode = jsMatch ? jsMatch[1] : '';
+        const cssCode = cssMatch ? cssMatch[1] : "";
+        const jsCode = jsMatch ? jsMatch[1] : "";
 
         wireframes.push({
           id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           pageName: page.pageName,
           htmlCode: htmlCode,
           cssCode: cssCode,
-          jsCode: jsCode
+          jsCode: jsCode,
         });
 
         // Update progress after completion
-        setWireframeProgress({ 
-          current: i + 1, 
-          total: pageContentCards.length, 
-          currentPage: page.pageName 
+        setWireframeProgress({
+          current: i + 1,
+          total: pageContentCards.length,
+          currentPage: page.pageName,
         });
       }
 
@@ -289,7 +344,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
       });
     } finally {
       setIsGeneratingWireframes(false);
-      setWireframeProgress({ current: 0, total: 0, currentPage: '' });
+      setWireframeProgress({ current: 0, total: 0, currentPage: "" });
     }
   };
 
@@ -307,24 +362,28 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
           pageType: page.pageType,
           purpose: page.purpose,
           stakeholders: page.stakeholders,
-          htmlContent: '',
-          cssStyles: '',
+          htmlContent: "",
+          cssStyles: "",
           contentDetails: {
             headers: page.headers || [],
             texts: page.additionalContent || [],
             buttons: page.buttons || [],
             forms: page.forms || [],
             lists: page.lists || [],
-            images: []
-          }
+            images: [],
+          },
         };
 
-        const result = await htmlGenerator.generateDetailedWireframes([detailedContent], 'modern', 'desktop');
+        const result = await htmlGenerator.generateDetailedWireframes(
+          [detailedContent],
+          "modern",
+          "desktop",
+        );
         unifiedPages.push({
           pageName: page.pageName,
           htmlCode: result[0].htmlContent,
           cssCode: result[0].cssStyles,
-          jsCode: ''
+          jsCode: "",
         });
       }
 
@@ -349,7 +408,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
     setBrandGuidelines(stored.brandData);
     onBrandGuidelinesExtracted?.(stored.brandData);
     setShowStoredGuidelines(false);
-    
+
     toast({
       title: "Brand Guidelines Loaded",
       description: `Loaded ${stored.name} from local storage`,
@@ -359,7 +418,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
   const deleteStoredGuideline = (id: string) => {
     BrandGuidelinesStorage.delete(id);
     setStoredGuidelines(BrandGuidelinesStorage.getAll());
-    
+
     toast({
       title: "Brand Guidelines Deleted",
       description: "Guidelines removed from local storage",
@@ -410,7 +469,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                   Stored ({storedGuidelines.length})
                 </Button>
               </div>
-              
+
               {isExtractingBrand && (
                 <div className="mt-2 flex items-center gap-2 text-sm text-purple-600">
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -468,7 +527,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                   </div>
                 </div>
               )}
-              
+
               {brandExtractionError && (
                 <p className="text-sm text-red-600 mt-1">
                   {brandExtractionError}
@@ -488,17 +547,26 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                     {wireframeProgress.current} of {wireframeProgress.total}
                   </span>
                 </div>
-                
-                <Progress 
-                  value={(wireframeProgress.current / wireframeProgress.total) * 100} 
+
+                <Progress
+                  value={
+                    (wireframeProgress.current / wireframeProgress.total) * 100
+                  }
                   className="w-full mb-2"
                 />
-                
+
                 <div className="text-sm text-blue-700">
                   {wireframeProgress.current < wireframeProgress.total ? (
-                    <>Processing: <span className="font-medium">{wireframeProgress.currentPage}</span></>
+                    <>
+                      Processing:{" "}
+                      <span className="font-medium">
+                        {wireframeProgress.currentPage}
+                      </span>
+                    </>
                   ) : (
-                    <span className="font-medium">Finalizing wireframes...</span>
+                    <span className="font-medium">
+                      Finalizing wireframes...
+                    </span>
                   )}
                 </div>
               </div>
@@ -508,7 +576,12 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               <div className="flex gap-2">
                 <Button
                   onClick={generateBrandAwareWireframes}
-                  disabled={!brandGuidelines || isGeneratingWireframes || !pageContentCards || pageContentCards.length === 0}
+                  disabled={
+                    !brandGuidelines ||
+                    isGeneratingWireframes ||
+                    !pageContentCards ||
+                    pageContentCards.length === 0
+                  }
                   variant="outline"
                   size="sm"
                   className="flex items-center gap-1"
@@ -608,21 +681,33 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               {storedGuidelines.length === 0 ? (
                 <div className="text-center py-8">
                   <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">No brand guidelines stored yet</p>
-                  <p className="text-sm text-gray-400 mt-2">Upload a PDF to save brand guidelines for future use</p>
+                  <p className="text-gray-500">
+                    No brand guidelines stored yet
+                  </p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    Upload a PDF to save brand guidelines for future use
+                  </p>
                 </div>
               ) : (
                 <div className="grid gap-4">
                   {storedGuidelines.map((stored) => (
-                    <div key={stored.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                    <div
+                      key={stored.id}
+                      className="border rounded-lg p-4 hover:bg-gray-50"
+                    >
                       <div className="flex justify-between items-start mb-3">
                         <div>
-                          <h4 className="font-semibold text-lg">{stored.name}</h4>
+                          <h4 className="font-semibold text-lg">
+                            {stored.name}
+                          </h4>
                           <p className="text-sm text-gray-600">
-                            Extracted: {new Date(stored.extractedAt).toLocaleDateString()}
+                            Extracted:{" "}
+                            {new Date(stored.extractedAt).toLocaleDateString()}
                           </p>
                           {stored.pdfFileName && (
-                            <p className="text-xs text-gray-500">From: {stored.pdfFileName}</p>
+                            <p className="text-xs text-gray-500">
+                              From: {stored.pdfFileName}
+                            </p>
                           )}
                         </div>
                         <div className="flex gap-2">
@@ -646,46 +731,61 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <span className="font-medium">Brand:</span>
-                          <p className="text-gray-600">{stored.brandData.brand}</p>
+                          <p className="text-gray-600">
+                            {stored.brandData.brand}
+                          </p>
                         </div>
                         <div>
                           <span className="font-medium">Sections:</span>
-                          <p className="text-gray-600">{stored.brandData?.sections?.length || 0}</p>
+                          <p className="text-gray-600">
+                            {stored.brandData?.sections?.length || 0}
+                          </p>
                         </div>
                         <div>
                           <span className="font-medium">Colors:</span>
                           <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandColors(stored)?.length || 0}
+                            {BrandGuidelinesStorage.getBrandColors(stored)
+                              ?.length || 0}
                           </p>
                         </div>
                         <div>
                           <span className="font-medium">Fonts:</span>
                           <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandFonts(stored)?.length || 0}
+                            {BrandGuidelinesStorage.getBrandFonts(stored)
+                              ?.length || 0}
                           </p>
                         </div>
                       </div>
 
                       {/* Preview Colors */}
-                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 0 && (
+                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length ||
+                        0) > 0 && (
                         <div className="mt-3">
-                          <span className="text-xs font-medium text-gray-700">Colors:</span>
+                          <span className="text-xs font-medium text-gray-700">
+                            Colors:
+                          </span>
                           <div className="flex gap-2 mt-1">
-                            {BrandGuidelinesStorage.getBrandColors(stored)?.slice(0, 5)?.map((color, index) => (
-                              <div
-                                key={index}
-                                className="w-6 h-6 rounded border"
-                                style={{ backgroundColor: color.hex }}
-                                title={`${color.name}: ${color.hex}`}
-                              />
-                            ))}
-                            {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 5 && (
+                            {BrandGuidelinesStorage.getBrandColors(stored)
+                              ?.slice(0, 5)
+                              ?.map((color, index) => (
+                                <div
+                                  key={index}
+                                  className="w-6 h-6 rounded border"
+                                  style={{ backgroundColor: color.hex }}
+                                  title={`${color.name}: ${color.hex}`}
+                                />
+                              ))}
+                            {(BrandGuidelinesStorage.getBrandColors(stored)
+                              ?.length || 0) > 5 && (
                               <span className="text-xs text-gray-500 self-center">
-                                +{(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) - 5} more
+                                +
+                                {(BrandGuidelinesStorage.getBrandColors(stored)
+                                  ?.length || 0) - 5}{" "}
+                                more
                               </span>
                             )}
                           </div>
@@ -699,10 +799,14 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               {storedGuidelines.length > 0 && (
                 <div className="mt-6 p-4 bg-gray-100 rounded-lg">
                   <div className="text-sm text-gray-600">
-                    <strong>Storage Info:</strong> {BrandGuidelinesStorage.getStorageInfo().size} used, 
-                    last updated {BrandGuidelinesStorage.getStorageInfo().lastUpdated 
-                      ? new Date(BrandGuidelinesStorage.getStorageInfo().lastUpdated!).toLocaleDateString()
-                      : 'never'}
+                    <strong>Storage Info:</strong>{" "}
+                    {BrandGuidelinesStorage.getStorageInfo().size} used, last
+                    updated{" "}
+                    {BrandGuidelinesStorage.getStorageInfo().lastUpdated
+                      ? new Date(
+                          BrandGuidelinesStorage.getStorageInfo().lastUpdated!,
+                        ).toLocaleDateString()
+                      : "never"}
                   </div>
                   <Button
                     onClick={() => {
@@ -728,4 +832,4 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
       )}
     </div>
   );
-};
+}
