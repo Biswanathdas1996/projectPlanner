@@ -12,16 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  createBrandGuidelineExtractor,
-  type BrandGuideline,
-} from "@/lib/brand-guideline-extractor";
-import { BrandGuidelinesStorage } from "@/lib/brand-guidelines-storage";
-import {
-  createMultimodalPDFExtractor,
-  type ComprehensiveBrandReport,
-} from "@/lib/multimodal-pdf-extractor";
-import { createChunkedBrandAnalyzer } from "@/lib/chunked-brand-analyzer";
-import {
   createBrandAwareWireframeGenerator,
   type BrandedWireframeRequest,
 } from "@/lib/brand-aware-wireframe-generator";
@@ -41,67 +31,16 @@ import {
   MessageSquare,
 } from "lucide-react";
 
-interface ExternalBrandData {
-  brand_name: string;
-  color_palette?: { [key: string]: string };
-  typography?: {
-    primary_font?: string;
-    on_screen_font?: string;
-    print_font?: string;
-    font_weights?: string[];
-    line_spacing?: { [key: string]: string };
-    alignment?: string;
-    case?: string;
-    tracking?: { [key: string]: string };
-  };
-  page_layout?: {
-    grid_system?: string;
-    spacing?: string;
-    margins?: string;
-    alignment?: string;
-    breakpoints?: string[] | null;
-  };
-  photography?: {
-    style?: string;
-    sources?: string;
-  };
-  illustration?: {
-    purpose?: string;
-    style?: string;
-    usage?: string;
-  };
-  icons?: {
-    style?: string;
-    usage?: string;
-  };
-  other_guidelines?: string[];
-}
-
-interface StoredBrandGuideline {
-  id: string;
-  name: string;
-  extractedAt: string;
-}
-
-interface FinalBrandReport {
-  documentInfo: {
-    totalPages: number;
-    totalChunks: number;
-    averageConfidence: number;
-    processingTime: number;
-  };
-  keyFindings: {
-    criticalRequirements: string[];
-    brandThemes: string[];
-    designPrinciples: string[];
-    complianceNotes: string[];
-  };
+interface MultimodalAnalysisProgress {
+  current: number;
+  total: number;
+  currentStep?: string;
 }
 
 interface BrandGuidelinesUploadProps {
   visible: boolean;
   pageContentCards: any[];
-  onBrandGuidelinesExtracted?: (guidelines: BrandGuideline) => void;
+  onBrandGuidelinesExtracted?: (guidelines: any) => void;
   onWireframesGenerated?: (wireframes: any[]) => void;
   onUnifiedHTMLGenerated?: (html: any) => void;
 }
@@ -113,103 +52,18 @@ export function BrandGuidelinesUpload({
   onWireframesGenerated,
   onUnifiedHTMLGenerated,
 }: BrandGuidelinesUploadProps) {
-  const { toast } = useToast();
-
-  // Brand Guidelines state
-  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(
-    null,
-  );
-  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(
-    null,
-  );
   const [isExtractingBrand, setIsExtractingBrand] = useState(false);
-  const [showBrandModal, setShowBrandModal] = useState(false);
-  const [brandExtractionError, setBrandExtractionError] = useState<string>("");
-  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<
-    StoredBrandGuideline[]
-  >([]);
-  const [selectedStoredGuideline, setSelectedStoredGuideline] =
-    useState<string>("");
+  const [brandExtractionError, setBrandExtractionError] = useState("");
+  const [brandGuidelines, setBrandGuidelines] = useState<any>(null);
+  const [finalBrandReport, setFinalBrandReport] = useState<any>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState<MultimodalAnalysisProgress>({ current: 0, total: 0 });
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [showBrandModal, setShowBrandModal] = useState(false);
+  const { toast } = useToast();
 
-  // Multimodal brand analysis state
-  const [finalBrandReport, setFinalBrandReport] =
-    useState<FinalBrandReport | null>(null);
-  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] =
-    useState(false);
-  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({
-    current: 0,
-    total: 0,
-    currentStep: "",
-  });
-
-  // Load stored brand guidelines on component mount
-  useEffect(() => {
-    const stored = BrandGuidelinesStorage.getAll();
-    setStoredBrandGuidelines(stored);
-
-    const latest = BrandGuidelinesStorage.getLatest();
-    if (latest && !brandGuidelines) {
-      setBrandGuidelines(latest);
-      onBrandGuidelinesExtracted?.(latest);
-    }
-  }, []);
-
-  // Helper functions
-  const isExternalBrandData = (data: any): data is ExternalBrandData => {
-    return data && typeof data === "object" && "brand_name" in data;
-  };
-
-  const getColorsFromExternalData = (data: ExternalBrandData): string[] => {
-    if (!data.color_palette) return [];
-    return Object.values(data.color_palette);
-  };
-
-  const getFontsFromExternalData = (data: ExternalBrandData): string[] => {
-    const fonts: string[] = [];
-    if (data.typography?.primary_font) fonts.push(data.typography.primary_font);
-    if (data.typography?.on_screen_font)
-      fonts.push(data.typography.on_screen_font);
-    if (data.typography?.print_font) fonts.push(data.typography.print_font);
-    return fonts;
-  };
-
-  const handleStoredGuidelineSelection = (value: string) => {
-    setSelectedStoredGuideline(value);
-    if (value !== "none" && value !== "") {
-      const guideline = storedBrandGuidelines.find(
-        (g: StoredBrandGuideline) => g.id === value,
-      );
-      if (guideline) {
-        const stored = BrandGuidelinesStorage.getById(value);
-        if (stored) {
-          setBrandGuidelines(stored);
-          onBrandGuidelinesExtracted?.(stored);
-          toast({
-            title: "Brand Guidelines Loaded",
-            description: `Loaded guidelines: ${guideline.name}`,
-          });
-        }
-      }
-    } else {
-      setBrandGuidelines(null);
-    }
-  };
-
-  const handleDeleteStoredGuideline = (id: string) => {
-    BrandGuidelinesStorage.delete(id);
-    const updated = BrandGuidelinesStorage.getAll();
-    setStoredBrandGuidelines(updated);
-    if (selectedStoredGuideline === id) {
-      setSelectedStoredGuideline("");
-      setBrandGuidelines(null);
-    }
-    toast({
-      title: "Guidelines Deleted",
-      description: "Brand guidelines have been removed from storage.",
-    });
-  };
+  if (!visible) return null;
 
   const handleBrandGuidelineUpload = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -282,14 +136,24 @@ export function BrandGuidelinesUpload({
       });
     } catch (error) {
       console.error("Brand guideline extraction failed:", error);
-      setBrandExtractionError(
-        error instanceof Error
-          ? error.message
-          : "Failed to extract brand guidelines",
-      );
+      
+      let errorMessage = 'Unknown error occurred';
+      let userMessage = 'Could not extract brand guidelines from the PDF file.';
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        errorMessage = 'Connection failed - extraction service unavailable';
+        userMessage = 'Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001';
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        if (error.message.includes('NetworkError') || error.message.includes('ECONNREFUSED')) {
+          userMessage = 'Network connection failed. Please verify the extraction service is accessible.';
+        }
+      }
+      
+      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
       toast({
-        title: "Extraction Failed",
-        description: "Failed to extract brand guidelines. Please try again.",
+        title: "Extraction Service Unavailable",
+        description: userMessage,
         variant: "destructive",
       });
     } finally {
@@ -321,7 +185,7 @@ export function BrandGuidelinesUpload({
           pageName: page.pageName,
           htmlCode: wireframe.html,
           cssCode: wireframe.css,
-          jsCode: "",
+          jsCode: ''
         });
       }
 
@@ -331,10 +195,10 @@ export function BrandGuidelinesUpload({
         description: `Generated ${wireframes.length} brand-aware wireframes`,
       });
     } catch (error) {
-      console.error("Brand wireframe generation failed:", error);
+      console.error("Error generating brand wireframes:", error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate brand-aware wireframes.",
+        description: "Failed to generate brand-aware wireframes",
         variant: "destructive",
       });
     } finally {
@@ -356,41 +220,37 @@ export function BrandGuidelinesUpload({
           pageType: page.pageType,
           purpose: page.purpose,
           stakeholders: page.stakeholders,
-          htmlContent: "",
-          cssStyles: "",
+          htmlContent: '',
+          cssStyles: '',
           contentDetails: {
             headers: page.headers || [],
             texts: page.additionalContent || [],
             buttons: page.buttons || [],
             forms: page.forms || [],
             lists: page.lists || [],
-            images: [],
-          },
+            images: []
+          }
         };
 
-        const result = await htmlGenerator.generateDetailedWireframes(
-          [detailedContent],
-          "modern",
-          "desktop",
-        );
+        const result = await htmlGenerator.generateDetailedWireframes([detailedContent], 'modern', 'desktop');
         unifiedPages.push({
           pageName: page.pageName,
           htmlCode: result[0].htmlContent,
           cssCode: result[0].cssStyles,
-          jsCode: "",
+          jsCode: ''
         });
       }
 
-      onUnifiedHTMLGenerated?.({ pages: unifiedPages });
+      onUnifiedHTMLGenerated?.(unifiedPages);
       toast({
-        title: "Section Wireframes Generated",
-        description: `Generated ${unifiedPages.length} unified wireframes`,
+        title: "Unified HTML Generated",
+        description: `Generated unified HTML for ${unifiedPages.length} pages`,
       });
     } catch (error) {
-      console.error("Unified HTML generation failed:", error);
+      console.error("Error generating unified HTML:", error);
       toast({
         title: "Generation Failed",
-        description: "Failed to generate section wireframes.",
+        description: "Failed to generate unified HTML",
         variant: "destructive",
       });
     } finally {
@@ -398,183 +258,119 @@ export function BrandGuidelinesUpload({
     }
   };
 
-  if (!visible) return null;
-
   return (
-    <>
-      {/* Brand Guidelines Upload Section */}
-      <Card className="mt-8 mb-6 border-2 border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
-        <CardHeader className="pb-4">
+    <div className="space-y-4">
+      <Card className="border-dashed border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
+        <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <Palette className="h-5 w-5 text-purple-600" />
-            Brand Guidelines
-            {brandGuidelines && (
-              <Badge className="bg-green-100 text-green-800 border-green-300">
-                Loaded
-              </Badge>
-            )}
+            <Palette className="h-6 w-6 text-purple-600" />
+            Brand Guidelines Upload
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Upload a new brand guidelines PDF or select from previously
-              extracted guidelines to generate wireframes that match your brand
-              identity.
-            </p>
-
-            {/* Stored Brand Guidelines Selection */}
-            {storedBrandGuidelines.length > 0 && (
-              <div className="space-y-2">
-                <Label className="block text-sm font-medium">
-                  Previously Extracted Guidelines (
-                  {storedBrandGuidelines.length} available)
-                </Label>
-                <div className="flex gap-2">
-                  <Select
-                    value={selectedStoredGuideline}
-                    onValueChange={handleStoredGuidelineSelection}
-                  >
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Select stored brand guidelines..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">
-                        None - Upload new PDF
-                      </SelectItem>
-                      {storedBrandGuidelines.map((guideline) => (
-                        <SelectItem key={guideline.id} value={guideline.id}>
-                          <div className="flex items-center justify-between w-full">
-                            <span>{guideline.name}</span>
-                            <span className="text-xs text-gray-500 ml-2">
-                              {new Date(
-                                guideline.extractedAt,
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {selectedStoredGuideline && (
-                    <Button
-                      onClick={() =>
-                        handleDeleteStoredGuideline(selectedStoredGuideline)
-                      }
-                      variant="outline"
-                      size="sm"
-                      className="border-red-300 text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1">
-                <Label
-                  htmlFor="brand-pdf"
-                  className="block text-sm font-medium mb-2"
+            <div>
+              <Label htmlFor="brand-upload" className="text-sm font-medium">
+                Upload Brand Guidelines PDF
+              </Label>
+              <div className="mt-1 flex items-center gap-3">
+                <Input
+                  id="brand-upload"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleBrandGuidelineUpload}
+                  disabled={isExtractingBrand}
+                  className="flex-1"
+                />
+                <Button
+                  onClick={() => setShowBrandModal(true)}
+                  variant="outline"
+                  size="sm"
+                  disabled={!brandGuidelines}
+                  className="flex items-center gap-1"
                 >
-                  Upload New Brand Guidelines PDF
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="brand-pdf"
-                    type="file"
-                    accept=".pdf"
-                    onChange={handleBrandGuidelineUpload}
-                    disabled={isExtractingBrand}
-                    className="file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-sm file:font-medium file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
-                  />
-                  {isExtractingBrand && (
-                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
-                      <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
-                    </div>
-                  )}
+                  <Eye className="h-4 w-4" />
+                  View Guidelines
+                </Button>
+              </div>
+              
+              {isExtractingBrand && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-purple-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Extracting brand guidelines...
                 </div>
+              )}
 
-                {/* Multimodal Analysis Progress */}
-                {isPerformingMultimodalAnalysis &&
-                  multimodalAnalysisProgress.total > 0 && (
-                    <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
-                          <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
-                          Multimodal PDF Analysis
-                        </span>
-                        <span className="text-xs text-indigo-600">
-                          {Math.round(
-                            (multimodalAnalysisProgress.current /
-                              multimodalAnalysisProgress.total) *
-                              100,
-                          )}
-                          %
-                        </span>
-                      </div>
-                      <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
-                        <div
-                          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                          style={{
-                            width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
-                          }}
-                        ></div>
-                      </div>
-                      {multimodalAnalysisProgress.currentStep && (
-                        <p className="text-xs text-indigo-600">
-                          {multimodalAnalysisProgress.currentStep}
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                {/* JSON Response Viewer */}
-                {brandGuidelines && (
-                  <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-emerald-700">
-                        Extracted Brand Guidelines JSON
+              {/* Multimodal Analysis Progress */}
+              {isPerformingMultimodalAnalysis &&
+                multimodalAnalysisProgress.total > 0 && (
+                  <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                        <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                        External API Processing
+                      </span>
+                      <span className="text-xs text-indigo-600">
+                        {Math.round(
+                          (multimodalAnalysisProgress.current /
+                            multimodalAnalysisProgress.total) *
+                            100,
+                        )}
+                        %
                       </span>
                     </div>
-                    <div className="mt-2 bg-white rounded border p-3 max-h-60 overflow-auto">
-                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-                        {JSON.stringify(brandGuidelines, null, 2)}
-                      </pre>
+                    <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                      <div
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
+                        }}
+                      ></div>
                     </div>
+                    {multimodalAnalysisProgress.currentStep && (
+                      <p className="text-xs text-indigo-600">
+                        {multimodalAnalysisProgress.currentStep}
+                      </p>
+                    )}
                   </div>
                 )}
-                {brandExtractionError && (
-                  <p className="text-sm text-red-600 mt-1">
-                    {brandExtractionError}
-                  </p>
-                )}
-              </div>
 
+              {/* JSON Response Viewer */}
+              {brandGuidelines && (
+                <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-emerald-700">
+                      Extracted Brand Guidelines JSON
+                    </span>
+                  </div>
+                  <div className="mt-2 bg-white rounded border p-3 max-h-60 overflow-auto">
+                    <pre className="text-xs text-gray-800 whitespace-pre-wrap">
+                      {JSON.stringify(brandGuidelines, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+              )}
+              
+              {brandExtractionError && (
+                <p className="text-sm text-red-600 mt-1">
+                  {brandExtractionError}
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-3 pt-3 border-t">
               <div className="flex gap-2">
-                {brandGuidelines && (
-                  <Button
-                    onClick={() => setShowBrandModal(true)}
-                    variant="outline"
-                    size="sm"
-                    className="border-purple-300 text-purple-700 hover:bg-purple-50"
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View Guidelines
-                  </Button>
-                )}
-
                 <Button
                   onClick={generateBrandAwareWireframes}
                   disabled={!brandGuidelines || isGeneratingWireframes}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  variant="outline"
                   size="sm"
+                  className="flex items-center gap-1"
                 >
                   {isGeneratingWireframes ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      <Loader2 className="h-4 w-4 animate-spin" />
                       Generating...
                     </>
                   ) : (
@@ -584,17 +380,17 @@ export function BrandGuidelinesUpload({
                     </>
                   )}
                 </Button>
-
                 <Button
                   onClick={generateUnifiedHTML}
                   disabled={!brandGuidelines || isGeneratingUnifiedHTML}
-                  className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  variant="outline"
                   size="sm"
+                  className="flex items-center gap-1"
                 >
                   {isGeneratingUnifiedHTML ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Creating Wireframes...
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Generating...
                     </>
                   ) : (
                     <>
@@ -605,47 +401,6 @@ export function BrandGuidelinesUpload({
                 </Button>
               </div>
             </div>
-
-            {brandGuidelines && (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
-                <div className="text-center p-2 bg-white/60 rounded-lg">
-                  <div className="text-xs text-gray-500">Colors</div>
-                  <div className="text-sm font-medium">
-                    {isExternalBrandData(brandGuidelines)
-                      ? getColorsFromExternalData(brandGuidelines).length
-                      : (brandGuidelines.colors?.primary?.length || 0) +
-                        (brandGuidelines.colors?.text?.length || 0)}
-                  </div>
-                </div>
-                <div className="text-center p-2 bg-white/60 rounded-lg">
-                  <div className="text-xs text-gray-500">Typography</div>
-                  <div className="text-sm font-medium">
-                    {isExternalBrandData(brandGuidelines)
-                      ? getFontsFromExternalData(brandGuidelines).length
-                      : brandGuidelines.typography?.fonts?.length || 0}{" "}
-                    fonts
-                  </div>
-                </div>
-                <div className="text-center p-2 bg-white/60 rounded-lg">
-                  <div className="text-xs text-gray-500">Components</div>
-                  <div className="text-sm font-medium">
-                    {Object.keys(brandGuidelines.components || {}).length} types
-                  </div>
-                </div>
-                <div className="text-center p-2 bg-white/60 rounded-lg">
-                  <div className="text-xs text-gray-500">Logo Info</div>
-                  <div className="text-sm font-medium">
-                    {brandGuidelines.logos?.variations?.length || 0} variants
-                  </div>
-                </div>
-                <div className="text-center p-2 bg-white/60 rounded-lg">
-                  <div className="text-xs text-gray-500">Brand Voice</div>
-                  <div className="text-sm font-medium">
-                    {brandGuidelines.tone?.personality?.length || 0} traits
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
@@ -669,163 +424,22 @@ export function BrandGuidelinesUpload({
             </div>
 
             <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
-              {/* Multimodal Brand Analysis Summary */}
-              {finalBrandReport && (
-                <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
-                  <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse"></div>
-                    Multimodal Brand Analysis Results
-                  </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-emerald-600">
-                        {finalBrandReport.documentInfo.totalPages}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Pages Analyzed
-                      </div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-blue-600">
-                        {finalBrandReport.documentInfo.totalChunks}
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Content Chunks
-                      </div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {
-                          finalBrandReport.keyFindings.criticalRequirements
-                            .length
-                        }
-                      </div>
-                      <div className="text-xs text-gray-600">
-                        Critical Requirements
-                      </div>
-                    </div>
-                    <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {Math.round(
-                          finalBrandReport.documentInfo.averageConfidence * 100,
-                        )}
-                        %
-                      </div>
-                      <div className="text-xs text-gray-600">Confidence</div>
-                    </div>
-                  </div>
-
-                  {/* Processing Summary */}
-                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-gray-700 mb-2">
-                      Processing Summary:
-                    </div>
-                    <div className="flex gap-4 text-xs text-gray-600">
-                      <span>
-                        Processing Time:{" "}
-                        {Math.round(
-                          finalBrandReport.documentInfo.processingTime / 1000,
-                        )}
-                        s
-                      </span>
-                      <span>
-                        Brand Themes:{" "}
-                        {finalBrandReport.keyFindings.brandThemes.length}
-                      </span>
-                      <span>
-                        Design Principles:{" "}
-                        {finalBrandReport.keyFindings.designPrinciples.length}
-                      </span>
-                    </div>
-                  </div>
+              {/* Brand Guidelines JSON Display */}
+              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
+                <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                  Extracted Brand Guidelines JSON
+                </h3>
+                <div className="bg-white rounded-lg border p-4 max-h-96 overflow-auto">
+                  <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
+                    {JSON.stringify(brandGuidelines, null, 2)}
+                  </pre>
                 </div>
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Colors Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-gradient-to-r from-red-500 to-blue-500"></div>
-                      Color Palette
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">
-                        Primary Colors
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {(brandGuidelines.colors?.primary || []).map(
-                          (color: string, index: number) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-1"
-                            >
-                              <div
-                                className="w-6 h-6 rounded border"
-                                style={{ backgroundColor: color }}
-                              ></div>
-                              <span className="text-xs font-mono">{color}</span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm mb-2">
-                        Secondary Colors
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {(brandGuidelines.colors?.secondary || []).map(
-                          (color: string, index: number) => (
-                            <div
-                              key={index}
-                              className="flex items-center gap-1"
-                            >
-                              <div
-                                className="w-6 h-6 rounded border"
-                                style={{ backgroundColor: color }}
-                              ></div>
-                              <span className="text-xs font-mono">{color}</span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Typography Section */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      <span className="text-lg">Aa</span>
-                      Typography
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    {(brandGuidelines.typography?.fonts || []).map(
-                      (font: any, index: number) => (
-                        <div key={index} className="p-2 border rounded">
-                          <div className="font-medium text-sm">
-                            {font.name || font}
-                          </div>
-                          {font.weights && (
-                            <div className="text-xs text-gray-600">
-                              Weights: {font.weights.join(", ")}
-                            </div>
-                          )}
-                        </div>
-                      ),
-                    )}
-                  </CardContent>
-                </Card>
               </div>
             </div>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
-}
+};
