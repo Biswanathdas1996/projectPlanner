@@ -106,6 +106,11 @@ Changelog:
   - Enhanced PDF brand guidelines extraction with better error handling
   - Improved fallback mechanisms for reliable content generation
   - Verified all core features working properly in Replit environment
+- June 22, 2025. Brand Guidelines Upload component refactored
+  - Replaced Gemini-based PDF extraction with external API call to http://127.0.0.1:5001/extract-guidelines
+  - Updated brand-guidelines-upload.tsx to use FormData and fetch for external service
+  - Modified view to display raw JSON response instead of processed brand guideline structure
+  - Simplified extraction workflow to rely on external Python service for PDF processing
 ```
 
 ## User Preferences

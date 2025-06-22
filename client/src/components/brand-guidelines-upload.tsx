@@ -1,33 +1,45 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { createBrandGuidelineExtractor, type BrandGuideline } from "@/lib/brand-guideline-extractor";
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  createBrandGuidelineExtractor,
+  type BrandGuideline,
+} from "@/lib/brand-guideline-extractor";
 import { BrandGuidelinesStorage } from "@/lib/brand-guidelines-storage";
-import { createMultimodalPDFExtractor, type ComprehensiveBrandReport } from "@/lib/multimodal-pdf-extractor";
+import {
+  createMultimodalPDFExtractor,
+  type ComprehensiveBrandReport,
+} from "@/lib/multimodal-pdf-extractor";
 import { createChunkedBrandAnalyzer } from "@/lib/chunked-brand-analyzer";
-import { createBrandAwareWireframeGenerator, type BrandedWireframeRequest } from "@/lib/brand-aware-wireframe-generator";
-import { createHTMLWireframeGenerator, type DetailedPageContent } from "@/lib/html-wireframe-generator";
+import {
+  createBrandAwareWireframeGenerator,
+  type BrandedWireframeRequest,
+} from "@/lib/brand-aware-wireframe-generator";
+import {
+  createHTMLWireframeGenerator,
+  type DetailedPageContent,
+} from "@/lib/html-wireframe-generator";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Palette, 
-  Eye, 
-  Sparkles, 
-  Code, 
-  Loader2, 
+import {
+  Palette,
+  Eye,
+  Sparkles,
+  Code,
+  Loader2,
   Trash2,
   X,
-  MessageSquare
-} from 'lucide-react';
-
-interface MultimodalAnalysisProgress {
-  current: number;
-  total: number;
-  currentStep?: string;
-}
+  MessageSquare,
+} from "lucide-react";
 
 interface ExternalBrandData {
   brand_name: string;
@@ -99,31 +111,44 @@ export function BrandGuidelinesUpload({
   pageContentCards,
   onBrandGuidelinesExtracted,
   onWireframesGenerated,
-  onUnifiedHTMLGenerated
+  onUnifiedHTMLGenerated,
 }: BrandGuidelinesUploadProps) {
   const { toast } = useToast();
-  
+
   // Brand Guidelines state
-  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(null);
-  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(null);
+  const [brandGuidelines, setBrandGuidelines] = useState<BrandGuideline | null>(
+    null,
+  );
+  const [rawBrandData, setRawBrandData] = useState<ExternalBrandData | null>(
+    null,
+  );
   const [isExtractingBrand, setIsExtractingBrand] = useState(false);
   const [showBrandModal, setShowBrandModal] = useState(false);
-  const [brandExtractionError, setBrandExtractionError] = useState<string>('');
-  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<StoredBrandGuideline[]>([]);
-  const [selectedStoredGuideline, setSelectedStoredGuideline] = useState<string>("");
+  const [brandExtractionError, setBrandExtractionError] = useState<string>("");
+  const [storedBrandGuidelines, setStoredBrandGuidelines] = useState<
+    StoredBrandGuideline[]
+  >([]);
+  const [selectedStoredGuideline, setSelectedStoredGuideline] =
+    useState<string>("");
   const [isGeneratingWireframes, setIsGeneratingWireframes] = useState(false);
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
-  
+
   // Multimodal brand analysis state
-  const [finalBrandReport, setFinalBrandReport] = useState<FinalBrandReport | null>(null);
-  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] = useState(false);
-  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({ current: 0, total: 0, currentStep: "" });
+  const [finalBrandReport, setFinalBrandReport] =
+    useState<FinalBrandReport | null>(null);
+  const [isPerformingMultimodalAnalysis, setIsPerformingMultimodalAnalysis] =
+    useState(false);
+  const [multimodalAnalysisProgress, setMultimodalAnalysisProgress] = useState({
+    current: 0,
+    total: 0,
+    currentStep: "",
+  });
 
   // Load stored brand guidelines on component mount
   useEffect(() => {
     const stored = BrandGuidelinesStorage.getAll();
     setStoredBrandGuidelines(stored);
-    
+
     const latest = BrandGuidelinesStorage.getLatest();
     if (latest && !brandGuidelines) {
       setBrandGuidelines(latest);
@@ -133,7 +158,7 @@ export function BrandGuidelinesUpload({
 
   // Helper functions
   const isExternalBrandData = (data: any): data is ExternalBrandData => {
-    return data && typeof data === 'object' && 'brand_name' in data;
+    return data && typeof data === "object" && "brand_name" in data;
   };
 
   const getColorsFromExternalData = (data: ExternalBrandData): string[] => {
@@ -144,7 +169,8 @@ export function BrandGuidelinesUpload({
   const getFontsFromExternalData = (data: ExternalBrandData): string[] => {
     const fonts: string[] = [];
     if (data.typography?.primary_font) fonts.push(data.typography.primary_font);
-    if (data.typography?.on_screen_font) fonts.push(data.typography.on_screen_font);
+    if (data.typography?.on_screen_font)
+      fonts.push(data.typography.on_screen_font);
     if (data.typography?.print_font) fonts.push(data.typography.print_font);
     return fonts;
   };
@@ -152,7 +178,9 @@ export function BrandGuidelinesUpload({
   const handleStoredGuidelineSelection = (value: string) => {
     setSelectedStoredGuideline(value);
     if (value !== "none" && value !== "") {
-      const guideline = storedBrandGuidelines.find((g: StoredBrandGuideline) => g.id === value);
+      const guideline = storedBrandGuidelines.find(
+        (g: StoredBrandGuideline) => g.id === value,
+      );
       if (guideline) {
         const stored = BrandGuidelinesStorage.getById(value);
         if (stored) {
@@ -183,75 +211,82 @@ export function BrandGuidelinesUpload({
     });
   };
 
-  const handleBrandGuidelineUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBrandGuidelineUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (file.type !== 'application/pdf') {
-      setBrandExtractionError('Please upload a PDF file.');
+    if (file.type !== "application/pdf") {
+      setBrandExtractionError("Please upload a PDF file.");
       return;
     }
 
     setIsExtractingBrand(true);
-    setBrandExtractionError('');
+    setBrandExtractionError("");
     setIsPerformingMultimodalAnalysis(true);
-    setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "Initializing multimodal analysis..." });
+    setMultimodalAnalysisProgress({
+      current: 0,
+      total: 0,
+      currentStep: "Initializing multimodal analysis...",
+    });
 
     try {
-      const multimodalExtractor = createMultimodalPDFExtractor();
-      const chunkedAnalyzer = createChunkedBrandAnalyzer();
-
-      const comprehensiveReport = await multimodalExtractor.extractFromPDF(file);
-
-      const finalReport = await chunkedAnalyzer.analyzeExtractedContent(comprehensiveReport);
-      setFinalBrandReport(finalReport);
-
-      // Convert the analyzer output to the expected BrandGuideline format
-      const brandGuideline: BrandGuideline = {
-        ...finalReport.brandGuidelines,
-        imagery: {
-          style: "Professional and consistent",
-          guidelines: ["High-quality images", "Consistent style"],
-          restrictions: ["No low-quality images", "No conflicting styles"],
-          aspectRatios: ["16:9", "4:3", "1:1"],
-          treatments: ["Consistent filtering", "Brand-aligned composition"]
-        },
-        keyPoints: finalReport.keyFindings.criticalRequirements,
-        keyClauses: finalReport.keyFindings.brandThemes,
-        keyHighlights: finalReport.keyFindings.designPrinciples,
-        dosAndDonts: finalReport.brandGuidelines.tone.doAndDonts,
-        brandRules: {
-          requirements: finalReport.keyFindings.criticalRequirements,
-          restrictions: finalReport.keyFindings.complianceNotes,
-          guidelines: finalReport.keyFindings.brandThemes
-        },
-        compliance: {
-          approved: finalReport.keyFindings.designPrinciples,
-          prohibited: finalReport.keyFindings.complianceNotes,
-          context: finalReport.keyFindings.brandThemes
-        },
-        usageGuidelines: finalReport.brandGuidelines.logos.usage,
-        brandValues: finalReport.keyFindings.brandThemes,
-        voiceAndTone: finalReport.brandGuidelines.tone.personality.join(', '),
-        applications: finalReport.brandGuidelines.components.buttons
-      };
+      console.log('🚀 Starting external API PDF extraction for:', file.name);
+      setMultimodalAnalysisProgress({ current: 20, total: 100, currentStep: "Uploading PDF to extraction service..." });
       
-      setBrandGuidelines(brandGuideline);
-      onBrandGuidelinesExtracted?.(brandGuideline);
+      // Use FormData to send file to external API
+      const formData = new FormData();
+      formData.append("file", file, file.name);
 
-      const guideline = BrandGuidelinesStorage.save(brandGuideline, file.name);
-      const updatedStored = BrandGuidelinesStorage.getAll();
-      setStoredBrandGuidelines(updatedStored);
-      setSelectedStoredGuideline(guideline.id);
+      const requestOptions = {
+        method: 'POST',
+        body: formData,
+        redirect: 'follow' as RequestRedirect
+      };
+
+      setMultimodalAnalysisProgress({ current: 40, total: 100, currentStep: "Processing PDF with external service..." });
+
+      const response = await fetch("http://127.0.0.1:5001/extract-guidelines", requestOptions);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('External API error response:', errorText);
+        throw new Error(`External API failed with status: ${response.status} - ${errorText}`);
+      }
+
+      const result = await response.text();
+      console.log('External API response:', result);
+
+      setMultimodalAnalysisProgress({ current: 70, total: 100, currentStep: "Processing extracted guidelines..." });
+
+      // Parse the response - expecting JSON format
+      let extractedData;
+      try {
+        extractedData = JSON.parse(result);
+      } catch (parseError) {
+        console.error('Failed to parse API response:', parseError);
+        throw new Error('Invalid response format from extraction service');
+      }
+
+      // Store the raw JSON response
+      setBrandGuidelines(extractedData);
+      setFinalBrandReport(null); // Clear previous report since we're using external API
+      onBrandGuidelinesExtracted?.(extractedData);
+
+      setMultimodalAnalysisProgress({ current: 100, total: 100, currentStep: "Completed!" });
 
       toast({
         title: "Brand Guidelines Extracted",
         description: `Successfully extracted guidelines from ${file.name}`,
       });
-
     } catch (error) {
-      console.error('Brand guideline extraction failed:', error);
-      setBrandExtractionError(error instanceof Error ? error.message : 'Failed to extract brand guidelines');
+      console.error("Brand guideline extraction failed:", error);
+      setBrandExtractionError(
+        error instanceof Error
+          ? error.message
+          : "Failed to extract brand guidelines",
+      );
       toast({
         title: "Extraction Failed",
         description: "Failed to extract brand guidelines. Please try again.",
@@ -275,17 +310,18 @@ export function BrandGuidelinesUpload({
         const request: BrandedWireframeRequest = {
           pageContent: page,
           brandGuidelines: brandGuidelines,
-          designStyle: 'modern',
-          deviceType: 'desktop'
+          designStyle: "modern",
+          deviceType: "desktop",
         };
 
-        const wireframe = await brandAwareGenerator.generateBrandedWireframe(request);
+        const wireframe =
+          await brandAwareGenerator.generateBrandedWireframe(request);
         wireframes.push({
           id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           pageName: page.pageName,
           htmlCode: wireframe.html,
           cssCode: wireframe.css,
-          jsCode: ''
+          jsCode: "",
         });
       }
 
@@ -294,9 +330,8 @@ export function BrandGuidelinesUpload({
         title: "Brand Wireframes Generated",
         description: `Generated ${wireframes.length} brand-aware wireframes`,
       });
-
     } catch (error) {
-      console.error('Brand wireframe generation failed:', error);
+      console.error("Brand wireframe generation failed:", error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate brand-aware wireframes.",
@@ -321,24 +356,28 @@ export function BrandGuidelinesUpload({
           pageType: page.pageType,
           purpose: page.purpose,
           stakeholders: page.stakeholders,
-          htmlContent: '',
-          cssStyles: '',
+          htmlContent: "",
+          cssStyles: "",
           contentDetails: {
             headers: page.headers || [],
             texts: page.additionalContent || [],
             buttons: page.buttons || [],
             forms: page.forms || [],
             lists: page.lists || [],
-            images: []
-          }
+            images: [],
+          },
         };
 
-        const result = await htmlGenerator.generateDetailedWireframes([detailedContent], 'modern', 'desktop');
+        const result = await htmlGenerator.generateDetailedWireframes(
+          [detailedContent],
+          "modern",
+          "desktop",
+        );
         unifiedPages.push({
           pageName: page.pageName,
           htmlCode: result[0].htmlContent,
           cssCode: result[0].cssStyles,
-          jsCode: ''
+          jsCode: "",
         });
       }
 
@@ -347,9 +386,8 @@ export function BrandGuidelinesUpload({
         title: "Section Wireframes Generated",
         description: `Generated ${unifiedPages.length} unified wireframes`,
       });
-
     } catch (error) {
-      console.error('Unified HTML generation failed:', error);
+      console.error("Unified HTML generation failed:", error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate section wireframes.",
@@ -380,28 +418,38 @@ export function BrandGuidelinesUpload({
         <CardContent>
           <div className="space-y-4">
             <p className="text-sm text-gray-600">
-              Upload a new brand guidelines PDF or select from previously extracted guidelines to generate wireframes that match your brand identity.
+              Upload a new brand guidelines PDF or select from previously
+              extracted guidelines to generate wireframes that match your brand
+              identity.
             </p>
 
             {/* Stored Brand Guidelines Selection */}
             {storedBrandGuidelines.length > 0 && (
               <div className="space-y-2">
                 <Label className="block text-sm font-medium">
-                  Previously Extracted Guidelines ({storedBrandGuidelines.length} available)
+                  Previously Extracted Guidelines (
+                  {storedBrandGuidelines.length} available)
                 </Label>
                 <div className="flex gap-2">
-                  <Select value={selectedStoredGuideline} onValueChange={handleStoredGuidelineSelection}>
+                  <Select
+                    value={selectedStoredGuideline}
+                    onValueChange={handleStoredGuidelineSelection}
+                  >
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Select stored brand guidelines..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="none">None - Upload new PDF</SelectItem>
+                      <SelectItem value="none">
+                        None - Upload new PDF
+                      </SelectItem>
                       {storedBrandGuidelines.map((guideline) => (
                         <SelectItem key={guideline.id} value={guideline.id}>
                           <div className="flex items-center justify-between w-full">
                             <span>{guideline.name}</span>
                             <span className="text-xs text-gray-500 ml-2">
-                              {new Date(guideline.extractedAt).toLocaleDateString()}
+                              {new Date(
+                                guideline.extractedAt,
+                              ).toLocaleDateString()}
                             </span>
                           </div>
                         </SelectItem>
@@ -410,7 +458,9 @@ export function BrandGuidelinesUpload({
                   </Select>
                   {selectedStoredGuideline && (
                     <Button
-                      onClick={() => handleDeleteStoredGuideline(selectedStoredGuideline)}
+                      onClick={() =>
+                        handleDeleteStoredGuideline(selectedStoredGuideline)
+                      }
                       variant="outline"
                       size="sm"
                       className="border-red-300 text-red-700 hover:bg-red-50"
@@ -421,10 +471,13 @@ export function BrandGuidelinesUpload({
                 </div>
               </div>
             )}
-            
+
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex-1">
-                <Label htmlFor="brand-pdf" className="block text-sm font-medium mb-2">
+                <Label
+                  htmlFor="brand-pdf"
+                  className="block text-sm font-medium mb-2"
+                >
                   Upload New Brand Guidelines PDF
                 </Label>
                 <div className="relative">
@@ -442,75 +495,64 @@ export function BrandGuidelinesUpload({
                     </div>
                   )}
                 </div>
-                
+
                 {/* Multimodal Analysis Progress */}
-                {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
-                  <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
-                        <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
-                        Multimodal PDF Analysis
-                      </span>
-                      <span className="text-xs text-indigo-600">
-                        {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
-                      </span>
+                {isPerformingMultimodalAnalysis &&
+                  multimodalAnalysisProgress.total > 0 && (
+                    <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
+                          <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
+                          Multimodal PDF Analysis
+                        </span>
+                        <span className="text-xs text-indigo-600">
+                          {Math.round(
+                            (multimodalAnalysisProgress.current /
+                              multimodalAnalysisProgress.total) *
+                              100,
+                          )}
+                          %
+                        </span>
+                      </div>
+                      <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
+                        <div
+                          className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                      {multimodalAnalysisProgress.currentStep && (
+                        <p className="text-xs text-indigo-600">
+                          {multimodalAnalysisProgress.currentStep}
+                        </p>
+                      )}
                     </div>
-                    <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
-                      <div 
-                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
-                        style={{ width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%` }}
-                      ></div>
-                    </div>
-                    {multimodalAnalysisProgress.currentStep && (
-                      <p className="text-xs text-indigo-600">
-                        {multimodalAnalysisProgress.currentStep}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                {/* Multimodal Brand Analysis Results */}
-                {finalBrandReport && (
+                  )}
+
+                {/* JSON Response Viewer */}
+                {brandGuidelines && (
                   <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
                       <span className="text-sm font-medium text-emerald-700">
-                        Multimodal Analysis Complete
+                        Extracted Brand Guidelines JSON
                       </span>
                     </div>
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="space-y-1">
-                        <div className="text-emerald-600">
-                          <strong>Pages Analyzed:</strong> {finalBrandReport.documentInfo.totalPages}
-                        </div>
-                        <div className="text-emerald-600">
-                          <strong>Content Chunks:</strong> {finalBrandReport.documentInfo.totalChunks}
-                        </div>
-                      </div>
-                      <div className="space-y-1">
-                        <div className="text-emerald-600">
-                          <strong>Confidence:</strong> {Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%
-                        </div>
-                        <div className="text-emerald-600">
-                          <strong>Processing Time:</strong> {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2 pt-2 border-t border-emerald-200">
-                      <div className="text-xs text-emerald-600 space-y-1">
-                        <div><strong>Critical Requirements:</strong> {finalBrandReport.keyFindings.criticalRequirements.length}</div>
-                        <div><strong>Brand Themes:</strong> {finalBrandReport.keyFindings.brandThemes.length}</div>
-                        <div><strong>Design Principles:</strong> {finalBrandReport.keyFindings.designPrinciples.length}</div>
-                        <div><strong>Compliance Notes:</strong> {finalBrandReport.keyFindings.complianceNotes.length}</div>
-                      </div>
+                    <div className="mt-2 bg-white rounded border p-3 max-h-60 overflow-auto">
+                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
+                        {JSON.stringify(brandGuidelines, null, 2)}
+                      </pre>
                     </div>
                   </div>
                 )}
                 {brandExtractionError && (
-                  <p className="text-sm text-red-600 mt-1">{brandExtractionError}</p>
+                  <p className="text-sm text-red-600 mt-1">
+                    {brandExtractionError}
+                  </p>
                 )}
               </div>
-              
+
               <div className="flex gap-2">
                 {brandGuidelines && (
                   <Button
@@ -523,7 +565,7 @@ export function BrandGuidelinesUpload({
                     View Guidelines
                   </Button>
                 )}
-                
+
                 <Button
                   onClick={generateBrandAwareWireframes}
                   disabled={!brandGuidelines || isGeneratingWireframes}
@@ -542,7 +584,7 @@ export function BrandGuidelinesUpload({
                     </>
                   )}
                 </Button>
-                
+
                 <Button
                   onClick={generateUnifiedHTML}
                   disabled={!brandGuidelines || isGeneratingUnifiedHTML}
@@ -563,38 +605,44 @@ export function BrandGuidelinesUpload({
                 </Button>
               </div>
             </div>
-            
+
             {brandGuidelines && (
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 pt-3 border-t">
                 <div className="text-center p-2 bg-white/60 rounded-lg">
                   <div className="text-xs text-gray-500">Colors</div>
                   <div className="text-sm font-medium">
-                    {isExternalBrandData(brandGuidelines) 
-                      ? getColorsFromExternalData(brandGuidelines).length 
-                      : (brandGuidelines.colors?.primary?.length || 0) + (brandGuidelines.colors?.text?.length || 0)
-                    }
+                    {isExternalBrandData(brandGuidelines)
+                      ? getColorsFromExternalData(brandGuidelines).length
+                      : (brandGuidelines.colors?.primary?.length || 0) +
+                        (brandGuidelines.colors?.text?.length || 0)}
                   </div>
                 </div>
                 <div className="text-center p-2 bg-white/60 rounded-lg">
                   <div className="text-xs text-gray-500">Typography</div>
                   <div className="text-sm font-medium">
-                    {isExternalBrandData(brandGuidelines) 
-                      ? getFontsFromExternalData(brandGuidelines).length 
-                      : brandGuidelines.typography?.fonts?.length || 0
-                    } fonts
+                    {isExternalBrandData(brandGuidelines)
+                      ? getFontsFromExternalData(brandGuidelines).length
+                      : brandGuidelines.typography?.fonts?.length || 0}{" "}
+                    fonts
                   </div>
                 </div>
                 <div className="text-center p-2 bg-white/60 rounded-lg">
                   <div className="text-xs text-gray-500">Components</div>
-                  <div className="text-sm font-medium">{Object.keys(brandGuidelines.components || {}).length} types</div>
+                  <div className="text-sm font-medium">
+                    {Object.keys(brandGuidelines.components || {}).length} types
+                  </div>
                 </div>
                 <div className="text-center p-2 bg-white/60 rounded-lg">
                   <div className="text-xs text-gray-500">Logo Info</div>
-                  <div className="text-sm font-medium">{brandGuidelines.logos?.variations?.length || 0} variants</div>
+                  <div className="text-sm font-medium">
+                    {brandGuidelines.logos?.variations?.length || 0} variants
+                  </div>
                 </div>
                 <div className="text-center p-2 bg-white/60 rounded-lg">
                   <div className="text-xs text-gray-500">Brand Voice</div>
-                  <div className="text-sm font-medium">{brandGuidelines.tone?.personality?.length || 0} traits</div>
+                  <div className="text-sm font-medium">
+                    {brandGuidelines.tone?.personality?.length || 0} traits
+                  </div>
                 </div>
               </div>
             )}
@@ -619,7 +667,7 @@ export function BrandGuidelinesUpload({
                 <X className="h-4 w-4" />
               </Button>
             </div>
-            
+
             <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
               {/* Multimodal Brand Analysis Summary */}
               {finalBrandReport && (
@@ -630,30 +678,64 @@ export function BrandGuidelinesUpload({
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-emerald-600">{finalBrandReport.documentInfo.totalPages}</div>
-                      <div className="text-xs text-gray-600">Pages Analyzed</div>
+                      <div className="text-2xl font-bold text-emerald-600">
+                        {finalBrandReport.documentInfo.totalPages}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Pages Analyzed
+                      </div>
                     </div>
                     <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-blue-600">{finalBrandReport.documentInfo.totalChunks}</div>
-                      <div className="text-xs text-gray-600">Content Chunks</div>
+                      <div className="text-2xl font-bold text-blue-600">
+                        {finalBrandReport.documentInfo.totalChunks}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Content Chunks
+                      </div>
                     </div>
                     <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-purple-600">{finalBrandReport.keyFindings.criticalRequirements.length}</div>
-                      <div className="text-xs text-gray-600">Critical Requirements</div>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {
+                          finalBrandReport.keyFindings.criticalRequirements
+                            .length
+                        }
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        Critical Requirements
+                      </div>
                     </div>
                     <div className="text-center p-3 bg-white rounded-lg border border-emerald-200">
-                      <div className="text-2xl font-bold text-orange-600">{Math.round(finalBrandReport.documentInfo.averageConfidence * 100)}%</div>
+                      <div className="text-2xl font-bold text-orange-600">
+                        {Math.round(
+                          finalBrandReport.documentInfo.averageConfidence * 100,
+                        )}
+                        %
+                      </div>
                       <div className="text-xs text-gray-600">Confidence</div>
                     </div>
                   </div>
-                  
+
                   {/* Processing Summary */}
                   <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                    <div className="text-sm font-medium text-gray-700 mb-2">Processing Summary:</div>
+                    <div className="text-sm font-medium text-gray-700 mb-2">
+                      Processing Summary:
+                    </div>
                     <div className="flex gap-4 text-xs text-gray-600">
-                      <span>Processing Time: {Math.round(finalBrandReport.documentInfo.processingTime / 1000)}s</span>
-                      <span>Brand Themes: {finalBrandReport.keyFindings.brandThemes.length}</span>
-                      <span>Design Principles: {finalBrandReport.keyFindings.designPrinciples.length}</span>
+                      <span>
+                        Processing Time:{" "}
+                        {Math.round(
+                          finalBrandReport.documentInfo.processingTime / 1000,
+                        )}
+                        s
+                      </span>
+                      <span>
+                        Brand Themes:{" "}
+                        {finalBrandReport.keyFindings.brandThemes.length}
+                      </span>
+                      <span>
+                        Design Principles:{" "}
+                        {finalBrandReport.keyFindings.designPrinciples.length}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -670,31 +752,45 @@ export function BrandGuidelinesUpload({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div>
-                      <h4 className="font-medium text-sm mb-2">Primary Colors</h4>
+                      <h4 className="font-medium text-sm mb-2">
+                        Primary Colors
+                      </h4>
                       <div className="flex flex-wrap gap-2">
-                        {(brandGuidelines.colors?.primary || []).map((color: string, index: number) => (
-                          <div key={index} className="flex items-center gap-1">
-                            <div 
-                              className="w-6 h-6 rounded border"
-                              style={{ backgroundColor: color }}
-                            ></div>
-                            <span className="text-xs font-mono">{color}</span>
-                          </div>
-                        ))}
+                        {(brandGuidelines.colors?.primary || []).map(
+                          (color: string, index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-1"
+                            >
+                              <div
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ),
+                        )}
                       </div>
                     </div>
                     <div>
-                      <h4 className="font-medium text-sm mb-2">Secondary Colors</h4>
+                      <h4 className="font-medium text-sm mb-2">
+                        Secondary Colors
+                      </h4>
                       <div className="flex flex-wrap gap-2">
-                        {(brandGuidelines.colors?.secondary || []).map((color: string, index: number) => (
-                          <div key={index} className="flex items-center gap-1">
-                            <div 
-                              className="w-6 h-6 rounded border"
-                              style={{ backgroundColor: color }}
-                            ></div>
-                            <span className="text-xs font-mono">{color}</span>
-                          </div>
-                        ))}
+                        {(brandGuidelines.colors?.secondary || []).map(
+                          (color: string, index: number) => (
+                            <div
+                              key={index}
+                              className="flex items-center gap-1"
+                            >
+                              <div
+                                className="w-6 h-6 rounded border"
+                                style={{ backgroundColor: color }}
+                              ></div>
+                              <span className="text-xs font-mono">{color}</span>
+                            </div>
+                          ),
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -709,16 +805,20 @@ export function BrandGuidelinesUpload({
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    {(brandGuidelines.typography?.fonts || []).map((font: any, index: number) => (
-                      <div key={index} className="p-2 border rounded">
-                        <div className="font-medium text-sm">{font.name || font}</div>
-                        {font.weights && (
-                          <div className="text-xs text-gray-600">
-                            Weights: {font.weights.join(', ')}
+                    {(brandGuidelines.typography?.fonts || []).map(
+                      (font: any, index: number) => (
+                        <div key={index} className="p-2 border rounded">
+                          <div className="font-medium text-sm">
+                            {font.name || font}
                           </div>
-                        )}
-                      </div>
-                    ))}
+                          {font.weights && (
+                            <div className="text-xs text-gray-600">
+                              Weights: {font.weights.join(", ")}
+                            </div>
+                          )}
+                        </div>
+                      ),
+                    )}
                   </CardContent>
                 </Card>
               </div>
