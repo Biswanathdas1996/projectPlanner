@@ -14,8 +14,11 @@ import {
   MapPin,
   Layers,
   Monitor,
-  Smartphone
+  Smartphone,
+  FileText
 } from "lucide-react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface StoredFlow {
   id: string;
@@ -340,6 +343,130 @@ export function FlowWireframeMappingPage() {
     }
   };
 
+  const exportToPDF = async () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      let yPosition = 20;
+
+      // Title Page
+      pdf.setFontSize(24);
+      pdf.text('Flow & Wireframe Mapping Report', pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
+      
+      pdf.setFontSize(12);
+      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: 'center' });
+      yPosition += 20;
+
+      // Project Overview
+      pdf.setFontSize(16);
+      pdf.text('Project Overview', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(10);
+      pdf.text(`Process Flows: ${allData.flows.length}`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(`Wireframes: ${allData.wireframes.length}`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(`Active Mappings: ${mappings.length}`, 20, yPosition);
+      yPosition += 15;
+
+      // Process Flows Section
+      for (let i = 0; i < allData.flows.length; i++) {
+        const flow = allData.flows[i];
+        
+        if (yPosition > pageHeight - 40) {
+          pdf.addPage();
+          yPosition = 20;
+        }
+
+        pdf.setFontSize(14);
+        pdf.text(`Process Flow: ${flow.title}`, 20, yPosition);
+        yPosition += 10;
+
+        // Capture flow diagram
+        const flowElement = document.querySelector('.react-flow') as HTMLElement;
+        if (flowElement && selectedFlow?.id === flow.id) {
+          try {
+            const canvas = await html2canvas(flowElement, {
+              scale: 1.5,
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: '#ffffff'
+            });
+            
+            const imgData = canvas.toDataURL('image/png');
+            const imgWidth = Math.min(160, pageWidth - 40);
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            if (yPosition + imgHeight > pageHeight - 20) {
+              pdf.addPage();
+              yPosition = 20;
+            }
+            
+            pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 15;
+          } catch (error) {
+            console.warn('Could not capture flow diagram:', error);
+            pdf.setFontSize(10);
+            pdf.text('Flow diagram visualization included in interactive view', 20, yPosition);
+            yPosition += 10;
+          }
+        }
+
+        // Mapped wireframes
+        const mappedWireframes = getMappedWireframes(flow.id);
+        if (mappedWireframes.length > 0) {
+          pdf.setFontSize(12);
+          pdf.text(`Mapped Wireframes (${mappedWireframes.length}):`, 20, yPosition);
+          yPosition += 8;
+
+          for (const wireframe of mappedWireframes) {
+            if (yPosition > pageHeight - 20) {
+              pdf.addPage();
+              yPosition = 20;
+            }
+
+            pdf.setFontSize(10);
+            pdf.text(`• ${wireframe.pageName}`, 25, yPosition);
+            yPosition += 5;
+            pdf.text(`  Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 25, yPosition);
+            yPosition += 8;
+          }
+        }
+
+        yPosition += 10;
+      }
+
+      // Summary section
+      if (yPosition > pageHeight - 60) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      pdf.setFontSize(16);
+      pdf.text('Summary', 20, yPosition);
+      yPosition += 10;
+
+      pdf.setFontSize(10);
+      pdf.text(`This report contains ${allData.flows.length} process flows with ${allData.wireframes.length} associated wireframes.`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(`Generated from Flow & Wireframe Mapping analysis on ${new Date().toLocaleDateString()}.`, 20, yPosition);
+      yPosition += 10;
+      
+      if (mappings.length > 0) {
+        pdf.text(`Active mappings connect flows to their corresponding UI implementations.`, 20, yPosition);
+      }
+
+      // Save the PDF
+      pdf.save(`flow-wireframe-mapping-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (error) {
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF. Please try again.');
+    }
+  };
+
   const { currentStep, completedSteps } = getWorkflowProgress();
 
   return (
@@ -355,19 +482,31 @@ export function FlowWireframeMappingPage() {
             Visualize process flows alongside their wireframe implementations
           </p>
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-            <Workflow className="h-3 w-3" />
-            {allData.flows.length} Flows
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-            <Code className="h-3 w-3" />
-            {allData.wireframes.length} UIs
-          </Badge>
-          <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-            <Layers className="h-3 w-3" />
-            {mappings.length} Maps
-          </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1.5">
+            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+              <Workflow className="h-3 w-3" />
+              {allData.flows.length} Flows
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+              <Code className="h-3 w-3" />
+              {allData.wireframes.length} UIs
+            </Badge>
+            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
+              <Layers className="h-3 w-3" />
+              {mappings.length} Maps
+            </Badge>
+          </div>
+          <Button
+            onClick={exportToPDF}
+            variant="outline"
+            size="sm"
+            className="h-7 px-3"
+            disabled={allData.flows.length === 0}
+          >
+            <FileText className="h-3 w-3 mr-1" />
+            Export PDF
+          </Button>
         </div>
       </div>
 

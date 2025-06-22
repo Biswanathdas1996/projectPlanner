@@ -156,6 +156,9 @@ Changelog:
   - Added WorkflowProgress component to Flow & Wireframe Mapping page for clear project development guidance
   - Implemented intelligent workflow step detection based on available localStorage data (flows, wireframes, user stories)
   - Progress tracker shows completed steps and suggests next logical development phase
+  - Added comprehensive PDF export functionality to Flow & Wireframe Mapping page
+  - PDF export includes process flows, flow diagrams, wireframe mappings, and project overview with visual captures
+  - Export button integrated into header with automatic date-based file naming
 ```
 
 ## User Preferences
