@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
+import { WorkflowProgress } from "@/components/workflow-progress";
 import { 
   Workflow, 
   Code, 
@@ -89,6 +90,43 @@ export function FlowWireframeMappingPage() {
   const [mappings, setMappings] = useState<FlowWireframeMapping[]>([]);
   const [selectedFlow, setSelectedFlow] = useState<StoredFlow | null>(null);
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
+
+  // Determine workflow progress based on available data
+  const getWorkflowProgress = () => {
+    const completedSteps: string[] = [];
+    let currentStep: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code" | undefined;
+
+    // Check for completed steps based on available data
+    if (allData.flows.length > 0) {
+      completedSteps.push("input", "research", "plan", "diagram");
+      currentStep = "wireframes";
+    }
+    
+    if (allData.wireframes.length > 0) {
+      if (!completedSteps.includes("wireframes")) completedSteps.push("wireframes");
+      currentStep = "stories";
+    }
+    
+    if (allData.userStories.length > 0) {
+      if (!completedSteps.includes("stories")) completedSteps.push("stories");
+      currentStep = "code";
+    }
+    
+    if (allData.projects.length > 0 && !completedSteps.includes("input")) {
+      completedSteps.push("input", "research", "plan");
+    }
+    
+    if (allData.marketResearch.length > 0 && !completedSteps.includes("research")) {
+      completedSteps.push("research");
+    }
+
+    // If no data available, start from input
+    if (completedSteps.length === 0) {
+      currentStep = "input";
+    }
+
+    return { currentStep, completedSteps };
+  };
 
   useEffect(() => {
     loadAllStoredData();
@@ -302,6 +340,8 @@ export function FlowWireframeMappingPage() {
     }
   };
 
+  const { currentStep, completedSteps } = getWorkflowProgress();
+
   return (
     <div className="container mx-auto p-4 space-y-4">
       {/* Compact Header */}
@@ -330,6 +370,12 @@ export function FlowWireframeMappingPage() {
           </Badge>
         </div>
       </div>
+
+      {/* Workflow Progress */}
+      <WorkflowProgress
+        currentStep={currentStep}
+        completedSteps={completedSteps}
+      />
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -153,6 +153,9 @@ Changelog:
   - Modernized Flow & Wireframe Mapping page design with compact, contemporary styling
   - Reduced spacing, streamlined components, added colored borders and gradients for better visual hierarchy
   - Improved information density while maintaining excellent readability and user experience
+  - Added WorkflowProgress component to Flow & Wireframe Mapping page for clear project development guidance
+  - Implemented intelligent workflow step detection based on available localStorage data (flows, wireframes, user stories)
+  - Progress tracker shows completed steps and suggests next logical development phase
 ```
 
 ## User Preferences
