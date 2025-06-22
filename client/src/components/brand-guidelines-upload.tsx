@@ -434,190 +434,167 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
             Brand Guidelines Upload
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="brand-upload" className="text-sm font-medium">
-                Upload Brand Guidelines PDF
-              </Label>
-              <div className="mt-1 flex items-center gap-3">
+        <CardContent className="p-4">
+          <div className="space-y-3">
+            {/* Upload Section */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
                 <Input
                   id="brand-upload"
                   type="file"
                   accept=".pdf"
                   onChange={handleBrandGuidelineUpload}
                   disabled={isExtractingBrand}
-                  className="flex-1"
+                  className="flex-1 text-sm"
+                  placeholder="Choose PDF file..."
                 />
                 <Button
                   onClick={() => setShowBrandModal(true)}
                   variant="outline"
                   size="sm"
                   disabled={!brandGuidelines}
-                  className="flex items-center gap-1"
+                  className="px-3"
                 >
                   <Eye className="h-4 w-4" />
-                  View Guidelines
                 </Button>
                 <Button
                   onClick={() => setShowStoredGuidelines(true)}
                   variant="outline"
                   size="sm"
-                  className="flex items-center gap-1"
+                  className="px-3"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  Stored ({storedGuidelines.length})
+                  <span className="ml-1 text-xs">({storedGuidelines.length})</span>
                 </Button>
               </div>
 
+              {/* Status Indicators */}
               {isExtractingBrand && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-purple-600">
+                <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-md">
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Extracting brand guidelines...
+                  Extracting guidelines...
                 </div>
               )}
 
-              {/* Multimodal Analysis Progress */}
-              {isPerformingMultimodalAnalysis &&
-                multimodalAnalysisProgress.total > 0 && (
-                  <div className="mt-3 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-indigo-700 flex items-center gap-2">
-                        <div className="w-3 h-3 bg-indigo-500 rounded-full animate-pulse"></div>
-                        External API Processing
-                      </span>
-                      <span className="text-xs text-indigo-600">
-                        {Math.round(
-                          (multimodalAnalysisProgress.current /
-                            multimodalAnalysisProgress.total) *
-                            100,
-                        )}
-                        %
-                      </span>
+              {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
+                <div className="bg-indigo-50 rounded-md p-3 border border-indigo-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                      Processing PDF
                     </div>
-                    <div className="w-full bg-indigo-200 rounded-full h-2 mb-2">
-                      <div
-                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                        style={{
-                          width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                    {multimodalAnalysisProgress.currentStep && (
-                      <p className="text-xs text-indigo-600">
-                        {multimodalAnalysisProgress.currentStep}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-              {/* JSON Response Viewer */}
-              {brandGuidelines && (
-                <div className="mt-3 p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-emerald-700">
-                      Extracted Brand Guidelines JSON
+                    <span className="text-xs text-indigo-600">
+                      {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
                     </span>
                   </div>
-                  <div className="mt-2 bg-white rounded border p-3 max-h-60 overflow-auto">
-                    <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-                      {JSON.stringify(brandGuidelines, null, 2)}
-                    </pre>
+                  <div className="w-full bg-indigo-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {brandGuidelines && (
+                <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      Brand Guidelines Ready
+                    </div>
+                    <Button
+                      onClick={() => setShowBrandModal(true)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-emerald-600 hover:text-emerald-700 p-1"
+                    >
+                      <Eye className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               )}
 
               {brandExtractionError && (
-                <p className="text-sm text-red-600 mt-1">
+                <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-200">
                   {brandExtractionError}
-                </p>
+                </div>
               )}
             </div>
 
             {/* Wireframe Generation Progress */}
             {isGeneratingWireframes && wireframeProgress.total > 0 && (
-              <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-200">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-3 border border-blue-200">
                 <div className="flex items-center justify-between mb-2">
-                  <h4 className="font-semibold text-blue-800 flex items-center gap-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-800">
                     <Sparkles className="h-4 w-4" />
-                    Generating Brand Wireframes
-                  </h4>
-                  <span className="text-sm text-blue-600">
-                    {wireframeProgress.current} of {wireframeProgress.total}
+                    Generating Wireframes
+                  </div>
+                  <span className="text-xs text-blue-600">
+                    {wireframeProgress.current}/{wireframeProgress.total}
                   </span>
                 </div>
-
                 <Progress
-                  value={
-                    (wireframeProgress.current / wireframeProgress.total) * 100
-                  }
-                  className="w-full mb-2"
+                  value={(wireframeProgress.current / wireframeProgress.total) * 100}
+                  className="w-full mb-2 h-2"
                 />
-
-                <div className="text-sm text-blue-700">
+                <div className="text-xs text-blue-700">
                   {wireframeProgress.current < wireframeProgress.total ? (
-                    <>
-                      Processing:{" "}
-                      <span className="font-medium">
-                        {wireframeProgress.currentPage}
-                      </span>
-                    </>
+                    <span>Processing: <strong>{wireframeProgress.currentPage}</strong></span>
                   ) : (
-                    <span className="font-medium">
-                      Finalizing wireframes...
-                    </span>
+                    <span className="font-medium">Finalizing...</span>
                   )}
                 </div>
               </div>
             )}
 
-            <div className="flex gap-3 pt-3 border-t">
-              <div className="flex gap-2">
-                <Button
-                  onClick={generateBrandAwareWireframes}
-                  disabled={
-                    !brandGuidelines ||
-                    isGeneratingWireframes ||
-                    !pageContentCards ||
-                    pageContentCards.length === 0
-                  }
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  {isGeneratingWireframes ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-4 w-4 mr-1" />
-                      Generate Brand Wireframes
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={generateUnifiedHTML}
-                  disabled={!brandGuidelines || isGeneratingUnifiedHTML}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-1"
-                >
-                  {isGeneratingUnifiedHTML ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Code className="h-4 w-4 mr-1" />
-                      Generate Section Wireframes
-                    </>
-                  )}
-                </Button>
-              </div>
+            {/* Action Buttons */}
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+              <Button
+                onClick={generateBrandAwareWireframes}
+                disabled={
+                  !brandGuidelines ||
+                  isGeneratingWireframes ||
+                  !pageContentCards ||
+                  pageContentCards.length === 0
+                }
+                variant="default"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                {isGeneratingWireframes ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4" />
+                    Generate Brand Wireframes
+                  </>
+                )}
+              </Button>
+              <Button
+                onClick={generateUnifiedHTML}
+                disabled={!brandGuidelines || isGeneratingUnifiedHTML}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                {isGeneratingUnifiedHTML ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Code className="h-4 w-4" />
+                    Section Wireframes
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         </CardContent>

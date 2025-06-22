@@ -131,6 +131,12 @@ Changelog:
   - Both generation methods now use identical AI prompting and response parsing for consistency
   - Enhanced prompts with strict color contrast requirements (minimum 4.5:1 ratio for accessibility)
   - Added explicit instructions to prevent same-color text/background combinations
+- June 22, 2025. Brand Guidelines Upload UI redesigned for improved UX
+  - Redesigned upload section with more compact layout and better visual hierarchy
+  - Consolidated status indicators with cleaner progress bars and state messages
+  - Improved button grouping and spacing for better user experience
+  - Enhanced visual feedback with color-coded status indicators (purple for extraction, indigo for processing, emerald for ready)
+  - Streamlined action buttons with primary/secondary styling hierarchy
 ```
 
 ## User Preferences
