@@ -12,7 +12,7 @@ import MarketResearch from "@/pages/market-research";
 import WireframeDesigner from "@/pages/wireframe-designer";
 import HTMLEditor from "@/pages/html-editor";
 import { FlowWireframeMappingPage } from "@/pages/flow-wireframe-mapping";
-import { PatientWebappOverviewPage } from "@/pages/patient-webapp-overview";
+
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
@@ -44,10 +44,8 @@ function Router() {
       <Route path="/html-editor" component={HTMLEditor} />
       <Route path="/html-editor/:wireframeId" component={HTMLEditor} />
       <Route path="/flow-mapping" component={FlowWireframeMappingPage} />
-      <Route path="/mapping" component={PatientWebappOverviewPage} />
+      <Route path="/mapping" component={FlowWireframeMappingPage} />
       <Route path="/flows" component={FlowWireframeMappingPage} />
-      <Route path="/patient-app" component={PatientWebappOverviewPage} />
-      <Route path="/healthcare" component={PatientWebappOverviewPage} />
       <Route component={NotFound} />
     </Switch>
   );

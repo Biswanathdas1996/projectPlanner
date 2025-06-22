@@ -217,6 +217,15 @@ Changelog:
     * Post-service: rating, payment processing, follow-up scheduling, care plan updates
   - Implemented comprehensive color-coded workflow with logical positioning and flow connections
   - Created detailed AI prompts for generating 25-35 granular workflow components with specific healthcare process steps
+- June 22, 2025. Generic Flow & Wireframe Mapping page created
+  - Refactored /mapping page from patient-specific healthcare to generic project mapping
+  - Removed all healthcare-specific terminology and instances to create universal application
+  - Updated routing to use generic FlowWireframeMappingPage for /mapping route
+  - Renamed file from patient-webapp-overview.tsx to flow-wireframe-mapping.tsx
+  - Modified interfaces and data structures to support any project type (ProjectFlow, ProjectWireframe, ProjectOverview)
+  - Updated master flow generation to create generic application workflows (user onboarding, core features, platform selection)
+  - Maintained all existing functionality while making it applicable to any project domain
+  - Fixed TypeScript type safety issues and removed deprecated patient-specific file
 ```
 
 ## User Preferences

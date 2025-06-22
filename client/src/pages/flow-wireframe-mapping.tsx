@@ -1,1201 +1,1380 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
-import { WorkflowProgress } from "@/components/workflow-progress";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { 
-  Workflow, 
-  Code, 
-  Eye, 
+  FileText, 
   Download, 
-  ExternalLink,
-  MapPin,
-  Layers,
-  Monitor,
+  Activity, 
+  Settings, 
+  Clock, 
+  CheckCircle, 
+  Users, 
+  Globe, 
+  Shield, 
   Smartphone,
-  FileText
-} from "lucide-react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+  Monitor,
+  Eye,
+  Edit,
+  BarChart3,
+  TrendingUp,
+  AlertCircle,
+  Lightbulb,
+  Target,
+  Zap
+} from 'lucide-react';
+import { FlowDiagramViewer } from '@/components/flow-diagram-viewer';
+import { WorkflowProgress } from '@/components/workflow-progress';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
-interface StoredFlow {
-  id: string;
-  title: string;
-  flowData: any;
-  createdAt: string;
-}
-
-interface StoredWireframe {
-  id: string;
-  pageName: string;
-  htmlContent: string;
-  createdAt: string;
-}
-
-interface StoredProject {
+interface ProjectFlow {
   id: string;
   title: string;
   description: string;
-  createdAt: string;
-  projectData: any;
-}
-
-interface StoredUserStory {
-  id: string;
-  title: string;
-  stories: any[];
+  flowData: any;
+  category: 'onboarding' | 'core' | 'management';
+  priority: 'high' | 'medium' | 'low';
   createdAt: string;
 }
 
-interface StoredMarketResearch {
+interface ProjectWireframe {
   id: string;
-  title: string;
-  researchData: any;
+  pageName: string;
+  pageType: 'registration' | 'dashboard' | 'appointments' | 'profile' | 'mobile';
+  htmlContent: string;
+  features: string[];
+  userType: 'user' | 'admin' | 'manager';
   createdAt: string;
 }
 
-interface StoredBrandGuideline {
-  id: string;
-  name: string;
-  brandData: any;
-  extractedAt: string;
-  pdfFileName?: string;
+interface ProjectOverview {
+  coreFeatures: string[];
+  userTypes: string[];
+  platformSupport: string[];
+  securityFeatures: string[];
+  integrations: string[];
 }
 
-interface FlowWireframeMapping {
-  flowId: string;
-  wireframeIds: string[];
-  projectIds: string[];
-  storyIds: string[];
-  mappingConfidence: number;
+interface ProjectAnalysis {
+  completionScore: number;
+  readinessLevel: 'Planning' | 'Development' | 'Testing' | 'Ready';
+  strengths: string[];
+  gaps: string[];
+  recommendations: string[];
+  dataQuality: {
+    flows: number;
+    wireframes: number;
+    content: number;
+    overall: number;
+  };
+  nextSteps: string[];
 }
 
-interface LocalStorageData {
-  flows: StoredFlow[];
-  wireframes: StoredWireframe[];
-  projects: StoredProject[];
-  userStories: StoredUserStory[];
-  marketResearch: StoredMarketResearch[];
-  brandGuidelines: StoredBrandGuideline[];
+interface ComprehensiveProjectPlan {
+  executiveSummary: {
+    projectTitle: string;
+    projectDescription: string;
+    targetAudience: string[];
+    keyObjectives: string[];
+    timeline: string;
+    budget: string;
+  };
+  technicalArchitecture: {
+    frontend: string[];
+    backend: string[];
+    database: string[];
+    infrastructure: string[];
+    integrations: string[];
+  };
+  userJourneys: {
+    primary: string[];
+    secondary: string[];
+    edge_cases: string[];
+  };
+  featureMatrix: {
+    core: string[];
+    secondary: string[];
+    future: string[];
+  };
+  brandGuidelines: {
+    colors: string[];
+    typography: string[];
+    logoUsage: string[];
+    designPrinciples: string[];
+  };
+  developmentPhases: {
+    phase: string;
+    duration: string;
+    deliverables: string[];
+    dependencies: string[];
+  }[];
+  riskAssessment: {
+    technical: string[];
+    business: string[];
+    mitigation: string[];
+  };
+  testingStrategy: {
+    unit: string[];
+    integration: string[];
+    userAcceptance: string[];
+    security: string[];
+  };
+  deploymentPlan: {
+    environments: string[];
+    pipeline: string[];
+    monitoring: string[];
+  };
 }
 
 export function FlowWireframeMappingPage() {
-  const [allData, setAllData] = useState<LocalStorageData>({
-    flows: [],
-    wireframes: [],
-    projects: [],
-    userStories: [],
-    marketResearch: [],
-    brandGuidelines: []
-  });
-  const [mappings, setMappings] = useState<FlowWireframeMapping[]>([]);
-  const [selectedFlow, setSelectedFlow] = useState<StoredFlow | null>(null);
-  const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
-  const [isExporting, setIsExporting] = useState(false);
-  const [activeTabIndex, setActiveTabIndex] = useState(0);
-  const [currentTabValue, setCurrentTabValue] = useState<string>("");
-
-  // Enhanced keyboard navigation for tabs
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (!selectedFlow) return;
-      
-      const mappedWireframes = getMappedWireframes(selectedFlow.id);
-      if (mappedWireframes.length === 0) return;
-
-      if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
-        event.preventDefault();
-        
-        let newIndex = activeTabIndex;
-        if (event.key === 'ArrowLeft') {
-          newIndex = activeTabIndex > 0 ? activeTabIndex - 1 : mappedWireframes.length - 1;
-        } else {
-          newIndex = activeTabIndex < mappedWireframes.length - 1 ? activeTabIndex + 1 : 0;
-        }
-        
-        setActiveTabIndex(newIndex);
-        setCurrentTabValue(mappedWireframes[newIndex].id);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [activeTabIndex, selectedFlow]);
-
-  // Initialize tab value when wireframes change
-  useEffect(() => {
-    if (selectedFlow) {
-      const mappedWireframes = getMappedWireframes(selectedFlow.id);
-      if (mappedWireframes.length > 0) {
-        setCurrentTabValue(mappedWireframes[0].id);
-        setActiveTabIndex(0);
-      }
-    }
-  }, [selectedFlow]);
-
-  // Determine workflow progress based on available data
-  const getWorkflowProgress = () => {
-    const completedSteps: string[] = [];
-    let currentStep: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code" | undefined;
-
-    // Check for completed steps based on available data
-    if (allData.flows.length > 0) {
-      completedSteps.push("input", "research", "plan", "diagram");
-      currentStep = "wireframes";
-    }
-    
-    if (allData.wireframes.length > 0) {
-      if (!completedSteps.includes("wireframes")) completedSteps.push("wireframes");
-      currentStep = "stories";
-    }
-    
-    if (allData.userStories.length > 0) {
-      if (!completedSteps.includes("stories")) completedSteps.push("stories");
-      currentStep = "code";
-    }
-    
-    if (allData.projects.length > 0 && !completedSteps.includes("input")) {
-      completedSteps.push("input", "research", "plan");
-    }
-    
-    if (allData.marketResearch.length > 0 && !completedSteps.includes("research")) {
-      completedSteps.push("research");
-    }
-
-    // If no data available, start from input
-    if (completedSteps.length === 0) {
-      currentStep = "input";
-    }
-
-    return { currentStep, completedSteps };
-  };
+  const [flows, setFlows] = useState<ProjectFlow[]>([]);
+  const [wireframes, setWireframes] = useState<ProjectWireframe[]>([]);
+  const [consolidatedFlow, setConsolidatedFlow] = useState<ProjectFlow | null>(null);
+  const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [comprehensiveProjectPlan, setComprehensiveProjectPlan] = useState<ComprehensiveProjectPlan | null>(null);
 
   useEffect(() => {
-    loadAllStoredData();
+    loadProjectData();
   }, []);
 
-  const loadAllStoredData = () => {
+  const loadProjectData = () => {
     try {
-      const data: LocalStorageData = {
-        flows: [],
-        wireframes: [],
-        projects: [],
-        userStories: [],
-        marketResearch: [],
-        brandGuidelines: []
-      };
-
-      // Debug: Log all localStorage keys
-      console.log("All localStorage keys:", Object.keys(localStorage));
+      // Load flows from localStorage
+      const flowKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('flowDiagrams') || key.startsWith('sectionFlowDiagrams')
+      );
       
-      // Load all localStorage data with proper parsing
-      const loadFromStorage = (key: string) => {
+      const loadedFlows: ProjectFlow[] = [];
+      
+      flowKeys.forEach(key => {
         try {
-          const item = localStorage.getItem(key);
-          if (!item) return [];
-          
-          const parsed = JSON.parse(item);
-          console.log(`${key}:`, parsed);
-          
-          // Handle different data structures
-          if (Array.isArray(parsed)) {
-            return parsed;
-          } else if (typeof parsed === 'object' && parsed !== null) {
-            // Handle object structures like flowDiagrams
-            return Object.values(parsed);
-          }
-          return [];
-        } catch (error) {
-          console.warn(`Error parsing ${key}:`, error);
-          return [];
-        }
-      };
-
-      // Load flows from flowDiagrams (stored as object with flow names as keys)
-      const flowDiagramsRaw = localStorage.getItem("flowDiagrams");
-      if (flowDiagramsRaw) {
-        try {
-          const flowDiagrams = JSON.parse(flowDiagramsRaw);
-          if (flowDiagrams && typeof flowDiagrams === 'object' && !Array.isArray(flowDiagrams)) {
-            data.flows = Object.entries(flowDiagrams).map(([title, flowData]) => ({
-              id: title.replace(/\s+/g, '-').toLowerCase(),
-              title,
-              flowData,
-              createdAt: new Date().toISOString()
-            }));
+          const data = JSON.parse(localStorage.getItem(key) || '{}');
+          if (typeof data === 'object' && data !== null) {
+            Object.keys(data).forEach(subKey => {
+              const flowData = data[subKey];
+              if (flowData && typeof flowData === 'object') {
+                loadedFlows.push(createFlowFromData(subKey, flowData));
+              }
+            });
           }
         } catch (error) {
-          console.warn("Error parsing flowDiagrams:", error);
+          console.error(`Error parsing ${key}:`, error);
         }
-      }
+      });
+
+      // Load wireframes
+      const wireframeData = localStorage.getItem('generated_wireframes');
+      const loadedWireframes: ProjectWireframe[] = [];
       
-      // Load wireframes (may be nested in data property)
-      const wireframesRaw = localStorage.getItem("generated_wireframes");
-      if (wireframesRaw) {
+      if (wireframeData) {
         try {
-          const wireframeParsed = JSON.parse(wireframesRaw);
-          if (wireframeParsed?.data && Array.isArray(wireframeParsed.data)) {
-            data.wireframes = wireframeParsed.data.map((wireframe: any) => ({
-              id: wireframe.id || `wireframe-${Date.now()}`,
-              pageName: wireframe.pageName || 'Untitled Page',
-              htmlContent: wireframe.htmlCode || wireframe.htmlContent || '',
-              createdAt: new Date().toISOString()
-            }));
-          } else if (Array.isArray(wireframeParsed)) {
-            data.wireframes = wireframeParsed;
+          const parsed = JSON.parse(wireframeData);
+          if (parsed && typeof parsed === 'object') {
+            Object.keys(parsed).forEach(key => {
+              const wireframe = parsed[key];
+              if (wireframe && wireframe.data) {
+                loadedWireframes.push(createWireframeFromData(key, wireframe.data));
+              }
+            });
           }
         } catch (error) {
-          console.warn("Error parsing wireframes:", error);
+          console.error('Error parsing wireframes:', error);
         }
       }
-      
-      // Load section flows as projects
-      const sectionFlows = loadFromStorage("sectionFlowDiagrams");
-      if (sectionFlows && typeof sectionFlows === 'object' && !Array.isArray(sectionFlows)) {
-        data.projects = Object.entries(sectionFlows).map(([title, projectData]) => ({
-          id: title.replace(/\s+/g, '-').toLowerCase(),
-          title,
-          description: `Section flow diagram for ${title}`,
-          projectData,
-          createdAt: new Date().toISOString()
-        }));
-      }
-      
-      // Load other data types
-      data.userStories = loadFromStorage("userStories") || 
-                         loadFromStorage("generatedUserStories") || [];
-      
-      data.marketResearch = loadFromStorage("marketResearch") || 
-                            loadFromStorage("marketResearchResults") || [];
-      
-      data.brandGuidelines = loadFromStorage("brand_guidelines_storage") || 
-                             loadFromStorage("brandGuidelines") || [];
 
-      console.log("Final loaded data:", data);
-      setAllData(data);
-      generateComprehensiveMappings(data);
+      setFlows(loadedFlows);
+      setWireframes(loadedWireframes);
+
+      // Generate comprehensive project plan
+      const allKeys = Object.keys(localStorage);
+      const allData: Record<string, any> = {};
+      allKeys.forEach(key => {
+        try {
+          const data = localStorage.getItem(key);
+          if (data) {
+            allData[key] = JSON.parse(data);
+          }
+        } catch (error) {
+          allData[key] = localStorage.getItem(key);
+        }
+      });
+
+      const projectPlan = generateComprehensiveProjectPlan(allData, loadedFlows, loadedWireframes);
+      setComprehensiveProjectPlan(projectPlan);
+
     } catch (error) {
-      console.error("Error loading stored data:", error);
+      console.error('Error loading project data:', error);
     }
   };
 
-  const generateComprehensiveMappings = (data: LocalStorageData) => {
-    const newMappings: FlowWireframeMapping[] = [];
+  const createFlowFromData = (key: string, data: any): ProjectFlow => {
+    return {
+      id: `project-${key}`,
+      title: data.title || key.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      description: data.description || `Process workflow for ${key}`,
+      flowData: data.flowData || data,
+      category: determineCategory(key),
+      priority: determinePriority(key),
+      createdAt: new Date().toISOString()
+    };
+  };
 
-    data.flows.forEach((flow: StoredFlow) => {
-      const relatedWireframes: string[] = [];
-      const relatedProjects: string[] = [];
-      const relatedStories: string[] = [];
+  const createWireframeFromData = (key: string, data: any): ProjectWireframe => {
+    return {
+      id: `wireframe-${key}`,
+      pageName: data.pageName || key,
+      pageType: data.pageType || 'dashboard',
+      htmlContent: data.htmlContent || data.content || '',
+      features: data.features || [],
+      userType: data.userType || 'user',
+      createdAt: new Date().toISOString()
+    };
+  };
+
+  const determineCategory = (key: string): 'onboarding' | 'core' | 'management' => {
+    if (key.includes('onboard') || key.includes('register') || key.includes('setup')) return 'onboarding';
+    if (key.includes('manage') || key.includes('admin') || key.includes('settings')) return 'management';
+    return 'core';
+  };
+
+  const determinePriority = (key: string): 'high' | 'medium' | 'low' => {
+    if (key.includes('critical') || key.includes('main') || key.includes('primary')) return 'high';
+    if (key.includes('secondary') || key.includes('optional')) return 'low';
+    return 'medium';
+  };
+
+  const generateConsolidatedFlow = async () => {
+    if (flows.length === 0) return;
+
+    setIsGeneratingConsolidatedFlow(true);
+    
+    try {
+      // Create comprehensive fallback flow
+      const masterFlow = createFallbackConsolidatedFlow(flows);
+      const consolidatedFlowData: ProjectFlow = {
+        id: 'consolidated-master-flow',
+        title: masterFlow.title,
+        description: masterFlow.description,
+        flowData: masterFlow.flowData,
+        category: 'core',
+        priority: 'high',
+        createdAt: new Date().toISOString()
+      };
+      setConsolidatedFlow(consolidatedFlowData);
+    } catch (error) {
+      console.error('Error generating consolidated flow:', error);
+      // Still set fallback flow even if AI fails
+      const fallbackFlow = createFallbackConsolidatedFlow(flows);
+      const fallbackFlowData: ProjectFlow = {
+        id: 'fallback-master-flow',
+        title: fallbackFlow.title,
+        description: fallbackFlow.description,
+        flowData: fallbackFlow.flowData,
+        category: 'core',
+        priority: 'high',
+        createdAt: new Date().toISOString()
+      };
+      setConsolidatedFlow(fallbackFlowData);
+    } finally {
+      setIsGeneratingConsolidatedFlow(false);
+    }
+  };
+
+  const createFallbackConsolidatedFlow = (flows: ProjectFlow[]) => {
+    const nodes = [
+      // User Onboarding Phase
+      {
+        id: 'start',
+        position: { x: 50, y: 50 },
+        data: { label: 'User Arrives' },
+        type: 'input',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'account-setup',
+        position: { x: 200, y: 50 },
+        data: { label: 'Account Setup' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'profile-creation',
+        position: { x: 350, y: 50 },
+        data: { label: 'Profile Creation' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'verification',
+        position: { x: 500, y: 50 },
+        data: { label: 'Verification Process' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
       
-      // Map wireframes by content similarity
-      data.wireframes.forEach((wireframe: StoredWireframe) => {
-        const similarity = calculateSimilarity(flow.title, wireframe.pageName);
-        if (similarity > 0.2) {
-          relatedWireframes.push(wireframe.id);
-        }
-      });
+      // Core Application Features
+      {
+        id: 'dashboard-access',
+        position: { x: 200, y: 150 },
+        data: { label: 'Dashboard Access' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'feature-navigation',
+        position: { x: 350, y: 150 },
+        data: { label: 'Feature Navigation' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'data-management',
+        position: { x: 500, y: 150 },
+        data: { label: 'Data Management' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
+      {
+        id: 'settings-config',
+        position: { x: 650, y: 150 },
+        data: { label: 'Settings Configuration' },
+        type: 'default',
+        style: { backgroundColor: '#9C27B0', color: 'white' }
+      },
 
-      // Map projects by title similarity
-      data.projects.forEach((project: StoredProject) => {
-        const similarity = calculateSimilarity(flow.title, project.title);
-        if (similarity > 0.3) {
-          relatedProjects.push(project.id);
-        }
-      });
+      // Platform Selection
+      {
+        id: 'platform-choice',
+        position: { x: 650, y: 50 },
+        data: { label: 'Platform Selection' },
+        type: 'default',
+        style: { backgroundColor: '#FFC107', color: 'black' }
+      },
 
-      // Map user stories by title similarity
-      data.userStories.forEach((story: StoredUserStory) => {
-        const similarity = calculateSimilarity(flow.title, story.title);
-        if (similarity > 0.2) {
-          relatedStories.push(story.id);
-        }
-      });
+      // Mobile Path
+      {
+        id: 'mobile-app',
+        position: { x: 500, y: 250 },
+        data: { label: 'Mobile Application' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'mobile-features',
+        position: { x: 350, y: 250 },
+        data: { label: 'Mobile Features' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'notifications',
+        position: { x: 200, y: 250 },
+        data: { label: 'Push Notifications' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
 
-      // Create mapping if any relationships found
-      if (relatedWireframes.length > 0 || relatedProjects.length > 0 || relatedStories.length > 0) {
-        const totalRelations = relatedWireframes.length + relatedProjects.length + relatedStories.length;
-        newMappings.push({
-          flowId: flow.id,
-          wireframeIds: relatedWireframes,
-          projectIds: relatedProjects,
-          storyIds: relatedStories,
-          mappingConfidence: Math.min(0.9, 0.4 + (totalRelations * 0.15))
-        });
+      // Web Platform Path
+      {
+        id: 'web-portal',
+        position: { x: 800, y: 250 },
+        data: { label: 'Web Portal' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+      {
+        id: 'web-dashboard',
+        position: { x: 950, y: 250 },
+        data: { label: 'Web Dashboard' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+      {
+        id: 'document-management',
+        position: { x: 1100, y: 250 },
+        data: { label: 'Document Management' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+
+      // Core Services
+      {
+        id: 'service-request',
+        position: { x: 350, y: 350 },
+        data: { label: 'Service Request' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'processing',
+        position: { x: 500, y: 350 },
+        data: { label: 'Request Processing' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'approval-workflow',
+        position: { x: 650, y: 350 },
+        data: { label: 'Approval Workflow' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'fulfillment',
+        position: { x: 800, y: 350 },
+        data: { label: 'Service Fulfillment' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+
+      // Communication & Feedback
+      {
+        id: 'communication',
+        position: { x: 950, y: 350 },
+        data: { label: 'Communication Hub' },
+        type: 'default',
+        style: { backgroundColor: '#607D8B', color: 'white' }
+      },
+      {
+        id: 'feedback',
+        position: { x: 650, y: 450 },
+        data: { label: 'User Feedback' },
+        type: 'default',
+        style: { backgroundColor: '#FF9800', color: 'white' }
+      },
+      {
+        id: 'analytics',
+        position: { x: 800, y: 450 },
+        data: { label: 'Analytics & Reporting' },
+        type: 'default',
+        style: { backgroundColor: '#FF9800', color: 'white' }
+      },
+
+      // Completion
+      {
+        id: 'completion',
+        position: { x: 950, y: 450 },
+        data: { label: 'Process Complete' },
+        type: 'output',
+        style: { backgroundColor: '#4CAF50', color: 'white' }
       }
-    });
+    ];
 
-    setMappings(newMappings);
+    const edges = [
+      // Main flow
+      { id: 'e1', source: 'start', target: 'account-setup' },
+      { id: 'e2', source: 'account-setup', target: 'profile-creation' },
+      { id: 'e3', source: 'profile-creation', target: 'verification' },
+      { id: 'e4', source: 'verification', target: 'platform-choice' },
+      
+      // Dashboard flow
+      { id: 'e5', source: 'account-setup', target: 'dashboard-access' },
+      { id: 'e6', source: 'dashboard-access', target: 'feature-navigation' },
+      { id: 'e7', source: 'feature-navigation', target: 'data-management' },
+      { id: 'e8', source: 'data-management', target: 'settings-config' },
+      
+      // Platform branching
+      { id: 'e9', source: 'platform-choice', target: 'mobile-app' },
+      { id: 'e10', source: 'platform-choice', target: 'web-portal' },
+      
+      // Mobile flow
+      { id: 'e11', source: 'mobile-app', target: 'mobile-features' },
+      { id: 'e12', source: 'mobile-features', target: 'notifications' },
+      { id: 'e13', source: 'notifications', target: 'service-request' },
+      
+      // Web flow
+      { id: 'e14', source: 'web-portal', target: 'web-dashboard' },
+      { id: 'e15', source: 'web-dashboard', target: 'document-management' },
+      { id: 'e16', source: 'document-management', target: 'communication' },
+      
+      // Core services
+      { id: 'e17', source: 'service-request', target: 'processing' },
+      { id: 'e18', source: 'processing', target: 'approval-workflow' },
+      { id: 'e19', source: 'approval-workflow', target: 'fulfillment' },
+      { id: 'e20', source: 'fulfillment', target: 'communication' },
+      
+      // Completion flow
+      { id: 'e21', source: 'communication', target: 'feedback' },
+      { id: 'e22', source: 'feedback', target: 'analytics' },
+      { id: 'e23', source: 'analytics', target: 'completion' },
+      
+      // Alternative paths
+      { id: 'e24', source: 'settings-config', target: 'service-request' },
+      { id: 'e25', source: 'mobile-features', target: 'processing' },
+      { id: 'e26', source: 'web-dashboard', target: 'service-request' }
+    ];
+
+    return {
+      title: "Master Application Flow",
+      description: "Comprehensive workflow combining all application processes and user journeys",
+      flowData: { nodes, edges }
+    };
   };
 
-  const calculateSimilarity = (str1: string, str2: string): number => {
-    const words1 = str1.toLowerCase().split(/\s+/);
-    const words2 = str2.toLowerCase().split(/\s+/);
-    
-    let commonWords = 0;
-    words1.forEach(word => {
-      if (words2.some(w => w.includes(word) || word.includes(w))) {
-        commonWords++;
+  const generateComprehensiveProjectPlan = (allData: Record<string, any>, flows: ProjectFlow[], wireframes: ProjectWireframe[]): ComprehensiveProjectPlan => {
+    // Extract brand guidelines if available
+    const brandGuidelines = allData['brand-guidelines'] || {};
+    const brandColors = brandGuidelines.colors || {};
+    const brandTypography = brandGuidelines.typography || {};
+
+    return {
+      executiveSummary: {
+        projectTitle: "Comprehensive Application Platform",
+        projectDescription: "A modern, full-featured application platform with user management, workflow automation, and comprehensive feature set",
+        targetAudience: ["End Users", "Administrators", "Business Users", "Mobile Users"],
+        keyObjectives: [
+          "Streamline user onboarding and management",
+          "Provide comprehensive workflow automation",
+          "Enable cross-platform access (web and mobile)",
+          "Ensure scalable and secure architecture",
+          "Deliver excellent user experience"
+        ],
+        timeline: "6-9 months development cycle",
+        budget: "Medium to large scale project investment"
+      },
+      technicalArchitecture: {
+        frontend: ["React.js", "TypeScript", "Tailwind CSS", "Modern UI Components"],
+        backend: ["Node.js", "Express.js", "RESTful APIs", "Authentication Services"],
+        database: ["PostgreSQL", "Redis Cache", "File Storage", "Backup Systems"],
+        infrastructure: ["Cloud Hosting", "CDN", "Load Balancing", "SSL/TLS"],
+        integrations: ["Third-party APIs", "Payment Processing", "Analytics", "Communication Services"]
+      },
+      userJourneys: {
+        primary: [
+          "User registration and onboarding",
+          "Profile setup and verification",
+          "Core feature access and usage",
+          "Service requests and fulfillment"
+        ],
+        secondary: [
+          "Advanced settings configuration",
+          "Document management",
+          "Communication and collaboration",
+          "Reporting and analytics"
+        ],
+        edge_cases: [
+          "Account recovery processes",
+          "Error handling and fallbacks",
+          "Offline functionality",
+          "Migration and data export"
+        ]
+      },
+      featureMatrix: {
+        core: [
+          "User authentication and authorization",
+          "Dashboard and navigation",
+          "Data management and CRUD operations",
+          "Basic workflow automation",
+          "Cross-platform compatibility"
+        ],
+        secondary: [
+          "Advanced reporting and analytics",
+          "Integration with external services",
+          "Customizable user preferences",
+          "Advanced communication features",
+          "Batch operations and bulk actions"
+        ],
+        future: [
+          "AI-powered recommendations",
+          "Advanced automation workflows",
+          "Mobile app enhancements",
+          "Third-party marketplace integration",
+          "Advanced analytics and insights"
+        ]
+      },
+      brandGuidelines: {
+        colors: [...(brandColors.primary || []), ...(brandColors.secondary || [])].filter((color): color is string => typeof color === 'string'),
+        typography: (brandTypography.fonts || []).filter((font: any): font is string => typeof font === 'string'),
+        logoUsage: ["Primary logo placement", "Secondary logo variations", "Brand consistency"],
+        designPrinciples: ["Clean and modern interface", "Consistent user experience", "Accessibility compliance", "Mobile-first design"]
+      },
+      developmentPhases: [
+        {
+          phase: "Phase 1: Foundation",
+          duration: "2-3 months",
+          deliverables: ["Core architecture", "User authentication", "Basic UI framework"],
+          dependencies: ["Technical requirements", "Design system", "Development environment"]
+        },
+        {
+          phase: "Phase 2: Core Features",
+          duration: "2-3 months", 
+          deliverables: ["Main application features", "Database integration", "API development"],
+          dependencies: ["Phase 1 completion", "Database design", "API specifications"]
+        },
+        {
+          phase: "Phase 3: Integration & Testing",
+          duration: "1-2 months",
+          deliverables: ["Third-party integrations", "Testing suite", "Performance optimization"],
+          dependencies: ["Core features complete", "Integration requirements", "Testing plan"]
+        },
+        {
+          phase: "Phase 4: Launch & Optimization",
+          duration: "1 month",
+          deliverables: ["Production deployment", "User training", "Performance monitoring"],
+          dependencies: ["Testing complete", "Deployment infrastructure", "Go-live plan"]
+        }
+      ],
+      riskAssessment: {
+        technical: [
+          "Scalability challenges with user growth",
+          "Integration complexity with external services",
+          "Performance bottlenecks in data processing",
+          "Security vulnerabilities and data protection"
+        ],
+        business: [
+          "User adoption and engagement rates",
+          "Market competition and differentiation",
+          "Resource allocation and timeline management",
+          "Budget constraints and scope creep"
+        ],
+        mitigation: [
+          "Implement scalable architecture from start",
+          "Thorough testing and security audits",
+          "Agile development with regular checkpoints",
+          "User feedback integration and iterative improvement"
+        ]
+      },
+      testingStrategy: {
+        unit: ["Component testing", "Function testing", "API endpoint testing", "Database operations"],
+        integration: ["Service integration", "Third-party API testing", "End-to-end workflows", "Cross-platform compatibility"],
+        userAcceptance: ["User journey testing", "Feature validation", "Performance benchmarks", "Accessibility compliance"],
+        security: ["Authentication testing", "Authorization validation", "Data encryption", "Vulnerability scanning"]
+      },
+      deploymentPlan: {
+        environments: ["Development", "Staging", "Production", "Backup/Recovery"],
+        pipeline: ["Automated builds", "Testing automation", "Deployment automation", "Rollback procedures"],
+        monitoring: ["Application monitoring", "Performance metrics", "Error tracking", "User analytics"]
       }
-    });
-
-    return commonWords / Math.max(words1.length, words2.length);
+    };
   };
 
-  const getMappedWireframes = (flowId: string): StoredWireframe[] => {
-    const mapping = mappings.find(m => m.flowId === flowId);
-    if (!mapping) return [];
+  const generateProjectAnalysis = (flows: ProjectFlow[], wireframes: ProjectWireframe[], allKeys: string[]): ProjectAnalysis => {
+    const flowsScore = Math.min(flows.length * 20, 100);
+    const wireframesScore = Math.min(wireframes.length * 25, 100);
+    const contentScore = Math.min(allKeys.length * 5, 100);
+    const overallScore = (flowsScore + wireframesScore + contentScore) / 3;
+
+    let readinessLevel: 'Planning' | 'Development' | 'Testing' | 'Ready' = 'Planning';
+    if (overallScore >= 80) readinessLevel = 'Ready';
+    else if (overallScore >= 60) readinessLevel = 'Testing';
+    else if (overallScore >= 40) readinessLevel = 'Development';
+
+    return {
+      completionScore: Math.round(overallScore),
+      readinessLevel,
+      strengths: [
+        `${flows.length} process flows documented`,
+        `${wireframes.length} wireframes created`,
+        `${allKeys.length} data components available`,
+        "Comprehensive project planning approach"
+      ],
+      gaps: [
+        flows.length < 3 ? "Need more process flows" : null,
+        wireframes.length < 2 ? "Need more wireframes" : null,
+        allKeys.length < 10 ? "Need more project content" : null,
+        "Consider adding user testing data"
+      ].filter(Boolean) as string[],
+      recommendations: [
+        "Continue developing core features",
+        "Expand wireframe coverage",
+        "Add integration testing",
+        "Implement user feedback loops"
+      ],
+      dataQuality: {
+        flows: Math.min(flows.length * 33, 100),
+        wireframes: Math.min(wireframes.length * 50, 100),
+        content: Math.min(allKeys.length * 10, 100),
+        overall: Math.round(overallScore)
+      },
+      nextSteps: [
+        "Finalize remaining wireframes",
+        "Implement core backend services",
+        "Set up testing framework",
+        "Plan deployment strategy"
+      ]
+    };
+  };
+
+  const getAppOverview = (): ProjectOverview => {
+    return {
+      coreFeatures: [
+        "User Authentication & Management",
+        "Dashboard & Navigation",
+        "Data Management & CRUD Operations",
+        "Workflow Automation",
+        "Cross-Platform Compatibility",
+        "Real-time Updates",
+        "Search & Filtering",
+        "Reporting & Analytics"
+      ],
+      userTypes: [
+        "End Users",
+        "Administrators", 
+        "Managers",
+        "Guest Users"
+      ],
+      platformSupport: [
+        "Web Application (Desktop)",
+        "Mobile Web (Responsive)",
+        "Native Mobile App",
+        "Tablet Support",
+        "Cross-browser Compatibility"
+      ],
+      securityFeatures: [
+        "Multi-factor Authentication",
+        "Role-based Access Control",
+        "Data Encryption",
+        "Secure API Communications",
+        "Audit Logging",
+        "Session Management"
+      ],
+      integrations: [
+        "Third-party APIs",
+        "Payment Processing",
+        "Email Services",
+        "Cloud Storage",
+        "Analytics Platforms",
+        "Communication Tools"
+      ]
+    };
+  };
+
+  const exportComprehensiveProjectPlan = async () => {
+    if (!comprehensiveProjectPlan) return;
     
-    return allData.wireframes.filter(w => mapping.wireframeIds.includes(w.id));
-  };
-
-  const getMappedProjects = (flowId: string): StoredProject[] => {
-    const mapping = mappings.find(m => m.flowId === flowId);
-    if (!mapping) return [];
+    setIsGeneratingPDF(true);
     
-    return allData.projects.filter(p => mapping.projectIds.includes(p.id));
-  };
-
-  const getMappedStories = (flowId: string): StoredUserStory[] => {
-    const mapping = mappings.find(m => m.flowId === flowId);
-    if (!mapping) return [];
-    
-    return allData.userStories.filter(s => mapping.storyIds.includes(s.id));
-  };
-
-  const downloadWireframe = (wireframe: StoredWireframe) => {
-    const blob = new Blob([wireframe.htmlContent], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `${wireframe.pageName.replace(/\s+/g, "_")}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const openWireframePreview = (wireframe: StoredWireframe) => {
-    const newWindow = window.open("", "_blank");
-    if (newWindow) {
-      newWindow.document.write(wireframe.htmlContent);
-      newWindow.document.close();
-    }
-  };
-
-  const exportToPDF = async () => {
-    setIsExporting(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       let yPosition = 20;
-
-      // Title Page
-      pdf.setFontSize(24);
-      pdf.text('Flow & Wireframe Mapping Report', pageWidth / 2, yPosition, { align: 'center' });
+      
+      // Title
+      pdf.setFontSize(20);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Comprehensive Project Development Plan', pageWidth / 2, yPosition, { align: 'center' });
       yPosition += 15;
       
-      pdf.setFontSize(12);
-      pdf.text(`Generated on ${new Date().toLocaleDateString()}`, pageWidth / 2, yPosition, { align: 'center' });
-      yPosition += 20;
-
-      // Project Overview
+      // Executive Summary
       pdf.setFontSize(16);
-      pdf.text('Project Overview', 20, yPosition);
+      pdf.text('Executive Summary', 20, yPosition);
       yPosition += 10;
       
-      pdf.setFontSize(10);
-      pdf.text(`Process Flows: ${allData.flows.length}`, 20, yPosition);
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text(`Project: ${comprehensiveProjectPlan.executiveSummary.projectTitle}`, 20, yPosition);
+      yPosition += 8;
+      
+      const descriptionLines = pdf.splitTextToSize(comprehensiveProjectPlan.executiveSummary.projectDescription, pageWidth - 40);
+      pdf.text(descriptionLines, 20, yPosition);
+      yPosition += descriptionLines.length * 6 + 10;
+      
+      // Technical Architecture
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Technical Architecture', 20, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      pdf.text('Frontend Technologies:', 20, yPosition);
+      yPosition += 6;
+      comprehensiveProjectPlan.technicalArchitecture.frontend.forEach(tech => {
+        pdf.text(`• ${tech}`, 25, yPosition);
+        yPosition += 5;
+      });
       yPosition += 5;
-      pdf.text(`Wireframes: ${allData.wireframes.length}`, 20, yPosition);
-      yPosition += 5;
-      pdf.text(`Active Mappings: ${mappings.length}`, 20, yPosition);
-      yPosition += 15;
-
-      // Process Flows Section - Export ALL flows
-      for (let i = 0; i < allData.flows.length; i++) {
-        const flow = allData.flows[i];
-        
-        // New page for each flow
-        if (i > 0) {
+      
+      pdf.text('Backend Technologies:', 20, yPosition);
+      yPosition += 6;
+      comprehensiveProjectPlan.technicalArchitecture.backend.forEach(tech => {
+        pdf.text(`• ${tech}`, 25, yPosition);
+        yPosition += 5;
+      });
+      yPosition += 10;
+      
+      // Development Phases
+      if (yPosition > pageHeight - 60) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+      
+      pdf.setFontSize(16);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Development Phases', 20, yPosition);
+      yPosition += 10;
+      
+      comprehensiveProjectPlan.developmentPhases.forEach(phase => {
+        if (yPosition > pageHeight - 40) {
           pdf.addPage();
           yPosition = 20;
         }
-
-        pdf.setFontSize(16);
-        pdf.text(`Process Flow: ${flow.title}`, 20, yPosition);
-        yPosition += 15;
-
-        // Temporarily select this flow to capture its diagram
-        const originalSelection = selectedFlow;
-        setSelectedFlow(flow);
         
-        // Wait for React to re-render
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Capture flow diagram with exact colors and full dimensions
-        const flowElement = document.querySelector('.react-flow') as HTMLElement;
-        if (flowElement) {
-          try {
-            console.log('Attempting to capture flow diagram for:', flow.title);
-            
-            // Wait for the flow to fully render and stabilize
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Check if flow elements exist
-            const nodeElements = flowElement.querySelectorAll('.react-flow__node');
-            const edgeElements = flowElement.querySelectorAll('.react-flow__edge');
-            
-            console.log(`Found ${nodeElements.length} nodes and ${edgeElements.length} edges`);
-            console.log('Flow element dimensions:', flowElement.offsetWidth, 'x', flowElement.offsetHeight);
-            console.log('Flow element visibility:', window.getComputedStyle(flowElement).visibility);
-            console.log('Flow element display:', window.getComputedStyle(flowElement).display);
-            
-            if (nodeElements.length === 0) {
-              console.warn('No flow nodes found, adding fallback text');
-              pdf.setFontSize(10);
-              pdf.text(`Flow diagram for "${flow.title}" - Visual representation not captured`, 20, yPosition);
-              yPosition += 10;
-              pdf.text(`This flow contains the process visualization that would appear here.`, 20, yPosition);
-              yPosition += 15;
-            } else {
-              // Ensure the element is visible and has dimensions
-              const rect = flowElement.getBoundingClientRect();
-              console.log('Element bounding rect:', rect);
-              
-              if (rect.width === 0 || rect.height === 0) {
-                console.warn('Flow element has zero dimensions, forcing size');
-                flowElement.style.width = '800px';
-                flowElement.style.height = '600px';
-                await new Promise(resolve => setTimeout(resolve, 500));
-              }
-              
-              // Use a more reliable capture approach
-              const canvas = await html2canvas(flowElement, {
-                scale: 1,
-                useCORS: true,
-                allowTaint: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-                foreignObjectRendering: false,
-                removeContainer: false,
-                imageTimeout: 5000,
-                width: Math.max(flowElement.scrollWidth, 800),
-                height: Math.max(flowElement.scrollHeight, 600)
-              });
-              
-              console.log(`Canvas captured: ${canvas.width}x${canvas.height}`);
-              
-              if (canvas.width > 10 && canvas.height > 10) {
-                const imgData = canvas.toDataURL('image/png', 0.9);
-                
-                // Test if the image actually contains content
-                const testImg = new Image();
-                testImg.onload = () => {
-                  console.log('Image loaded successfully, dimensions:', testImg.width, 'x', testImg.height);
-                };
-                testImg.src = imgData;
-                
-                // Calculate size for PDF
-                const maxPdfWidth = pageWidth - 40;
-                const maxPdfHeight = pageHeight - 100;
-                
-                let imgWidth = Math.min(maxPdfWidth, canvas.width * 0.5);
-                let imgHeight = (canvas.height * imgWidth) / canvas.width;
-                
-                // If height exceeds page, scale down
-                if (imgHeight > maxPdfHeight) {
-                  imgHeight = maxPdfHeight;
-                  imgWidth = (canvas.width * imgHeight) / canvas.height;
-                }
-                
-                // Check if we need a new page
-                if (yPosition + imgHeight > pageHeight - 20) {
-                  pdf.addPage();
-                  yPosition = 20;
-                }
-                
-                // Center the image
-                const xPosition = (pageWidth - imgWidth) / 2;
-                pdf.addImage(imgData, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
-                yPosition += imgHeight + 20;
-                
-                console.log(`Flow diagram added to PDF: ${imgWidth}x${imgHeight} at position ${xPosition}, ${yPosition - imgHeight - 20}`);
-              } else {
-                console.warn('Canvas capture failed or has minimal content');
-                pdf.setFontSize(10);
-                pdf.text(`Flow diagram for "${flow.title}" - Capture failed`, 20, yPosition);
-                yPosition += 10;
-                pdf.text(`Technical note: Flow visualization present but not exportable`, 20, yPosition);
-                yPosition += 15;
-              }
-            }
-          } catch (error) {
-            console.warn('Could not capture flow diagram:', error);
-            pdf.setFontSize(10);
-            pdf.text('Flow diagram could not be captured', 20, yPosition);
-            yPosition += 15;
-          }
-        }
-
-        // Restore original selection
-        setSelectedFlow(originalSelection);
-
-        // Mapped wireframes with images
-        const mappedWireframes = getMappedWireframes(flow.id);
-        if (mappedWireframes.length > 0) {
-          // Check if we need a new page
-          if (yPosition > pageHeight - 40) {
-            pdf.addPage();
-            yPosition = 20;
-          }
-
-          pdf.setFontSize(14);
-          pdf.text(`Associated Wireframes (${mappedWireframes.length}):`, 20, yPosition);
-          yPosition += 15;
-
-          for (const wireframe of mappedWireframes) {
-            // Check if we need a new page
-            if (yPosition > pageHeight - 80) {
-              pdf.addPage();
-              yPosition = 20;
-            }
-
-            pdf.setFontSize(12);
-            pdf.text(wireframe.pageName, 20, yPosition);
-            yPosition += 5;
-            
-            pdf.setFontSize(9);
-            pdf.text(`Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 20, yPosition);
-            yPosition += 10;
-
-            // Create wireframe preview with exact colors
-            try {
-              // Create a hidden iframe to render the wireframe
-              const iframe = document.createElement('iframe');
-              iframe.style.width = '1200px';
-              iframe.style.height = '800px';
-              iframe.style.position = 'absolute';
-              iframe.style.left = '-9999px';
-              iframe.style.border = 'none';
-              iframe.srcdoc = wireframe.htmlContent;
-              document.body.appendChild(iframe);
-
-              // Wait for iframe to fully load and render
-              await new Promise((resolve) => {
-                iframe.onload = () => {
-                  setTimeout(resolve, 1000); // Extra time for CSS/fonts to load
-                };
-                setTimeout(resolve, 2000); // Fallback timeout
-              });
-
-              // Capture the wireframe with exact colors
-              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-              if (iframeDoc && iframeDoc.body) {
-                const wireframeCanvas = await html2canvas(iframeDoc.body, {
-                  scale: 1.5,
-                  useCORS: true,
-                  allowTaint: true,
-                  backgroundColor: '#ffffff',
-                  logging: false,
-                  height: iframeDoc.body.scrollHeight,
-                  width: iframeDoc.body.scrollWidth
-                });
-
-                document.body.removeChild(iframe);
-
-                const wireframeImgData = wireframeCanvas.toDataURL('image/png', 1.0);
-                const wireframeImgWidth = Math.min(160, pageWidth - 40);
-                const wireframeImgHeight = (wireframeCanvas.height * wireframeImgWidth) / wireframeCanvas.width;
-
-                // Check if we need a new page for the wireframe
-                if (yPosition + wireframeImgHeight > pageHeight - 20) {
-                  pdf.addPage();
-                  yPosition = 20;
-                }
-
-                pdf.addImage(wireframeImgData, 'PNG', 20, yPosition, wireframeImgWidth, wireframeImgHeight);
-                yPosition += wireframeImgHeight + 15;
-              } else {
-                document.body.removeChild(iframe);
-                pdf.setFontSize(9);
-                pdf.text('Wireframe preview not available', 25, yPosition);
-                yPosition += 10;
-              }
-            } catch (error) {
-              console.warn('Could not capture wireframe:', error);
-              pdf.setFontSize(9);
-              pdf.text('Wireframe image could not be captured', 25, yPosition);
-              yPosition += 10;
-            }
-          }
-        } else {
-          // No wireframes mapped
-          pdf.setFontSize(12);
-          pdf.text('No wireframes mapped to this flow', 20, yPosition);
-          yPosition += 15;
-        }
+        pdf.setFontSize(14);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${phase.phase} (${phase.duration})`, 20, yPosition);
+        yPosition += 8;
+        
+        pdf.setFontSize(12);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text('Deliverables:', 20, yPosition);
+        yPosition += 6;
+        
+        phase.deliverables.forEach(deliverable => {
+          pdf.text(`• ${deliverable}`, 25, yPosition);
+          yPosition += 5;
+        });
+        yPosition += 8;
+      });
+      
+      // Feature Matrix
+      if (yPosition > pageHeight - 60) {
+        pdf.addPage();
+        yPosition = 20;
       }
-
-      // Summary page
-      pdf.addPage();
-      yPosition = 20;
-
+      
       pdf.setFontSize(16);
-      pdf.text('Summary', 20, yPosition);
-      yPosition += 15;
-
-      pdf.setFontSize(10);
-      pdf.text(`This comprehensive report contains ${allData.flows.length} process flows with their corresponding flow diagrams.`, 20, yPosition);
-      yPosition += 5;
-      pdf.text(`${allData.wireframes.length} wireframes are included with exact colors and visual elements.`, 20, yPosition);
-      yPosition += 5;
-      pdf.text(`${mappings.length} intelligent mappings connect flows to their UI implementations.`, 20, yPosition);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('Feature Implementation Matrix', 20, yPosition);
       yPosition += 10;
-      pdf.text(`Generated from Flow & Wireframe Mapping analysis on ${new Date().toLocaleDateString()}.`, 20, yPosition);
-
-      // Save the PDF
-      pdf.save(`flow-wireframe-mapping-complete-${new Date().toISOString().split('T')[0]}.pdf`);
+      
+      pdf.setFontSize(14);
+      pdf.text('Core Features:', 20, yPosition);
+      yPosition += 8;
+      comprehensiveProjectPlan.featureMatrix.core.forEach(feature => {
+        pdf.setFontSize(12);
+        pdf.text(`• ${feature}`, 25, yPosition);
+        yPosition += 5;
+      });
+      yPosition += 8;
+      
+      pdf.setFontSize(14);
+      pdf.text('Secondary Features:', 20, yPosition);
+      yPosition += 8;
+      comprehensiveProjectPlan.featureMatrix.secondary.forEach(feature => {
+        pdf.setFontSize(12);
+        pdf.text(`• ${feature}`, 25, yPosition);
+        yPosition += 5;
+      });
+      
+      // Generate timestamp for filename
+      const timestamp = new Date().toISOString().split('T')[0];
+      pdf.save(`comprehensive-project-plan-${timestamp}.pdf`);
+      
     } catch (error) {
-      console.error('PDF generation failed:', error);
-      alert('Failed to generate PDF. Please try again.');
+      console.error('Error generating PDF:', error);
     } finally {
-      setIsExporting(false);
+      setIsGeneratingPDF(false);
     }
   };
 
-  const { currentStep, completedSteps } = getWorkflowProgress();
+  const projectAnalysis = generateProjectAnalysis(flows, wireframes, Object.keys(localStorage));
+  const appOverview = getAppOverview();
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
-      {/* Compact Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <MapPin className="h-6 w-6 text-blue-600" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4 space-y-6">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
             Flow & Wireframe Mapping
           </h1>
-          <p className="text-sm text-gray-600 mt-0.5">
-            Visualize process flows alongside their wireframe implementations
+          <p className="text-lg text-gray-600">
+            Comprehensive project visualization and development planning
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="flex gap-1.5">
-            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-              <Workflow className="h-3 w-3" />
-              {allData.flows.length} Flows
-            </Badge>
-            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-              <Code className="h-3 w-3" />
-              {allData.wireframes.length} UIs
-            </Badge>
-            <Badge variant="secondary" className="flex items-center gap-1 h-7 px-2">
-              <Layers className="h-3 w-3" />
-              {mappings.length} Maps
-            </Badge>
-          </div>
-          <Button
-            onClick={exportToPDF}
-            variant="outline"
-            size="sm"
-            className="h-7 px-3"
-            disabled={allData.flows.length === 0 || isExporting}
-          >
-            {isExporting ? (
-              <>
-                <div className="h-3 w-3 mr-1 animate-spin rounded-full border border-gray-400 border-t-transparent" />
-                Generating...
-              </>
-            ) : (
-              <>
-                <FileText className="h-3 w-3 mr-1" />
-                Export PDF
-              </>
-            )}
-          </Button>
-        </div>
-      </div>
 
-      {/* Workflow Progress */}
-      <WorkflowProgress
-        currentStep={currentStep}
-        completedSteps={completedSteps}
-      />
+        {/* Workflow Progress */}
+        <WorkflowProgress 
+          currentStep={flows.length > 0 ? (wireframes.length > 0 ? "wireframes" : "diagram") : "plan"}
+          completedSteps={[
+            ...(flows.length > 0 ? ["plan", "diagram"] : ["plan"]),
+            ...(wireframes.length > 0 ? ["wireframes"] : [])
+          ]}
+        />
 
-      {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Compact Flow Selection Panel */}
-        <Card className="lg:col-span-1 border-l-4 border-l-blue-500">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Workflow className="h-4 w-4 text-blue-600" />
-              Process Flows
+        {/* Project Analysis */}
+        <Card className="border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-emerald-900">
+              <BarChart3 className="h-6 w-6" />
+              Project Analysis & Readiness
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 pt-0">
-            {allData.flows.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Workflow className="h-12 w-12 mx-auto mb-3 text-gray-300" />
-                <p>No process flows found</p>
-                <p className="text-sm mt-1">Create flows in the BPMN Editor</p>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="text-2xl font-bold text-emerald-600">{projectAnalysis.completionScore}%</div>
+                <div className="text-sm text-gray-600">Overall Progress</div>
               </div>
-            ) : (
-              allData.flows.map((flow) => {
-                const mappedWireframes = getMappedWireframes(flow.id);
-                const isSelected = selectedFlow?.id === flow.id;
-                
-                return (
-                  <div
-                    key={flow.id}
-                    className={`p-3 border rounded-lg cursor-pointer transition-all ${
-                      isSelected 
-                        ? "border-blue-500 bg-blue-50" 
-                        : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                    }`}
-                    onClick={() => setSelectedFlow(flow)}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="font-medium text-gray-900 text-sm">
-                        {flow.title}
-                      </h4>
-                      {mappedWireframes.length > 0 && (
-                        <Badge variant="secondary" className="text-xs">
-                          {mappedWireframes.length} UI{mappedWireframes.length > 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                      Created: {new Date(flow.createdAt).toLocaleDateString()}
-                    </p>
-                    {mappedWireframes.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-1">
-                        {mappedWireframes.map((wireframe) => (
-                          <span
-                            key={wireframe.id}
-                            className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded"
-                          >
-                            {wireframe.pageName}
-                          </span>
-                        ))}
-                      </div>
-                    )}
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="text-lg font-semibold text-emerald-700">{projectAnalysis.readinessLevel}</div>
+                <div className="text-sm text-gray-600">Development Stage</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="text-2xl font-bold text-emerald-600">{flows.length}</div>
+                <div className="text-sm text-gray-600">Process Flows</div>
+              </div>
+              <div className="bg-white rounded-lg p-4 border border-emerald-200">
+                <div className="text-2xl font-bold text-emerald-600">{wireframes.length}</div>
+                <div className="text-sm text-gray-600">Wireframes</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Project Strengths
+                </h4>
+                <ul className="space-y-1">
+                  {projectAnalysis.strengths.map((strength, index) => (
+                    <li key={index} className="text-sm text-gray-700 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>
+                      {strength}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div>
+                <h4 className="font-semibold text-emerald-900 mb-2 flex items-center gap-2">
+                  <Target className="h-4 w-4" />
+                  Next Steps
+                </h4>
+                <ul className="space-y-1">
+                  {projectAnalysis.nextSteps.map((step, index) => (
+                    <li key={index} className="text-sm text-gray-700 flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                      {step}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Comprehensive Project Plan */}
+        {comprehensiveProjectPlan && (
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                  Comprehensive Development Plan
+                </div>
+                <Button 
+                  onClick={exportComprehensiveProjectPlan}
+                  disabled={isGeneratingPDF}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <Clock className="mr-2 h-4 w-4 animate-spin" />
+                      Generating PDF...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-4 w-4" />
+                      Export Development Plan
+                    </>
+                  )}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Executive Summary */}
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Executive Summary
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <div className="text-sm font-medium text-blue-800">Project Title</div>
+                    <div className="text-gray-700">{comprehensiveProjectPlan.executiveSummary.projectTitle}</div>
                   </div>
-                );
-              })
+                  <div>
+                    <div className="text-sm font-medium text-blue-800">Timeline</div>
+                    <div className="text-gray-700">{comprehensiveProjectPlan.executiveSummary.timeline}</div>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-sm font-medium text-blue-800 mb-1">Description</div>
+                  <div className="text-gray-700 text-sm">{comprehensiveProjectPlan.executiveSummary.projectDescription}</div>
+                </div>
+              </div>
+
+              {/* Feature Matrix */}
+              <div className="bg-white rounded-lg p-4 border border-blue-200">
+                <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Feature Implementation Matrix
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-green-50 p-3 rounded border border-green-200">
+                    <div className="text-sm font-medium text-green-800 mb-2">Core Features ({comprehensiveProjectPlan.featureMatrix.core.length})</div>
+                    <div className="text-xs text-gray-600">
+                      Essential functionality for MVP
+                    </div>
+                  </div>
+                  <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                    <div className="text-sm font-medium text-blue-800 mb-2">Secondary Features ({comprehensiveProjectPlan.featureMatrix.secondary.length})</div>
+                    <div className="text-xs text-gray-600">
+                      Enhanced functionality post-launch
+                    </div>
+                  </div>
+                  <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                    <div className="text-sm font-medium text-purple-700 mb-2">Future Features ({comprehensiveProjectPlan.featureMatrix.future.length})</div>
+                    <div className="text-xs text-gray-600">
+                      Long-term roadmap and expansion
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Consolidated Master Flow Section */}
+        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-6 w-6 text-purple-600" />
+                AI-Generated Master Flow Diagram
+              </div>
+              <Button 
+                onClick={generateConsolidatedFlow}
+                disabled={isGeneratingConsolidatedFlow || flows.length === 0}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {isGeneratingConsolidatedFlow ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    Consolidating Flows...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Generate Master Flow
+                  </>
+                )}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!consolidatedFlow && !isGeneratingConsolidatedFlow && (
+              <div className="text-center py-8">
+                <div className="text-gray-500 mb-4">
+                  Consolidate all individual flows into a single comprehensive master workflow diagram using AI analysis.
+                </div>
+                <div className="text-sm text-gray-400">
+                  {flows.length === 0 
+                    ? "No flows available to consolidate. Please generate some flows first."
+                    : `Ready to consolidate ${flows.length} flows into a master diagram.`
+                  }
+                </div>
+              </div>
+            )}
+            
+            {isGeneratingConsolidatedFlow && (
+              <div className="text-center py-8">
+                <div className="text-purple-600 mb-4">
+                  AI is analyzing and consolidating all flows into a master workflow...
+                </div>
+                <div className="text-sm text-gray-500">
+                  This may take a moment as we merge {flows.length} individual flows.
+                </div>
+              </div>
+            )}
+
+            {consolidatedFlow && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 border border-purple-200">
+                  <h4 className="font-semibold text-purple-900 mb-2">{consolidatedFlow.title}</h4>
+                  <p className="text-sm text-gray-600 mb-4">{consolidatedFlow.description}</p>
+                  
+                  <div className="bg-gray-50 rounded-lg p-2 mb-4">
+                    <FlowDiagramViewer
+                      flowData={consolidatedFlow.flowData}
+                      title="Master Application Flow"
+                      className="h-96"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-green-50 p-3 rounded border border-green-200">
+                      <div className="font-medium text-green-800">Process Nodes</div>
+                      <div className="text-green-600">{consolidatedFlow.flowData.nodes?.length || 0} steps</div>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                      <div className="font-medium text-blue-800">Connections</div>
+                      <div className="text-blue-600">{consolidatedFlow.flowData.edges?.length || 0} transitions</div>
+                    </div>
+                    <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                      <div className="font-medium text-purple-800">Source Flows</div>
+                      <div className="text-purple-600">{flows.length} consolidated</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Flow Visualization & Wireframe Details */}
-        <div className="lg:col-span-2 space-y-4">
-          {selectedFlow ? (
-            <>
-              {/* Compact Flow Diagram */}
-              <Card className="border-l-4 border-l-blue-500">
-                <CardHeader className="pb-3">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Workflow className="h-4 w-4 text-blue-600" />
-                    {selectedFlow.title}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="h-80 border rounded-md overflow-hidden bg-gradient-to-br from-gray-50 to-white">
-                    <FlowDiagramViewer
-                      flowData={selectedFlow.flowData}
-                      title={selectedFlow.title}
-                      className="h-full"
-                    />
+        {/* App Overview Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-900">
+                <Settings className="h-5 w-5" />
+                Core Functionality
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {appOverview.coreFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <span className="text-sm text-gray-700">{feature}</span>
                   </div>
-                </CardContent>
-              </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-              {/* Modern Mapped Wireframes */}
-              {(() => {
-                const mappedWireframes = getMappedWireframes(selectedFlow.id);
-                
-                return mappedWireframes.length > 0 ? (
-                  <Card className="border border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 shadow-lg hover:shadow-xl transition-all duration-300">
-                    <CardHeader className="pb-4 bg-white/80 backdrop-blur-sm rounded-t-lg">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="flex items-center gap-3 text-xl font-semibold">
-                          <div className="p-2 bg-green-100 rounded-lg">
-                            <Code className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <span className="text-gray-900">UI Implementations</span>
-                            <div className="text-sm font-normal text-green-600">
-                              {mappedWireframes.length} wireframe{mappedWireframes.length !== 1 ? 's' : ''} connected
-                            </div>
-                          </div>
-                        </CardTitle>
-                        <div className="flex gap-2 p-1 bg-gray-100 rounded-lg">
-                          <Button
-                            variant={viewMode === "desktop" ? "default" : "ghost"}
-                            size="sm"
-                            className={`h-9 px-4 transition-all duration-200 ${
-                              viewMode === "desktop" 
-                                ? "bg-white shadow-sm" 
-                                : "hover:bg-white/50"
-                            }`}
-                            onClick={() => setViewMode("desktop")}
-                          >
-                            <Monitor className="h-4 w-4 mr-2" />
-                            Desktop
-                          </Button>
-                          <Button
-                            variant={viewMode === "mobile" ? "default" : "ghost"}
-                            size="sm"
-                            className={`h-9 px-4 transition-all duration-200 ${
-                              viewMode === "mobile" 
-                                ? "bg-white shadow-sm" 
-                                : "hover:bg-white/50"
-                            }`}
-                            onClick={() => setViewMode("mobile")}
-                          >
-                            <Smartphone className="h-4 w-4 mr-2" />
-                            Mobile
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-6">
-                      <Tabs value={currentTabValue || mappedWireframes[0]?.id} onValueChange={(value) => {
-                        setCurrentTabValue(value);
-                        const index = mappedWireframes.findIndex(w => w.id === value);
-                        if (index !== -1) setActiveTabIndex(index);
-                      }} className="space-y-6">
-                        <div className="relative">
-                          {/* Compact Tabs Header */}
+          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-green-900">
+                <Users className="h-5 w-5" />
+                User Types & Roles
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {appOverview.userTypes.map((userType, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm text-gray-700">{userType}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-indigo-900">
+                <Globe className="h-5 w-5" />
+                Platform Support
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {appOverview.platformSupport.map((platform, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-indigo-600" />
+                    <span className="text-sm text-gray-700">{platform}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-red-50">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-orange-900">
+                <Shield className="h-5 w-5" />
+                Security & Compliance
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {appOverview.securityFeatures.map((feature, index) => (
+                  <div key={index} className="flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-orange-600" />
+                    <span className="text-sm text-gray-700">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Process Flows and Wireframes */}
+        <Card className="border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50 shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-gray-900">
+              <Activity className="h-6 w-6" />
+              Process Flows & Wireframes Overview
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="flows" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6 bg-gradient-to-r from-blue-100 to-purple-100 p-1 rounded-xl">
+                <TabsTrigger 
+                  value="flows" 
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200 rounded-lg font-medium"
+                >
+                  Process Flows ({flows.length})
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="wireframes"
+                  className="data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-105 transition-all duration-200 rounded-lg font-medium"
+                >
+                  Wireframes ({wireframes.length})
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="flows" className="space-y-4">
+                {flows.length === 0 ? (
+                  <div className="text-center py-12 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl border-2 border-dashed border-blue-300">
+                    <Activity className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-blue-900 mb-2">No Process Flows Available</h3>
+                    <p className="text-blue-600">Generate some process flows to see them here</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {flows.map((flow) => (
+                      <div key={flow.id} className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 text-white">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-gray-600">{mappedWireframes.length} wireframe{mappedWireframes.length !== 1 ? 's' : ''}</span>
-                            <div className="text-xs text-gray-400">Use ← → to navigate</div>
+                            <h3 className="text-lg font-semibold truncate">{flow.title}</h3>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                              {flow.priority}
+                            </Badge>
                           </div>
-
-                          <TabsList className="flex w-full bg-white/90 backdrop-blur-sm p-0.5 rounded-xl shadow-md border border-gray-200/50 relative overflow-hidden">
-                            {/* Subtle background indicator */}
-                            <div className="absolute inset-0.5 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-lg transition-all duration-300"></div>
-                            
-                            {mappedWireframes.map((wireframe, index) => (
-                              <TabsTrigger 
-                                key={wireframe.id} 
-                                value={wireframe.id} 
-                                className="relative flex-1 text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:z-10 hover:bg-white/60 group cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400"
-                                tabIndex={0}
-                              >
-                                <div className="flex items-center gap-2 relative z-10">
-                                  {/* Compact status indicator */}
-                                  <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                                    index === activeTabIndex 
-                                      ? 'bg-blue-500 shadow-sm' 
-                                      : 'bg-green-400'
-                                  }`}></div>
-                                  
-                                  {/* Compact tab text */}
-                                  <span className={`transition-all duration-200 text-xs leading-tight truncate ${
-                                    index === activeTabIndex 
-                                      ? 'text-gray-900 font-semibold' 
-                                      : 'text-gray-700 group-data-[state=active]:text-gray-900'
-                                  }`} title={wireframe.pageName}>
-                                    {wireframe.pageName.length > 10 
-                                      ? `${wireframe.pageName.substring(0, 10)}...` 
-                                      : wireframe.pageName
-                                    }
-                                  </span>
-
-                                  {/* Compact number indicator */}
-                                  <div className={`w-4 h-4 bg-gradient-to-br text-white text-xs rounded-full flex items-center justify-center transition-all duration-200 font-medium ${
-                                    index === activeTabIndex 
-                                      ? 'from-blue-500 to-indigo-600 opacity-100' 
-                                      : 'from-gray-400 to-gray-500 opacity-60 group-data-[state=active]:opacity-100'
-                                  }`}>
-                                    {index + 1}
-                                  </div>
-                                </div>
-
-                                {/* Subtle hover effect */}
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 to-indigo-50/30 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none"></div>
-                              </TabsTrigger>
-                            ))}
-                          </TabsList>
+                          <p className="text-blue-100 text-sm">{flow.description}</p>
                         </div>
                         
-                        {mappedWireframes.map((wireframe) => (
-                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-6">
-                            <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-2xl p-6 shadow-lg border border-gray-100/50 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
-                              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50 to-transparent rounded-full opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-                              
-                              <div className="flex items-center justify-between mb-6 relative z-10">
-                                <div className="flex items-center gap-4">
-                                  <div className="relative">
-                                    <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300">
-                                      <ExternalLink className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
-                                    </div>
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-sm animate-pulse"></div>
-                                  </div>
-                                  <div>
-                                    <h4 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-900 transition-colors duration-300">
-                                      {wireframe.pageName}
-                                    </h4>
-                                    <div className="flex items-center gap-3 text-sm text-gray-600">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-sm"></div>
-                                        <span className="font-medium">Active</span>
-                                      </div>
-                                      <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                                      <span>Created {new Date(wireframe.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex gap-3">
-                                  <Button
-                                    variant="outline"
-                                    size="default"
-                                    className="h-11 px-6 bg-white/80 backdrop-blur-sm border-blue-200/70 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md font-medium"
-                                    onClick={() => openWireframePreview(wireframe)}
-                                  >
-                                    <ExternalLink className="h-4 w-4 mr-2" />
-                                    Preview
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="default"
-                                    className="h-11 px-6 bg-white/80 backdrop-blur-sm border-emerald-200/70 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md font-medium"
-                                    onClick={() => downloadWireframe(wireframe)}
-                                  >
-                                    <Download className="h-4 w-4 mr-2" />
-                                    Download
-                                  </Button>
-                                </div>
-                              </div>
-                              
-                              {/* Enhanced Modern Wireframe Preview */}
-                              <div className={`relative group ${
-                                viewMode === "mobile" 
-                                  ? "max-w-sm mx-auto" 
-                                  : "w-full"
-                              }`}>
-                                {/* Animated background glow */}
-                                <div className="absolute -inset-4 bg-gradient-to-r from-blue-200/20 via-purple-200/20 to-indigo-200/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
-                                
-                                {/* Device frame */}
-                                <div className={`relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl p-3 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:scale-[1.02] ${
-                                  viewMode === "mobile" 
-                                    ? "aspect-[9/19]" 
-                                    : "aspect-[16/11]"
-                                }`}>
-                                  {/* Device chrome/bezel */}
-                                  <div className="relative w-full h-full bg-black rounded-xl p-1 shadow-inner">
-                                    {/* Screen area */}
-                                    <div className="relative w-full h-full bg-white rounded-lg overflow-hidden shadow-lg">
-                                      {/* Browser header */}
-                                      <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex items-center px-4 z-10">
-                                        <div className="flex items-center gap-2 mr-4">
-                                          <div className="w-3 h-3 bg-gradient-to-br from-red-400 to-red-500 rounded-full shadow-sm"></div>
-                                          <div className="w-3 h-3 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full shadow-sm"></div>
-                                          <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm"></div>
-                                        </div>
-                                        <div className="flex-1 bg-white rounded-md h-6 flex items-center px-3 shadow-inner">
-                                          <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
-                                          <div className="text-xs text-gray-500 font-mono">{wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html</div>
-                                        </div>
-                                        <div className="ml-4 flex gap-1">
-                                          <div className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 transition-colors duration-200"></div>
-                                          <div className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 transition-colors duration-200"></div>
-                                        </div>
-                                      </div>
-                                      
-                                      {/* Wireframe content */}
-                                      <div className="absolute inset-0 pt-10">
-                                        <iframe
-                                          srcDoc={wireframe.htmlContent}
-                                          className="w-full h-full border-0 bg-white"
-                                          title={wireframe.pageName}
-                                        />
-                                      </div>
-                                      
-                                      {/* Subtle overlay for depth */}
-                                      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                    </div>
-                                    
-                                    {/* Device reflection */}
-                                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-xl pointer-events-none"></div>
-                                  </div>
-                                  
-                                  {/* Device shadow */}
-                                  <div className="absolute inset-0 bg-black/20 rounded-2xl blur-sm -z-10 translate-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
-                                </div>
-                              </div>
-                            </div>
-                          </TabsContent>
-                        ))}
-                      </Tabs>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card className="border-2 border-dashed border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50 hover:border-gray-300 transition-all duration-300">
-                    <CardContent className="py-12">
-                      <div className="text-center">
-                        <div className="p-4 bg-gray-100 rounded-full w-fit mx-auto mb-4">
-                          <Code className="h-8 w-8 text-gray-400" />
+                        <div className="p-4">
+                          <div className="bg-gray-50 rounded-lg p-2 mb-4 border">
+                            <FlowDiagramViewer
+                              flowData={flow.flowData}
+                              title={flow.title}
+                              className="h-48"
+                            />
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm text-gray-600">
+                            <span className="flex items-center gap-1">
+                              <Activity className="h-4 w-4" />
+                              {flow.category}
+                            </span>
+                            <span>{new Date(flow.createdAt).toLocaleDateString()}</span>
+                          </div>
                         </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          No wireframes mapped
-                        </h3>
-                        <p className="text-gray-500 mb-4 max-w-sm mx-auto">
-                          This process flow doesn't have any UI wireframes connected yet. Generate wireframes to see them here.
-                        </p>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="border-dashed border-gray-300 text-gray-600 hover:bg-gray-50"
-                        >
-                          Generate Wireframes
-                        </Button>
                       </div>
-                    </CardContent>
-                  </Card>
-                );
-              })()}
-            </>
-          ) : (
-            <Card className="border-2 border-dashed border-gray-200 bg-gradient-to-br from-slate-50 to-gray-50 hover:border-gray-300 transition-all duration-300">
-              <CardContent className="py-16">
-                <div className="text-center">
-                  <div className="relative mb-6">
-                    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-full w-fit mx-auto">
-                      <MapPin className="h-10 w-10 text-blue-400" />
-                    </div>
-                    <div className="absolute top-0 right-0 w-3 h-3 bg-blue-200 rounded-full animate-pulse"></div>
+                    ))}
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-3">
-                    Ready to explore your flows
-                  </h3>
-                  <p className="text-gray-500 mb-4 max-w-md mx-auto leading-relaxed">
-                    Select any process flow from the left panel to view its details, diagrams, and connected wireframes.
-                  </p>
-                  <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
-                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
-                    <span>Choose a flow to get started</span>
-                    <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="wireframes" className="space-y-4">
+                {wireframes.length === 0 ? (
+                  <div className="text-center py-12 bg-gradient-to-br from-purple-50 to-pink-100 rounded-xl border-2 border-dashed border-purple-300">
+                    <Monitor className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold text-purple-900 mb-2">No Wireframes Available</h3>
+                    <p className="text-purple-600">Generate some wireframes to see them here</p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {wireframes.map((wireframe) => (
+                      <div key={wireframe.id} className="bg-white rounded-xl border border-gray-200 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden">
+                        <div className="bg-gradient-to-r from-purple-500 to-pink-600 p-4 text-white">
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-lg font-semibold truncate">{wireframe.pageName}</h3>
+                            <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
+                              {wireframe.userType}
+                            </Badge>
+                          </div>
+                          <p className="text-purple-100 text-sm capitalize">{wireframe.pageType.replace(/[-_]/g, ' ')}</p>
+                        </div>
+                        
+                        <div className="p-4">
+                          <div className="bg-gray-50 rounded-lg p-3 mb-4 border relative">
+                            <div className="flex items-center gap-2 mb-2">
+                              <div className="flex gap-1">
+                                <div className="w-2 h-2 bg-red-400 rounded-full"></div>
+                                <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
+                                <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                              </div>
+                              <div className="text-xs text-gray-500">Browser Preview</div>
+                            </div>
+                            <div className="bg-white rounded border h-32 overflow-hidden">
+                              <iframe
+                                srcDoc={wireframe.htmlContent}
+                                className="w-full h-full border-0 transform scale-75 origin-top-left"
+                                style={{ width: '133%', height: '133%' }}
+                                title={`Preview of ${wireframe.pageName}`}
+                              />
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
+                            <span className="flex items-center gap-1">
+                              <Monitor className="h-4 w-4" />
+                              {wireframe.features.length} features
+                            </span>
+                            <span>{new Date(wireframe.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="flex-1 hover:bg-blue-50 hover:border-blue-300"
+                              onClick={() => {
+                                const blob = new Blob([wireframe.htmlContent], { type: 'text/html' });
+                                const url = URL.createObjectURL(blob);
+                                const a = document.createElement('a');
+                                a.href = url;
+                                a.download = `${wireframe.pageName.replace(/\s+/g, '-').toLowerCase()}.html`;
+                                a.click();
+                                URL.revokeObjectURL(url);
+                              }}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              className="flex-1 hover:bg-green-50 hover:border-green-300"
+                              onClick={() => {
+                                const newWindow = window.open();
+                                if (newWindow) {
+                                  newWindow.document.write(wireframe.htmlContent);
+                                  newWindow.document.close();
+                                }
+                              }}
+                            >
+                              <Eye className="h-4 w-4 mr-1" />
+                              Preview
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Modern Summary Statistics */}
-      <Card className="border border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
-        <CardHeader className="pb-4 bg-white/90 backdrop-blur-sm">
-          <CardTitle className="flex items-center gap-3 text-xl font-semibold">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Layers className="h-5 w-5 text-purple-600" />
-            </div>
-            <div>
-              <span className="text-gray-900">Project Analytics</span>
-              <div className="text-sm font-normal text-purple-600">
-                Comprehensive project overview
-              </div>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="p-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-blue-100 hover:shadow-md hover:border-blue-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-blue-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {allData.flows.length}
-                </div>
-                <div className="text-xs font-medium text-blue-700 uppercase tracking-wide">
-                  Process Flows
-                </div>
-                <div className="mt-2 h-1 bg-blue-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.flows.length / 10) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-green-100 hover:shadow-md hover:border-green-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-green-100 to-green-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-green-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {allData.wireframes.length}
-                </div>
-                <div className="text-xs font-medium text-green-700 uppercase tracking-wide">
-                  UI Wireframes
-                </div>
-                <div className="mt-2 h-1 bg-green-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.wireframes.length / 10) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-purple-100 hover:shadow-md hover:border-purple-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-purple-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {allData.projects.length}
-                </div>
-                <div className="text-xs font-medium text-purple-700 uppercase tracking-wide">
-                  Projects
-                </div>
-                <div className="mt-2 h-1 bg-purple-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-purple-400 to-purple-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.projects.length / 5) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-indigo-100 hover:shadow-md hover:border-indigo-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-indigo-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {allData.userStories.length}
-                </div>
-                <div className="text-xs font-medium text-indigo-700 uppercase tracking-wide">
-                  User Stories
-                </div>
-                <div className="mt-2 h-1 bg-indigo-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-indigo-400 to-indigo-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.userStories.length / 5) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-teal-100 hover:shadow-md hover:border-teal-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-teal-100 to-teal-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-teal-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {allData.brandGuidelines.length}
-                </div>
-                <div className="text-xs font-medium text-teal-700 uppercase tracking-wide">
-                  Brand Guides
-                </div>
-                <div className="mt-2 h-1 bg-teal-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-teal-400 to-teal-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (allData.brandGuidelines.length / 3) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="group relative overflow-hidden bg-white rounded-xl p-4 shadow-sm border border-orange-100 hover:shadow-md hover:border-orange-200 transition-all duration-300">
-              <div className="absolute top-0 right-0 w-12 h-12 bg-gradient-to-br from-orange-100 to-orange-200 rounded-bl-3xl opacity-50"></div>
-              <div className="relative">
-                <div className="text-2xl font-bold text-orange-600 mb-1 group-hover:scale-110 transition-transform duration-200">
-                  {mappings.length}
-                </div>
-                <div className="text-xs font-medium text-orange-700 uppercase tracking-wide">
-                  Flow Mappings
-                </div>
-                <div className="mt-2 h-1 bg-orange-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-gradient-to-r from-orange-400 to-orange-600 rounded-full transition-all duration-1000 ease-out" style={{width: `${Math.min(100, (mappings.length / 5) * 100)}%`}}></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
