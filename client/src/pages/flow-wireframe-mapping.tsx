@@ -93,6 +93,7 @@ export function FlowWireframeMappingPage() {
   const [mappings, setMappings] = useState<FlowWireframeMapping[]>([]);
   const [selectedFlow, setSelectedFlow] = useState<StoredFlow | null>(null);
   const [viewMode, setViewMode] = useState<"desktop" | "mobile">("desktop");
+  const [isExporting, setIsExporting] = useState(false);
 
   // Determine workflow progress based on available data
   const getWorkflowProgress = () => {
@@ -344,6 +345,7 @@ export function FlowWireframeMappingPage() {
   };
 
   const exportToPDF = async () => {
+    setIsExporting(true);
     try {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -372,98 +374,184 @@ export function FlowWireframeMappingPage() {
       pdf.text(`Active Mappings: ${mappings.length}`, 20, yPosition);
       yPosition += 15;
 
-      // Process Flows Section
+      // Process Flows Section - Export ALL flows
       for (let i = 0; i < allData.flows.length; i++) {
         const flow = allData.flows[i];
         
-        if (yPosition > pageHeight - 40) {
+        // New page for each flow
+        if (i > 0) {
           pdf.addPage();
           yPosition = 20;
         }
 
-        pdf.setFontSize(14);
+        pdf.setFontSize(16);
         pdf.text(`Process Flow: ${flow.title}`, 20, yPosition);
-        yPosition += 10;
+        yPosition += 15;
 
-        // Capture flow diagram
+        // Temporarily select this flow to capture its diagram
+        const originalSelection = selectedFlow;
+        setSelectedFlow(flow);
+        
+        // Wait for React to re-render
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Capture flow diagram with exact colors
         const flowElement = document.querySelector('.react-flow') as HTMLElement;
-        if (flowElement && selectedFlow?.id === flow.id) {
+        if (flowElement) {
           try {
             const canvas = await html2canvas(flowElement, {
-              scale: 1.5,
+              scale: 2,
               useCORS: true,
               allowTaint: true,
-              backgroundColor: '#ffffff'
+              backgroundColor: '#ffffff',
+              logging: false,
+              height: flowElement.scrollHeight,
+              width: flowElement.scrollWidth
             });
             
-            const imgData = canvas.toDataURL('image/png');
-            const imgWidth = Math.min(160, pageWidth - 40);
+            const imgData = canvas.toDataURL('image/png', 1.0);
+            const imgWidth = Math.min(170, pageWidth - 40);
             const imgHeight = (canvas.height * imgWidth) / canvas.width;
             
+            // Check if we need a new page for the diagram
             if (yPosition + imgHeight > pageHeight - 20) {
               pdf.addPage();
               yPosition = 20;
             }
             
             pdf.addImage(imgData, 'PNG', 20, yPosition, imgWidth, imgHeight);
-            yPosition += imgHeight + 15;
+            yPosition += imgHeight + 20;
           } catch (error) {
             console.warn('Could not capture flow diagram:', error);
             pdf.setFontSize(10);
-            pdf.text('Flow diagram visualization included in interactive view', 20, yPosition);
-            yPosition += 10;
+            pdf.text('Flow diagram could not be captured', 20, yPosition);
+            yPosition += 15;
           }
         }
 
-        // Mapped wireframes
+        // Restore original selection
+        setSelectedFlow(originalSelection);
+
+        // Mapped wireframes with images
         const mappedWireframes = getMappedWireframes(flow.id);
         if (mappedWireframes.length > 0) {
-          pdf.setFontSize(12);
-          pdf.text(`Mapped Wireframes (${mappedWireframes.length}):`, 20, yPosition);
-          yPosition += 8;
+          // Check if we need a new page
+          if (yPosition > pageHeight - 40) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+
+          pdf.setFontSize(14);
+          pdf.text(`Associated Wireframes (${mappedWireframes.length}):`, 20, yPosition);
+          yPosition += 15;
 
           for (const wireframe of mappedWireframes) {
-            if (yPosition > pageHeight - 20) {
+            // Check if we need a new page
+            if (yPosition > pageHeight - 80) {
               pdf.addPage();
               yPosition = 20;
             }
 
-            pdf.setFontSize(10);
-            pdf.text(`• ${wireframe.pageName}`, 25, yPosition);
+            pdf.setFontSize(12);
+            pdf.text(wireframe.pageName, 20, yPosition);
             yPosition += 5;
-            pdf.text(`  Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 25, yPosition);
-            yPosition += 8;
+            
+            pdf.setFontSize(9);
+            pdf.text(`Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 20, yPosition);
+            yPosition += 10;
+
+            // Create wireframe preview with exact colors
+            try {
+              // Create a hidden iframe to render the wireframe
+              const iframe = document.createElement('iframe');
+              iframe.style.width = '1200px';
+              iframe.style.height = '800px';
+              iframe.style.position = 'absolute';
+              iframe.style.left = '-9999px';
+              iframe.style.border = 'none';
+              iframe.srcdoc = wireframe.htmlContent;
+              document.body.appendChild(iframe);
+
+              // Wait for iframe to fully load and render
+              await new Promise((resolve) => {
+                iframe.onload = () => {
+                  setTimeout(resolve, 1000); // Extra time for CSS/fonts to load
+                };
+                setTimeout(resolve, 2000); // Fallback timeout
+              });
+
+              // Capture the wireframe with exact colors
+              const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+              if (iframeDoc && iframeDoc.body) {
+                const wireframeCanvas = await html2canvas(iframeDoc.body, {
+                  scale: 1.5,
+                  useCORS: true,
+                  allowTaint: true,
+                  backgroundColor: '#ffffff',
+                  logging: false,
+                  height: iframeDoc.body.scrollHeight,
+                  width: iframeDoc.body.scrollWidth
+                });
+
+                document.body.removeChild(iframe);
+
+                const wireframeImgData = wireframeCanvas.toDataURL('image/png', 1.0);
+                const wireframeImgWidth = Math.min(160, pageWidth - 40);
+                const wireframeImgHeight = (wireframeCanvas.height * wireframeImgWidth) / wireframeCanvas.width;
+
+                // Check if we need a new page for the wireframe
+                if (yPosition + wireframeImgHeight > pageHeight - 20) {
+                  pdf.addPage();
+                  yPosition = 20;
+                }
+
+                pdf.addImage(wireframeImgData, 'PNG', 20, yPosition, wireframeImgWidth, wireframeImgHeight);
+                yPosition += wireframeImgHeight + 15;
+              } else {
+                document.body.removeChild(iframe);
+                pdf.setFontSize(9);
+                pdf.text('Wireframe preview not available', 25, yPosition);
+                yPosition += 10;
+              }
+            } catch (error) {
+              console.warn('Could not capture wireframe:', error);
+              pdf.setFontSize(9);
+              pdf.text('Wireframe image could not be captured', 25, yPosition);
+              yPosition += 10;
+            }
           }
+        } else {
+          // No wireframes mapped
+          pdf.setFontSize(12);
+          pdf.text('No wireframes mapped to this flow', 20, yPosition);
+          yPosition += 15;
         }
-
-        yPosition += 10;
       }
 
-      // Summary section
-      if (yPosition > pageHeight - 60) {
-        pdf.addPage();
-        yPosition = 20;
-      }
+      // Summary page
+      pdf.addPage();
+      yPosition = 20;
 
       pdf.setFontSize(16);
       pdf.text('Summary', 20, yPosition);
-      yPosition += 10;
+      yPosition += 15;
 
       pdf.setFontSize(10);
-      pdf.text(`This report contains ${allData.flows.length} process flows with ${allData.wireframes.length} associated wireframes.`, 20, yPosition);
+      pdf.text(`This comprehensive report contains ${allData.flows.length} process flows with their corresponding flow diagrams.`, 20, yPosition);
       yPosition += 5;
-      pdf.text(`Generated from Flow & Wireframe Mapping analysis on ${new Date().toLocaleDateString()}.`, 20, yPosition);
+      pdf.text(`${allData.wireframes.length} wireframes are included with exact colors and visual elements.`, 20, yPosition);
+      yPosition += 5;
+      pdf.text(`${mappings.length} intelligent mappings connect flows to their UI implementations.`, 20, yPosition);
       yPosition += 10;
-      
-      if (mappings.length > 0) {
-        pdf.text(`Active mappings connect flows to their corresponding UI implementations.`, 20, yPosition);
-      }
+      pdf.text(`Generated from Flow & Wireframe Mapping analysis on ${new Date().toLocaleDateString()}.`, 20, yPosition);
 
       // Save the PDF
-      pdf.save(`flow-wireframe-mapping-${new Date().toISOString().split('T')[0]}.pdf`);
+      pdf.save(`flow-wireframe-mapping-complete-${new Date().toISOString().split('T')[0]}.pdf`);
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -502,10 +590,19 @@ export function FlowWireframeMappingPage() {
             variant="outline"
             size="sm"
             className="h-7 px-3"
-            disabled={allData.flows.length === 0}
+            disabled={allData.flows.length === 0 || isExporting}
           >
-            <FileText className="h-3 w-3 mr-1" />
-            Export PDF
+            {isExporting ? (
+              <>
+                <div className="h-3 w-3 mr-1 animate-spin rounded-full border border-gray-400 border-t-transparent" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileText className="h-3 w-3 mr-1" />
+                Export PDF
+              </>
+            )}
           </Button>
         </div>
       </div>
