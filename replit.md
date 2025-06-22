@@ -163,12 +163,6 @@ Changelog:
   - Export button integrated into header with automatic date-based file naming
   - Fixed flow diagram visibility issues in PDF export with improved capture logic and debugging
   - Added comprehensive error handling and fallback text for flow diagram capture failures
-  - Implemented fullscreen capture approach for flow diagrams to ensure complete visibility in PDF exports
-  - System temporarily makes flow diagrams fullscreen, captures high-quality screenshots, then restores original layout
-  - Created custom canvas rendering system for flow diagrams to bypass DOM capture issues
-  - Flow diagrams now render directly from stored data with exact colors, shapes, and connections in PDF exports
-  - Enhanced wireframe capture in PDF exports using hidden iframe rendering with html2canvas
-  - Wireframes now appear as actual images in PDF with exact colors, styling, and layouts preserved
 ```
 
 ## User Preferences
