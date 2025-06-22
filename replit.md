@@ -147,6 +147,9 @@ Changelog:
   - Created unified dashboard showing flow diagrams alongside their UI implementations
   - Added download and preview functionality for wireframes directly from flow context
   - Integrated mapping statistics and summary analytics for project oversight
+  - Fixed localStorage data loading to properly parse flowDiagrams (object structure) and generated_wireframes (nested data structure)
+  - Successfully connecting real stored data: Patient-Account Creation Flow with Mobile App Usage Flow Page wireframe
+  - Enhanced debugging with comprehensive localStorage key inspection and proper data structure handling
 ```
 
 ## User Preferences

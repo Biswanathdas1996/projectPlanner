@@ -105,25 +105,93 @@ export function FlowWireframeMappingPage() {
         brandGuidelines: []
       };
 
-      // Load all localStorage data
+      // Debug: Log all localStorage keys
+      console.log("All localStorage keys:", Object.keys(localStorage));
+      
+      // Load all localStorage data with proper parsing
       const loadFromStorage = (key: string) => {
         try {
           const item = localStorage.getItem(key);
-          return item ? JSON.parse(item) : [];
+          if (!item) return [];
+          
+          const parsed = JSON.parse(item);
+          console.log(`${key}:`, parsed);
+          
+          // Handle different data structures
+          if (Array.isArray(parsed)) {
+            return parsed;
+          } else if (typeof parsed === 'object' && parsed !== null) {
+            // Handle object structures like flowDiagrams
+            return Object.values(parsed);
+          }
+          return [];
         } catch (error) {
           console.warn(`Error parsing ${key}:`, error);
           return [];
         }
       };
 
-      data.flows = loadFromStorage("storedFlowDiagrams");
-      data.wireframes = loadFromStorage("generatedWireframes"); 
-      data.projects = loadFromStorage("generatedProjectPlans");
-      data.userStories = loadFromStorage("generatedUserStories");
-      data.marketResearch = loadFromStorage("marketResearchResults");
-      data.brandGuidelines = loadFromStorage("brandGuidelines");
+      // Load flows from flowDiagrams (stored as object with flow names as keys)
+      const flowDiagramsRaw = localStorage.getItem("flowDiagrams");
+      if (flowDiagramsRaw) {
+        try {
+          const flowDiagrams = JSON.parse(flowDiagramsRaw);
+          if (flowDiagrams && typeof flowDiagrams === 'object' && !Array.isArray(flowDiagrams)) {
+            data.flows = Object.entries(flowDiagrams).map(([title, flowData]) => ({
+              id: title.replace(/\s+/g, '-').toLowerCase(),
+              title,
+              flowData,
+              createdAt: new Date().toISOString()
+            }));
+          }
+        } catch (error) {
+          console.warn("Error parsing flowDiagrams:", error);
+        }
+      }
+      
+      // Load wireframes (may be nested in data property)
+      const wireframesRaw = localStorage.getItem("generated_wireframes");
+      if (wireframesRaw) {
+        try {
+          const wireframeParsed = JSON.parse(wireframesRaw);
+          if (wireframeParsed?.data && Array.isArray(wireframeParsed.data)) {
+            data.wireframes = wireframeParsed.data.map((wireframe: any) => ({
+              id: wireframe.id || `wireframe-${Date.now()}`,
+              pageName: wireframe.pageName || 'Untitled Page',
+              htmlContent: wireframe.htmlCode || wireframe.htmlContent || '',
+              createdAt: new Date().toISOString()
+            }));
+          } else if (Array.isArray(wireframeParsed)) {
+            data.wireframes = wireframeParsed;
+          }
+        } catch (error) {
+          console.warn("Error parsing wireframes:", error);
+        }
+      }
+      
+      // Load section flows as projects
+      const sectionFlows = loadFromStorage("sectionFlowDiagrams");
+      if (sectionFlows && typeof sectionFlows === 'object' && !Array.isArray(sectionFlows)) {
+        data.projects = Object.entries(sectionFlows).map(([title, projectData]) => ({
+          id: title.replace(/\s+/g, '-').toLowerCase(),
+          title,
+          description: `Section flow diagram for ${title}`,
+          projectData,
+          createdAt: new Date().toISOString()
+        }));
+      }
+      
+      // Load other data types
+      data.userStories = loadFromStorage("userStories") || 
+                         loadFromStorage("generatedUserStories") || [];
+      
+      data.marketResearch = loadFromStorage("marketResearch") || 
+                            loadFromStorage("marketResearchResults") || [];
+      
+      data.brandGuidelines = loadFromStorage("brand_guidelines_storage") || 
+                             loadFromStorage("brandGuidelines") || [];
 
-      console.log("Loaded data:", data);
+      console.log("Final loaded data:", data);
       setAllData(data);
       generateComprehensiveMappings(data);
     } catch (error) {
