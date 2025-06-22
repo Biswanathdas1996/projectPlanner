@@ -137,6 +137,9 @@ Changelog:
   - Improved button grouping and spacing for better user experience
   - Enhanced visual feedback with color-coded status indicators (purple for extraction, indigo for processing, emerald for ready)
   - Streamlined action buttons with primary/secondary styling hierarchy
+  - Redesigned stored guidelines modal with modern card-based layout and improved information density
+  - Added inline color previews and compact metadata display for better brand guideline overview
+  - Enhanced empty state with better visual hierarchy and clearer messaging
 ```
 
 ## User Preferences

@@ -654,116 +654,98 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               </Button>
             </div>
 
-            <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
+            <div className="p-6 overflow-auto h-[calc(90vh-120px)]">
               {storedGuidelines.length === 0 ? (
-                <div className="text-center py-8">
-                  <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
-                    No brand guidelines stored yet
-                  </p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    Upload a PDF to save brand guidelines for future use
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="h-10 w-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No stored guidelines</h3>
+                  <p className="text-gray-500 max-w-sm mx-auto">
+                    Upload a PDF to automatically extract and save brand guidelines for future projects
                   </p>
                 </div>
               ) : (
-                <div className="grid gap-4">
+                <div className="space-y-4">
                   {storedGuidelines.map((stored) => (
                     <div
                       key={stored.id}
-                      className="border rounded-lg p-4 hover:bg-gray-50"
+                      className="bg-white border border-gray-200 rounded-xl p-4 hover:border-gray-300 hover:shadow-sm transition-all duration-200"
                     >
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h4 className="font-semibold text-lg">
-                            {stored.name}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            Extracted:{" "}
-                            {new Date(stored.extractedAt).toLocaleDateString()}
-                          </p>
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold text-gray-900 truncate">
+                              {stored.name}
+                            </h4>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <span>•</span>
+                              <time>{new Date(stored.extractedAt).toLocaleDateString()}</time>
+                            </div>
+                          </div>
                           {stored.pdfFileName && (
-                            <p className="text-xs text-gray-500">
-                              From: {stored.pdfFileName}
+                            <p className="text-sm text-gray-500 truncate">
+                              {stored.pdfFileName}
                             </p>
                           )}
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 ml-4">
                           <Button
                             onClick={() => loadStoredGuideline(stored)}
-                            variant="outline"
+                            variant="default"
                             size="sm"
-                            className="flex items-center gap-1"
+                            className="px-3"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 mr-1" />
                             Load
                           </Button>
                           <Button
                             onClick={() => deleteStoredGuideline(stored.id)}
                             variant="outline"
                             size="sm"
-                            className="flex items-center gap-1 text-red-600 hover:text-red-700"
+                            className="px-3 text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
                           >
                             <Trash2 className="h-4 w-4" />
-                            Delete
                           </Button>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Brand:</span>
-                          <p className="text-gray-600">
-                            {stored.brandData.brand}
-                          </p>
+                      <div className="flex items-center gap-6 mb-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
+                          <span className="text-gray-600">Brand:</span>
+                          <span className="font-medium text-gray-900">{stored.brandData.brand}</span>
                         </div>
-                        <div>
-                          <span className="font-medium">Sections:</span>
-                          <p className="text-gray-600">
-                            {stored.brandData?.sections?.length || 0}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Colors:</span>
-                          <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandColors(stored)
-                              ?.length || 0}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Fonts:</span>
-                          <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandFonts(stored)
-                              ?.length || 0}
-                          </p>
+                        <div className="flex items-center gap-4 text-sm text-gray-600">
+                          <span>{stored.brandData?.sections?.length || 0} sections</span>
+                          <span>•</span>
+                          <span>{BrandGuidelinesStorage.getBrandColors(stored)?.length || 0} colors</span>
+                          <span>•</span>
+                          <span>{BrandGuidelinesStorage.getBrandFonts(stored)?.length || 0} fonts</span>
                         </div>
                       </div>
 
-                      {/* Preview Colors */}
-                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length ||
-                        0) > 0 && (
-                        <div className="mt-3">
-                          <span className="text-xs font-medium text-gray-700">
-                            Colors:
-                          </span>
-                          <div className="flex gap-2 mt-1">
+                      {/* Color Preview */}
+                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 0 && (
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-medium text-gray-700">Colors:</span>
+                          <div className="flex items-center gap-2">
                             {BrandGuidelinesStorage.getBrandColors(stored)
-                              ?.slice(0, 5)
+                              ?.slice(0, 6)
                               ?.map((color, index) => (
                                 <div
                                   key={index}
-                                  className="w-6 h-6 rounded border"
+                                  className="w-6 h-6 rounded-lg border border-gray-200 shadow-sm"
                                   style={{ backgroundColor: color.hex }}
                                   title={`${color.name}: ${color.hex}`}
                                 />
                               ))}
-                            {(BrandGuidelinesStorage.getBrandColors(stored)
-                              ?.length || 0) > 5 && (
-                              <span className="text-xs text-gray-500 self-center">
-                                +
-                                {(BrandGuidelinesStorage.getBrandColors(stored)
-                                  ?.length || 0) - 5}{" "}
-                                more
-                              </span>
+                            {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 6 && (
+                              <div className="w-6 h-6 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                                <span className="text-xs font-medium text-gray-600">
+                                  +{(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) - 6}
+                                </span>
+                              </div>
                             )}
                           </div>
                         </div>
@@ -774,33 +756,33 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               )}
 
               {storedGuidelines.length > 0 && (
-                <div className="mt-6 p-4 bg-gray-100 rounded-lg">
-                  <div className="text-sm text-gray-600">
-                    <strong>Storage Info:</strong>{" "}
-                    {BrandGuidelinesStorage.getStorageInfo().size} used, last
-                    updated{" "}
-                    {BrandGuidelinesStorage.getStorageInfo().lastUpdated
-                      ? new Date(
-                          BrandGuidelinesStorage.getStorageInfo().lastUpdated!,
-                        ).toLocaleDateString()
-                      : "never"}
+                <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      <span className="font-medium">Storage:</span> {BrandGuidelinesStorage.getStorageInfo().size} used
+                      {BrandGuidelinesStorage.getStorageInfo().lastUpdated && (
+                        <span className="ml-2">
+                          • Updated {new Date(BrandGuidelinesStorage.getStorageInfo().lastUpdated!).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      onClick={() => {
+                        BrandGuidelinesStorage.deleteAll();
+                        setStoredGuidelines([]);
+                        toast({
+                          title: "Storage Cleared",
+                          description: "All stored guidelines have been removed",
+                        });
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 hover:text-red-700 border-red-200 hover:border-red-300"
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Clear All
+                    </Button>
                   </div>
-                  <Button
-                    onClick={() => {
-                      BrandGuidelinesStorage.deleteAll();
-                      setStoredGuidelines([]);
-                      toast({
-                        title: "All Guidelines Cleared",
-                        description: "Local storage has been cleared",
-                      });
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="mt-2 text-red-600 hover:text-red-700"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Clear All Storage
-                  </Button>
                 </div>
               )}
             </div>
