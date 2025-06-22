@@ -716,9 +716,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                           <span className="text-gray-600">Brand:</span>
                           <span className="font-medium text-gray-900">{stored.brandData.brand}</span>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-gray-600">
-                          <span>{BrandGuidelinesStorage.getBrandFonts(stored)?.length || 0} fonts</span>
-                        </div>
+                        
                       </div>
 
                       
