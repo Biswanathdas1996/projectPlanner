@@ -111,6 +111,12 @@ Changelog:
   - Updated brand-guidelines-upload.tsx to use FormData and fetch for external service
   - Modified view to display raw JSON response instead of processed brand guideline structure
   - Simplified extraction workflow to rely on external Python service for PDF processing
+- June 22, 2025. Brand-aware wireframe generator refactored
+  - Completely rebuilt brand-aware-wireframe-generator.ts to work with external API JSON structure
+  - Removed AI dependencies in favor of template-based HTML/CSS generation
+  - Added proper parsing of colors, fonts, and brand elements from external API response
+  - Implemented responsive design with mobile/desktop variants based on extracted brand guidelines
+  - Generator now produces complete HTML wireframes with brand-consistent styling
 ```
 
 ## User Preferences

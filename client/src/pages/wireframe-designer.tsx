@@ -1956,8 +1956,7 @@ export default function WireframeDesigner() {
           pageContent: card,
           designStyle: selectedDesignType,
           deviceType: selectedDeviceType,
-          brandGuidelines,
-          finalBrandReport: finalBrandReport ?? undefined
+          brandGuidelines
         };
 
         const result = await brandGenerator.generateBrandedWireframe(request);
