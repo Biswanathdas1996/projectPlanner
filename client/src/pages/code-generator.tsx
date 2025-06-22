@@ -41,7 +41,20 @@ import {
   BookOpen,
   GitBranch,
   Package,
+  Activity,
+  Clock,
 } from "lucide-react";
+import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
+
+interface ProjectFlow {
+  id: string;
+  title: string;
+  description: string;
+  flowData: any;
+  category: 'onboarding' | 'core' | 'management';
+  priority: 'high' | 'medium' | 'low';
+  createdAt: string;
+}
 
 export default function CodeGenerator() {
   const [projectPlan, setProjectPlan] = useState("");
@@ -68,6 +81,9 @@ export default function CodeGenerator() {
   const [codeGenerator, setCodeGenerator] = useState<any>(null);
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [flows, setFlows] = useState<ProjectFlow[]>([]);
+  const [consolidatedFlow, setConsolidatedFlow] = useState<ProjectFlow | null>(null);
+  const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] = useState(false);
 
   // Load data from localStorage
   useEffect(() => {
@@ -93,6 +109,31 @@ export default function CodeGenerator() {
       (data) => data && data.trim()
     );
 
+    // Load flows from localStorage
+    const flowKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('flowDiagrams') || key.startsWith('sectionFlowDiagrams')
+    );
+    
+    const loadedFlows: ProjectFlow[] = [];
+    
+    flowKeys.forEach(key => {
+      try {
+        const data = JSON.parse(localStorage.getItem(key) || '{}');
+        if (typeof data === 'object' && data !== null) {
+          Object.keys(data).forEach(subKey => {
+            const flowData = data[subKey];
+            if (flowData && typeof flowData === 'object') {
+              loadedFlows.push(createFlowFromData(subKey, flowData));
+            }
+          });
+        }
+      } catch (error) {
+        console.error(`Error parsing ${key}:`, error);
+      }
+    });
+
+    setFlows(loadedFlows);
+
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
     }
@@ -102,6 +143,151 @@ export default function CodeGenerator() {
 
     setDataLoaded(true);
   }, []);
+
+  const createFlowFromData = (key: string, data: any): ProjectFlow => {
+    return {
+      id: `project-${key}`,
+      title: data.title || key.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      description: data.description || `Process workflow for ${key}`,
+      flowData: data.flowData || data,
+      category: determineCategory(key),
+      priority: determinePriority(key),
+      createdAt: new Date().toISOString()
+    };
+  };
+
+  const determineCategory = (key: string): 'onboarding' | 'core' | 'management' => {
+    if (key.includes('onboard') || key.includes('register') || key.includes('setup')) return 'onboarding';
+    if (key.includes('manage') || key.includes('admin') || key.includes('settings')) return 'management';
+    return 'core';
+  };
+
+  const determinePriority = (key: string): 'high' | 'medium' | 'low' => {
+    if (key.includes('critical') || key.includes('main') || key.includes('primary')) return 'high';
+    if (key.includes('secondary') || key.includes('optional')) return 'low';
+    return 'medium';
+  };
+
+  const generateConsolidatedFlow = async () => {
+    if (flows.length === 0) return;
+
+    setIsGeneratingConsolidatedFlow(true);
+    
+    try {
+      const masterFlow = createFallbackConsolidatedFlow(flows);
+      const consolidatedFlowData: ProjectFlow = {
+        id: 'consolidated-master-flow',
+        title: masterFlow.title,
+        description: masterFlow.description,
+        flowData: masterFlow.flowData,
+        category: 'core',
+        priority: 'high',
+        createdAt: new Date().toISOString()
+      };
+      setConsolidatedFlow(consolidatedFlowData);
+    } catch (error) {
+      console.error('Error generating consolidated flow:', error);
+      const fallbackFlow = createFallbackConsolidatedFlow(flows);
+      const fallbackFlowData: ProjectFlow = {
+        id: 'fallback-master-flow',
+        title: fallbackFlow.title,
+        description: fallbackFlow.description,
+        flowData: fallbackFlow.flowData,
+        category: 'core',
+        priority: 'high',
+        createdAt: new Date().toISOString()
+      };
+      setConsolidatedFlow(fallbackFlowData);
+    } finally {
+      setIsGeneratingConsolidatedFlow(false);
+    }
+  };
+
+  const createFallbackConsolidatedFlow = (flows: ProjectFlow[]) => {
+    const nodes = [
+      {
+        id: 'start',
+        position: { x: 50, y: 50 },
+        data: { label: 'User Arrives' },
+        type: 'input',
+        style: { backgroundColor: '#10B981', color: 'white' }
+      },
+      {
+        id: 'account-setup',
+        position: { x: 200, y: 50 },
+        data: { label: 'Account Setup' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'profile-creation',
+        position: { x: 350, y: 50 },
+        data: { label: 'Profile Creation' },
+        type: 'default',
+        style: { backgroundColor: '#1E88E5', color: 'white' }
+      },
+      {
+        id: 'verification',
+        position: { x: 500, y: 50 },
+        data: { label: 'Verification Process' },
+        type: 'default',
+        style: { backgroundColor: '#FF6B35', color: 'white' }
+      },
+      {
+        id: 'platform-choice',
+        position: { x: 650, y: 50 },
+        data: { label: 'Platform Selection' },
+        type: 'default',
+        style: { backgroundColor: '#FFC107', color: 'black' }
+      },
+      {
+        id: 'mobile-app',
+        position: { x: 500, y: 150 },
+        data: { label: 'Mobile Application' },
+        type: 'default',
+        style: { backgroundColor: '#E91E63', color: 'white' }
+      },
+      {
+        id: 'web-portal',
+        position: { x: 800, y: 150 },
+        data: { label: 'Web Portal' },
+        type: 'default',
+        style: { backgroundColor: '#2196F3', color: 'white' }
+      },
+      {
+        id: 'service-request',
+        position: { x: 650, y: 250 },
+        data: { label: 'Service Request' },
+        type: 'default',
+        style: { backgroundColor: '#795548', color: 'white' }
+      },
+      {
+        id: 'completion',
+        position: { x: 650, y: 350 },
+        data: { label: 'Process Complete' },
+        type: 'output',
+        style: { backgroundColor: '#4CAF50', color: 'white' }
+      }
+    ];
+
+    const edges = [
+      { id: 'e1', source: 'start', target: 'account-setup' },
+      { id: 'e2', source: 'account-setup', target: 'profile-creation' },
+      { id: 'e3', source: 'profile-creation', target: 'verification' },
+      { id: 'e4', source: 'verification', target: 'platform-choice' },
+      { id: 'e5', source: 'platform-choice', target: 'mobile-app' },
+      { id: 'e6', source: 'platform-choice', target: 'web-portal' },
+      { id: 'e7', source: 'mobile-app', target: 'service-request' },
+      { id: 'e8', source: 'web-portal', target: 'service-request' },
+      { id: 'e9', source: 'service-request', target: 'completion' }
+    ];
+
+    return {
+      title: "Master Application Flow",
+      description: "Comprehensive workflow combining all application processes and user journeys",
+      flowData: { nodes, edges }
+    };
+  };
 
   const generateProjectCode = async () => {
     if (!projectPlan.trim()) {
@@ -406,6 +592,93 @@ export default function CodeGenerator() {
                 </Select>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Consolidated Master Flow Section */}
+        <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-violet-50 shadow-lg mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Activity className="h-6 w-6 text-purple-600" />
+                AI-Generated Master Flow Diagram
+              </div>
+              <Button 
+                onClick={generateConsolidatedFlow}
+                disabled={isGeneratingConsolidatedFlow || flows.length === 0}
+                className="bg-purple-600 hover:bg-purple-700 text-white"
+              >
+                {isGeneratingConsolidatedFlow ? (
+                  <>
+                    <Clock className="mr-2 h-4 w-4 animate-spin" />
+                    Consolidating Flows...
+                  </>
+                ) : (
+                  <>
+                    <Settings className="mr-2 h-4 w-4" />
+                    Generate Master Flow
+                  </>
+                )}
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!consolidatedFlow && !isGeneratingConsolidatedFlow && (
+              <div className="text-center py-8">
+                <div className="text-gray-500 mb-4">
+                  Consolidate all individual flows into a single comprehensive master workflow diagram using AI analysis.
+                </div>
+                <div className="text-sm text-gray-400">
+                  {flows.length === 0 
+                    ? "No flows available to consolidate. Please generate some flows first."
+                    : `Ready to consolidate ${flows.length} flows into a master diagram.`
+                  }
+                </div>
+              </div>
+            )}
+            
+            {isGeneratingConsolidatedFlow && (
+              <div className="text-center py-8">
+                <div className="text-purple-600 mb-4">
+                  AI is analyzing and consolidating all flows into a master workflow...
+                </div>
+                <div className="text-sm text-gray-500">
+                  This may take a moment as we merge {flows.length} individual flows.
+                </div>
+              </div>
+            )}
+
+            {consolidatedFlow && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-lg p-4 border border-purple-200">
+                  <h4 className="font-semibold text-purple-900 mb-2">{consolidatedFlow.title}</h4>
+                  <p className="text-sm text-gray-600 mb-4">{consolidatedFlow.description}</p>
+                  
+                  <div className="bg-gray-50 rounded-lg p-2 mb-4">
+                    <FlowDiagramViewer
+                      flowData={consolidatedFlow.flowData}
+                      title="Master Application Flow"
+                      className="h-96"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div className="bg-green-50 p-3 rounded border border-green-200">
+                      <div className="font-medium text-green-800">Process Nodes</div>
+                      <div className="text-green-600">{consolidatedFlow.flowData.nodes?.length || 0} steps</div>
+                    </div>
+                    <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                      <div className="font-medium text-blue-800">Connections</div>
+                      <div className="text-blue-600">{consolidatedFlow.flowData.edges?.length || 0} transitions</div>
+                    </div>
+                    <div className="bg-purple-50 p-3 rounded border border-purple-200">
+                      <div className="font-medium text-purple-800">Source Flows</div>
+                      <div className="text-purple-600">{flows.length} consolidated</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 

@@ -226,6 +226,15 @@ Changelog:
   - Updated master flow generation to create generic application workflows (user onboarding, core features, platform selection)
   - Maintained all existing functionality while making it applicable to any project domain
   - Fixed TypeScript type safety issues and removed deprecated patient-specific file
+- June 22, 2025. AI-Generated Master Flow Diagram added to Code Generator page
+  - Copied complete AI-Generated Master Flow Diagram section from /mapping page to /code page
+  - Added necessary imports and interfaces (ProjectFlow, FlowDiagramViewer, Activity, Clock icons)
+  - Implemented flow data loading from localStorage with error handling
+  - Added helper functions: createFlowFromData, determineCategory, determinePriority
+  - Created generateConsolidatedFlow function with fallback flow generation
+  - Built comprehensive createFallbackConsolidatedFlow with simplified node structure
+  - Integrated master flow visualization directly in code generation workflow
+  - Users can now visualize consolidated workflows before generating code
 ```
 
 ## User Preferences
