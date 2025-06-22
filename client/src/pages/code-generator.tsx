@@ -784,6 +784,98 @@ RESPONSE FORMAT - Return ONLY valid JSON:
     };
   };
 
+  const downloadProjectBundle = async () => {
+    try {
+      // Get master flow data
+      const masterFlowData = consolidatedFlow ? {
+        title: consolidatedFlow.title,
+        description: consolidatedFlow.description,
+        flowData: consolidatedFlow.flowData,
+        metadata: {
+          totalNodes: consolidatedFlow.flowData.nodes?.length || 0,
+          totalEdges: consolidatedFlow.flowData.edges?.length || 0,
+          sourceFlows: flows.length,
+          generatedAt: new Date().toISOString()
+        }
+      } : null;
+
+      // Get brand guidelines data
+      const brandGuidelinesData = localStorage.getItem('brand_guidelines');
+      
+      // Create project plan PDF content
+      const projectPlanContent = `
+# Comprehensive Project Plan
+
+## Project Overview
+${projectPlan}
+
+## Stakeholder Flows
+${stakeholderFlows}
+
+## Master Flow Summary
+- Total Process Nodes: ${consolidatedFlow?.flowData.nodes?.length || 0}
+- Total Connections: ${consolidatedFlow?.flowData.edges?.length || 0}
+- Source Flows Consolidated: ${flows.length}
+
+## Generated Data Quality
+- Master Flow: ${masterFlowData ? 'Available' : 'Not Generated'}
+- Brand Guidelines: ${brandGuidelinesData ? 'Available' : 'Not Available'}
+- Project Plan: ${projectPlan ? 'Available' : 'Not Available'}
+
+## Export Information
+Generated on: ${new Date().toLocaleDateString()}
+Time: ${new Date().toLocaleTimeString()}
+      `.trim();
+
+      // Create downloadable files
+      const files = [];
+
+      // Add master flow JSON
+      if (masterFlowData) {
+        const masterFlowBlob = new Blob([JSON.stringify(masterFlowData, null, 2)], { type: 'application/json' });
+        files.push({ name: 'master-flow.json', blob: masterFlowBlob });
+      }
+
+      // Add brand guidelines JSON
+      if (brandGuidelinesData) {
+        const brandGuidelinesBlob = new Blob([brandGuidelinesData], { type: 'application/json' });
+        files.push({ name: 'brand-guidelines.json', blob: brandGuidelinesBlob });
+      }
+
+      // Add project plan as text file
+      const projectPlanBlob = new Blob([projectPlanContent], { type: 'text/plain' });
+      files.push({ name: 'project-plan.txt', blob: projectPlanBlob });
+
+      // Download files individually with sequential delays
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const url = URL.createObjectURL(file.blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = file.name;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          
+          // Small delay between downloads
+          if (i < files.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        alert(`Successfully downloaded ${files.length} files:\n${files.map(f => f.name).join('\n')}`);
+      } else {
+        alert('No data available to download. Please generate master flow and ensure project data is available.');
+      }
+
+    } catch (error) {
+      console.error('Error downloading project bundle:', error);
+      alert('Error creating download bundle. Please try again.');
+    }
+  };
+
   const generateProjectCode = async () => {
     if (!projectPlan.trim()) {
       alert(
@@ -1156,7 +1248,7 @@ RESPONSE FORMAT - Return ONLY valid JSON:
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
                     <div className="bg-green-50 p-3 rounded border border-green-200">
                       <div className="font-medium text-green-800">Process Nodes</div>
                       <div className="text-green-600">{consolidatedFlow.flowData.nodes?.length || 0} steps</div>
@@ -1169,6 +1261,16 @@ RESPONSE FORMAT - Return ONLY valid JSON:
                       <div className="font-medium text-purple-800">Source Flows</div>
                       <div className="text-purple-600">{flows.length} consolidated</div>
                     </div>
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <Button 
+                      onClick={() => downloadProjectBundle()}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Download Project Bundle (ZIP)
+                    </Button>
                   </div>
                 </div>
               </div>
