@@ -654,28 +654,28 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                         </div>
                         <div>
                           <span className="font-medium">Sections:</span>
-                          <p className="text-gray-600">{stored.brandData.sections.length}</p>
+                          <p className="text-gray-600">{stored.brandData?.sections?.length || 0}</p>
                         </div>
                         <div>
                           <span className="font-medium">Colors:</span>
                           <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandColors(stored).length}
+                            {BrandGuidelinesStorage.getBrandColors(stored)?.length || 0}
                           </p>
                         </div>
                         <div>
                           <span className="font-medium">Fonts:</span>
                           <p className="text-gray-600">
-                            {BrandGuidelinesStorage.getBrandFonts(stored).length}
+                            {BrandGuidelinesStorage.getBrandFonts(stored)?.length || 0}
                           </p>
                         </div>
                       </div>
 
                       {/* Preview Colors */}
-                      {BrandGuidelinesStorage.getBrandColors(stored).length > 0 && (
+                      {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 0 && (
                         <div className="mt-3">
                           <span className="text-xs font-medium text-gray-700">Colors:</span>
                           <div className="flex gap-2 mt-1">
-                            {BrandGuidelinesStorage.getBrandColors(stored).slice(0, 5).map((color, index) => (
+                            {BrandGuidelinesStorage.getBrandColors(stored)?.slice(0, 5)?.map((color, index) => (
                               <div
                                 key={index}
                                 className="w-6 h-6 rounded border"
@@ -683,9 +683,9 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                                 title={`${color.name}: ${color.hex}`}
                               />
                             ))}
-                            {BrandGuidelinesStorage.getBrandColors(stored).length > 5 && (
+                            {(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) > 5 && (
                               <span className="text-xs text-gray-500 self-center">
-                                +{BrandGuidelinesStorage.getBrandColors(stored).length - 5} more
+                                +{(BrandGuidelinesStorage.getBrandColors(stored)?.length || 0) - 5} more
                               </span>
                             )}
                           </div>
