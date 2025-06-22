@@ -422,7 +422,7 @@ export function FlowWireframeMappingPage() {
           }
         }
 
-        // Add wireframes
+        // Add wireframes with visual captures
         const mappedWireframes = getMappedWireframes(flow.id);
         if (mappedWireframes.length > 0) {
           pdf.setFontSize(14);
@@ -430,15 +430,101 @@ export function FlowWireframeMappingPage() {
           yPosition += 15;
 
           for (const wireframe of mappedWireframes) {
-            if (yPosition > pageHeight - 80) {
+            // Check if we need a new page
+            if (yPosition > pageHeight - 150) {
               pdf.addPage();
               yPosition = 20;
             }
 
             pdf.setFontSize(12);
             pdf.text(wireframe.pageName, 20, yPosition);
+            yPosition += 5;
+            
+            pdf.setFontSize(9);
+            pdf.text(`Generated: ${new Date(wireframe.createdAt).toLocaleDateString()}`, 20, yPosition);
             yPosition += 10;
+
+            // Create wireframe preview with exact colors
+            try {
+              // Create a hidden iframe to render the wireframe
+              const iframe = document.createElement('iframe');
+              iframe.style.width = '1200px';
+              iframe.style.height = '800px';
+              iframe.style.position = 'absolute';
+              iframe.style.left = '-9999px';
+              iframe.style.border = 'none';
+              iframe.srcdoc = wireframe.htmlContent;
+              document.body.appendChild(iframe);
+
+              // Wait for iframe to load and render
+              await new Promise((resolve) => {
+                iframe.onload = () => {
+                  // Give extra time for CSS and rendering
+                  setTimeout(resolve, 2000);
+                };
+                // Fallback timeout
+                setTimeout(resolve, 3000);
+              });
+
+              // Capture the iframe content
+              const canvas = await html2canvas(iframe.contentDocument?.body || iframe.contentWindow?.document.body!, {
+                width: 1200,
+                height: 800,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                scale: 0.8,
+                logging: false,
+                foreignObjectRendering: true,
+                ignoreElements: (element) => {
+                  return element.tagName === 'SCRIPT';
+                }
+              });
+
+              // Clean up iframe
+              document.body.removeChild(iframe);
+
+              if (canvas.width > 10 && canvas.height > 10) {
+                const imgData = canvas.toDataURL('image/png', 0.9);
+                
+                // Calculate size for PDF - make wireframes reasonably sized
+                const maxWireframeWidth = pageWidth - 40;
+                const maxWireframeHeight = 100; // Limit height for better layout
+                const aspectRatio = canvas.width / canvas.height;
+                
+                let imgWidth = Math.min(maxWireframeWidth, canvas.width * 0.2);
+                let imgHeight = imgWidth / aspectRatio;
+                
+                // If height is too much, scale down further
+                if (imgHeight > maxWireframeHeight) {
+                  imgHeight = maxWireframeHeight;
+                  imgWidth = imgHeight * aspectRatio;
+                }
+                
+                // Center the wireframe image
+                const xPosition = (pageWidth - imgWidth) / 2;
+                pdf.addImage(imgData, 'PNG', xPosition, yPosition, imgWidth, imgHeight);
+                yPosition += imgHeight + 15;
+                
+                console.log(`Wireframe "${wireframe.pageName}" added to PDF: ${imgWidth}x${imgHeight}`);
+              } else {
+                document.body.removeChild(iframe);
+                pdf.setFontSize(9);
+                pdf.text('Wireframe preview not available', 25, yPosition);
+                yPosition += 10;
+              }
+            } catch (error) {
+              console.warn('Could not capture wireframe:', error);
+              pdf.setFontSize(9);
+              pdf.text('Wireframe image could not be captured', 25, yPosition);
+              yPosition += 10;
+            }
           }
+        } else {
+          // No wireframes mapped
+          pdf.setFontSize(12);
+          pdf.text('No wireframes mapped to this flow', 20, yPosition);
+          yPosition += 15;
         }
       }
 
