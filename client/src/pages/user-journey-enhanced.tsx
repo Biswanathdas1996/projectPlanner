@@ -1912,6 +1912,49 @@ Data Objects: Request form, User profile`,
     }
   };
 
+  // Generate all flow diagrams
+  const generateAllFlowDiagrams = async () => {
+    const allFlows: { stakeholder: string; flowType: string }[] = [];
+
+    // Collect all stakeholder-flow combinations that have details
+    Object.entries(personaFlowTypes).forEach(([stakeholder, flowTypes]) => {
+      flowTypes.forEach((flowType) => {
+        const flowKey = `${stakeholder}-${flowType}`;
+        if (flowDetails[flowKey]) {
+          allFlows.push({ stakeholder, flowType });
+        }
+      });
+    });
+
+    if (allFlows.length === 0) {
+      setError(
+        "No flow details available. Please generate flow details first."
+      );
+      return;
+    }
+
+    setError("");
+    
+    // Generate flow diagrams for all flows sequentially
+    for (const flow of allFlows) {
+      const flowKey = `${flow.stakeholder}-${flow.flowType}`;
+      
+      // Skip if already generating or if flow diagram already exists
+      if (isGeneratingFlowDiagram[flowKey] || flowDiagrams[flowKey]) {
+        continue;
+      }
+
+      try {
+        await generateFlowDiagram(flow.stakeholder, flow.flowType);
+        // Small delay to avoid overwhelming the API
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } catch (error) {
+        console.error(`Error generating flow diagram for ${flow.stakeholder} ${flow.flowType}:`, error);
+        // Continue with other flows even if one fails
+      }
+    }
+  };
+
   // Generate flow diagram using AI
   const generateFlowDiagram = async (stakeholder: string, flowType: string) => {
     const flowKey = `${stakeholder}-${flowType}`;
@@ -2593,6 +2636,19 @@ Data Objects: Request form, User profile`,
                       <Activity className="h-3 w-3 mr-1" />
                     )}
                     Generate All Swimlanes
+                  </Button>
+                  <Button
+                    onClick={() => generateAllFlowDiagrams()}
+                    disabled={Object.values(isGeneratingFlowDiagram).some(Boolean)}
+                    size="sm"
+                    className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+                  >
+                    {Object.values(isGeneratingFlowDiagram).some(Boolean) ? (
+                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                    ) : (
+                      <Navigation className="h-3 w-3 mr-1" />
+                    )}
+                    Generate All Flow Diagrams
                   </Button>
                 </div>
               </CardTitle>

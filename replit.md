@@ -258,6 +258,13 @@ Changelog:
   - Added color-coded categorization with 10 different colors for node types
   - Created 43 comprehensive edge connections including alternative pathways
   - Enhanced master flow covers complete end-to-end process from patient arrival to completion
+- June 22, 2025. Generate All Flow Diagrams functionality added
+  - Added "Generate All Flow Diagrams" button to user journey page alongside existing swimlane generation
+  - Implemented generateAllFlowDiagrams function that processes all stakeholder flows sequentially
+  - Added intelligent flow detection to skip existing diagrams and avoid duplicate generation
+  - Built comprehensive error handling that continues processing even if individual flows fail
+  - Added 500ms delay between generations to prevent API overload and ensure stable processing
+  - Enhanced bulk generation capabilities for complete project workflow visualization
 ```
 
 ## User Preferences
