@@ -821,86 +821,135 @@ export function FlowWireframeMappingPage() {
                       </div>
                     </CardHeader>
                     <CardContent className="p-6">
-                      <Tabs defaultValue={mappedWireframes[0]?.id} className="space-y-4">
-                        <TabsList className="grid w-full bg-white/70 backdrop-blur-sm p-1 rounded-lg shadow-sm" style={{gridTemplateColumns: `repeat(${mappedWireframes.length}, 1fr)`}}>
-                          {mappedWireframes.map((wireframe, index) => (
-                            <TabsTrigger 
-                              key={wireframe.id} 
-                              value={wireframe.id} 
-                              className="text-sm font-medium px-4 py-2 rounded-md transition-all duration-200 data-[state=active]:bg-white data-[state=active]:shadow-sm"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 rounded-full bg-green-400"></div>
-                                {wireframe.pageName}
-                              </div>
-                            </TabsTrigger>
-                          ))}
-                        </TabsList>
+                      <Tabs defaultValue={mappedWireframes[0]?.id} className="space-y-6">
+                        <div className="relative">
+                          <TabsList className="grid w-full bg-gradient-to-r from-gray-50 to-slate-50 backdrop-blur-sm p-1.5 rounded-xl shadow-md border border-gray-200/50 relative overflow-hidden" style={{gridTemplateColumns: `repeat(${mappedWireframes.length}, 1fr)`}}>
+                            <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 to-purple-50/30 rounded-xl"></div>
+                            {mappedWireframes.map((wireframe, index) => (
+                              <TabsTrigger 
+                                key={wireframe.id} 
+                                value={wireframe.id} 
+                                className="relative text-sm font-medium px-4 py-3 rounded-lg transition-all duration-300 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:scale-[1.02] data-[state=active]:z-10 hover:bg-white/50 group"
+                              >
+                                <div className="flex items-center gap-2.5 relative z-10">
+                                  <div className="relative">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 shadow-sm group-data-[state=active]:shadow-md transition-all duration-300"></div>
+                                    <div className="absolute inset-0 w-2.5 h-2.5 rounded-full bg-gradient-to-r from-emerald-400 to-green-500 animate-pulse opacity-0 group-data-[state=active]:opacity-50"></div>
+                                  </div>
+                                  <span className="text-gray-700 group-data-[state=active]:text-gray-900 group-data-[state=active]:font-semibold transition-all duration-300 truncate">
+                                    {wireframe.pageName}
+                                  </span>
+                                  <div className="absolute -top-1 -right-1 w-1.5 h-1.5 bg-blue-400 rounded-full opacity-0 group-data-[state=active]:opacity-100 transition-opacity duration-300"></div>
+                                </div>
+                              </TabsTrigger>
+                            ))}
+                          </TabsList>
+                        </div>
                         
                         {mappedWireframes.map((wireframe) => (
-                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-4">
-                            <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200">
-                              <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                  <div className="p-2 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg">
-                                    <ExternalLink className="h-4 w-4 text-blue-600" />
+                          <TabsContent key={wireframe.id} value={wireframe.id} className="space-y-6">
+                            <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-2xl p-6 shadow-lg border border-gray-100/50 hover:shadow-xl transition-all duration-300 group relative overflow-hidden">
+                              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50 to-transparent rounded-full opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
+                              
+                              <div className="flex items-center justify-between mb-6 relative z-10">
+                                <div className="flex items-center gap-4">
+                                  <div className="relative">
+                                    <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl shadow-sm group-hover:shadow-md transition-all duration-300">
+                                      <ExternalLink className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform duration-300" />
+                                    </div>
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-sm animate-pulse"></div>
                                   </div>
                                   <div>
-                                    <h4 className="font-semibold text-gray-900 mb-1">
+                                    <h4 className="font-bold text-lg text-gray-900 mb-2 group-hover:text-blue-900 transition-colors duration-300">
                                       {wireframe.pageName}
                                     </h4>
-                                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                                      <div className="w-1.5 h-1.5 bg-green-400 rounded-full"></div>
-                                      Created {new Date(wireframe.createdAt).toLocaleDateString()}
+                                    <div className="flex items-center gap-3 text-sm text-gray-600">
+                                      <div className="flex items-center gap-2">
+                                        <div className="w-2 h-2 bg-gradient-to-r from-emerald-400 to-green-500 rounded-full shadow-sm"></div>
+                                        <span className="font-medium">Active</span>
+                                      </div>
+                                      <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+                                      <span>Created {new Date(wireframe.createdAt).toLocaleDateString()}</span>
                                     </div>
                                   </div>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-3">
                                   <Button
                                     variant="outline"
-                                    size="sm"
-                                    className="h-9 px-4 border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                                    size="default"
+                                    className="h-11 px-6 bg-white/80 backdrop-blur-sm border-blue-200/70 text-blue-700 hover:bg-blue-50 hover:border-blue-300 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md font-medium"
                                     onClick={() => openWireframePreview(wireframe)}
                                   >
-                                    <ExternalLink className="h-3.5 w-3.5 mr-2" />
+                                    <ExternalLink className="h-4 w-4 mr-2" />
                                     Preview
                                   </Button>
                                   <Button
                                     variant="outline"
-                                    size="sm"
-                                    className="h-9 px-4 border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all duration-200"
+                                    size="default"
+                                    className="h-11 px-6 bg-white/80 backdrop-blur-sm border-emerald-200/70 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 hover:scale-105 transition-all duration-300 shadow-sm hover:shadow-md font-medium"
                                     onClick={() => downloadWireframe(wireframe)}
                                   >
-                                    <Download className="h-3.5 w-3.5 mr-2" />
+                                    <Download className="h-4 w-4 mr-2" />
                                     Download
                                   </Button>
                                 </div>
                               </div>
                               
-                              {/* Modern Wireframe Preview */}
+                              {/* Enhanced Modern Wireframe Preview */}
                               <div className={`relative group ${
                                 viewMode === "mobile" 
                                   ? "max-w-sm mx-auto" 
                                   : "w-full"
                               }`}>
-                                <div className="absolute inset-0 bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl blur-sm opacity-30 group-hover:opacity-50 transition-opacity duration-300"></div>
-                                <div className={`relative border-2 border-gray-200 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 bg-white ${
+                                {/* Animated background glow */}
+                                <div className="absolute -inset-4 bg-gradient-to-r from-blue-200/20 via-purple-200/20 to-indigo-200/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+                                
+                                {/* Device frame */}
+                                <div className={`relative bg-gradient-to-b from-gray-100 to-gray-200 rounded-2xl p-3 shadow-2xl hover:shadow-3xl transition-all duration-500 group-hover:scale-[1.02] ${
                                   viewMode === "mobile" 
-                                    ? "aspect-[9/16]" 
-                                    : "aspect-[16/10]"
+                                    ? "aspect-[9/19]" 
+                                    : "aspect-[16/11]"
                                 }`}>
-                                  <div className="absolute top-0 left-0 right-0 h-8 bg-gray-50 border-b border-gray-200 flex items-center justify-center">
-                                    <div className="flex gap-1.5">
-                                      <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                                      <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                                      <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                  {/* Device chrome/bezel */}
+                                  <div className="relative w-full h-full bg-black rounded-xl p-1 shadow-inner">
+                                    {/* Screen area */}
+                                    <div className="relative w-full h-full bg-white rounded-lg overflow-hidden shadow-lg">
+                                      {/* Browser header */}
+                                      <div className="absolute top-0 left-0 right-0 h-10 bg-gradient-to-r from-gray-50 to-gray-100 border-b border-gray-200 flex items-center px-4 z-10">
+                                        <div className="flex items-center gap-2 mr-4">
+                                          <div className="w-3 h-3 bg-gradient-to-br from-red-400 to-red-500 rounded-full shadow-sm"></div>
+                                          <div className="w-3 h-3 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full shadow-sm"></div>
+                                          <div className="w-3 h-3 bg-gradient-to-br from-green-400 to-green-500 rounded-full shadow-sm"></div>
+                                        </div>
+                                        <div className="flex-1 bg-white rounded-md h-6 flex items-center px-3 shadow-inner">
+                                          <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                                          <div className="text-xs text-gray-500 font-mono">{wireframe.pageName.toLowerCase().replace(/\s+/g, '-')}.html</div>
+                                        </div>
+                                        <div className="ml-4 flex gap-1">
+                                          <div className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 transition-colors duration-200"></div>
+                                          <div className="w-6 h-6 bg-gray-200 rounded hover:bg-gray-300 transition-colors duration-200"></div>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Wireframe content */}
+                                      <div className="absolute inset-0 pt-10">
+                                        <iframe
+                                          srcDoc={wireframe.htmlContent}
+                                          className="w-full h-full border-0 bg-white"
+                                          title={wireframe.pageName}
+                                        />
+                                      </div>
+                                      
+                                      {/* Subtle overlay for depth */}
+                                      <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                                     </div>
+                                    
+                                    {/* Device reflection */}
+                                    <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent rounded-xl pointer-events-none"></div>
                                   </div>
-                                  <iframe
-                                    srcDoc={wireframe.htmlContent}
-                                    className="w-full h-full border-0 pt-8"
-                                    title={wireframe.pageName}
-                                  />
+                                  
+                                  {/* Device shadow */}
+                                  <div className="absolute inset-0 bg-black/20 rounded-2xl blur-sm -z-10 translate-y-2 opacity-0 group-hover:opacity-100 transition-all duration-300"></div>
                                 </div>
                               </div>
                             </div>
