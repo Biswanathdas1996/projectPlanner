@@ -1088,6 +1088,157 @@ Generate a detailed flow diagram that shows:
     }
   };
 
+
+
+  const regenerateFlowDiagram = async () => {
+    if (!projectInput.trim()) {
+      setError('Please enter project description first');
+      return;
+    }
+
+    // Clear existing flow diagram first
+    setGeneratedFlowDiagram(null);
+    localStorage.removeItem('project-flow-diagram');
+    
+    setIsGeneratingFlowDiagram(true);
+    setError('');
+
+    try {
+      // Create comprehensive enterprise-level FlowDetails object with variation
+      const flowDetails = {
+        processDescription: `Regenerated enterprise-grade workflow for project: ${projectInput}. Enhanced with alternative project plan implementation for comprehensive enterprise flow generation with advanced business process modeling.`,
+        participants: [
+          "End Users", "Business Analysts", "System Administrators", "Database Administrators",
+          "Security Team", "Compliance Officers", "DevOps Engineers", "API Gateway",
+          "Load Balancers", "Microservices", "External Partners", "Third-party APIs",
+          "Payment Processors", "Notification Services", "Analytics Platform", "Audit Systems",
+          "Quality Assurance", "Product Managers", "Technical Architects", "Operations Team"
+        ],
+        trigger: "Enhanced multi-channel business process initiation with advanced enterprise validation",
+        activities: [
+          "Advanced Identity & Access Management (IAM)",
+          "Enhanced Multi-factor Authentication (MFA)",
+          "Granular Role-Based Access Control (RBAC)",
+          "Advanced Business Rule Engine Processing",
+          "Enhanced Data Validation & Sanitization",
+          "Sophisticated Workflow Orchestration",
+          "Advanced Microservice Coordination",
+          "Optimized Database Transaction Management",
+          "Intelligent Cache Layer Operations",
+          "Advanced API Gateway Routing",
+          "Dynamic Load Balancing & Distribution",
+          "Enhanced Business Logic Processing",
+          "Advanced Data Transformation Pipeline",
+          "Sophisticated Event-Driven Architecture Processing",
+          "Enhanced Message Queue Handling",
+          "Advanced Real-time Notifications",
+          "Comprehensive Audit Trail Generation",
+          "Enhanced Compliance Validation",
+          "Advanced Performance Metrics Collection",
+          "Intelligent Error Recovery & Rollback",
+          "Enhanced State Machine Management",
+          "Advanced Workflow Approval Chains",
+          "Sophisticated Document Management System",
+          "Enhanced Integration Hub Processing",
+          "Advanced Service Mesh Communication",
+          "Intelligent Container Orchestration",
+          "Enhanced CI/CD Pipeline Triggers",
+          "Advanced Monitoring & Alerting",
+          "Comprehensive Backup & Recovery Operations",
+          "Enhanced Data Archival & Retention",
+          "Advanced Security Scanning",
+          "Intelligent Threat Detection",
+          "Enhanced Performance Optimization",
+          "Advanced Cost Management",
+          "Intelligent Resource Allocation"
+        ],
+        decisionPoints: [
+          "Enhanced Authentication Success?",
+          "Advanced Authorization Level Sufficient?",
+          "Sophisticated Business Rules Validation Passed?",
+          "Enhanced Data Quality Threshold Met?",
+          "Advanced Service Health Check Passed?",
+          "Dynamic Load Capacity Available?",
+          "Enhanced Transaction Limits Exceeded?",
+          "Advanced Approval Required?",
+          "Comprehensive Compliance Requirements Met?",
+          "Intelligent Error Recovery Needed?",
+          "Enhanced Fallback Service Available?",
+          "Advanced Rate Limiting Triggered?",
+          "Intelligent Cache Hit/Miss Decision?",
+          "Enhanced Async Processing Required?",
+          "Advanced Batch Processing Needed?",
+          "Optimized Real-time Processing Possible?",
+          "Enhanced Circuit Breaker Open?",
+          "Intelligent Retry Logic Applicable?",
+          "Advanced Escalation Path Required?",
+          "Enhanced Manual Intervention Needed?",
+          "Dynamic Resource Scaling Required?",
+          "Advanced Security Threat Detected?",
+          "Enhanced Performance Threshold Breached?",
+          "Intelligent Cost Optimization Needed?"
+        ],
+        endEvent: "Enhanced enterprise workflow completed with comprehensive audit trail and advanced compliance validation",
+        additionalElements: [
+          "Advanced Distributed Tracing",
+          "Enhanced Centralized Logging",
+          "Sophisticated Metrics & KPI Dashboards",
+          "Intelligent Health Checks & Heartbeats",
+          "Advanced Circuit Breaker Patterns",
+          "Enhanced Bulkhead Isolation",
+          "Intelligent Retry & Timeout Policies",
+          "Advanced Dead Letter Queues",
+          "Enhanced Event Sourcing",
+          "Sophisticated CQRS Implementation",
+          "Advanced Saga Pattern Orchestration",
+          "Enhanced Blue-Green Deployment",
+          "Intelligent Canary Releases",
+          "Advanced Feature Flags",
+          "Enhanced A/B Testing Framework",
+          "Intelligent Rate Limiting & Throttling",
+          "Advanced API Versioning",
+          "Enhanced Schema Evolution",
+          "Intelligent Data Migration",
+          "Advanced Disaster Recovery",
+          "Enhanced Security Scanning",
+          "Intelligent Vulnerability Assessment",
+          "Advanced Penetration Testing",
+          "Enhanced GDPR Compliance",
+          "Advanced SOX Compliance",
+          "Enhanced HIPAA Compliance",
+          "Advanced PCI DSS Compliance",
+          "Intelligent Cost Optimization",
+          "Enhanced Performance Tuning",
+          "Advanced Resource Management"
+        ]
+      };
+
+      const flowDiagramGenerator = createAIFlowDiagramGenerator();
+      const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
+        flowDetails,
+        "System",
+        "Enhanced Project Workflow"
+      );
+
+      const flowDiagramResult = {
+        title: "Regenerated Project Workflow Diagram",
+        description: "Enhanced comprehensive flow diagram with alternative processes and advanced user interactions",
+        flowData: flowDiagramData
+      };
+
+      setGeneratedFlowDiagram(flowDiagramResult);
+      
+      // Save to localStorage
+      localStorage.setItem('project-flow-diagram', JSON.stringify(flowDiagramResult));
+      
+    } catch (err) {
+      console.error('Flow diagram regeneration error:', err);
+      setError('Failed to regenerate flow diagram. Please try again.');
+    } finally {
+      setIsGeneratingFlowDiagram(false);
+    }
+  };
+
   const downloadFlowDiagram = () => {
     if (!generatedFlowDiagram) return;
     
@@ -5614,7 +5765,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </Button>
                             <Button
-                              onClick={generateProjectFlowDiagram}
+                              onClick={regenerateFlowDiagram}
                               disabled={isGeneratingFlowDiagram}
                               className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium text-sm"
                             >
