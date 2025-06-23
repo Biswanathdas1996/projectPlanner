@@ -79,7 +79,7 @@ function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFl
   return (
     <>
       <div className={`w-full h-full ${className}`}>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between pt-[14px] pb-[14px] pl-[14px] pr-[14px]">
           <div>
             <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
             <p className="text-sm text-gray-600">Interactive flow diagram with {nodes.length} nodes</p>
@@ -124,7 +124,6 @@ function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFl
           </ReactFlow>
         </div>
       </div>
-      
       {/* Fullscreen Flow Editor Modal */}
       <FlowDiagramEditor
         isOpen={isEditorOpen}
