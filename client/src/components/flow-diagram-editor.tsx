@@ -22,7 +22,8 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw, Settings, EyeOff, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw, Settings, EyeOff, ChevronUp, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { useToast } from '@/hooks/use-toast';
 
 interface FlowDiagramEditorProps {
@@ -55,6 +56,8 @@ function FlowDiagramEditorInner({
   const [newNodeType, setNewNodeType] = useState('default');
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const reactFlowInstance = useReactFlow();
 
   // Track changes
@@ -260,6 +263,132 @@ function FlowDiagramEditorInner({
     return '#3B82F6';
   };
 
+  // AI Flow Generation
+  const generateAIFlow = useCallback(async () => {
+    if (!aiPrompt.trim()) return;
+
+    setIsGeneratingAI(true);
+    
+    try {
+      const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const currentFlowContext = {
+        existingNodes: nodes.map(n => ({ id: n.id, label: n.data?.label })),
+        existingEdges: edges.map(e => ({ source: e.source, target: e.target })),
+        nodeCount: nodes.length,
+        edgeCount: edges.length
+      };
+
+      const prompt = `You are an AI flow diagram generator. Generate new flow components based on the user's request and append them to the existing flow diagram without modifying existing components.
+
+Current Flow Context:
+- Existing nodes: ${currentFlowContext.existingNodes.map(n => `${n.id}: ${n.label}`).join(', ')}
+- Current node count: ${currentFlowContext.nodeCount}
+- Current edge count: ${currentFlowContext.edgeCount}
+
+User Request: "${aiPrompt}"
+
+Generate new flow components that:
+1. DO NOT modify or replace existing nodes/edges
+2. Create new nodes with unique IDs starting from "ai-node-${Date.now()}-"
+3. Connect appropriately to existing flow or create a separate sub-flow
+4. Use logical positioning (avoid overlapping with existing nodes)
+5. Include 3-7 new nodes maximum to keep the flow manageable
+
+Return ONLY a JSON object with this exact structure:
+{
+  "newNodes": [
+    {
+      "id": "ai-node-xxx",
+      "position": { "x": number, "y": number },
+      "data": { "label": "Node Label" },
+      "style": { "backgroundColor": "#colorcode" }
+    }
+  ],
+  "newEdges": [
+    {
+      "id": "ai-edge-xxx",
+      "source": "source-node-id",
+      "target": "target-node-id",
+      "animated": false
+    }
+  ],
+  "connectionPoints": [
+    {
+      "existingNodeId": "existing-node-id",
+      "newNodeId": "new-node-id",
+      "edgeId": "connection-edge-id"
+    }
+  ]
+}
+
+Use these colors for nodes:
+- Start/Input: #10B981 (green)
+- Process/Action: #3B82F6 (blue)  
+- Decision: #F59E0B (yellow)
+- End/Output: #EF4444 (red)
+- System: #8B5CF6 (purple)`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      // Parse AI response
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error("Invalid AI response format");
+      }
+      
+      const aiFlowData = JSON.parse(jsonMatch[0]);
+      
+      // Find the rightmost and bottommost positions of existing nodes
+      const maxX = Math.max(...nodes.map(n => n.position.x), 0);
+      const maxY = Math.max(...nodes.map(n => n.position.y), 0);
+      
+      // Adjust positions of new nodes to avoid overlap
+      const adjustedNodes = aiFlowData.newNodes.map((node: any, index: number) => ({
+        ...node,
+        position: {
+          x: node.position.x + maxX + 300, // Offset to the right
+          y: node.position.y + (index * 100) // Spread vertically
+        }
+      }));
+
+      // Generate connection edges if specified
+      const connectionEdges = aiFlowData.connectionPoints?.map((conn: any) => ({
+        id: conn.edgeId,
+        source: conn.existingNodeId,
+        target: conn.newNodeId,
+        animated: false,
+        style: { stroke: '#6366F1', strokeWidth: 2 }
+      })) || [];
+
+      // Add new nodes and edges to the existing flow
+      setNodes(prevNodes => [...prevNodes, ...adjustedNodes]);
+      setEdges(prevEdges => [...prevEdges, ...aiFlowData.newEdges, ...connectionEdges]);
+
+      toast({
+        title: "AI Flow Generated",
+        description: `Added ${adjustedNodes.length} new nodes and ${aiFlowData.newEdges.length + connectionEdges.length} new connections`,
+      });
+
+      // Clear the prompt
+      setAiPrompt('');
+      
+    } catch (error) {
+      console.error('AI Flow Generation Error:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Could not generate AI flow. Please try a different prompt.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingAI(false);
+    }
+  }, [aiPrompt, nodes, edges, setNodes, setEdges, toast]);
+
   if (!isOpen) return null;
 
   return (
@@ -460,10 +589,42 @@ function FlowDiagramEditorInner({
                       </div>
                     </div>
 
+                    {/* AI Flow Generator */}
+                    <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded border border-purple-200">
+                      <p className="font-medium mb-2 text-purple-800 text-sm">AI Flow Generator</p>
+                      <div className="space-y-2">
+                        <textarea
+                          placeholder="Describe new flow components to add (e.g., 'Add user authentication flow with login, verification, and dashboard steps')"
+                          className="w-full h-16 px-2 py-1 text-xs border rounded resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          value={aiPrompt}
+                          onChange={(e) => setAiPrompt(e.target.value)}
+                        />
+                        <Button
+                          onClick={generateAIFlow}
+                          disabled={isGeneratingAI || !aiPrompt.trim()}
+                          size="sm"
+                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                        >
+                          {isGeneratingAI ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              Generate & Append Flow
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+
                     {/* Instructions */}
                     <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
                       <p className="font-medium mb-1">Instructions:</p>
                       <ul className="space-y-1 text-xs">
+                        <li>• Use AI Generator to add new flow components</li>
                         <li>• Click nodes/edges to select</li>
                         <li>• Hold Shift for multi-select</li>
                         <li>• Drag nodes to reposition</li>
