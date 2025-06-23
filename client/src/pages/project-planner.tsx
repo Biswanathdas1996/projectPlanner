@@ -5843,66 +5843,60 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
 
                   {stakeholderNames.length > 0 && (
-                    <div className="mt-4">
-                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
-                        <div className="flex items-center justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <Users className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-gray-900 text-sm">Stakeholders ({stakeholderNames.length})</span>
+                    <div className="mt-3">
+                      <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/60 rounded-xl p-3 shadow-sm">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <Users className="h-3 w-3 text-white" />
                           </div>
+                          <span className="font-semibold text-gray-800 text-sm">Stakeholders</span>
+                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">{stakeholderNames.length}</span>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="grid grid-cols-1 gap-2">
                           {stakeholderNames.map((name, index) => (
-                            <div key={index} className="flex items-center justify-between bg-white rounded-lg border border-purple-100 p-2">
+                            <div key={index} className="group bg-white/80 backdrop-blur-sm border border-white/60 rounded-lg p-2 hover:bg-white hover:shadow-md transition-all duration-200">
                               {editingStakeholderIndex === index ? (
-                                <div className="flex items-center gap-2 flex-1">
+                                <div className="flex items-center gap-2">
                                   <input
                                     type="text"
                                     value={editingStakeholderName}
                                     onChange={(e) => setEditingStakeholderName(e.target.value)}
-                                    className="flex h-8 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm"
+                                    className="flex-1 h-7 rounded-md border border-gray-300 bg-white px-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                                     onKeyPress={(e) => e.key === 'Enter' && saveEditingStakeholder()}
                                     autoFocus
                                   />
-                                  <Button
+                                  <button
                                     onClick={saveEditingStakeholder}
-                                    size="sm"
-                                    className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
+                                    className="h-7 w-7 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors"
                                   >
                                     <Save className="h-3 w-3" />
-                                  </Button>
-                                  <Button
+                                  </button>
+                                  <button
                                     onClick={cancelEditingStakeholder}
-                                    size="sm"
-                                    variant="outline"
-                                    className="h-8 px-2 border-gray-300"
+                                    className="h-7 w-7 bg-gray-400 hover:bg-gray-500 text-white rounded-md flex items-center justify-center transition-colors"
                                   >
                                     <X className="h-3 w-3" />
-                                  </Button>
+                                  </button>
                                 </div>
                               ) : (
-                                <>
-                                  <span className="text-sm text-gray-900">{name}</span>
-                                  <div className="flex items-center gap-1">
-                                    <Button
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-gray-800">{name}</span>
+                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
                                       onClick={() => startEditingStakeholder(index)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 w-7 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
+                                      className="h-6 w-6 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-all hover:scale-105"
                                     >
                                       <Edit className="h-3 w-3" />
-                                    </Button>
-                                    <Button
+                                    </button>
+                                    <button
                                       onClick={() => deleteStakeholder(index)}
-                                      size="sm"
-                                      variant="outline"
-                                      className="h-7 w-7 p-0 border-red-300 text-red-600 hover:bg-red-50"
+                                      className="h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all hover:scale-105"
                                     >
                                       <Trash2 className="h-3 w-3" />
-                                    </Button>
+                                    </button>
                                   </div>
-                                </>
+                                </div>
                               )}
                             </div>
                           ))}
