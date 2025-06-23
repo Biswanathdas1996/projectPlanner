@@ -29,19 +29,40 @@ interface FlowDiagramViewerProps {
 const nodeTypes = {};
 
 function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFlowUpdate }: FlowDiagramViewerProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(flowData.edges || []);
+  // Initialize with empty arrays first, then load from localStorage or flowData
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
+  // Load flow data on component mount - prioritize localStorage over props
   useEffect(() => {
-    console.log('FlowDiagramViewer received data:', flowData);
-    console.log('Nodes:', flowData.nodes);
-    console.log('Edges:', flowData.edges);
-  }, [flowData]);
+    let loadedData = flowData;
+    
+    // Try to load from localStorage first if flowKey exists
+    if (flowKey) {
+      try {
+        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        const savedFlow = existingFlows[flowKey];
+        
+        if (savedFlow && savedFlow.nodes && savedFlow.edges) {
+          console.log(`🔄 FlowDiagramViewer loading saved flow from localStorage for key: ${flowKey}`);
+          loadedData = savedFlow;
+        } else {
+          console.log(`📄 FlowDiagramViewer using original flow data for key: ${flowKey}`);
+        }
+      } catch (error) {
+        console.error('Error loading flow from localStorage in viewer:', error);
+      }
+    }
+    
+    console.log('FlowDiagramViewer loading data:', loadedData);
+    setNodes(loadedData.nodes || []);
+    setEdges(loadedData.edges || []);
+  }, [flowData, flowKey, setNodes, setEdges]);
 
   const handleFlowSave = useCallback((updatedFlowData: FlowDiagramData) => {
-    setNodes(updatedFlowData.nodes);
-    setEdges(updatedFlowData.edges);
+    setNodes(updatedFlowData.nodes || []);
+    setEdges(updatedFlowData.edges || []);
     if (onFlowUpdate) {
       onFlowUpdate(updatedFlowData);
     }

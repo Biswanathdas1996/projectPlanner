@@ -1197,12 +1197,35 @@ Return ONLY a JSON array of stakeholder name strings:
 
   useEffect(() => {
     try {
-      // Load any existing flow from localStorage
+      // First check flowDiagrams structure for compatibility with FlowDiagramEditor
+      const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+      const savedFlow = existingFlows["project-flow-diagram"];
+      
+      if (savedFlow && savedFlow.nodes && savedFlow.edges) {
+        console.log('🔄 Loading project flow from flowDiagrams structure');
+        setGeneratedFlowDiagram({
+          title: "User Journey Flow",
+          description: "Generated user journey flow diagram",
+          flowData: savedFlow
+        });
+        setIsGeneratingFlowDiagram(false);
+        return;
+      }
+      
+      // Fallback to old structure
       const savedFlowDiagram = localStorage.getItem("project-flow-diagram");
       if (savedFlowDiagram) {
         try {
           const parsed = JSON.parse(savedFlowDiagram);
           setGeneratedFlowDiagram(parsed);
+          
+          // Migrate to new structure
+          if (parsed.flowData) {
+            existingFlows["project-flow-diagram"] = parsed.flowData;
+            localStorage.setItem('flowDiagrams', JSON.stringify(existingFlows));
+            console.log('✅ Migrated project flow to flowDiagrams structure');
+          }
+          
           setIsGeneratingFlowDiagram(false);
           return;
         } catch (error) {
@@ -1398,11 +1421,21 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
       setGeneratedFlowDiagram(flowDiagramResult);
 
-      // Save to localStorage
+      // Save to both formats for compatibility
       localStorage.setItem(
         "project-flow-diagram",
         JSON.stringify(flowDiagramResult),
       );
+      
+      // Save to flowDiagrams structure for FlowDiagramEditor
+      try {
+        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        existingFlows["project-flow-diagram"] = flowDiagramResult.flowData;
+        localStorage.setItem('flowDiagrams', JSON.stringify(existingFlows));
+        console.log('✅ Project flow generated and saved to flowDiagrams structure');
+      } catch (error) {
+        console.error('Error saving generated flow to flowDiagrams structure:', error);
+      }
     } catch (err) {
       console.error("Flow diagram generation error:", err);
       setError("Failed to generate flow diagram. Please try again.");
@@ -1533,11 +1566,21 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
       setGeneratedFlowDiagram(flowDiagramResult);
 
-      // Save to localStorage
+      // Save to both formats for compatibility
       localStorage.setItem(
         "project-flow-diagram",
         JSON.stringify(flowDiagramResult),
       );
+      
+      // Save to flowDiagrams structure for FlowDiagramEditor
+      try {
+        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        existingFlows["project-flow-diagram"] = flowDiagramResult.flowData;
+        localStorage.setItem('flowDiagrams', JSON.stringify(existingFlows));
+        console.log('✅ Project flow regenerated and saved to flowDiagrams structure');
+      } catch (error) {
+        console.error('Error saving regenerated flow to flowDiagrams structure:', error);
+      }
     } catch (err) {
       console.error("Flow diagram regeneration error:", err);
       setError("Failed to regenerate flow diagram. Please try again.");
@@ -6387,6 +6430,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                   ...generatedFlowDiagram,
                                   flowData: updatedFlow,
                                 });
+                                
+                                // Save to both formats for compatibility
                                 localStorage.setItem(
                                   "project-flow-diagram",
                                   JSON.stringify({
@@ -6394,6 +6439,16 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                     flowData: updatedFlow,
                                   }),
                                 );
+                                
+                                // Save to flowDiagrams structure for FlowDiagramEditor
+                                try {
+                                  const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+                                  existingFlows["project-flow-diagram"] = updatedFlow;
+                                  localStorage.setItem('flowDiagrams', JSON.stringify(existingFlows));
+                                  console.log('✅ Project flow saved to flowDiagrams structure');
+                                } catch (error) {
+                                  console.error('Error saving to flowDiagrams structure:', error);
+                                }
                               }}
                             />
 
