@@ -64,122 +64,100 @@ export class AIFlowDiagramGenerator {
     stakeholder: string,
     flowType: string
   ): string {
-    return `Generate a comprehensive enterprise-level ReactFlow diagram JSON structure for the following complex business workflow:
+    return `Generate a USER JOURNEY-FOCUSED ReactFlow diagram JSON structure for stakeholder-specific user flows:
 
-**Stakeholder:** ${stakeholder}
-**Flow Type:** ${flowType}
+**Flow Focus:** User Journey Mapping for Multiple Stakeholder Types
 **Process Description:** ${flowDetails.processDescription}
 **Trigger:** ${flowDetails.trigger}
-**Participants:** ${flowDetails.participants.join(", ")}
-**Activities:** ${flowDetails.activities.join(", ")}
-**Decision Points:** ${flowDetails.decisionPoints.join(", ")}
+**Stakeholder Types:** ${flowDetails.participants.join(", ")}
+**Detailed User Activities:** ${flowDetails.activities.join(" | ")}
+**User Decision Points:** ${flowDetails.decisionPoints.join(", ")}
 **End Event:** ${flowDetails.endEvent}
-**Additional Elements:** ${flowDetails.additionalElements.join(", ")}
+**User Support Elements:** ${flowDetails.additionalElements.join(", ")}
 
-Create an ENTERPRISE-GRADE ReactFlow diagram with 40-60 nodes minimum including:
+Create a USER-CENTERED ReactFlow diagram with 25-35 nodes showing DETAILED STAKEHOLDER JOURNEYS:
 
-## REQUIRED ENTERPRISE COMPONENTS:
+## REQUIRED USER JOURNEY COMPONENTS:
 
-### 1. SECURITY & AUTHENTICATION LAYER (8-12 nodes)
-- Identity Provider Integration
-- Multi-Factor Authentication Gateway
-- Role-Based Access Control Engine
-- Security Token Service
-- Certificate Authority Validation
-- Fraud Detection System
-- Compliance Validation Engine
-- Audit Trail Recorder
+### 1. USER DISCOVERY & ONBOARDING (5-7 nodes)
+- User Discovers App
+- Explores Features
+- Views Demo/Tutorial
+- Creates Account
+- Email Verification
+- Profile Setup
+- Guided Tour
 
-### 2. API & MICROSERVICES LAYER (10-15 nodes)
-- API Gateway
-- Load Balancer
-- Service Discovery
-- Circuit Breaker
-- Rate Limiter
-- Service Mesh Controller
-- Message Broker
-- Event Bus
-- Data Pipeline Orchestrator
-- Caching Layer
-- Content Delivery Network
+### 2. STAKEHOLDER-SPECIFIC WORKFLOWS (15-20 nodes)
+Create separate flow paths for each stakeholder type:
+- First-time Visitor Journey
+- Registered User Daily Flow
+- Premium User Advanced Flow
+- Mobile User Experience
+- Admin User Management
+- Guest User Limited Access
+- Power User Advanced Features
+- Business User Collaboration
+- Content Creator Workflow
+- Customer Support Process
 
-### 3. BUSINESS LOGIC & WORKFLOW (15-20 nodes)
-- Business Rule Engine
-- Workflow Orchestrator
-- State Machine Controller
-- Decision Matrix Processor
-- Approval Chain Manager
-- Document Processing Engine
-- Integration Hub
-- Data Transformation Service
-- Validation Service
-- Notification Service
-- Scheduler Service
-- Report Generator
+### 3. USER INTERACTION TOUCHPOINTS (6-8 nodes)
+- Dashboard/Home
+- Navigation Menu
+- Search Functions
+- User Settings
+- Help/Support
+- Notifications
+- Feedback System
+- User Profile
 
-### 4. DATA & PERSISTENCE LAYER (8-12 nodes)
-- Primary Database
-- Read Replica
-- Data Warehouse
-- Search Index
-- File Storage
-- Backup Service
-- Data Archival
-- CDC (Change Data Capture)
-- Data Quality Monitor
-- Master Data Management
-
-### 5. MONITORING & OPERATIONS (6-10 nodes)
-- Health Check Service
-- Metrics Collector
-- Log Aggregator
-- Alert Manager
-- Performance Monitor
-- Error Tracking
-- Distributed Tracing
-- SLA Monitor
+### 4. USER DECISION POINTS (4-6 nodes)
+- Registration Choice
+- Feature Selection
+- Upgrade Decision
+- Sharing Preferences
+- Settings Configuration
+- Support Contact
 
 ## LAYOUT REQUIREMENTS:
-- **Multi-tier Architecture**: Arrange in 6-8 horizontal swimlanes by layer
-- **Complex Decision Trees**: Include 15+ decision points with multiple outcomes
-- **Parallel Processing**: Show concurrent workflows and async operations
-- **Error Handling**: Include comprehensive error paths and fallback mechanisms
-- **Integration Points**: Show external system connections and API calls
+- **Stakeholder Swim Lanes**: Arrange in 4-6 horizontal swimlanes by user type
+- **User Journey Flow**: Show linear progression from discovery to goal completion
+- **Alternative Paths**: Include different user pathways and choice branches
+- **Decision Points**: Show user decision moments with clear outcomes
+- **Support Touchpoints**: Include help, feedback, and assistance points
 
 ## NODE SPECIFICATIONS:
-- **Start Nodes**: Green (#10B981) with thick borders
-- **Security Nodes**: Purple (#8B5CF6) for authentication/authorization
-- **API Nodes**: Blue (#3B82F6) for services and gateways
-- **Business Logic**: Indigo (#4F46E5) for core processing
-- **Data Nodes**: Emerald (#059669) for storage and persistence
-- **Decision Nodes**: Amber (#F59E0B) with diamond shapes
-- **Integration Nodes**: Cyan (#06B6D4) for external connections
-- **Monitoring Nodes**: Orange (#EA580C) for observability
-- **Error Nodes**: Red (#DC2626) for error handling
-- **End Nodes**: Gray (#6B7280) for completion states
+- **Discovery Nodes**: Green (#10B981) for user entry points
+- **Onboarding Nodes**: Blue (#3B82F6) for registration/setup processes
+- **Core Activity Nodes**: Indigo (#4F46E5) for main user tasks
+- **Feature Nodes**: Purple (#8B5CF6) for specific functionality
+- **Decision Nodes**: Amber (#F59E0B) for user choice points
+- **Support Nodes**: Cyan (#06B6D4) for help and assistance
+- **Premium Nodes**: Emerald (#059669) for paid features
+- **Completion Nodes**: Gray (#6B7280) for successful outcomes
 
 ## POSITIONING:
-- Layer 1 (Security): Y = 50-200
-- Layer 2 (API/Gateway): Y = 250-400
-- Layer 3 (Business Logic): Y = 450-700
-- Layer 4 (Data): Y = 750-900
-- Layer 5 (Integration): Y = 950-1100
-- Layer 6 (Monitoring): Y = 1150-1300
-- X spacing: 180px between nodes
-- Include vertical flows between layers
+- Discovery Layer: Y = 50-150 (app discovery, landing page)
+- Onboarding Layer: Y = 200-300 (registration, setup)
+- Core Usage Layer: Y = 350-500 (main features, daily tasks)
+- Advanced Features Layer: Y = 550-650 (premium, power user features)
+- Support/Exit Layer: Y = 700-800 (help, completion, feedback)
+- X spacing: 200px between stakeholder paths
+- Create separate horizontal flows for each stakeholder type
 
 ## EDGE REQUIREMENTS:
-- Primary flow edges: solid lines
-- Error/exception edges: dashed red lines
-- Async/event edges: animated blue lines
-- Approval edges: thick green lines
-- Integration edges: dotted cyan lines
-- Include edge labels for decision outcomes
+- Primary user flow edges: solid lines
+- Alternative path edges: dashed lines
+- Decision outcome edges: labeled with user choices
+- Support flow edges: animated blue lines
+- Premium upgrade edges: thick green lines
+- User feedback edges: dotted lines
+- Include clear labels for user decision outcomes
 
-Generate a JSON object with 'nodes' and 'edges' arrays. Each node must have: id, position {x, y}, data {label}, type, and style object.
-Each edge must have: id, source, target, and appropriate styling based on edge type.
+Generate a JSON object with 'nodes' and 'edges' arrays showing STAKEHOLDER-SPECIFIC USER JOURNEYS.
+Each node must represent a user action, decision point, or interface touchpoint.
 
-CRITICAL: Generate 45-60 detailed nodes minimum representing a complete enterprise workflow with all layers, security components, and business logic.
+CRITICAL: Generate 25-35 detailed nodes representing COMPLETE USER JOURNEYS for different stakeholder types showing their step-by-step progression through the application.
 
 **CRITICAL: Response Format Requirements:**
 Return ONLY a valid JSON object. Do NOT include any extra properties beyond these allowed fields:

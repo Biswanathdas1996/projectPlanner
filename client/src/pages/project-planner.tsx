@@ -973,33 +973,35 @@ Generate a detailed flow diagram that shows:
       const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
       
       const flowAnalysisPrompt = `
-Analyze this project and create a USER-CENTERED flow diagram focused on user journeys:
+Analyze this project and create DETAILED STAKEHOLDER-SPECIFIC user journeys:
 
 PROJECT DESCRIPTION: ${projectInput}
 
 PROJECT PLAN CONTENT: ${planContent}
 
-Create a flow that shows USER JOURNEYS and USER INTERACTIONS, NOT technical architecture. Focus on:
+Create detailed flows for EACH STAKEHOLDER TYPE mentioned in the project. For example:
+- End Users: register → verify email → login → view dashboard → complete main task → logout
+- Admins: login → access admin panel → manage users → view reports → configure settings
+- Customers: browse products → add to cart → checkout → payment → order confirmation
+- Content Creators: login → create content → publish → review analytics → engage with audience
 
-1. How users discover and access the application
-2. User onboarding and registration processes
-3. Main user tasks and activities
-4. User decision points and choices
-5. User goals and outcomes
-6. User touchpoints and interactions
-
-Return a JSON object with the following structure:
+Return a JSON object with stakeholder-specific detailed activities:
 {
-  "processDescription": "User journey description",
-  "participants": ["Different types of users (e.g., New User, Returning User, Admin User, Guest)"],
-  "trigger": "What causes a user to start using the system",
-  "activities": ["User-focused activities like 'User browses products', 'User creates account', 'User completes purchase'"],
-  "decisionPoints": ["User decision points like 'User wants to login?', 'User satisfied with results?', 'User wants to continue?'"],
-  "endEvent": "User successfully completes their goal",
-  "additionalElements": ["User support elements like 'Help system', 'User feedback', 'User notifications'"]
+  "processDescription": "Multi-stakeholder user journey flows",
+  "participants": ["Identify SPECIFIC stakeholder types from the project (e.g., End Users, Admin Users, Customers, Vendors, Content Creators, etc.)"],
+  "trigger": "Stakeholder needs to accomplish their specific goal",
+  "activities": [
+    "STAKEHOLDER 1: Detailed step-by-step flow (e.g., 'New User: Discovers app → Creates account → Verifies email → Completes profile → Takes tutorial → Performs first task')",
+    "STAKEHOLDER 2: Their specific journey flow",
+    "STAKEHOLDER 3: Their unique process flow",
+    "Continue for each stakeholder type..."
+  ],
+  "decisionPoints": ["Stakeholder-specific decision points like 'User chooses registration method?', 'Admin approves content?', 'Customer proceeds to payment?'"],
+  "endEvent": "Each stakeholder successfully completes their specific objectives",
+  "additionalElements": ["Stakeholder-specific support features, tutorials, and tools"]
 }
 
-Focus ONLY on user experiences and journeys, not system architecture or technical processes.`;
+Generate COMPREHENSIVE detailed flows for EACH stakeholder type, showing their complete journey from start to finish.`;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
@@ -1011,34 +1013,32 @@ Focus ONLY on user experiences and journeys, not system architecture or technica
         flowDetails = JSON.parse(cleanResponse);
       } catch (parseError) {
         console.log('Using fallback flow details due to parsing error:', parseError);
-        // Fallback to user-centered flow
+        // Fallback to stakeholder-specific flows
         flowDetails = {
-          processDescription: `User journey for project: ${projectInput}`,
-          participants: ["New Users", "Returning Users", "Admin Users", "Guest Users"],
-          trigger: "User discovers the application and wants to use it",
+          processDescription: `Multi-stakeholder user journeys for project: ${projectInput}`,
+          participants: ["End Users", "Admin Users", "Content Managers", "Customer Support", "System Operators"],
+          trigger: "Different stakeholders need to accomplish their specific goals",
           activities: [
-            "User discovers application",
-            "User explores features",
-            "User creates account or logs in",
-            "User navigates main interface",
-            "User performs primary tasks",
-            "User achieves their goal",
-            "User provides feedback or reviews"
+            "END USER: Discovers app → Creates account → Verifies email → Completes profile setup → Takes guided tour → Performs main task → Shares feedback",
+            "ADMIN USER: Logs in with admin credentials → Accesses admin dashboard → Reviews user analytics → Manages user accounts → Configures system settings → Monitors performance",
+            "CONTENT MANAGER: Logs in → Navigates to content section → Creates new content → Reviews and edits → Publishes content → Monitors engagement metrics",
+            "CUSTOMER SUPPORT: Accesses support dashboard → Reviews support tickets → Responds to user inquiries → Escalates complex issues → Updates knowledge base",
+            "SYSTEM OPERATOR: Logs into system console → Monitors system health → Performs maintenance tasks → Reviews logs → Updates configurations → Ensures security compliance"
           ],
           decisionPoints: [
-            "User wants to create account?",
-            "User satisfied with features?",
-            "User needs help or support?",
-            "User wants to continue using app?",
-            "User ready to complete task?"
+            "End user ready to register?",
+            "Admin needs to approve new users?",
+            "Content requires review before publishing?",
+            "Support ticket needs escalation?",
+            "System maintenance required?"
           ],
-          endEvent: "User successfully completes their journey",
+          endEvent: "Each stakeholder successfully completes their specific workflow",
           additionalElements: [
-            "User onboarding help",
-            "User support system", 
-            "User feedback collection",
-            "User notifications",
-            "User preferences"
+            "Role-based onboarding tutorials",
+            "Stakeholder-specific help documentation",
+            "User role management system",
+            "Activity tracking per stakeholder type",
+            "Customized dashboards for each role"
           ]
         };
       }
@@ -1095,67 +1095,42 @@ Focus ONLY on user experiences and journeys, not system architecture or technica
         ],
         trigger: "User has a specific need or goal they want to accomplish",
         activities: [
-          "User discovers application through search or referral",
-          "User browses landing page and explores features",
-          "User reads about benefits and value proposition",
-          "User decides to try the application",
-          "User goes through onboarding process",
-          "User creates account with personal information",
-          "User verifies email or phone number",
-          "User completes profile setup",
-          "User takes guided tour of main features",
-          "User explores primary navigation and menus",
-          "User attempts to complete their main task",
-          "User searches for specific content or features",
-          "User interacts with core functionality",
-          "User customizes settings and preferences",
-          "User saves or bookmarks important items",
-          "User shares content or invites others",
-          "User provides feedback or ratings",
-          "User accesses help documentation",
-          "User contacts customer support if needed",
-          "User completes their primary objective",
-          "User explores additional features",
-          "User upgrades account or subscription",
-          "User integrates with other tools",
-          "User manages account settings",
-          "User views usage statistics or reports",
-          "User downloads or exports data",
-          "User schedules or automates tasks",
-          "User collaborates with team members",
-          "User receives notifications and updates",
-          "User returns for regular usage",
-          "User recommends application to others",
-          "User provides testimonials or reviews",
-          "User participates in community features",
-          "User attends training or webinars",
-          "User successfully achieves long-term goals"
+          "FIRST-TIME VISITOR: Discovers landing page → Explores features → Reads testimonials → Watches demo → Decides to sign up → Creates account → Completes onboarding",
+          "REGISTERED USER: Logs in → Checks dashboard → Reviews notifications → Completes daily tasks → Updates profile → Saves work → Logs out",
+          "PREMIUM USER: Logs in with premium credentials → Accesses premium features → Uses advanced tools → Downloads premium content → Manages subscription → Contacts priority support",
+          "MOBILE USER: Opens mobile app → Authenticates with biometrics → Syncs data → Uses offline features → Enables location services → Shares content → Receives push notifications",
+          "ADMIN USER: Logs into admin panel → Reviews system metrics → Manages user accounts → Configures settings → Reviews reports → Handles escalations → Updates system",
+          "GUEST USER: Browses without login → Views limited content → Receives registration prompts → Explores free features → Considers signup → Completes trial registration",
+          "POWER USER: Uses keyboard shortcuts → Bulk operations → Custom workflows → API integrations → Advanced configurations → Automation setup → Performance optimization",
+          "BUSINESS USER: Team login → Collaborative workspace → Project management → Resource allocation → Progress tracking → Team communication → Reporting dashboard",
+          "CONTENT CREATOR: Content management → Create new content → Media upload → Content editing → Publishing workflow → Analytics review → Audience engagement",
+          "CUSTOMER SUPPORT: Support dashboard → Ticket management → User assistance → Knowledge base updates → Escalation handling → Performance metrics → Training updates"
         ],
         decisionPoints: [
-          "User ready to create account?",
-          "User prefers social login or email signup?",
-          "User satisfied with onboarding experience?",
-          "User understanding main features?",
-          "User finding interface intuitive?",
-          "User able to complete primary task?",
-          "User needs additional help or guidance?",
-          "User wants to upgrade to premium?",
-          "User interested in advanced features?",
-          "User willing to share personal data?",
-          "User wants to enable notifications?",
+          "First-time visitor ready to create account?",
+          "Registered user wants to upgrade to premium?",
+          "Premium user satisfied with advanced features?",
+          "Mobile user enables push notifications?",
+          "Admin user approves new system changes?",
+          "Guest user ready to register for full access?",
+          "Power user wants to create custom workflows?",
+          "Business user needs team collaboration features?",
+          "Content creator ready to publish content?",
+          "Customer support escalates complex issues?",
           "User prefers mobile or desktop experience?",
-          "User satisfied with performance speed?",
-          "User finding content relevant?",
-          "User wanting to customize interface?",
-          "User ready to invite team members?",
-          "User interested in integrations?",
-          "User satisfied with support quality?",
-          "User planning to continue using app?",
-          "User willing to provide feedback?",
+          "User wants to enable biometric authentication?",
+          "User interested in API integrations?",
+          "User needs offline functionality?",
+          "User wants to share content publicly?",
+          "User considering subscription renewal?",
+          "User satisfied with loading performance?",
+          "User wants personalized recommendations?",
           "User interested in community features?",
-          "User wants to export their data?",
-          "User considering long-term subscription?",
-          "User recommending to colleagues?"
+          "User needs data export capabilities?",
+          "User wants advanced reporting features?",
+          "User ready for automated workflows?",
+          "User interested in third-party integrations?",
+          "User planning long-term usage?"
         ],
         endEvent: "User successfully completes their journey and achieves their goals",
         additionalElements: [
