@@ -341,7 +341,7 @@ export function ProjectSectionsSettings({ sections, onSectionsChange }: ProjectS
                 <div className="flex gap-2">
                   <Button onClick={addNewSection} className="bg-green-600 hover:bg-green-700 text-white">
                     <Save className="h-4 w-4 mr-2" />
-                    Add Section
+                    Save Section
                   </Button>
                   <Button onClick={() => setIsAddingNew(false)} variant="outline">
                     <X className="h-4 w-4 mr-2" />
