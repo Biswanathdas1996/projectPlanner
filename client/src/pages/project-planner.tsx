@@ -1071,12 +1071,6 @@ Return ONLY a JSON array of stakeholder name strings:
       return;
     }
 
-    // Check if we have stakeholders from the stakeholder analysis section
-    if (stakeholderNames.length === 0) {
-      setError('Please add stakeholders in the Stakeholder Analysis section above first');
-      return;
-    }
-
     setIsGeneratingFlowDiagram(true);
     setError('');
 
@@ -1094,41 +1088,59 @@ Return ONLY a JSON array of stakeholder name strings:
         }
       }
 
-      // Use AI to analyze project plan and create flows for EXISTING stakeholders only
+      // Create a comprehensive project analysis
+      const projectAnalysis = `
+Project Description: ${projectInput}
+
+${projectPlan ? `Existing Project Plan Context: ${getPlanContentForExternalUse(projectPlan)}` : ''}
+
+Generate a detailed flow diagram that shows:
+1. Main user entry points and onboarding processes
+2. Core system processes and workflows  
+3. Decision points and conditional flows
+4. Integration points with external systems
+5. Data flow and processing steps
+6. Error handling and exception paths
+7. User interaction touchpoints
+8. Administrative and management processes
+`;
+
+      // Use AI to analyze project plan and create project-specific processes
       const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
       
       const flowAnalysisPrompt = `
-Create DETAILED user journey flows for the EXACT stakeholders provided below. Do NOT add any new stakeholders or miss any of these stakeholders:
-
-EXISTING STAKEHOLDERS (use ONLY these): ${stakeholderNames.join(', ')}
+Analyze this project and create DETAILED STAKEHOLDER-SPECIFIC user journeys:
 
 PROJECT DESCRIPTION: ${projectInput}
 
 PROJECT PLAN CONTENT: ${planContent}
 
-Create detailed step-by-step flows for EACH of the stakeholders listed above. For each stakeholder, show their complete journey from discovery to goal completion.
+Create detailed flows for EACH STAKEHOLDER TYPE mentioned in the project. For example:
+- End Users: register → verify email → login → view dashboard → complete main task → logout
+- Admins: login → access admin panel → manage users → view reports → configure settings
+- Customers: browse products → add to cart → checkout → payment → order confirmation
+- Content Creators: login → create content → publish → review analytics → engage with audience
 
 Return a JSON object with stakeholder-specific detailed activities:
 {
-  "processDescription": "User journey flows for the specified stakeholders",
-  "participants": ${JSON.stringify(stakeholderNames)},
-  "trigger": "Each stakeholder type needs to accomplish their specific goals",
+  "processDescription": "Multi-stakeholder user journey flows",
+  "participants": ["Identify SPECIFIC stakeholder types from the project (e.g., End Users, Admin Users, Customers, Vendors, Content Creators, etc.)"],
+  "trigger": "Stakeholder needs to accomplish their specific goal",
   "activities": [
-    ${stakeholderNames.map(name => `"${name}: [Create detailed step-by-step flow for ${name} - e.g., discovers app → registers → verifies → completes onboarding → performs main tasks → achieves goals]"`).join(',\n    ')}
+    "STAKEHOLDER 1: Detailed step-by-step flow (e.g., 'New User: Discovers app → Creates account → Verifies email → Completes profile → Takes tutorial → Performs first task')",
+    "STAKEHOLDER 2: Their specific journey flow",
+    "STAKEHOLDER 3: Their unique process flow",
+    "Continue for each stakeholder type..."
   ],
-  "decisionPoints": [
-    ${stakeholderNames.map(name => `"${name} decision point (e.g., ${name} chooses their preferred action/path?)"`).join(',\n    ')}
-  ],
-  "endEvent": "All stakeholders successfully complete their specific objectives",
-  "additionalElements": [
-    ${stakeholderNames.map(name => `"${name}-specific support features and tools"`).join(',\n    ')}
-  ]
+  "decisionPoints": ["Stakeholder-specific decision points like 'User chooses registration method?', 'Admin approves content?', 'Customer proceeds to payment?'"],
+  "endEvent": "Each stakeholder successfully completes their specific objectives",
+  "additionalElements": ["Stakeholder-specific support features, tutorials, and tools"]
 }
 
-IMPORTANT: Use ONLY the stakeholders provided: ${stakeholderNames.join(', ')}. Do not add, remove, or modify these stakeholder names.`;
+Generate COMPREHENSIVE detailed flows for EACH stakeholder type, showing their complete journey from start to finish.`;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
@@ -1139,22 +1151,34 @@ IMPORTANT: Use ONLY the stakeholders provided: ${stakeholderNames.join(', ')}. D
         const cleanResponse = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
         flowDetails = JSON.parse(cleanResponse);
       } catch (parseError) {
-        console.log('Using fallback flow details with existing stakeholders:', parseError);
-        // Fallback using existing stakeholders
+        console.log('Using fallback flow details due to parsing error:', parseError);
+        // Fallback to stakeholder-specific flows
         flowDetails = {
-          processDescription: `User journey flows for: ${stakeholderNames.join(', ')}`,
-          participants: [...stakeholderNames],
-          trigger: "Each stakeholder type needs to accomplish their specific goals",
-          activities: stakeholderNames.map(name => 
-            `${name}: Discovers application → Creates account/accesses system → Completes authentication → Navigates to relevant section → Performs key tasks → Reviews results → Completes objectives`
-          ),
-          decisionPoints: stakeholderNames.map(name => 
-            `${name} chooses their preferred workflow path?`
-          ),
-          endEvent: "All stakeholders successfully complete their specific workflows",
-          additionalElements: stakeholderNames.map(name => 
-            `${name}-specific interface and support tools`
-          )
+          processDescription: `Multi-stakeholder user journeys for project: ${projectInput}`,
+          participants: ["End Users", "Admin Users", "Content Managers", "Customer Support", "System Operators"],
+          trigger: "Different stakeholders need to accomplish their specific goals",
+          activities: [
+            "END USER: Discovers app → Creates account → Verifies email → Completes profile setup → Takes guided tour → Performs main task → Shares feedback",
+            "ADMIN USER: Logs in with admin credentials → Accesses admin dashboard → Reviews user analytics → Manages user accounts → Configures system settings → Monitors performance",
+            "CONTENT MANAGER: Logs in → Navigates to content section → Creates new content → Reviews and edits → Publishes content → Monitors engagement metrics",
+            "CUSTOMER SUPPORT: Accesses support dashboard → Reviews support tickets → Responds to user inquiries → Escalates complex issues → Updates knowledge base",
+            "SYSTEM OPERATOR: Logs into system console → Monitors system health → Performs maintenance tasks → Reviews logs → Updates configurations → Ensures security compliance"
+          ],
+          decisionPoints: [
+            "End user ready to register?",
+            "Admin needs to approve new users?",
+            "Content requires review before publishing?",
+            "Support ticket needs escalation?",
+            "System maintenance required?"
+          ],
+          endEvent: "Each stakeholder successfully completes their specific workflow",
+          additionalElements: [
+            "Role-based onboarding tutorials",
+            "Stakeholder-specific help documentation",
+            "User role management system",
+            "Activity tracking per stakeholder type",
+            "Customized dashboards for each role"
+          ]
         };
       }
 
@@ -1162,12 +1186,12 @@ IMPORTANT: Use ONLY the stakeholders provided: ${stakeholderNames.join(', ')}. D
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
         "System",
-        "Application Users Analysis Flow"
+        "Comprehensive Project Workflow"
       );
 
       const flowDiagramResult = {
-        title: "Application Users Analysis Flow",
-        description: `User journey flows for all stakeholders: ${stakeholderNames.join(', ')}`,
+        title: "User Journey Flow",
+        description: "User-centered flow diagram showing how users discover, navigate, and achieve their goals",
         flowData: flowDiagramData
       };
 
@@ -5931,44 +5955,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate detailed user journey flows for all stakeholders identified above. This will analyze how each stakeholder interacts with your application from discovery to goal completion.
+                    Generate a user journey flow diagram showing how users discover, interact with, and achieve their goals in your application.
                   </div>
                   
                   <Button
                     onClick={generateProjectFlowDiagram}
-                    disabled={isGeneratingFlowDiagram || !projectInput.trim() || stakeholderNames.length === 0}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm disabled:from-gray-400 disabled:to-gray-500"
+                    disabled={isGeneratingFlowDiagram || !projectInput.trim()}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm"
                   >
                     {isGeneratingFlowDiagram ? (
                       <>
                         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Analyzing Users...
+                        Generating Flow Diagram...
                       </>
                     ) : (
                       <>
-                        <Users className="h-3 w-3 mr-2" />
-                        Generate Application Users Analysis
+                        <Workflow className="h-3 w-3 mr-2" />
+                        Generate User Journey Flow
                       </>
                     )}
                   </Button>
-                  
-                  {stakeholderNames.length === 0 && !isGeneratingFlowDiagram && (
-                    <div className="text-xs text-amber-600 bg-amber-50 rounded-lg p-3 border border-amber-200">
-                      <div className="flex items-center gap-2">
-                        <AlertCircle className="h-4 w-4" />
-                        <span>Please add stakeholders in the section above first to generate user analysis.</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stakeholderNames.length > 0 && !generatedFlowDiagram && (
-                    <div className="text-xs text-blue-600 bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <div className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        <span>Ready to analyze {stakeholderNames.length} stakeholder{stakeholderNames.length > 1 ? 's' : ''}: {stakeholderNames.join(', ')}</span>
-                      </div>
-                    </div>
-                  )}
+
                   {generatedFlowDiagram && (
                     <div className="mt-6 relative">
                       {/* Modern glassmorphism container */}
@@ -6089,342 +6096,52 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   )}
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Action Buttons */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
-          <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
-            <Button
-              variant="outline"
-              onClick={resetPlanner}
-              disabled={isGeneratingBpmn || isEnhancing}
-              className="border-gray-300 hover:bg-gray-50 w-full lg:w-auto"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Start Over
-            </Button>
-            
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <Link href="/market-research" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className={`w-full ${hasMarketResearchData() 
-                    ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
-                    : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
-                  } text-white border-0 shadow-lg relative`}
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Market Research
-                  {hasMarketResearchData() && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
-                  )}
-                </Button>
-              </Link>
               
-              <Link href="/user-journey" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  User Journey Flows
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-
-        {/* Step 3: Success */}
-        {currentStep === 'diagram' && (
-          <Card className="mb-6">
-            <CardContent className="py-8">
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Visual Diagram Created Successfully!
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Your project plan has been converted into a comprehensive BPMN diagram with process flows and decision points.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/editor">
-                    <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
-                      <Workflow className="h-4 w-4 mr-2" />
-                      View & Edit Diagram
-                    </Button>
-                  </Link>
-                  <Button variant="outline" onClick={resetPlanner}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Another Project
+              {/* Action Buttons */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
+                <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
+                  <Button
+                    variant="outline"
+                    onClick={resetPlanner}
+                    disabled={isGeneratingBpmn || isEnhancing}
+                    className="border-gray-300 hover:bg-gray-50 w-full lg:w-auto"
+                  >
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Start Over
                   </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-              {/* BPMN Script Management Section */}
-              {generatedBpmnXml && (
-                <div className="border-t border-gray-200 pt-6">
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-purple-800 flex items-center gap-2">
-                        <Code className="h-5 w-5" />
-                        BPMN 2.0 Script Management
-                      </h4>
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          onClick={() => setShowBpmnScript(!showBpmnScript)}
-                          variant="outline"
-                          size="sm"
-                          className="border-purple-300 text-purple-600 hover:bg-purple-50"
-                        >
-                          {showBpmnScript ? (
-                            <>
-                              <EyeOff className="h-4 w-4 mr-2" />
-                              Hide Script
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="h-4 w-4 mr-2" />
-                              View Script
-                            </>
-                          )}
-                        </Button>
-                        <Button
-                          onClick={copyBpmnScript}
-                          variant="outline"
-                          size="sm"
-                          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50"
-                        >
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy
-                        </Button>
-                        <Button
-                          onClick={downloadBpmnScript}
-                          variant="outline"
-                          size="sm"
-                          className="border-green-300 text-green-600 hover:bg-green-50"
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <p className="text-sm text-purple-700 mb-4">
-                      Access and manage the underlying BPMN 2.0 JSON script that powers your visual workflow diagram. 
-                      This script can be imported into any BPMN-compatible editor or system.
-                    </p>
-
-                    {showBpmnScript && (
-                      <div className="space-y-4">
-                        {isEditingBpmn ? (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <p className="text-sm text-purple-700">
-                                Edit the BPMN JSON script. Ensure proper JSON syntax before saving.
-                              </p>
-                              <div className="flex gap-2">
-                                <Button
-                                  onClick={saveBpmnEdits}
-                                  size="sm"
-                                  className="bg-green-600 hover:bg-green-700 text-white"
-                                >
-                                  <Save className="h-4 w-4 mr-2" />
-                                  Save Changes
-                                </Button>
-                                <Button
-                                  onClick={cancelBpmnEditing}
-                                  variant="outline"
-                                  size="sm"
-                                  className="border-gray-300"
-                                >
-                                  <X className="h-4 w-4 mr-2" />
-                                  Cancel
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <Textarea
-                              value={editedBpmnScript}
-                              onChange={(e) => setEditedBpmnScript(e.target.value)}
-                              className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
-                              placeholder="Edit BPMN XML script..."
-                            />
-                            
-                            <div className="text-sm text-gray-500">
-                              {editedBpmnScript.length} characters | Make sure to maintain valid BPMN XML structure
-                            </div>
-                          </div>
-                        ) : (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div className="text-sm text-gray-500">
-                                <span>BPMN 2.0 XML format with swimlanes</span>
-                                <span className="ml-4">{generatedBpmnXml.length} characters total</span>
-                              </div>
-                              <Button
-                                onClick={startEditingBpmn}
-                                variant="outline"
-                                size="sm"
-                                className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                              >
-                                <Edit className="h-4 w-4 mr-2" />
-                                Edit Script
-                              </Button>
-                            </div>
-                            
-                            <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
-                              <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
-                                {generatedBpmnXml}
-                              </pre>
-                            </div>
-                          </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <Link href="/market-research" className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className={`w-full ${hasMarketResearchData() 
+                          ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
+                          : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
+                        } text-white border-0 shadow-lg relative`}
+                      >
+                        <TrendingUp className="h-4 w-4 mr-2" />
+                        Market Research
+                        {hasMarketResearchData() && (
+                          <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
                         )}
-                      </div>
-                    )}
+                      </Button>
+                    </Link>
+                    
+                    <Link href="/user-journey" className="w-full sm:w-auto">
+                      <Button
+                        variant="outline"
+                        className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        User Journey Flows
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-              )}
-
-              {/* Sitemap XML Generation Section */}
-              <div className="mt-3">
-                <Card className="border-0 shadow-sm">
-                  <CardHeader className="bg-gradient-to-r from-teal-50 to-cyan-50 border-b p-3">
-                    <CardTitle className="flex items-center justify-between text-base">
-                      <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 bg-gradient-to-r from-teal-500 to-cyan-600 rounded-md flex items-center justify-center">
-                          <FileText className="h-3 w-3 text-white" />
-                        </div>
-                        Sitemap XML Generator
-                      </div>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-3">
-                    <div className="space-y-3">
-                      <p className="text-gray-600 text-sm">
-                        Generate a comprehensive XML sitemap for your project including all suggested pages, 
-                        content hierarchy, SEO metadata, and navigation structure.
-                      </p>
-                      
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={generateSitemap}
-                          disabled={isGeneratingSitemap || !projectInput.trim()}
-                          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-sm"
-                        >
-                          {isGeneratingSitemap ? (
-                            <>
-                              <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="h-3 w-3 mr-2" />
-                              Generate Sitemap XML
-                            </>
-                          )}
-                        </Button>
-
-                        {generatedSitemapXml && (
-                          <>
-                            <Button
-                              onClick={copySitemapXml}
-                              variant="outline"
-                              size="sm"
-                              className="border-teal-300 text-teal-600 hover:bg-teal-50 text-xs"
-                            >
-                              <Copy className="h-3 w-3 mr-1" />
-                              Copy
-                            </Button>
-                            <Button
-                              onClick={downloadSitemapXml}
-                              variant="outline"
-                              size="sm"
-                              className="border-green-300 text-green-600 hover:bg-green-50 text-xs"
-                            >
-                              <Download className="h-3 w-3 mr-1" />
-                              Download
-                            </Button>
-                          </>
-                        )}
-                      </div>
-
-                      {generatedSitemapXml && (
-                        <div className="mt-6">
-                          <div className="bg-gradient-to-br from-teal-50 to-cyan-50 border border-teal-200 rounded-xl p-6">
-                            <h4 className="text-lg font-semibold text-teal-800 mb-3 flex items-center gap-2">
-                              <Code className="h-5 w-5" />
-                              Generated Sitemap XML
-                            </h4>
-                            <p className="text-sm text-teal-700 mb-4">
-                              Complete XML sitemap with all application pages, URLs, priorities, and SEO metadata. 
-                              Ready for implementation and search engine submission.
-                            </p>
-                            
-                            <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-[400px] overflow-y-auto">
-                              <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
-                                {generatedSitemapXml}
-                              </pre>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
               </div>
             </CardContent>
           </Card>
         )}
-
-        {/* Action Buttons */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
-          <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
-            <Button
-              variant="outline"
-              onClick={resetPlanner}
-              disabled={isGeneratingBpmn || isEnhancing}
-              className="border-gray-300 hover:bg-gray-50 w-full lg:w-auto"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Start Over
-            </Button>
-            
-            <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-              <Link href="/market-research" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className={`w-full ${hasMarketResearchData() 
-                    ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
-                    : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
-                  } text-white border-0 shadow-lg relative`}
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Market Research
-                  {hasMarketResearchData() && (
-                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"></span>
-                  )}
-                </Button>
-              </Link>
-              
-              <Link href="/user-journey" className="w-full sm:w-auto">
-                <Button
-                  variant="outline"
-                  className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
-                >
-                  <Users className="h-4 w-4 mr-2" />
-                  User Journey Flows
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
 
         {/* Step 3: Success */}
         {currentStep === 'diagram' && (
@@ -6670,7 +6387,6 @@ Please provide the regenerated section content as properly formatted HTML:`;
           </Card>
         )}
       </div>
-      
       {/* Custom Prompt Regeneration Modal */}
       {showCustomPromptModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -6783,7 +6499,6 @@ Please provide the regenerated section content as properly formatted HTML:`;
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }
