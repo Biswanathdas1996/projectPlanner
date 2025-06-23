@@ -158,6 +158,18 @@ export default function CodeGenerator() {
     console.log('Total flows loaded:', loadedFlows.length);
     setFlows(loadedFlows);
 
+    // Load consolidated master flow from localStorage
+    const consolidatedFlowData = localStorage.getItem('consolidatedMasterFlow');
+    if (consolidatedFlowData) {
+      try {
+        const parsedConsolidatedFlow = JSON.parse(consolidatedFlowData);
+        setConsolidatedFlow(parsedConsolidatedFlow);
+        console.log('✅ Loaded consolidated master flow from localStorage');
+      } catch (error) {
+        console.error('Error parsing consolidated master flow:', error);
+      }
+    }
+
     if (savedProjectPlan) {
       setProjectPlan(savedProjectPlan);
     }
@@ -210,6 +222,11 @@ export default function CodeGenerator() {
         createdAt: new Date().toISOString()
       };
       setConsolidatedFlow(consolidatedFlowData);
+      
+      // Save to localStorage
+      localStorage.setItem('consolidatedMasterFlow', JSON.stringify(consolidatedFlowData));
+      console.log('✅ Saved AI-generated master flow to localStorage');
+      
     } catch (error) {
       console.error('Error generating AI consolidated flow:', error);
       // Fallback to manual consolidation if AI fails
@@ -224,6 +241,10 @@ export default function CodeGenerator() {
         createdAt: new Date().toISOString()
       };
       setConsolidatedFlow(fallbackFlowData);
+      
+      // Save fallback to localStorage
+      localStorage.setItem('consolidatedMasterFlow', JSON.stringify(fallbackFlowData));
+      console.log('✅ Saved fallback master flow to localStorage');
     } finally {
       setIsGeneratingConsolidatedFlow(false);
     }
