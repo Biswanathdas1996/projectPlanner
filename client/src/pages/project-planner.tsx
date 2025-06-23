@@ -5216,7 +5216,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
               ) : (
                 <div className="space-y-4">
                   {/* Modern Header with Actions */}
-                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+                  <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 mt-[20px] mb-[20px]">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
