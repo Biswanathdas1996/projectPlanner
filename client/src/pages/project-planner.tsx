@@ -973,31 +973,33 @@ Generate a detailed flow diagram that shows:
       const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
       
       const flowAnalysisPrompt = `
-Analyze this project and extract specific processes that should be included in a workflow diagram:
+Analyze this project and create a USER-CENTERED flow diagram focused on user journeys:
 
 PROJECT DESCRIPTION: ${projectInput}
 
 PROJECT PLAN CONTENT: ${planContent}
 
-Based on the project description and plan, identify:
-1. Specific participants/stakeholders involved
-2. Key business processes and activities
-3. Decision points specific to this project
-4. Integration points and systems
-5. User interactions and touchpoints
+Create a flow that shows USER JOURNEYS and USER INTERACTIONS, NOT technical architecture. Focus on:
+
+1. How users discover and access the application
+2. User onboarding and registration processes
+3. Main user tasks and activities
+4. User decision points and choices
+5. User goals and outcomes
+6. User touchpoints and interactions
 
 Return a JSON object with the following structure:
 {
-  "processDescription": "Brief description of the main workflow",
-  "participants": ["list of specific participants"],
-  "trigger": "What starts the process",
-  "activities": ["list of specific activities for this project"],
-  "decisionPoints": ["specific decision points"],
-  "endEvent": "How the process concludes",
-  "additionalElements": ["supporting elements"]
+  "processDescription": "User journey description",
+  "participants": ["Different types of users (e.g., New User, Returning User, Admin User, Guest)"],
+  "trigger": "What causes a user to start using the system",
+  "activities": ["User-focused activities like 'User browses products', 'User creates account', 'User completes purchase'"],
+  "decisionPoints": ["User decision points like 'User wants to login?', 'User satisfied with results?', 'User wants to continue?'"],
+  "endEvent": "User successfully completes their goal",
+  "additionalElements": ["User support elements like 'Help system', 'User feedback', 'User notifications'"]
 }
 
-Focus on the actual processes mentioned in the project plan rather than generic enterprise components.`;
+Focus ONLY on user experiences and journeys, not system architecture or technical processes.`;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
@@ -1009,31 +1011,34 @@ Focus on the actual processes mentioned in the project plan rather than generic 
         flowDetails = JSON.parse(cleanResponse);
       } catch (parseError) {
         console.log('Using fallback flow details due to parsing error:', parseError);
-        // Fallback to project-aware generic flow
+        // Fallback to user-centered flow
         flowDetails = {
-          processDescription: `Workflow for project: ${projectInput}`,
-          participants: ["Users", "System", "Administrators", "External Services"],
-          trigger: "User initiates process",
+          processDescription: `User journey for project: ${projectInput}`,
+          participants: ["New Users", "Returning Users", "Admin Users", "Guest Users"],
+          trigger: "User discovers the application and wants to use it",
           activities: [
-            "User Registration/Login",
-            "Input Validation",
-            "Business Logic Processing",
-            "Data Storage",
-            "Notification Handling",
-            "Response Generation"
+            "User discovers application",
+            "User explores features",
+            "User creates account or logs in",
+            "User navigates main interface",
+            "User performs primary tasks",
+            "User achieves their goal",
+            "User provides feedback or reviews"
           ],
           decisionPoints: [
-            "Valid Input?",
-            "User Authorized?",
-            "Processing Successful?",
-            "Additional Steps Required?"
+            "User wants to create account?",
+            "User satisfied with features?",
+            "User needs help or support?",
+            "User wants to continue using app?",
+            "User ready to complete task?"
           ],
-          endEvent: "Process completed successfully",
+          endEvent: "User successfully completes their journey",
           additionalElements: [
-            "Error Handling",
-            "Logging",
-            "Monitoring",
-            "Security Validation"
+            "User onboarding help",
+            "User support system", 
+            "User feedback collection",
+            "User notifications",
+            "User preferences"
           ]
         };
       }
@@ -1046,8 +1051,8 @@ Focus on the actual processes mentioned in the project plan rather than generic 
       );
 
       const flowDiagramResult = {
-        title: "Project Workflow Diagram",
-        description: "Comprehensive flow diagram showing all main processes and user interactions for the project",
+        title: "User Journey Flow",
+        description: "User-centered flow diagram showing how users discover, navigate, and achieve their goals",
         flowData: flowDiagramData
       };
 
@@ -1080,112 +1085,110 @@ Focus on the actual processes mentioned in the project plan rather than generic 
     setError('');
 
     try {
-      // Create comprehensive enterprise-level FlowDetails object with variation
+      // Create user-centered FlowDetails object with alternative user journeys
       const flowDetails = {
-        processDescription: `Regenerated enterprise-grade workflow for project: ${projectInput}. Enhanced with alternative project plan implementation for comprehensive enterprise flow generation with advanced business process modeling.`,
+        processDescription: `Alternative user journey for project: ${projectInput}. Enhanced with different user paths and interaction patterns for comprehensive user experience mapping.`,
         participants: [
-          "End Users", "Business Analysts", "System Administrators", "Database Administrators",
-          "Security Team", "Compliance Officers", "DevOps Engineers", "API Gateway",
-          "Load Balancers", "Microservices", "External Partners", "Third-party APIs",
-          "Payment Processors", "Notification Services", "Analytics Platform", "Audit Systems",
-          "Quality Assurance", "Product Managers", "Technical Architects", "Operations Team"
+          "First-time Visitors", "Registered Users", "Premium Users", "Mobile Users",
+          "Desktop Users", "Admin Users", "Guest Users", "Power Users",
+          "Casual Users", "Business Users", "Customer Support", "Content Creators"
         ],
-        trigger: "Enhanced multi-channel business process initiation with advanced enterprise validation",
+        trigger: "User has a specific need or goal they want to accomplish",
         activities: [
-          "Advanced Identity & Access Management (IAM)",
-          "Enhanced Multi-factor Authentication (MFA)",
-          "Granular Role-Based Access Control (RBAC)",
-          "Advanced Business Rule Engine Processing",
-          "Enhanced Data Validation & Sanitization",
-          "Sophisticated Workflow Orchestration",
-          "Advanced Microservice Coordination",
-          "Optimized Database Transaction Management",
-          "Intelligent Cache Layer Operations",
-          "Advanced API Gateway Routing",
-          "Dynamic Load Balancing & Distribution",
-          "Enhanced Business Logic Processing",
-          "Advanced Data Transformation Pipeline",
-          "Sophisticated Event-Driven Architecture Processing",
-          "Enhanced Message Queue Handling",
-          "Advanced Real-time Notifications",
-          "Comprehensive Audit Trail Generation",
-          "Enhanced Compliance Validation",
-          "Advanced Performance Metrics Collection",
-          "Intelligent Error Recovery & Rollback",
-          "Enhanced State Machine Management",
-          "Advanced Workflow Approval Chains",
-          "Sophisticated Document Management System",
-          "Enhanced Integration Hub Processing",
-          "Advanced Service Mesh Communication",
-          "Intelligent Container Orchestration",
-          "Enhanced CI/CD Pipeline Triggers",
-          "Advanced Monitoring & Alerting",
-          "Comprehensive Backup & Recovery Operations",
-          "Enhanced Data Archival & Retention",
-          "Advanced Security Scanning",
-          "Intelligent Threat Detection",
-          "Enhanced Performance Optimization",
-          "Advanced Cost Management",
-          "Intelligent Resource Allocation"
+          "User discovers application through search or referral",
+          "User browses landing page and explores features",
+          "User reads about benefits and value proposition",
+          "User decides to try the application",
+          "User goes through onboarding process",
+          "User creates account with personal information",
+          "User verifies email or phone number",
+          "User completes profile setup",
+          "User takes guided tour of main features",
+          "User explores primary navigation and menus",
+          "User attempts to complete their main task",
+          "User searches for specific content or features",
+          "User interacts with core functionality",
+          "User customizes settings and preferences",
+          "User saves or bookmarks important items",
+          "User shares content or invites others",
+          "User provides feedback or ratings",
+          "User accesses help documentation",
+          "User contacts customer support if needed",
+          "User completes their primary objective",
+          "User explores additional features",
+          "User upgrades account or subscription",
+          "User integrates with other tools",
+          "User manages account settings",
+          "User views usage statistics or reports",
+          "User downloads or exports data",
+          "User schedules or automates tasks",
+          "User collaborates with team members",
+          "User receives notifications and updates",
+          "User returns for regular usage",
+          "User recommends application to others",
+          "User provides testimonials or reviews",
+          "User participates in community features",
+          "User attends training or webinars",
+          "User successfully achieves long-term goals"
         ],
         decisionPoints: [
-          "Enhanced Authentication Success?",
-          "Advanced Authorization Level Sufficient?",
-          "Sophisticated Business Rules Validation Passed?",
-          "Enhanced Data Quality Threshold Met?",
-          "Advanced Service Health Check Passed?",
-          "Dynamic Load Capacity Available?",
-          "Enhanced Transaction Limits Exceeded?",
-          "Advanced Approval Required?",
-          "Comprehensive Compliance Requirements Met?",
-          "Intelligent Error Recovery Needed?",
-          "Enhanced Fallback Service Available?",
-          "Advanced Rate Limiting Triggered?",
-          "Intelligent Cache Hit/Miss Decision?",
-          "Enhanced Async Processing Required?",
-          "Advanced Batch Processing Needed?",
-          "Optimized Real-time Processing Possible?",
-          "Enhanced Circuit Breaker Open?",
-          "Intelligent Retry Logic Applicable?",
-          "Advanced Escalation Path Required?",
-          "Enhanced Manual Intervention Needed?",
-          "Dynamic Resource Scaling Required?",
-          "Advanced Security Threat Detected?",
-          "Enhanced Performance Threshold Breached?",
-          "Intelligent Cost Optimization Needed?"
+          "User ready to create account?",
+          "User prefers social login or email signup?",
+          "User satisfied with onboarding experience?",
+          "User understanding main features?",
+          "User finding interface intuitive?",
+          "User able to complete primary task?",
+          "User needs additional help or guidance?",
+          "User wants to upgrade to premium?",
+          "User interested in advanced features?",
+          "User willing to share personal data?",
+          "User wants to enable notifications?",
+          "User prefers mobile or desktop experience?",
+          "User satisfied with performance speed?",
+          "User finding content relevant?",
+          "User wanting to customize interface?",
+          "User ready to invite team members?",
+          "User interested in integrations?",
+          "User satisfied with support quality?",
+          "User planning to continue using app?",
+          "User willing to provide feedback?",
+          "User interested in community features?",
+          "User wants to export their data?",
+          "User considering long-term subscription?",
+          "User recommending to colleagues?"
         ],
-        endEvent: "Enhanced enterprise workflow completed with comprehensive audit trail and advanced compliance validation",
+        endEvent: "User successfully completes their journey and achieves their goals",
         additionalElements: [
-          "Advanced Distributed Tracing",
-          "Enhanced Centralized Logging",
-          "Sophisticated Metrics & KPI Dashboards",
-          "Intelligent Health Checks & Heartbeats",
-          "Advanced Circuit Breaker Patterns",
-          "Enhanced Bulkhead Isolation",
-          "Intelligent Retry & Timeout Policies",
-          "Advanced Dead Letter Queues",
-          "Enhanced Event Sourcing",
-          "Sophisticated CQRS Implementation",
-          "Advanced Saga Pattern Orchestration",
-          "Enhanced Blue-Green Deployment",
-          "Intelligent Canary Releases",
-          "Advanced Feature Flags",
-          "Enhanced A/B Testing Framework",
-          "Intelligent Rate Limiting & Throttling",
-          "Advanced API Versioning",
-          "Enhanced Schema Evolution",
-          "Intelligent Data Migration",
-          "Advanced Disaster Recovery",
-          "Enhanced Security Scanning",
-          "Intelligent Vulnerability Assessment",
-          "Advanced Penetration Testing",
-          "Enhanced GDPR Compliance",
-          "Advanced SOX Compliance",
-          "Enhanced HIPAA Compliance",
-          "Advanced PCI DSS Compliance",
-          "Intelligent Cost Optimization",
-          "Enhanced Performance Tuning",
-          "Advanced Resource Management"
+          "User onboarding tutorials",
+          "Interactive feature guides",
+          "Contextual help tooltips",
+          "User feedback collection",
+          "Customer support chat",
+          "User preference settings",
+          "Accessibility options",
+          "Multi-language support",
+          "User progress tracking",
+          "Achievement badges",
+          "User community forums",
+          "Knowledge base articles",
+          "Video tutorials",
+          "User testimonials",
+          "Referral program",
+          "User analytics dashboard",
+          "Personalization engine",
+          "User notification center",
+          "Mobile app companion",
+          "Offline mode support",
+          "User data export tools",
+          "Account security settings",
+          "User subscription management",
+          "Social sharing features",
+          "User collaboration tools",
+          "Custom user workflows",
+          "User success metrics",
+          "User retention programs",
+          "User experience surveys",
+          "User journey optimization"
         ]
       };
 
@@ -1197,8 +1200,8 @@ Focus on the actual processes mentioned in the project plan rather than generic 
       );
 
       const flowDiagramResult = {
-        title: "Regenerated Project Workflow Diagram",
-        description: "Enhanced comprehensive flow diagram with alternative processes and advanced user interactions",
+        title: "Alternative User Journey Flow",
+        description: "Enhanced user-centered flow diagram with alternative user paths and interaction patterns",
         flowData: flowDiagramData
       };
 
@@ -5684,7 +5687,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate a comprehensive flow diagram showing the main processes, user interactions, and decision points for your project.
+                    Generate a user journey flow diagram showing how users discover, interact with, and achieve their goals in your application.
                   </div>
                   
                   <Button
@@ -5700,7 +5703,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     ) : (
                       <>
                         <Workflow className="h-3 w-3 mr-2" />
-                        Generate Interactive Flow Diagram
+                        Generate User Journey Flow
                       </>
                     )}
                   </Button>
@@ -5722,10 +5725,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             </div>
                             <div>
                               <h4 className="text-lg font-bold bg-gradient-to-r from-blue-800 to-indigo-800 bg-clip-text text-transparent">
-                                Generated Flow Diagram
+                                User Journey Flow
                               </h4>
                               <p className="text-sm text-blue-600/80 font-medium">
-                                Interactive workflow visualization
+                                Interactive user experience visualization
                               </p>
                             </div>
                           </div>
