@@ -1111,36 +1111,60 @@ Generate a detailed flow diagram that shows:
 
       const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
       
+      // Use stakeholder data from the stakeholder analysis section
+      const stakeholderData = stakeholderNames.length > 0 ? stakeholderNames : ["End Users", "Admin Users", "Content Managers"];
+      
       const flowAnalysisPrompt = `
-Analyze this project and create DETAILED STAKEHOLDER-SPECIFIC user journeys:
+Analyze this project and create a CONSOLIDATED User Journey Flow that incorporates ALL stakeholders into ONE comprehensive diagram:
 
 PROJECT DESCRIPTION: ${projectInput}
 
 PROJECT PLAN CONTENT: ${planContent}
 
-Create detailed flows for EACH STAKEHOLDER TYPE mentioned in the project. For example:
-- End Users: register → verify email → login → view dashboard → complete main task → logout
-- Admins: login → access admin panel → manage users → view reports → configure settings
-- Customers: browse products → add to cart → checkout → payment → order confirmation
-- Content Creators: login → create content → publish → review analytics → engage with audience
+IDENTIFIED STAKEHOLDERS: ${stakeholderData.join(', ')}
 
-Return a JSON object with stakeholder-specific detailed activities:
+Create ONE consolidated flow diagram that shows how ALL stakeholders interact with the system. The flow should:
+
+1. Show entry points for each stakeholder type
+2. Display shared processes and stakeholder-specific paths
+3. Include decision points where paths diverge based on stakeholder role
+4. Show interaction points between different stakeholder types
+5. Include all major system processes that involve multiple stakeholders
+
+Return a JSON object with consolidated multi-stakeholder activities:
 {
-  "processDescription": "Multi-stakeholder user journey flows",
-  "participants": ["Identify SPECIFIC stakeholder types from the project (e.g., End Users, Admin Users, Customers, Vendors, Content Creators, etc.)"],
-  "trigger": "Stakeholder needs to accomplish their specific goal",
+  "processDescription": "Consolidated multi-stakeholder user journey flow",
+  "participants": ${JSON.stringify(stakeholderData)},
+  "trigger": "Different stakeholders enter the system to accomplish their specific goals",
   "activities": [
-    "STAKEHOLDER 1: Detailed step-by-step flow (e.g., 'New User: Discovers app → Creates account → Verifies email → Completes profile → Takes tutorial → Performs first task')",
-    "STAKEHOLDER 2: Their specific journey flow",
-    "STAKEHOLDER 3: Their unique process flow",
-    "Continue for each stakeholder type..."
+    "System Entry Point: All stakeholders access the platform",
+    "Authentication: Role-based login/registration for ${stakeholderData.join(', ')}",
+    "Role Detection: System identifies stakeholder type and redirects to appropriate dashboard",
+    "${stakeholderData[0] || 'Primary User'}: Completes their main workflow (discovery → action → completion)",
+    "${stakeholderData[1] || 'Secondary User'}: Performs their specific tasks (access → manage → review)",
+    "${stakeholderData[2] || 'Third User'}: Executes their role-based activities (monitor → control → optimize)",
+    "Cross-stakeholder Interactions: Points where different stakeholders collaborate or hand-off",
+    "Shared Resources: Common areas where all stakeholders might interact",
+    "Feedback Loop: All stakeholders provide input that improves the system",
+    "System Completion: Each stakeholder achieves their specific objectives"
   ],
-  "decisionPoints": ["Stakeholder-specific decision points like 'User chooses registration method?', 'Admin approves content?', 'Customer proceeds to payment?'"],
-  "endEvent": "Each stakeholder successfully completes their specific objectives",
-  "additionalElements": ["Stakeholder-specific support features, tutorials, and tools"]
+  "decisionPoints": [
+    "Which stakeholder type is accessing the system?",
+    "Does this action require approval from another stakeholder?",
+    "Should this process involve multiple stakeholder types?",
+    "Is escalation to a different stakeholder role needed?"
+  ],
+  "endEvent": "All stakeholders successfully complete their interconnected workflows",
+  "additionalElements": [
+    "Multi-stakeholder collaboration tools",
+    "Role-based permissions and access controls", 
+    "Stakeholder notification and communication systems",
+    "Cross-role handoff mechanisms",
+    "Unified reporting and analytics for all stakeholder types"
+  ]
 }
 
-Generate COMPREHENSIVE detailed flows for EACH stakeholder type, showing their complete journey from start to finish.`;
+Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length} stakeholder types work together in the system.`;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
@@ -1152,32 +1176,42 @@ Generate COMPREHENSIVE detailed flows for EACH stakeholder type, showing their c
         flowDetails = JSON.parse(cleanResponse);
       } catch (parseError) {
         console.log('Using fallback flow details due to parsing error:', parseError);
-        // Fallback to stakeholder-specific flows
+        // Fallback to consolidated stakeholder flow using actual stakeholder data
+        const fallbackStakeholders = stakeholderData.length > 0 ? stakeholderData : ["End Users", "Admin Users", "Content Managers"];
+        
         flowDetails = {
-          processDescription: `Multi-stakeholder user journeys for project: ${projectInput}`,
-          participants: ["End Users", "Admin Users", "Content Managers", "Customer Support", "System Operators"],
-          trigger: "Different stakeholders need to accomplish their specific goals",
+          processDescription: `Consolidated multi-stakeholder user journey flow for: ${projectInput}`,
+          participants: fallbackStakeholders,
+          trigger: "Multiple stakeholder types enter the system to accomplish their interconnected goals",
           activities: [
-            "END USER: Discovers app → Creates account → Verifies email → Completes profile setup → Takes guided tour → Performs main task → Shares feedback",
-            "ADMIN USER: Logs in with admin credentials → Accesses admin dashboard → Reviews user analytics → Manages user accounts → Configures system settings → Monitors performance",
-            "CONTENT MANAGER: Logs in → Navigates to content section → Creates new content → Reviews and edits → Publishes content → Monitors engagement metrics",
-            "CUSTOMER SUPPORT: Accesses support dashboard → Reviews support tickets → Responds to user inquiries → Escalates complex issues → Updates knowledge base",
-            "SYSTEM OPERATOR: Logs into system console → Monitors system health → Performs maintenance tasks → Reviews logs → Updates configurations → Ensures security compliance"
+            "System Entry Point: All stakeholders access the unified platform",
+            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(', ')}`,
+            "Role Detection & Routing: System identifies stakeholder type and provides appropriate access",
+            `${fallbackStakeholders[0] || 'Primary Stakeholder'}: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
+            `${fallbackStakeholders[1] || 'Secondary Stakeholder'}: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
+            `${fallbackStakeholders[2] || 'Third Stakeholder'}: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
+            "Cross-Stakeholder Collaboration: Points where different stakeholders interact and collaborate",
+            "Shared Resource Access: Common areas where multiple stakeholder types converge",
+            "Notification & Communication: System alerts and messages between stakeholder types",
+            "Data Integration: Information flows between different stakeholder workflows",
+            "Feedback & Improvement Loop: All stakeholders contribute to system enhancement",
+            "Unified Completion: All stakeholder types achieve their specific objectives within the integrated system"
           ],
           decisionPoints: [
-            "End user ready to register?",
-            "Admin needs to approve new users?",
-            "Content requires review before publishing?",
-            "Support ticket needs escalation?",
-            "System maintenance required?"
+            "Which stakeholder role is accessing the system?",
+            `Does ${fallbackStakeholders[0] || 'Primary User'} action require ${fallbackStakeholders[1] || 'Secondary User'} approval?`,
+            "Should this process involve multiple stakeholder collaboration?",
+            "Is escalation between stakeholder roles required?",
+            "Does this workflow need cross-stakeholder validation?"
           ],
-          endEvent: "Each stakeholder successfully completes their specific workflow",
+          endEvent: "All stakeholder types successfully complete their interconnected and collaborative workflows",
           additionalElements: [
-            "Role-based onboarding tutorials",
-            "Stakeholder-specific help documentation",
-            "User role management system",
-            "Activity tracking per stakeholder type",
-            "Customized dashboards for each role"
+            "Multi-stakeholder collaboration workspace",
+            "Role-based permission management system", 
+            "Inter-stakeholder communication channels",
+            "Cross-role workflow handoff mechanisms",
+            "Unified analytics dashboard for all stakeholder types",
+            "Stakeholder-specific onboarding and training modules"
           ]
         };
       }
@@ -1190,8 +1224,8 @@ Generate COMPREHENSIVE detailed flows for EACH stakeholder type, showing their c
       );
 
       const flowDiagramResult = {
-        title: "User Journey Flow",
-        description: "User-centered flow diagram showing how users discover, navigate, and achieve their goals",
+        title: "Consolidated Multi-Stakeholder User Journey Flow",
+        description: `Comprehensive flow diagram showing how all stakeholders (${stakeholderData.join(', ')}) interact, collaborate, and achieve their goals within the system`,
         flowData: flowDiagramData
       };
 
@@ -5955,26 +5989,35 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate a user journey flow diagram showing how users discover, interact with, and achieve their goals in your application.
+                    Generate a consolidated multi-stakeholder user journey flow diagram showing how all stakeholders interact, collaborate, and achieve their goals within your system.
                   </div>
                   
                   <Button
                     onClick={generateProjectFlowDiagram}
-                    disabled={isGeneratingFlowDiagram || !projectInput.trim()}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm"
+                    disabled={isGeneratingFlowDiagram || !projectInput.trim() || stakeholderNames.length === 0}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm disabled:from-gray-400 disabled:to-gray-500"
                   >
                     {isGeneratingFlowDiagram ? (
                       <>
                         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Generating Flow Diagram...
+                        Generating Consolidated Flow...
                       </>
                     ) : (
                       <>
-                        <Workflow className="h-3 w-3 mr-2" />
-                        Generate User Journey Flow
+                        <Users className="h-3 w-3 mr-2" />
+                        Generate Multi-Stakeholder User Journey Flow
                       </>
                     )}
                   </Button>
+                  
+                  {stakeholderNames.length === 0 && (
+                    <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
+                      <div className="flex items-center gap-1">
+                        <AlertCircle className="h-3 w-3" />
+                        <span>Add stakeholders above to generate a comprehensive multi-stakeholder flow diagram</span>
+                      </div>
+                    </div>
+                  )}
 
                   {generatedFlowDiagram && (
                     <div className="mt-6 relative">
