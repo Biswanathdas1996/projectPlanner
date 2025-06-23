@@ -1,50 +1,75 @@
-import React, { useState, useEffect, Fragment } from 'react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { generateProjectPlan, generateBpmnXml, generateCustomSuggestions, generateSitemapXml } from '@/lib/gemini';
-import { createAIProjectPlannerAgent, ProjectRequirements, ComprehensiveProjectPlan } from '@/lib/ai-project-planner';
-import { 
-  createDynamicProjectPlanner, 
-  DEFAULT_PROJECT_SECTIONS, 
-  ProjectSection, 
+import React, { useState, useEffect, Fragment } from "react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  generateProjectPlan,
+  generateBpmnXml,
+  generateCustomSuggestions,
+  generateSitemapXml,
+} from "@/lib/gemini";
+import {
+  createAIProjectPlannerAgent,
+  ProjectRequirements,
+  ComprehensiveProjectPlan,
+} from "@/lib/ai-project-planner";
+import {
+  createDynamicProjectPlanner,
+  DEFAULT_PROJECT_SECTIONS,
+  ProjectSection,
   ProjectPlanConfig,
-  ProjectPlanResult 
-} from '@/lib/dynamic-project-planner';
-import { 
+  ProjectPlanResult,
+} from "@/lib/dynamic-project-planner";
+import {
   createEnhancedProjectPlanner,
   ProjectPlanSection,
   ProjectPlanProgress,
-  EnhancedProjectPlanConfig
-} from '@/lib/enhanced-project-planner';
-import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker';
-import { ProjectSectionsSettings, loadProjectSectionsSettings, ProjectSection as SettingsProjectSection } from '@/components/project-sections-settings';
-import { SectionFlowViewer } from '@/components/section-flow-viewer';
-import { FlowDiagramViewer } from '@/components/flow-diagram-viewer';
-import { createAIFlowDiagramGenerator, FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
-import { STORAGE_KEYS } from '@/lib/bpmn-utils';
-import { hasMarketResearchData } from '@/lib/storage-utils';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+  EnhancedProjectPlanConfig,
+} from "@/lib/enhanced-project-planner";
+import { EnhancedProgressTracker } from "@/components/enhanced-progress-tracker";
+import {
+  ProjectSectionsSettings,
+  loadProjectSectionsSettings,
+  ProjectSection as SettingsProjectSection,
+} from "@/components/project-sections-settings";
+import { SectionFlowViewer } from "@/components/section-flow-viewer";
+import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
+import {
+  createAIFlowDiagramGenerator,
+  FlowDiagramData,
+} from "@/lib/ai-flow-diagram-generator";
+import { STORAGE_KEYS } from "@/lib/bpmn-utils";
+import { hasMarketResearchData } from "@/lib/storage-utils";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Helper function to get enhanced plan sections from localStorage
 const getEnhancedPlanSections = (): ProjectPlanSection[] => {
-  const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
+  const savedEnhancedSections = localStorage.getItem("enhanced_plan_sections");
   if (savedEnhancedSections) {
     try {
       const parsed = JSON.parse(savedEnhancedSections);
-      console.log('✅ Successfully loaded enhanced plan sections from localStorage:', parsed.length, 'sections');
+      console.log(
+        "✅ Successfully loaded enhanced plan sections from localStorage:",
+        parsed.length,
+        "sections",
+      );
       return parsed;
     } catch (error) {
-      console.error('❌ Failed to parse enhanced plan sections:', error);
+      console.error("❌ Failed to parse enhanced plan sections:", error);
     }
   } else {
-    console.log('ℹ️ No enhanced plan sections found in localStorage');
+    console.log("ℹ️ No enhanced plan sections found in localStorage");
   }
   return [];
 };
@@ -53,18 +78,22 @@ const getEnhancedPlanSections = (): ProjectPlanSection[] => {
 const saveEnhancedPlanSections = (sections: ProjectPlanSection[]) => {
   try {
     const jsonString = JSON.stringify(sections);
-    localStorage.setItem('enhanced_plan_sections', jsonString);
-    console.log('✅ Successfully saved enhanced plan sections to localStorage:', sections.length, 'sections');
-    
+    localStorage.setItem("enhanced_plan_sections", jsonString);
+    console.log(
+      "✅ Successfully saved enhanced plan sections to localStorage:",
+      sections.length,
+      "sections",
+    );
+
     // Verify the save worked
-    const verification = localStorage.getItem('enhanced_plan_sections');
+    const verification = localStorage.getItem("enhanced_plan_sections");
     if (verification) {
-      console.log('✅ Verification: Data exists in localStorage');
+      console.log("✅ Verification: Data exists in localStorage");
     } else {
-      console.error('❌ Verification failed: No data found in localStorage');
+      console.error("❌ Verification failed: No data found in localStorage");
     }
   } catch (error) {
-    console.error('❌ Failed to save enhanced plan sections:', error);
+    console.error("❌ Failed to save enhanced plan sections:", error);
   }
 };
 
@@ -72,15 +101,18 @@ const saveEnhancedPlanSections = (sections: ProjectPlanSection[]) => {
 const getPlanContentForExternalUse = (projectPlan: string): string => {
   const savedSections = getEnhancedPlanSections();
   if (savedSections.length > 0) {
-    return savedSections.map(section => 
-      `${section.title}:\n${section.content.replace(/<[^>]*>/g, ' ').trim()}`
-    ).join('\n\n');
+    return savedSections
+      .map(
+        (section) =>
+          `${section.title}:\n${section.content.replace(/<[^>]*>/g, " ").trim()}`,
+      )
+      .join("\n\n");
   }
   return projectPlan;
 };
-import { NavigationBar } from '@/components/navigation-bar';
-import { WorkflowProgress } from '@/components/workflow-progress';
-import { Link, useLocation } from 'wouter';
+import { NavigationBar } from "@/components/navigation-bar";
+import { WorkflowProgress } from "@/components/workflow-progress";
+import { Link, useLocation } from "wouter";
 import {
   Sparkles,
   FileText,
@@ -127,74 +159,83 @@ import {
   AlertCircle,
   Wand2,
   RefreshCw,
-  Trash2
-} from 'lucide-react';
+  Trash2,
+} from "lucide-react";
 
 // Helper function to get icon and description for section types
 const getSectionIconAndDescription = (title: string) => {
   const titleLower = title.toLowerCase();
-  
-  if (titleLower.includes('executive') || titleLower.includes('summary')) {
-    return { icon: Target, description: 'Overview & Goals' };
+
+  if (titleLower.includes("executive") || titleLower.includes("summary")) {
+    return { icon: Target, description: "Overview & Goals" };
   }
-  if (titleLower.includes('technical') || titleLower.includes('architecture')) {
-    return { icon: Settings, description: 'Tech Stack & Design' };
+  if (titleLower.includes("technical") || titleLower.includes("architecture")) {
+    return { icon: Settings, description: "Tech Stack & Design" };
   }
-  if (titleLower.includes('feature') || titleLower.includes('specification')) {
-    return { icon: Zap, description: 'Features & Requirements' };
+  if (titleLower.includes("feature") || titleLower.includes("specification")) {
+    return { icon: Zap, description: "Features & Requirements" };
   }
-  if (titleLower.includes('development') || titleLower.includes('methodology')) {
-    return { icon: Code, description: 'Process & Timeline' };
+  if (
+    titleLower.includes("development") ||
+    titleLower.includes("methodology")
+  ) {
+    return { icon: Code, description: "Process & Timeline" };
   }
-  if (titleLower.includes('user') || titleLower.includes('interface') || titleLower.includes('experience')) {
-    return { icon: Layout, description: 'Design & UX' };
+  if (
+    titleLower.includes("user") ||
+    titleLower.includes("interface") ||
+    titleLower.includes("experience")
+  ) {
+    return { icon: Layout, description: "Design & UX" };
   }
-  if (titleLower.includes('quality') || titleLower.includes('testing')) {
-    return { icon: TestTube, description: 'QA & Testing' };
+  if (titleLower.includes("quality") || titleLower.includes("testing")) {
+    return { icon: TestTube, description: "QA & Testing" };
   }
-  if (titleLower.includes('deployment') || titleLower.includes('devops')) {
-    return { icon: Cloud, description: 'Launch & Operations' };
+  if (titleLower.includes("deployment") || titleLower.includes("devops")) {
+    return { icon: Cloud, description: "Launch & Operations" };
   }
-  if (titleLower.includes('risk') || titleLower.includes('management')) {
-    return { icon: Shield, description: 'Risk & Mitigation' };
+  if (titleLower.includes("risk") || titleLower.includes("management")) {
+    return { icon: Shield, description: "Risk & Mitigation" };
   }
-  if (titleLower.includes('stakeholder')) {
-    return { icon: Users, description: 'People & Roles' };
+  if (titleLower.includes("stakeholder")) {
+    return { icon: Users, description: "People & Roles" };
   }
-  if (titleLower.includes('post-launch') || titleLower.includes('strategy')) {
-    return { icon: Rocket, description: 'Growth & Future' };
+  if (titleLower.includes("post-launch") || titleLower.includes("strategy")) {
+    return { icon: Rocket, description: "Growth & Future" };
   }
-  if (titleLower.includes('budget') || titleLower.includes('cost')) {
-    return { icon: BarChart3, description: 'Financial Planning' };
+  if (titleLower.includes("budget") || titleLower.includes("cost")) {
+    return { icon: BarChart3, description: "Financial Planning" };
   }
-  if (titleLower.includes('timeline') || titleLower.includes('schedule')) {
-    return { icon: Clock, description: 'Time Management' };
+  if (titleLower.includes("timeline") || titleLower.includes("schedule")) {
+    return { icon: Clock, description: "Time Management" };
   }
-  if (titleLower.includes('security')) {
-    return { icon: Shield, description: 'Safety & Protection' };
+  if (titleLower.includes("security")) {
+    return { icon: Shield, description: "Safety & Protection" };
   }
-  if (titleLower.includes('database') || titleLower.includes('data')) {
-    return { icon: Database, description: 'Data & Storage' };
+  if (titleLower.includes("database") || titleLower.includes("data")) {
+    return { icon: Database, description: "Data & Storage" };
   }
-  
+
   // Default fallback
-  return { icon: FileText, description: 'Project Content' };
+  return { icon: FileText, description: "Project Content" };
 };
 
 export default function ProjectPlanner() {
-  const [projectInput, setProjectInput] = useState('');
-  const [projectPlan, setProjectPlan] = useState('');
+  const [projectInput, setProjectInput] = useState("");
+  const [projectPlan, setProjectPlan] = useState("");
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
-  const [currentStep, setCurrentStep] = useState<'input' | 'plan' | 'diagram'>('input');
-  const [error, setError] = useState('');
-  const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>('');
-  const [enhancementPrompt, setEnhancementPrompt] = useState('');
+  const [currentStep, setCurrentStep] = useState<"input" | "plan" | "diagram">(
+    "input",
+  );
+  const [error, setError] = useState("");
+  const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>("");
+  const [enhancementPrompt, setEnhancementPrompt] = useState("");
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [isEditingPlan, setIsEditingPlan] = useState(false);
-  const [editedPlanContent, setEditedPlanContent] = useState('');
+  const [editedPlanContent, setEditedPlanContent] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [generatedSitemapXml, setGeneratedSitemapXml] = useState<string>('');
+  const [generatedSitemapXml, setGeneratedSitemapXml] = useState<string>("");
   const [isGeneratingSitemap, setIsGeneratingSitemap] = useState(false);
   const [selectedSuggestions, setSelectedSuggestions] = useState<string[]>([]);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -202,67 +243,101 @@ export default function ProjectPlanner() {
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
   const [showBpmnScript, setShowBpmnScript] = useState(false);
   const [isEditingBpmn, setIsEditingBpmn] = useState(false);
-  const [editedBpmnScript, setEditedBpmnScript] = useState('');
+  const [editedBpmnScript, setEditedBpmnScript] = useState("");
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
-  const [editedSectionContent, setEditedSectionContent] = useState('');
+  const [editedSectionContent, setEditedSectionContent] = useState("");
   const [activeTabId, setActiveTabId] = useState<string | null>(null);
-  const [progressSteps, setProgressSteps] = useState<{step: string; completed: boolean; current: boolean}[]>([]);
+  const [progressSteps, setProgressSteps] = useState<
+    { step: string; completed: boolean; current: boolean }[]
+  >([]);
   const [overallProgress, setOverallProgress] = useState(0);
-  const [currentProgressStep, setCurrentProgressStep] = useState('');
+  const [currentProgressStep, setCurrentProgressStep] = useState("");
   const [useAdvancedAgent, setUseAdvancedAgent] = useState(false);
-  const [comprehensivePlan, setComprehensivePlan] = useState<ComprehensiveProjectPlan | null>(null);
-  const [projectRequirements, setProjectRequirements] = useState<Partial<ProjectRequirements>>({});
-  const [isGeneratingComprehensive, setIsGeneratingComprehensive] = useState(false);
+  const [comprehensivePlan, setComprehensivePlan] =
+    useState<ComprehensiveProjectPlan | null>(null);
+  const [projectRequirements, setProjectRequirements] = useState<
+    Partial<ProjectRequirements>
+  >({});
+  const [isGeneratingComprehensive, setIsGeneratingComprehensive] =
+    useState(false);
 
   // Dynamic project planner state
-  const [projectSections, setProjectSections] = useState<ProjectSection[]>(DEFAULT_PROJECT_SECTIONS);
+  const [projectSections, setProjectSections] = useState<ProjectSection[]>(
+    DEFAULT_PROJECT_SECTIONS,
+  );
   const [isGeneratingDynamic, setIsGeneratingDynamic] = useState(false);
-  const [dynamicPlanResult, setDynamicPlanResult] = useState<ProjectPlanResult | null>(null);
-  const [currentGeneratingSection, setCurrentGeneratingSection] = useState<string>('');
-  const [sectionProgress, setSectionProgress] = useState<{current: number, total: number}>({current: 0, total: 0});
+  const [dynamicPlanResult, setDynamicPlanResult] =
+    useState<ProjectPlanResult | null>(null);
+  const [currentGeneratingSection, setCurrentGeneratingSection] =
+    useState<string>("");
+  const [sectionProgress, setSectionProgress] = useState<{
+    current: number;
+    total: number;
+  }>({ current: 0, total: 0 });
 
   // Enhanced 10-section planner state
-  const [enhancedSections, setEnhancedSections] = useState<ProjectPlanSection[]>([]);
+  const [enhancedSections, setEnhancedSections] = useState<
+    ProjectPlanSection[]
+  >([]);
   const [isGeneratingEnhanced, setIsGeneratingEnhanced] = useState(false);
-  const [enhancedProgress, setEnhancedProgress] = useState<ProjectPlanProgress>({
-    currentSection: 0,
-    totalSections: 10,
-    currentSectionTitle: '',
-    overallProgress: 0,
-    isGenerating: false
-  });
+  const [enhancedProgress, setEnhancedProgress] = useState<ProjectPlanProgress>(
+    {
+      currentSection: 0,
+      totalSections: 10,
+      currentSectionTitle: "",
+      overallProgress: 0,
+      isGenerating: false,
+    },
+  );
 
   // Custom prompt regeneration state
-  const [customPromptSectionId, setCustomPromptSectionId] = useState<string | null>(null);
-  const [customPrompt, setCustomPrompt] = useState('');
+  const [customPromptSectionId, setCustomPromptSectionId] = useState<
+    string | null
+  >(null);
+  const [customPrompt, setCustomPrompt] = useState("");
   const [isRegeneratingSection, setIsRegeneratingSection] = useState(false);
   const [showCustomPromptModal, setShowCustomPromptModal] = useState(false);
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
-  const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(null);
+  const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(
+    null,
+  );
 
   // Flow diagram generation state
-  const [generatedFlowDiagram, setGeneratedFlowDiagram] = useState<{title: string, description: string, flowData: FlowDiagramData} | null>(null);
+  const [generatedFlowDiagram, setGeneratedFlowDiagram] = useState<{
+    title: string;
+    description: string;
+    flowData: FlowDiagramData;
+  } | null>(null);
   const [isGeneratingFlowDiagram, setIsGeneratingFlowDiagram] = useState(false);
   const [showFlowDiagramEditor, setShowFlowDiagramEditor] = useState(false);
 
   // Stakeholder analysis state - simplified to just names
   const [stakeholderNames, setStakeholderNames] = useState<string[]>([]);
-  const [isGeneratingStakeholders, setIsGeneratingStakeholders] = useState(false);
-  const [newStakeholderName, setNewStakeholderName] = useState('');
-  const [editingStakeholderIndex, setEditingStakeholderIndex] = useState<number | null>(null);
-  const [editingStakeholderName, setEditingStakeholderName] = useState('');
+  const [isGeneratingStakeholders, setIsGeneratingStakeholders] =
+    useState(false);
+  const [newStakeholderName, setNewStakeholderName] = useState("");
+  const [editingStakeholderIndex, setEditingStakeholderIndex] = useState<
+    number | null
+  >(null);
+  const [editingStakeholderName, setEditingStakeholderName] = useState("");
 
   // Project sections settings state
-  const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
+  const [projectSectionsSettings, setProjectSectionsSettings] = useState<
+    SettingsProjectSection[]
+  >([]);
 
   const [location, setLocation] = useLocation();
 
   // Load data from localStorage when component mounts or route changes
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+    const savedProjectDescription = localStorage.getItem(
+      STORAGE_KEYS.PROJECT_DESCRIPTION,
+    );
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
-    const savedEnhancedSections = localStorage.getItem('enhanced_plan_sections');
+    const savedEnhancedSections = localStorage.getItem(
+      "enhanced_plan_sections",
+    );
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
@@ -277,10 +352,14 @@ export default function ProjectPlanner() {
     // Load enhanced plan sections if available
     const savedSections = getEnhancedPlanSections();
     if (savedSections.length > 0) {
-      console.log('🔄 Setting enhanced sections from localStorage:', savedSections.length, 'sections');
+      console.log(
+        "🔄 Setting enhanced sections from localStorage:",
+        savedSections.length,
+        "sections",
+      );
       setEnhancedSections(savedSections);
     } else {
-      console.log('🔄 No saved sections found, keeping empty state');
+      console.log("🔄 No saved sections found, keeping empty state");
     }
 
     // Load project sections settings
@@ -288,78 +367,94 @@ export default function ProjectPlanner() {
     setProjectSectionsSettings(sectionsSettings);
 
     // Load saved stakeholder names if available
-    const savedStakeholderNames = localStorage.getItem('stakeholder-names');
+    const savedStakeholderNames = localStorage.getItem("stakeholder-names");
     if (savedStakeholderNames) {
       try {
         const parsedNames = JSON.parse(savedStakeholderNames);
         setStakeholderNames(parsedNames);
       } catch (error) {
-        console.error('Failed to parse saved stakeholder names:', error);
+        console.error("Failed to parse saved stakeholder names:", error);
       }
     }
 
     // Set current step based on route
-    if (location === '/plan') {
-      setCurrentStep('plan');
-    } else if (location === '/diagram') {
-      setCurrentStep('diagram');
+    if (location === "/plan") {
+      setCurrentStep("plan");
+    } else if (location === "/diagram") {
+      setCurrentStep("diagram");
     } else {
-      setCurrentStep('input');
+      setCurrentStep("input");
     }
 
     // Clear any previous progress states when component loads
     setProgressSteps([]);
     setOverallProgress(0);
-    setCurrentProgressStep('');
+    setCurrentProgressStep("");
   }, [location]);
 
   const initializeProgressSteps = (includeAllSteps = false) => {
     const steps = [
-      { step: 'Analyzing project requirements', completed: false, current: false },
-      { step: 'Generating enhancement suggestions', completed: false, current: false },
+      {
+        step: "Analyzing project requirements",
+        completed: false,
+        current: false,
+      },
+      {
+        step: "Generating enhancement suggestions",
+        completed: false,
+        current: false,
+      },
     ];
-    
+
     if (includeAllSteps) {
       steps.push(
-        { step: 'Creating comprehensive project plan', completed: false, current: false },
-        { step: 'Saving project data', completed: false, current: false },
-        { step: 'Finalizing setup', completed: false, current: false }
+        {
+          step: "Creating comprehensive project plan",
+          completed: false,
+          current: false,
+        },
+        { step: "Saving project data", completed: false, current: false },
+        { step: "Finalizing setup", completed: false, current: false },
       );
     }
-    
+
     setProgressSteps(steps);
     setOverallProgress(0);
-    setCurrentProgressStep('');
+    setCurrentProgressStep("");
   };
 
-  const updateProgress = (stepIndex: number, isCompleted = false, isCurrent = false) => {
-    setProgressSteps(prev => {
+  const updateProgress = (
+    stepIndex: number,
+    isCompleted = false,
+    isCurrent = false,
+  ) => {
+    setProgressSteps((prev) => {
       const updated = prev.map((step, index) => ({
         ...step,
         completed: index < stepIndex || (index === stepIndex && isCompleted),
-        current: index === stepIndex && isCurrent && !isCompleted
+        current: index === stepIndex && isCurrent && !isCompleted,
       }));
-      
-      const completedCount = updated.filter(s => s.completed).length;
+
+      const completedCount = updated.filter((s) => s.completed).length;
       const progressPercentage = (completedCount / updated.length) * 100;
       setOverallProgress(progressPercentage);
-      
-      const currentStep = updated.find(s => s.current);
-      setCurrentProgressStep(currentStep ? currentStep.step : '');
-      
+
+      const currentStep = updated.find((s) => s.current);
+      setCurrentProgressStep(currentStep ? currentStep.step : "");
+
       return updated;
     });
   };
 
   const handleGenerateProjectPlan = async () => {
     if (!projectInput.trim()) {
-      setError('Please enter a project description');
+      setError("Please enter a project description");
       return;
     }
 
     // Always navigate to plan page first
-    setCurrentStep('plan');
-    setLocation('/plan');
+    setCurrentStep("plan");
+    setLocation("/plan");
 
     // Use enhanced planner by default for individual section generation
     await handleGenerateEnhancedPlan();
@@ -367,83 +462,89 @@ export default function ProjectPlanner() {
 
     // Generate plan directly using dynamic multi-call approach
     setIsGeneratingDynamic(true);
-    setError('');
-    setCurrentGeneratingSection('');
-    setSectionProgress({current: 0, total: 0});
+    setError("");
+    setCurrentGeneratingSection("");
+    setSectionProgress({ current: 0, total: 0 });
 
     try {
       const planner = createDynamicProjectPlanner();
-      
+
       const config: ProjectPlanConfig = {
         sections: projectSections,
         projectDescription: projectInput,
-        additionalContext: undefined
+        additionalContext: undefined,
       };
 
       const result = await planner.generateProjectPlan(
         config,
         (sectionTitle: string, current: number, total: number) => {
           setCurrentGeneratingSection(sectionTitle);
-          setSectionProgress({current, total});
+          setSectionProgress({ current, total });
           const progressPercentage = (current / total) * 100;
           setOverallProgress(progressPercentage);
-        }
+        },
       );
 
       setDynamicPlanResult(result);
       setProjectPlan(result.htmlContent);
-      
+
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, result.htmlContent);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      localStorage.setItem('dynamic_plan_result', JSON.stringify(result));
-      localStorage.setItem('project_sections_config', JSON.stringify(projectSections));
-      
-      setCurrentStep('plan');
-      setLocation('/plan');
+      localStorage.setItem("dynamic_plan_result", JSON.stringify(result));
+      localStorage.setItem(
+        "project_sections_config",
+        JSON.stringify(projectSections),
+      );
+
+      setCurrentStep("plan");
+      setLocation("/plan");
     } catch (err) {
-      console.error('Dynamic plan generation error:', err);
-      setError('Failed to generate project plan. Please try again.');
+      console.error("Dynamic plan generation error:", err);
+      setError("Failed to generate project plan. Please try again.");
     } finally {
       setIsGeneratingDynamic(false);
       setOverallProgress(0);
-      setCurrentProgressStep('');
-      setCurrentGeneratingSection('');
-      setSectionProgress({current: 0, total: 0});
+      setCurrentProgressStep("");
+      setCurrentGeneratingSection("");
+      setSectionProgress({ current: 0, total: 0 });
     }
   };
 
   const handleGenerateEnhancedPlan = async () => {
     if (!projectInput.trim()) {
-      setError('Please enter a project description');
+      setError("Please enter a project description");
       return;
     }
 
     setIsGeneratingEnhanced(true);
-    setError('');
+    setError("");
     setShowSuggestions(false);
-    
+
     try {
       const planner = createEnhancedProjectPlanner();
-      
+
       // Use enabled sections from settings
-      const enabledSections = projectSectionsSettings.filter(s => s.enabled).sort((a, b) => a.order - b.order);
-      
+      const enabledSections = projectSectionsSettings
+        .filter((s) => s.enabled)
+        .sort((a, b) => a.order - b.order);
+
       // Initialize sections with project plan section format
-      const initialSections = enabledSections.map(section => ({
+      const initialSections = enabledSections.map((section) => ({
         id: section.id,
         title: section.title,
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: section.order
+        order: section.order,
       }));
-      
+
       setEnhancedSections(initialSections);
-      
+
       const config: EnhancedProjectPlanConfig = {
         projectDescription: projectInput,
-        additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
+        additionalRequirements:
+          selectedSuggestions.length > 0 ? selectedSuggestions : undefined,
       };
 
       // Generate sections one by one with progress tracking
@@ -452,58 +553,63 @@ export default function ProjectPlanner() {
 
       for (let i = 0; i < enabledSections.length; i++) {
         const section = enabledSections[i];
-        
+
         // Update progress - starting generation
         setEnhancedProgress({
           currentSection: i + 1,
           totalSections,
           currentSectionTitle: section.title,
           overallProgress: (i / totalSections) * 100,
-          isGenerating: true
+          isGenerating: true,
         });
 
         // Update sections state to show current generating
-        setEnhancedSections(current => current.map((s, index) => ({
-          ...s,
-          isGenerating: index === i,
-          isCompleted: index < i
-        })));
+        setEnhancedSections((current) =>
+          current.map((s, index) => ({
+            ...s,
+            isGenerating: index === i,
+            isCompleted: index < i,
+          })),
+        );
 
         try {
           // Generate content for this section using configured AI prompts
-          console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
+          console.log(
+            `Generating section ${i + 1}/${totalSections}: ${section.title}`,
+          );
           const content = await planner.generateSection(section.title, config, {
             id: section.id,
-            aiPrompts: section.aiPrompts
+            aiPrompts: section.aiPrompts,
           });
-          
+
           const generatedSection: ProjectPlanSection = {
             id: section.id,
             title: section.title,
             content,
             isGenerating: false,
             isCompleted: true,
-            order: section.order
+            order: section.order,
           };
-          
+
           generatedSections.push(generatedSection);
-          
+
           // Update sections with generated content
-          setEnhancedSections(current => current.map((s, index) => 
-            index === i 
-              ? { ...s, content, isGenerating: false, isCompleted: true }
-              : s
-          ));
-          
+          setEnhancedSections((current) =>
+            current.map((s, index) =>
+              index === i
+                ? { ...s, content, isGenerating: false, isCompleted: true }
+                : s,
+            ),
+          );
+
           // Update progress
           setEnhancedProgress({
             currentSection: i + 1,
             totalSections,
             currentSectionTitle: section.title,
             overallProgress: ((i + 1) / totalSections) * 100,
-            isGenerating: i < totalSections - 1
+            isGenerating: i < totalSections - 1,
           });
-          
         } catch (error) {
           console.error(`Failed to generate section ${section.title}:`, error);
           generatedSections.push({
@@ -512,37 +618,36 @@ export default function ProjectPlanner() {
             content: `<div class="error-section"><h3>Error Generating ${section.title}</h3><p>Failed to generate content for this section. Please try again.</p></div>`,
             isGenerating: false,
             isCompleted: false,
-            order: section.order
+            order: section.order,
           });
         }
 
         // Delay between sections to prevent rate limiting
         if (i < totalSections - 1) {
-          await new Promise(resolve => setTimeout(resolve, 1500));
+          await new Promise((resolve) => setTimeout(resolve, 1500));
         }
       }
 
       // Generate combined HTML report
       const htmlReport = planner.generateHtmlReport(generatedSections);
       setProjectPlan(htmlReport);
-      
+
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlReport);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
       saveEnhancedPlanSections(generatedSections);
-      
+
       // Final progress update
       setEnhancedProgress({
         currentSection: totalSections,
         totalSections,
-        currentSectionTitle: 'Complete',
+        currentSectionTitle: "Complete",
         overallProgress: 100,
-        isGenerating: false
+        isGenerating: false,
       });
-      
     } catch (err) {
-      console.error('Enhanced plan generation error:', err);
-      setError('Failed to generate enhanced project plan. Please try again.');
+      console.error("Enhanced plan generation error:", err);
+      setError("Failed to generate enhanced project plan. Please try again.");
     } finally {
       setIsGeneratingEnhanced(false);
     }
@@ -553,7 +658,7 @@ export default function ProjectPlanner() {
       await handleGenerateEnhancedPlan();
       return;
     }
-    
+
     if (useAdvancedAgent) {
       await handleGenerateComprehensivePlan();
       return;
@@ -561,25 +666,25 @@ export default function ProjectPlanner() {
 
     initializeProgressSteps(true);
     setIsGeneratingPlan(true);
-    setError('');
+    setError("");
     setShowSuggestions(false);
 
     try {
       updateProgress(0, false, true);
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
       updateProgress(1, false, true);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       updateProgress(1, true);
-      
+
       updateProgress(2, false, true);
       let enhancedInput = projectInput;
-      
+
       if (selectedSuggestions.length > 0) {
         enhancedInput = `${projectInput}
 
 Additional Requirements:
-${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}
+${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}
 
 Please ensure the project plan addresses all the selected requirements above and includes comprehensive architecture diagrams, user flows, and technical specifications.`;
       }
@@ -587,29 +692,29 @@ Please ensure the project plan addresses all the selected requirements above and
       const plan = await generateProjectPlan(enhancedInput);
       setProjectPlan(plan);
       updateProgress(2, true);
-      
+
       updateProgress(3, false, true);
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, plan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      await new Promise(resolve => setTimeout(resolve, 400));
+      await new Promise((resolve) => setTimeout(resolve, 400));
       updateProgress(3, true);
-      
+
       updateProgress(4, false, true);
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise((resolve) => setTimeout(resolve, 300));
       updateProgress(4, true);
-      
+
       setOverallProgress(100);
-      setCurrentProgressStep('');
-      
+      setCurrentProgressStep("");
+
       // Small delay before redirect for better UX
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setCurrentStep('plan');
-      setLocation('/plan');
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      setCurrentStep("plan");
+      setLocation("/plan");
     } catch (err) {
-      console.error('Project plan generation error:', err);
-      setError('Failed to generate project plan. Please try again.');
+      console.error("Project plan generation error:", err);
+      setError("Failed to generate project plan. Please try again.");
     } finally {
       setIsGeneratingPlan(false);
     }
@@ -617,18 +722,18 @@ Please ensure the project plan addresses all the selected requirements above and
 
   const handleGenerateComprehensivePlan = async () => {
     setIsGeneratingComprehensive(true);
-    setError('');
+    setError("");
     setShowSuggestions(false);
 
     try {
       const agent = createAIProjectPlannerAgent();
-      
+
       let enhancedInput = projectInput;
       if (selectedSuggestions.length > 0) {
         enhancedInput = `${projectInput}
 
 Additional Requirements:
-${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
+${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       }
 
       const plan = await agent.generateComprehensiveProjectPlan(
@@ -637,91 +742,100 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
         (step: string, progress: number) => {
           setCurrentProgressStep(step);
           setOverallProgress(progress);
-        }
+        },
       );
 
       setComprehensivePlan(plan);
-      
+
       // Convert comprehensive plan to HTML format for display
       const htmlPlan = formatComprehensivePlanAsHtml(plan);
       setProjectPlan(htmlPlan);
-      
+
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, htmlPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      localStorage.setItem('comprehensive_plan', JSON.stringify(plan));
-      
-      setCurrentStep('plan');
-      setLocation('/plan');
+      localStorage.setItem("comprehensive_plan", JSON.stringify(plan));
+
+      setCurrentStep("plan");
+      setLocation("/plan");
     } catch (err) {
-      console.error('Comprehensive plan generation error:', err);
-      setError('Failed to generate comprehensive project plan. Please try again.');
+      console.error("Comprehensive plan generation error:", err);
+      setError(
+        "Failed to generate comprehensive project plan. Please try again.",
+      );
     } finally {
       setIsGeneratingComprehensive(false);
       setOverallProgress(0);
-      setCurrentProgressStep('');
+      setCurrentProgressStep("");
     }
   };
 
   const handleGenerateDynamicPlan = async () => {
     setIsGeneratingDynamic(true);
-    setError('');
+    setError("");
     setShowSuggestions(false);
-    setCurrentGeneratingSection('');
-    setSectionProgress({current: 0, total: 0});
+    setCurrentGeneratingSection("");
+    setSectionProgress({ current: 0, total: 0 });
 
     try {
       const planner = createDynamicProjectPlanner();
-      
+
       let enhancedInput = projectInput;
       if (selectedSuggestions.length > 0) {
         enhancedInput = `${projectInput}
 
 Additional Requirements:
-${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
+${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       }
 
       const config: ProjectPlanConfig = {
         sections: projectSections,
         projectDescription: enhancedInput,
-        additionalContext: selectedSuggestions.length > 0 ? 
-          `Focus on: ${selectedSuggestions.join(', ')}` : undefined
+        additionalContext:
+          selectedSuggestions.length > 0
+            ? `Focus on: ${selectedSuggestions.join(", ")}`
+            : undefined,
       };
 
       const result = await planner.generateProjectPlan(
         config,
         (sectionTitle: string, current: number, total: number) => {
           setCurrentGeneratingSection(sectionTitle);
-          setSectionProgress({current, total});
+          setSectionProgress({ current, total });
           const progressPercentage = (current / total) * 100;
           setOverallProgress(progressPercentage);
-        }
+        },
       );
 
       setDynamicPlanResult(result);
       setProjectPlan(result.htmlContent);
-      
+
       // Save to localStorage
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, result.htmlContent);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
-      localStorage.setItem('dynamic_plan_result', JSON.stringify(result));
-      localStorage.setItem('project_sections_config', JSON.stringify(projectSections));
-      
-      setCurrentStep('plan');
-      setLocation('/plan');
+      localStorage.setItem("dynamic_plan_result", JSON.stringify(result));
+      localStorage.setItem(
+        "project_sections_config",
+        JSON.stringify(projectSections),
+      );
+
+      setCurrentStep("plan");
+      setLocation("/plan");
     } catch (err) {
-      console.error('Dynamic plan generation error:', err);
-      setError('Failed to generate dynamic project plan. Please try again.');
+      console.error("Dynamic plan generation error:", err);
+      setError("Failed to generate dynamic project plan. Please try again.");
     } finally {
       setIsGeneratingDynamic(false);
       setOverallProgress(0);
-      setCurrentProgressStep('');
-      setCurrentGeneratingSection('');
-      setSectionProgress({current: 0, total: 0});
+      setCurrentProgressStep("");
+      setCurrentGeneratingSection("");
+      setSectionProgress({ current: 0, total: 0 });
     }
   };
 
-  const formatComprehensivePlanAsHtml = (plan: ComprehensiveProjectPlan): string => {
+  const formatComprehensivePlanAsHtml = (
+    plan: ComprehensiveProjectPlan,
+  ): string => {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -777,7 +891,7 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
         <div class="critical-path">
             <h3>🎯 Critical Path</h3>
             <ul>
-                ${plan.criticalPath.map(item => `<li><strong>${item}</strong></li>`).join('')}
+                ${plan.criticalPath.map((item) => `<li><strong>${item}</strong></li>`).join("")}
             </ul>
         </div>
 
@@ -794,13 +908,17 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
         </div>
 
         <h2>Development Phases</h2>
-        ${plan.developmentPhases.map(phase => `
+        ${plan.developmentPhases
+          .map(
+            (phase) => `
             <div class="phase priority-${phase.priority}">
                 <h3>${phase.title}</h3>
                 <div class="hours-estimate">Estimated Hours: ${phase.estimatedHours}</div>
                 ${phase.content}
             </div>
-        `).join('')}
+        `,
+          )
+          .join("")}
 
         <div class="section-content priority-${plan.riskManagement.priority}">
             <h2>${plan.riskManagement.title}</h2>
@@ -876,18 +994,18 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
     const planContent = getPlanContentForExternalUse(projectPlan);
 
     if (!planContent.trim()) {
-      setError('No project plan available to convert');
+      setError("No project plan available to convert");
       return;
     }
 
     setIsGeneratingBpmn(true);
-    setError('');
+    setError("");
 
     try {
       const bpmnXml = await generateBpmnXml(planContent);
       setGeneratedBpmnXml(bpmnXml);
-      setCurrentStep('diagram');
-      
+      setCurrentStep("diagram");
+
       // Save to localStorage and navigate to diagram route
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, bpmnXml);
       localStorage.setItem(STORAGE_KEYS.DIAGRAM, bpmnXml);
@@ -895,10 +1013,10 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
-      setLocation('/diagram');
+      setLocation("/diagram");
     } catch (err) {
-      console.error('BPMN generation error:', err);
-      setError('Failed to generate BPMN diagram. Please try again.');
+      console.error("BPMN generation error:", err);
+      setError("Failed to generate BPMN diagram. Please try again.");
     } finally {
       setIsGeneratingBpmn(false);
     }
@@ -906,12 +1024,12 @@ ${selectedSuggestions.map(suggestion => `- ${suggestion}`).join('\n')}`;
 
   const enhanceProjectPlan = async () => {
     if (!enhancementPrompt.trim()) {
-      setError('Please enter enhancement details');
+      setError("Please enter enhancement details");
       return;
     }
 
     setIsEnhancing(true);
-    setError('');
+    setError("");
 
     try {
       const existingPlan = getPlanContentForExternalUse(projectPlan);
@@ -937,10 +1055,10 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
       const enhancedPlan = await generateProjectPlan(enhancementRequest);
       setProjectPlan(enhancedPlan);
-      setEnhancementPrompt('');
+      setEnhancementPrompt("");
     } catch (err) {
-      console.error('Enhancement error:', err);
-      setError('Failed to enhance project plan. Please try again.');
+      console.error("Enhancement error:", err);
+      setError("Failed to enhance project plan. Please try again.");
     } finally {
       setIsEnhancing(false);
     }
@@ -948,26 +1066,30 @@ Return the complete enhanced project plan as HTML with all existing content plus
 
   const generateStakeholders = async () => {
     if (!projectInput.trim()) {
-      setError('Please enter project description first');
+      setError("Please enter project description first");
       return;
     }
 
     setIsGeneratingStakeholders(true);
-    setError('');
+    setError("");
 
     try {
       // Use AI to analyze project and identify stakeholder names
-      const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const gemini = new GoogleGenerativeAI(
+        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+      );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
-      
+      const planContent = projectPlan
+        ? getPlanContentForExternalUse(projectPlan)
+        : "";
+
       const stakeholderAnalysisPrompt = `
 Analyze this project and identify ALL relevant stakeholder names/roles. Generate ONLY the names/titles.
 
 PROJECT DESCRIPTION: ${projectInput}
 
-${planContent ? `EXISTING PROJECT PLAN CONTEXT: ${planContent}` : ''}
+${planContent ? `EXISTING PROJECT PLAN CONTEXT: ${planContent}` : ""}
 
 INSTRUCTIONS:
 1. Identify 8-15 distinct stakeholder names/roles for this specific project
@@ -986,43 +1108,48 @@ Return ONLY a JSON array of stakeholder name strings:
 
       const response = await model.generateContent(stakeholderAnalysisPrompt);
       const responseText = response.response.text();
-      
+
       // Clean and parse the response
       let cleanedResponse = responseText.trim();
-      if (cleanedResponse.startsWith('```json')) {
-        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+      if (cleanedResponse.startsWith("```json")) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "");
       }
-      if (cleanedResponse.startsWith('```')) {
-        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```\s*/, "")
+          .replace(/```\s*$/, "");
       }
 
       try {
         const parsedNames = JSON.parse(cleanedResponse);
         setStakeholderNames(parsedNames);
-        
+
         // Save to localStorage
-        localStorage.setItem('stakeholder-names', JSON.stringify(parsedNames));
-        
+        localStorage.setItem("stakeholder-names", JSON.stringify(parsedNames));
       } catch (parseError) {
-        console.error('Failed to parse stakeholder response:', parseError);
+        console.error("Failed to parse stakeholder response:", parseError);
         // Fallback stakeholder names for any project
         const fallbackNames = [
           "End Users",
-          "Product Manager", 
+          "Product Manager",
           "Development Team",
           "Business Owner",
           "QA Team",
           "Customers",
           "IT Operations",
-          "Customer Support"
+          "Customer Support",
         ];
         setStakeholderNames(fallbackNames);
-        localStorage.setItem('stakeholder-names', JSON.stringify(fallbackNames));
+        localStorage.setItem(
+          "stakeholder-names",
+          JSON.stringify(fallbackNames),
+        );
       }
-      
     } catch (err) {
-      console.error('Stakeholder generation error:', err);
-      setError('Failed to generate stakeholder analysis. Please try again.');
+      console.error("Stakeholder generation error:", err);
+      setError("Failed to generate stakeholder analysis. Please try again.");
     } finally {
       setIsGeneratingStakeholders(false);
     }
@@ -1030,18 +1157,21 @@ Return ONLY a JSON array of stakeholder name strings:
 
   // Add stakeholder name functions
   const addStakeholder = () => {
-    if (newStakeholderName.trim() && !stakeholderNames.includes(newStakeholderName.trim())) {
+    if (
+      newStakeholderName.trim() &&
+      !stakeholderNames.includes(newStakeholderName.trim())
+    ) {
       const updatedNames = [...stakeholderNames, newStakeholderName.trim()];
       setStakeholderNames(updatedNames);
-      localStorage.setItem('stakeholder-names', JSON.stringify(updatedNames));
-      setNewStakeholderName('');
+      localStorage.setItem("stakeholder-names", JSON.stringify(updatedNames));
+      setNewStakeholderName("");
     }
   };
 
   const deleteStakeholder = (index: number) => {
     const updatedNames = stakeholderNames.filter((_, i) => i !== index);
     setStakeholderNames(updatedNames);
-    localStorage.setItem('stakeholder-names', JSON.stringify(updatedNames));
+    localStorage.setItem("stakeholder-names", JSON.stringify(updatedNames));
   };
 
   const startEditingStakeholder = (index: number) => {
@@ -1054,29 +1184,21 @@ Return ONLY a JSON array of stakeholder name strings:
       const updatedNames = [...stakeholderNames];
       updatedNames[editingStakeholderIndex] = editingStakeholderName.trim();
       setStakeholderNames(updatedNames);
-      localStorage.setItem('stakeholder-names', JSON.stringify(updatedNames));
+      localStorage.setItem("stakeholder-names", JSON.stringify(updatedNames));
       setEditingStakeholderIndex(null);
-      setEditingStakeholderName('');
+      setEditingStakeholderName("");
     }
   };
 
   const cancelEditingStakeholder = () => {
     setEditingStakeholderIndex(null);
-    setEditingStakeholderName('');
+    setEditingStakeholderName("");
   };
 
-  const generateProjectFlowDiagram = async () => {
-    if (!projectInput.trim()) {
-      setError('Please enter project description first');
-      return;
-    }
-
-    setIsGeneratingFlowDiagram(true);
-    setError('');
-
+  useEffect(() => {
     try {
       // Load any existing flow from localStorage
-      const savedFlowDiagram = localStorage.getItem('project-flow-diagram');
+      const savedFlowDiagram = localStorage.getItem("project-flow-diagram");
       if (savedFlowDiagram) {
         try {
           const parsed = JSON.parse(savedFlowDiagram);
@@ -1084,15 +1206,42 @@ Return ONLY a JSON array of stakeholder name strings:
           setIsGeneratingFlowDiagram(false);
           return;
         } catch (error) {
-          console.error('Error parsing saved flow diagram:', error);
+          console.error("Error parsing saved flow diagram:", error);
         }
       }
+    } catch (error) {
+      console.error("Error loading saved flow diagram:", error);
+    }
+  }, []);
+
+  const generateProjectFlowDiagram = async () => {
+    if (!projectInput.trim()) {
+      setError("Please enter project description first");
+      return;
+    }
+
+    setIsGeneratingFlowDiagram(true);
+    setError("");
+
+    try {
+      // Load any existing flow from localStorage
+      // const savedFlowDiagram = localStorage.getItem('project-flow-diagram');
+      // if (savedFlowDiagram) {
+      //   try {
+      //     const parsed = JSON.parse(savedFlowDiagram);
+      //     setGeneratedFlowDiagram(parsed);
+      //     setIsGeneratingFlowDiagram(false);
+      //     return;
+      //   } catch (error) {
+      //     console.error('Error parsing saved flow diagram:', error);
+      //   }
+      // }
 
       // Create a comprehensive project analysis
       const projectAnalysis = `
 Project Description: ${projectInput}
 
-${projectPlan ? `Existing Project Plan Context: ${getPlanContentForExternalUse(projectPlan)}` : ''}
+${projectPlan ? `Existing Project Plan Context: ${getPlanContentForExternalUse(projectPlan)}` : ""}
 
 Generate a detailed flow diagram that shows:
 1. Main user entry points and onboarding processes
@@ -1106,14 +1255,21 @@ Generate a detailed flow diagram that shows:
 `;
 
       // Use AI to analyze project plan and create project-specific processes
-      const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const gemini = new GoogleGenerativeAI(
+        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+      );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-      const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
-      
+      const planContent = projectPlan
+        ? getPlanContentForExternalUse(projectPlan)
+        : "";
+
       // Use stakeholder data from the stakeholder analysis section
-      const stakeholderData = stakeholderNames.length > 0 ? stakeholderNames : ["End Users", "Admin Users", "Content Managers"];
-      
+      const stakeholderData =
+        stakeholderNames.length > 0
+          ? stakeholderNames
+          : ["End Users", "Admin Users", "Content Managers"];
+
       const flowAnalysisPrompt = `
 Analyze this project and create a CONSOLIDATED User Journey Flow that incorporates ALL stakeholders into ONE comprehensive diagram:
 
@@ -1121,7 +1277,7 @@ PROJECT DESCRIPTION: ${projectInput}
 
 PROJECT PLAN CONTENT: ${planContent}
 
-IDENTIFIED STAKEHOLDERS: ${stakeholderData.join(', ')}
+IDENTIFIED STAKEHOLDERS: ${stakeholderData.join(", ")}
 
 Create ONE consolidated flow diagram that shows how ALL stakeholders interact with the system. The flow should:
 
@@ -1138,11 +1294,11 @@ Return a JSON object with consolidated multi-stakeholder activities:
   "trigger": "Different stakeholders enter the system to accomplish their specific goals",
   "activities": [
     "System Entry Point: All stakeholders access the platform",
-    "Authentication: Role-based login/registration for ${stakeholderData.join(', ')}",
+    "Authentication: Role-based login/registration for ${stakeholderData.join(", ")}",
     "Role Detection: System identifies stakeholder type and redirects to appropriate dashboard",
-    "${stakeholderData[0] || 'Primary User'}: Completes their main workflow (discovery → action → completion)",
-    "${stakeholderData[1] || 'Secondary User'}: Performs their specific tasks (access → manage → review)",
-    "${stakeholderData[2] || 'Third User'}: Executes their role-based activities (monitor → control → optimize)",
+    "${stakeholderData[0] || "Primary User"}: Completes their main workflow (discovery → action → completion)",
+    "${stakeholderData[1] || "Secondary User"}: Performs their specific tasks (access → manage → review)",
+    "${stakeholderData[2] || "Third User"}: Executes their role-based activities (monitor → control → optimize)",
     "Cross-stakeholder Interactions: Points where different stakeholders collaborate or hand-off",
     "Shared Resources: Common areas where all stakeholders might interact",
     "Feedback Loop: All stakeholders provide input that improves the system",
@@ -1168,51 +1324,62 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
-      
+
       let flowDetails;
       try {
         // Parse AI response to get project-specific flow details
-        const cleanResponse = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        const cleanResponse = responseText
+          .replace(/```json\n?/g, "")
+          .replace(/```\n?/g, "")
+          .trim();
         flowDetails = JSON.parse(cleanResponse);
       } catch (parseError) {
-        console.log('Using fallback flow details due to parsing error:', parseError);
+        console.log(
+          "Using fallback flow details due to parsing error:",
+          parseError,
+        );
         // Fallback to consolidated stakeholder flow using actual stakeholder data
-        const fallbackStakeholders = stakeholderData.length > 0 ? stakeholderData : ["End Users", "Admin Users", "Content Managers"];
-        
+        const fallbackStakeholders =
+          stakeholderData.length > 0
+            ? stakeholderData
+            : ["End Users", "Admin Users", "Content Managers"];
+
         flowDetails = {
           processDescription: `Consolidated multi-stakeholder user journey flow for: ${projectInput}`,
           participants: fallbackStakeholders,
-          trigger: "Multiple stakeholder types enter the system to accomplish their interconnected goals",
+          trigger:
+            "Multiple stakeholder types enter the system to accomplish their interconnected goals",
           activities: [
             "System Entry Point: All stakeholders access the unified platform",
-            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(', ')}`,
+            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(", ")}`,
             "Role Detection & Routing: System identifies stakeholder type and provides appropriate access",
-            `${fallbackStakeholders[0] || 'Primary Stakeholder'}: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
-            `${fallbackStakeholders[1] || 'Secondary Stakeholder'}: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
-            `${fallbackStakeholders[2] || 'Third Stakeholder'}: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
+            `${fallbackStakeholders[0] || "Primary Stakeholder"}: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
+            `${fallbackStakeholders[1] || "Secondary Stakeholder"}: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
+            `${fallbackStakeholders[2] || "Third Stakeholder"}: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
             "Cross-Stakeholder Collaboration: Points where different stakeholders interact and collaborate",
             "Shared Resource Access: Common areas where multiple stakeholder types converge",
             "Notification & Communication: System alerts and messages between stakeholder types",
             "Data Integration: Information flows between different stakeholder workflows",
             "Feedback & Improvement Loop: All stakeholders contribute to system enhancement",
-            "Unified Completion: All stakeholder types achieve their specific objectives within the integrated system"
+            "Unified Completion: All stakeholder types achieve their specific objectives within the integrated system",
           ],
           decisionPoints: [
             "Which stakeholder role is accessing the system?",
-            `Does ${fallbackStakeholders[0] || 'Primary User'} action require ${fallbackStakeholders[1] || 'Secondary User'} approval?`,
+            `Does ${fallbackStakeholders[0] || "Primary User"} action require ${fallbackStakeholders[1] || "Secondary User"} approval?`,
             "Should this process involve multiple stakeholder collaboration?",
             "Is escalation between stakeholder roles required?",
-            "Does this workflow need cross-stakeholder validation?"
+            "Does this workflow need cross-stakeholder validation?",
           ],
-          endEvent: "All stakeholder types successfully complete their interconnected and collaborative workflows",
+          endEvent:
+            "All stakeholder types successfully complete their interconnected and collaborative workflows",
           additionalElements: [
             "Multi-stakeholder collaboration workspace",
-            "Role-based permission management system", 
+            "Role-based permission management system",
             "Inter-stakeholder communication channels",
             "Cross-role workflow handoff mechanisms",
             "Unified analytics dashboard for all stakeholder types",
-            "Stakeholder-specific onboarding and training modules"
-          ]
+            "Stakeholder-specific onboarding and training modules",
+          ],
         };
       }
 
@@ -1220,51 +1387,60 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
         "System",
-        "Comprehensive Project Workflow"
+        "Comprehensive Project Workflow",
       );
 
       const flowDiagramResult = {
         title: "Consolidated Multi-Stakeholder User Journey Flow",
-        description: `Comprehensive flow diagram showing how all stakeholders (${stakeholderData.join(', ')}) interact, collaborate, and achieve their goals within the system`,
-        flowData: flowDiagramData
+        description: `Comprehensive flow diagram showing how all stakeholders (${stakeholderData.join(", ")}) interact, collaborate, and achieve their goals within the system`,
+        flowData: flowDiagramData,
       };
 
       setGeneratedFlowDiagram(flowDiagramResult);
-      
+
       // Save to localStorage
-      localStorage.setItem('project-flow-diagram', JSON.stringify(flowDiagramResult));
-      
+      localStorage.setItem(
+        "project-flow-diagram",
+        JSON.stringify(flowDiagramResult),
+      );
     } catch (err) {
-      console.error('Flow diagram generation error:', err);
-      setError('Failed to generate flow diagram. Please try again.');
+      console.error("Flow diagram generation error:", err);
+      setError("Failed to generate flow diagram. Please try again.");
     } finally {
       setIsGeneratingFlowDiagram(false);
     }
   };
 
-
-
   const regenerateFlowDiagram = async () => {
     if (!projectInput.trim()) {
-      setError('Please enter project description first');
+      setError("Please enter project description first");
       return;
     }
 
     // Clear existing flow diagram first
     setGeneratedFlowDiagram(null);
-    localStorage.removeItem('project-flow-diagram');
-    
+    localStorage.removeItem("project-flow-diagram");
+
     setIsGeneratingFlowDiagram(true);
-    setError('');
+    setError("");
 
     try {
       // Create user-centered FlowDetails object with alternative user journeys
       const flowDetails = {
         processDescription: `Alternative user journey for project: ${projectInput}. Enhanced with different user paths and interaction patterns for comprehensive user experience mapping.`,
         participants: [
-          "First-time Visitors", "Registered Users", "Premium Users", "Mobile Users",
-          "Desktop Users", "Admin Users", "Guest Users", "Power Users",
-          "Casual Users", "Business Users", "Customer Support", "Content Creators"
+          "First-time Visitors",
+          "Registered Users",
+          "Premium Users",
+          "Mobile Users",
+          "Desktop Users",
+          "Admin Users",
+          "Guest Users",
+          "Power Users",
+          "Casual Users",
+          "Business Users",
+          "Customer Support",
+          "Content Creators",
         ],
         trigger: "User has a specific need or goal they want to accomplish",
         activities: [
@@ -1277,7 +1453,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
           "POWER USER: Uses keyboard shortcuts → Bulk operations → Custom workflows → API integrations → Advanced configurations → Automation setup → Performance optimization",
           "BUSINESS USER: Team login → Collaborative workspace → Project management → Resource allocation → Progress tracking → Team communication → Reporting dashboard",
           "CONTENT CREATOR: Content management → Create new content → Media upload → Content editing → Publishing workflow → Analytics review → Audience engagement",
-          "CUSTOMER SUPPORT: Support dashboard → Ticket management → User assistance → Knowledge base updates → Escalation handling → Performance metrics → Training updates"
+          "CUSTOMER SUPPORT: Support dashboard → Ticket management → User assistance → Knowledge base updates → Escalation handling → Performance metrics → Training updates",
         ],
         decisionPoints: [
           "First-time visitor ready to create account?",
@@ -1303,9 +1479,10 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
           "User wants advanced reporting features?",
           "User ready for automated workflows?",
           "User interested in third-party integrations?",
-          "User planning long-term usage?"
+          "User planning long-term usage?",
         ],
-        endEvent: "User successfully completes their journey and achieves their goals",
+        endEvent:
+          "User successfully completes their journey and achieves their goals",
         additionalElements: [
           "User onboarding tutorials",
           "Interactive feature guides",
@@ -1336,31 +1513,34 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
           "User success metrics",
           "User retention programs",
           "User experience surveys",
-          "User journey optimization"
-        ]
+          "User journey optimization",
+        ],
       };
 
       const flowDiagramGenerator = createAIFlowDiagramGenerator();
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
         "System",
-        "Enhanced Project Workflow"
+        "Enhanced Project Workflow",
       );
 
       const flowDiagramResult = {
         title: "Alternative User Journey Flow",
-        description: "Enhanced user-centered flow diagram with alternative user paths and interaction patterns",
-        flowData: flowDiagramData
+        description:
+          "Enhanced user-centered flow diagram with alternative user paths and interaction patterns",
+        flowData: flowDiagramData,
       };
 
       setGeneratedFlowDiagram(flowDiagramResult);
-      
+
       // Save to localStorage
-      localStorage.setItem('project-flow-diagram', JSON.stringify(flowDiagramResult));
-      
+      localStorage.setItem(
+        "project-flow-diagram",
+        JSON.stringify(flowDiagramResult),
+      );
     } catch (err) {
-      console.error('Flow diagram regeneration error:', err);
-      setError('Failed to regenerate flow diagram. Please try again.');
+      console.error("Flow diagram regeneration error:", err);
+      setError("Failed to regenerate flow diagram. Please try again.");
     } finally {
       setIsGeneratingFlowDiagram(false);
     }
@@ -1368,13 +1548,13 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
   const downloadFlowDiagram = () => {
     if (!generatedFlowDiagram) return;
-    
+
     const flowData = JSON.stringify(generatedFlowDiagram, null, 2);
-    const blob = new Blob([flowData], { type: 'application/json' });
+    const blob = new Blob([flowData], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = 'project-flow-diagram.json';
+    a.download = "project-flow-diagram.json";
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -1389,18 +1569,18 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
   const saveEditedPlan = () => {
     setProjectPlan(editedPlanContent);
     setIsEditingPlan(false);
-    setEditedPlanContent('');
+    setEditedPlanContent("");
   };
 
   const cancelEditingPlan = () => {
     setIsEditingPlan(false);
-    setEditedPlanContent('');
+    setEditedPlanContent("");
   };
 
   const toggleSuggestion = (suggestion: string) => {
-    setSelectedSuggestions(prev => {
+    setSelectedSuggestions((prev) => {
       if (prev.includes(suggestion)) {
-        return prev.filter(s => s !== suggestion);
+        return prev.filter((s) => s !== suggestion);
       } else {
         return [...prev, suggestion];
       }
@@ -1409,43 +1589,44 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
   const generateIndividualSection = async (sectionId: string) => {
     if (!projectInput.trim()) {
-      setError('Please enter a project description');
+      setError("Please enter a project description");
       return;
     }
 
-    const section = projectSectionsSettings.find(s => s.id === sectionId);
+    const section = projectSectionsSettings.find((s) => s.id === sectionId);
     if (!section) {
-      setError('Section not found');
+      setError("Section not found");
       return;
     }
 
     setGeneratingSectionId(sectionId);
-    setError('');
+    setError("");
 
     try {
       const planner = createEnhancedProjectPlanner();
-      
+
       const config: EnhancedProjectPlanConfig = {
         projectDescription: projectInput,
-        additionalRequirements: selectedSuggestions.length > 0 ? selectedSuggestions : undefined
+        additionalRequirements:
+          selectedSuggestions.length > 0 ? selectedSuggestions : undefined,
       };
 
       // Generate content for this specific section using configured AI prompts
       const content = await planner.generateSection(section.title, config, {
         id: section.id,
-        aiPrompts: section.aiPrompts
+        aiPrompts: section.aiPrompts,
       });
-      
+
       // Update the enhanced sections state
-      setEnhancedSections(current => {
-        const existingIndex = current.findIndex(s => s.id === sectionId);
+      setEnhancedSections((current) => {
+        const existingIndex = current.findIndex((s) => s.id === sectionId);
         const newSection: ProjectPlanSection = {
           id: sectionId,
           title: section.title,
           content,
           isGenerating: false,
           isCompleted: true,
-          order: section.order
+          order: section.order,
         };
 
         if (existingIndex >= 0) {
@@ -1460,18 +1641,18 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       });
 
       // Update project plan if this is the first section or regenerate the HTML
-      const allSections = enhancedSections.filter(s => s.id !== sectionId);
+      const allSections = enhancedSections.filter((s) => s.id !== sectionId);
       allSections.push({
         id: sectionId,
         title: section.title,
         content,
         isGenerating: false,
         isCompleted: true,
-        order: section.order
+        order: section.order,
       });
-      
+
       const sortedSections = allSections.sort((a, b) => a.order - b.order);
-      
+
       if (sortedSections.length > 0) {
         const planner = createEnhancedProjectPlanner();
         const htmlReport = planner.generateHtmlReport(sortedSections);
@@ -1480,7 +1661,6 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
         // Save enhanced sections to localStorage using helper function
         saveEnhancedPlanSections(sortedSections);
       }
-
     } catch (err) {
       console.error(`Failed to generate section ${section.title}:`, err);
       setError(`Failed to generate ${section.title}. Please try again.`);
@@ -1489,39 +1669,42 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
     }
   };
 
-
-
   const openCustomPromptModal = (sectionId: string) => {
-    console.log('Opening modal for section ID:', sectionId);
-    console.log('Enhanced sections:', enhancedSections);
-    console.log('Project plan exists:', !!projectPlan);
-    
+    console.log("Opening modal for section ID:", sectionId);
+    console.log("Enhanced sections:", enhancedSections);
+    console.log("Project plan exists:", !!projectPlan);
+
     setCustomPromptSectionId(sectionId);
-    setCustomPrompt('');
+    setCustomPrompt("");
     setShowCustomPromptModal(true);
   };
 
   const closeCustomPromptModal = () => {
     setShowCustomPromptModal(false);
-    setCustomPrompt('');
+    setCustomPrompt("");
     setCustomPromptSectionId(null);
   };
 
-  const regenerateSectionWithCustomPrompt = async (sectionId: string, prompt: string) => {
+  const regenerateSectionWithCustomPrompt = async (
+    sectionId: string,
+    prompt: string,
+  ) => {
     if (!prompt.trim()) {
-      setError('Please enter custom instructions for regeneration');
+      setError("Please enter custom instructions for regeneration");
       return;
     }
 
     setIsRegeneratingSection(true);
-    setError('');
+    setError("");
 
     try {
-      const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const gemini = new GoogleGenerativeAI(
+        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+      );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       // Find the target section
-      const targetSection = enhancedSections.find(s => s.id === sectionId);
+      const targetSection = enhancedSections.find((s) => s.id === sectionId);
       if (!targetSection) {
         setError(`Section not found: ${sectionId}`);
         return;
@@ -1559,58 +1742,69 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
       // Clean and format the regenerated content
       let cleanedContent = regeneratedContent.trim();
-      
+
       // Remove any markdown code block markers if present
-      if (cleanedContent.startsWith('```html')) {
-        cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+      if (cleanedContent.startsWith("```html")) {
+        cleanedContent = cleanedContent
+          .replace(/^```html\s*/, "")
+          .replace(/```\s*$/, "");
       }
-      if (cleanedContent.startsWith('```')) {
-        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      if (cleanedContent.startsWith("```")) {
+        cleanedContent = cleanedContent
+          .replace(/^```\s*/, "")
+          .replace(/```\s*$/, "");
       }
 
       // Update the enhanced sections with the cleaned content
-      setEnhancedSections(prev => prev.map(section => 
-        section.id === sectionId 
-          ? { ...section, content: cleanedContent }
-          : section
-      ));
+      setEnhancedSections((prev) =>
+        prev.map((section) =>
+          section.id === sectionId
+            ? { ...section, content: cleanedContent }
+            : section,
+        ),
+      );
 
       // Update the main project plan if it exists
       if (projectPlan) {
         // For HTML content, replace the specific section in the HTML
         let updatedHtml = projectPlan;
-        const sectionPattern = new RegExp(`<section[^>]*id="${sectionId}"[^>]*>(.*?)</section>`, 'gis');
-        
+        const sectionPattern = new RegExp(
+          `<section[^>]*id="${sectionId}"[^>]*>(.*?)</section>`,
+          "gis",
+        );
+
         const newSectionHtml = `<section class="project-section" id="${sectionId}">
           <h2 class="section-title">${targetSection.title}</h2>
           <div class="section-content">
             ${cleanedContent}
           </div>
         </section>`;
-        
+
         if (sectionPattern.test(updatedHtml)) {
           updatedHtml = updatedHtml.replace(sectionPattern, newSectionHtml);
         } else {
           // If pattern not found, append the section
-          updatedHtml += '\n' + newSectionHtml;
+          updatedHtml += "\n" + newSectionHtml;
         }
-        
+
         setProjectPlan(updatedHtml);
         localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, updatedHtml);
       }
 
       // Save updated enhanced sections to localStorage using helper function
-      const updatedSections = enhancedSections.map(section => 
-        section.id === sectionId 
+      const updatedSections = enhancedSections.map((section) =>
+        section.id === sectionId
           ? { ...section, content: cleanedContent }
-          : section
+          : section,
       );
       saveEnhancedPlanSections(updatedSections);
 
       // Force a re-render by updating the active tab
-      const currentActiveTab = document.querySelector('[data-state="active"][data-orientation="horizontal"]');
+      const currentActiveTab = document.querySelector(
+        '[data-state="active"][data-orientation="horizontal"]',
+      );
       if (currentActiveTab) {
-        const tabValue = currentActiveTab.getAttribute('value');
+        const tabValue = currentActiveTab.getAttribute("value");
         if (tabValue === sectionId) {
           // Trigger a re-render by briefly switching tabs
           setActiveTabId(null);
@@ -1619,111 +1813,113 @@ Please provide the regenerated section content as properly formatted HTML:`;
           }, 10);
         }
       }
-      
+
       // Close modal and reset state
       setShowCustomPromptModal(false);
-      setCustomPrompt('');
+      setCustomPrompt("");
       setCustomPromptSectionId(null);
-      
+
       // Show success notification
       console.log(`Section "${targetSection.title}" regenerated successfully`);
-      
     } catch (error) {
-      console.error('Section regeneration error:', error);
-      setError('Failed to regenerate section. Please try again.');
+      console.error("Section regeneration error:", error);
+      setError("Failed to regenerate section. Please try again.");
     } finally {
       setIsRegeneratingSection(false);
     }
   };
-
-
 
   const executeCommand = (command: string, value?: string) => {
     document.execCommand(command, false, value);
   };
 
   const insertHeading = (level: number) => {
-    executeCommand('formatBlock', `h${level}`);
+    executeCommand("formatBlock", `h${level}`);
   };
 
   const resetPlanner = () => {
-    setProjectInput('');
-    setProjectPlan('');
-    setGeneratedBpmnXml('');
-    setGeneratedSitemapXml('');
-    setEnhancementPrompt('');
+    setProjectInput("");
+    setProjectPlan("");
+    setGeneratedBpmnXml("");
+    setGeneratedSitemapXml("");
+    setEnhancementPrompt("");
     setIsEditingPlan(false);
-    setEditedPlanContent('');
-    setCurrentStep('input');
-    setError('');
+    setEditedPlanContent("");
+    setCurrentStep("input");
+    setError("");
     setShowSuggestions(false);
     setSelectedSuggestions([]);
     setSuggestions([]);
     setShowBpmnScript(false);
     setIsEditingBpmn(false);
-    setEditedBpmnScript('');
-    
+    setEditedBpmnScript("");
+
     // Clear localStorage and navigate to home
     localStorage.removeItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
     localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
-    localStorage.removeItem('enhanced_plan_sections');
-    setLocation('/');
+    localStorage.removeItem("enhanced_plan_sections");
+    setLocation("/");
   };
 
   // Parse project plan into sections for tabbed interface
-  const parseProjectPlanSections = (planContent: string): ProjectPlanSection[] => {
+  const parseProjectPlanSections = (
+    planContent: string,
+  ): ProjectPlanSection[] => {
     if (!planContent) return [];
-    
+
     const sections: ProjectPlanSection[] = [];
-    const lines = planContent.split('\n');
+    const lines = planContent.split("\n");
     let currentSection: ProjectPlanSection | null = null;
-    
+
     for (const line of lines) {
       const trimmedLine = line.trim();
-      
+
       // Check for main section headers (# or ##)
       if (trimmedLine.match(/^#{1,2}\s+(.+)/)) {
         // Save previous section if exists
         if (currentSection) {
           sections.push(currentSection);
         }
-        
+
         // Start new section
-        const title = trimmedLine.replace(/^#{1,2}\s+/, '').trim();
-        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        
+        const title = trimmedLine.replace(/^#{1,2}\s+/, "").trim();
+        const id = title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+
         currentSection = {
           id,
           title,
-          content: line + '\n',
+          content: line + "\n",
           isGenerating: false,
           isCompleted: true,
-          order: sections.length
+          order: sections.length,
         };
       } else if (currentSection) {
         // Add line to current section
-        currentSection.content += line + '\n';
+        currentSection.content += line + "\n";
       } else if (trimmedLine && !currentSection) {
         // Content before first header - create introduction section
         if (sections.length === 0) {
           currentSection = {
-            id: 'introduction',
-            title: 'Project Overview',
-            content: line + '\n',
+            id: "introduction",
+            title: "Project Overview",
+            content: line + "\n",
             isGenerating: false,
             isCompleted: true,
-            order: 0
+            order: 0,
           };
         }
       }
     }
-    
+
     // Add the last section
     if (currentSection) {
       sections.push(currentSection);
     }
-    
+
     return sections;
   };
 
@@ -1732,52 +1928,62 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
     // Clean the project plan content to remove code block markers
     let cleanedContent = projectPlan.trim();
-    
+
     // Remove ```html and ``` markers if present
-    if (cleanedContent.startsWith('```html')) {
-      cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+    if (cleanedContent.startsWith("```html")) {
+      cleanedContent = cleanedContent
+        .replace(/^```html\s*/, "")
+        .replace(/```\s*$/, "");
     }
-    if (cleanedContent.startsWith('```')) {
-      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    if (cleanedContent.startsWith("```")) {
+      cleanedContent = cleanedContent
+        .replace(/^```\s*/, "")
+        .replace(/```\s*$/, "");
     }
 
     // Check if it's HTML content
-    const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
-                        cleanedContent.startsWith('<html') || 
-                        cleanedContent.startsWith('<div') || 
-                        cleanedContent.includes('<style>');
+    const isHtmlContent =
+      cleanedContent.startsWith("<!DOCTYPE html>") ||
+      cleanedContent.startsWith("<html") ||
+      cleanedContent.startsWith("<div") ||
+      cleanedContent.includes("<style>");
 
     if (isHtmlContent) {
       // For HTML content, extract sections from <section> tags
       const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
       const sections = [];
       let match;
-      
+
       while ((match = sectionPattern.exec(cleanedContent)) !== null) {
         const sectionHtml = match[0];
         const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-        const title: string = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${sections.length + 1}`;
-        const id: string = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-        
+        const title: string = titleMatch
+          ? titleMatch[1].replace(/<[^>]*>/g, "").trim()
+          : `Section ${sections.length + 1}`;
+        const id: string = title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-|-$/g, "");
+
         sections.push({
           id,
           title,
           content: sectionHtml,
           isGenerating: false,
           isCompleted: true,
-          order: sections.length
+          order: sections.length,
         });
       }
 
       if (sections.length === 0) {
         // If no sections found, treat entire content as one section
         sections.push({
-          id: 'project-plan',
-          title: 'Project Plan',
+          id: "project-plan",
+          title: "Project Plan",
           content: cleanedContent,
           isGenerating: false,
           isCompleted: true,
-          order: 0
+          order: 0,
         });
       }
 
@@ -1790,9 +1996,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
         <Tabs defaultValue={sections[0]?.id} className="w-full">
           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
             {sections.map((section, index) => (
-              <TabsTrigger 
-                key={section.id} 
-                value={section.id} 
+              <TabsTrigger
+                key={section.id}
+                value={section.id}
                 className="flex items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm"
               >
                 <span className="flex items-center gap-2.5">
@@ -1806,17 +2012,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
             ))}
           </TabsList>
           {sections.map((section) => (
-            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
+            <TabsContent
+              key={section.id}
+              value={section.id}
+              className="mt-0 animate-in fade-in-50 duration-200"
+            >
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
                   {(() => {
-                    const { icon: SectionIcon } = getSectionIconAndDescription(section.title);
+                    const { icon: SectionIcon } = getSectionIconAndDescription(
+                      section.title,
+                    );
                     return (
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
                           <SectionIcon className="w-4 h-4 text-white" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                        <h3 className="text-xl font-bold text-gray-900">
+                          {section.title}
+                        </h3>
                       </div>
                     );
                   })()}
@@ -1841,7 +2055,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>${section.title}</title>
                         <style>
-                          ${/* Include the same enhanced styling from renderProjectPlan */ ''}
+                          ${/* Include the same enhanced styling from renderProjectPlan */ ""}
                           * {
                             margin: 0;
                             padding: 0;
@@ -1945,17 +2159,18 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </body>
                       </html>
                     `;
-                    
+
                     return (
-                      <div 
+                      <div
                         className="w-full border-0 bg-white rounded-lg p-8 prose prose-lg max-w-none"
-                        style={{ 
-                          minHeight: '400px',
-                          fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
-                          lineHeight: '1.7',
-                          color: '#1e293b',
-                          fontSize: '15px',
-                          letterSpacing: '-0.01em'
+                        style={{
+                          minHeight: "400px",
+                          fontFamily:
+                            "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif",
+                          lineHeight: "1.7",
+                          color: "#1e293b",
+                          fontSize: "15px",
+                          letterSpacing: "-0.01em",
                         }}
                         dangerouslySetInnerHTML={{
                           __html: `
@@ -2048,7 +2263,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               }
                             </style>
                             ${section.content}
-                          `
+                          `,
                         }}
                       />
                     );
@@ -2062,7 +2277,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
     } else {
       // For plain text content, parse into sections based on headers
       const sections = parseProjectPlanSections(cleanedContent);
-      
+
       if (sections.length === 0) {
         return (
           <div className="space-y-4 leading-relaxed">
@@ -2077,11 +2292,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
         <Tabs defaultValue={sections[0]?.id} className="w-full">
           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
             {sections.map((section, index) => {
-              const { icon: SectionIcon, description } = getSectionIconAndDescription(section.title);
+              const { icon: SectionIcon, description } =
+                getSectionIconAndDescription(section.title);
               return (
-                <TabsTrigger 
-                  key={section.id} 
-                  value={section.id} 
+                <TabsTrigger
+                  key={section.id}
+                  value={section.id}
                   className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
                 >
                   <div className="flex flex-col items-center gap-1.5">
@@ -2104,13 +2320,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
             })}
           </TabsList>
           {sections.map((section) => (
-            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
+            <TabsContent
+              key={section.id}
+              value={section.id}
+              className="mt-0 animate-in fade-in-50 duration-200"
+            >
               <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                 <div className="border-b border-gray-200 p-6 bg-gradient-to-r from-slate-50 to-slate-100">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-3 h-3 rounded-full bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                      <h3 className="text-xl font-bold text-gray-900">{section.title}</h3>
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {section.title}
+                      </h3>
                     </div>
                     <div className="flex gap-2">
                       <Button
@@ -2124,7 +2346,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         Regenerate
                       </Button>
                       <Button
-                        onClick={() => startEditingSection(section.id, section.content, section.id)}
+                        onClick={() =>
+                          startEditingSection(
+                            section.id,
+                            section.content,
+                            section.id,
+                          )
+                        }
                         size="sm"
                         variant="outline"
                         className="text-xs"
@@ -2136,11 +2364,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
                 </div>
                 <div className="p-6">
-                  {editingSectionId === section.id && activeTabId === section.id ? (
+                  {editingSectionId === section.id &&
+                  activeTabId === section.id ? (
                     <div className="space-y-4">
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-gray-600">
-                          Edit the content for this section. You can use plain text or basic formatting.
+                          Edit the content for this section. You can use plain
+                          text or basic formatting.
                         </p>
                         <div className="flex gap-2">
                           <Button
@@ -2161,95 +2391,101 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           </Button>
                         </div>
                       </div>
-                      
+
                       <Textarea
                         value={editedSectionContent}
-                        onChange={(e) => setEditedSectionContent(e.target.value)}
+                        onChange={(e) =>
+                          setEditedSectionContent(e.target.value)
+                        }
                         className="min-h-[400px] font-mono text-sm bg-gray-50 border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                         placeholder="Enter content for this section..."
                       />
-                      
+
                       <div className="text-sm text-gray-500">
-                        {editedSectionContent.length} characters | Plain text and basic formatting supported
+                        {editedSectionContent.length} characters | Plain text
+                        and basic formatting supported
                       </div>
                     </div>
                   ) : (
                     <>
                       <div className="prose prose-gray max-w-none">
-                        {section.content.split('\n').map((line, index) => {
-                        const cleanLine = line.trim();
+                        {section.content.split("\n").map((line, index) => {
+                          const cleanLine = line.trim();
 
-                        if (!cleanLine) {
-                          return <div key={index} className="h-4"></div>;
-                        }
+                          if (!cleanLine) {
+                            return <div key={index} className="h-4"></div>;
+                          }
 
-                        if (cleanLine.startsWith('# ')) {
+                          if (cleanLine.startsWith("# ")) {
+                            return (
+                              <h1
+                                key={index}
+                                className="text-2xl font-bold text-gray-900 mb-4 mt-6 border-b-2 border-blue-200 pb-2"
+                              >
+                                {cleanLine.substring(2).trim()}
+                              </h1>
+                            );
+                          }
+
+                          if (cleanLine.startsWith("## ")) {
+                            return (
+                              <h2
+                                key={index}
+                                className="text-xl font-semibold text-gray-800 mb-3 mt-5"
+                              >
+                                {cleanLine.substring(3).trim()}
+                              </h2>
+                            );
+                          }
+
+                          if (cleanLine.startsWith("### ")) {
+                            return (
+                              <h3
+                                key={index}
+                                className="text-lg font-medium text-gray-700 mb-2 mt-4"
+                              >
+                                {cleanLine.substring(4).trim()}
+                              </h3>
+                            );
+                          }
+
+                          if (
+                            cleanLine.startsWith("- ") ||
+                            cleanLine.startsWith("* ")
+                          ) {
+                            return (
+                              <li
+                                key={index}
+                                className="text-gray-700 mb-2 ml-4 list-disc list-inside"
+                              >
+                                {cleanLine.substring(2).trim()}
+                              </li>
+                            );
+                          }
+
+                          if (cleanLine.match(/^\d+\.\s/)) {
+                            return (
+                              <li
+                                key={index}
+                                className="text-gray-700 mb-2 ml-4 list-decimal list-inside"
+                              >
+                                {cleanLine.replace(/^\d+\.\s/, "").trim()}
+                              </li>
+                            );
+                          }
+
+                          // Regular paragraphs
                           return (
-                            <h1
+                            <p
                               key={index}
-                              className="text-2xl font-bold text-gray-900 mb-4 mt-6 border-b-2 border-blue-200 pb-2"
+                              className="text-gray-700 mb-4 leading-relaxed text-justify"
                             >
-                              {cleanLine.substring(2).trim()}
-                            </h1>
+                              {cleanLine}
+                            </p>
                           );
-                        }
-
-                        if (cleanLine.startsWith('## ')) {
-                          return (
-                            <h2
-                              key={index}
-                              className="text-xl font-semibold text-gray-800 mb-3 mt-5"
-                            >
-                              {cleanLine.substring(3).trim()}
-                            </h2>
-                          );
-                        }
-
-                        if (cleanLine.startsWith('### ')) {
-                          return (
-                            <h3
-                              key={index}
-                              className="text-lg font-medium text-gray-700 mb-2 mt-4"
-                            >
-                              {cleanLine.substring(4).trim()}
-                            </h3>
-                          );
-                        }
-
-                        if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
-                          return (
-                            <li
-                              key={index}
-                              className="text-gray-700 mb-2 ml-4 list-disc list-inside"
-                            >
-                              {cleanLine.substring(2).trim()}
-                            </li>
-                          );
-                        }
-
-                        if (cleanLine.match(/^\d+\.\s/)) {
-                          return (
-                            <li
-                              key={index}
-                              className="text-gray-700 mb-2 ml-4 list-decimal list-inside"
-                            >
-                              {cleanLine.replace(/^\d+\.\s/, '').trim()}
-                            </li>
-                          );
-                        }
-
-                        // Regular paragraphs
-                        return (
-                          <p
-                            key={index}
-                            className="text-gray-700 mb-4 leading-relaxed text-justify"
-                          >
-                            {cleanLine}
-                          </p>
-                        );
-                      })}
+                        })}
                       </div>
-                      
+
                       {/* Section Flow Diagram */}
                       <div className="mt-6 pt-6 border-t border-gray-200">
                         <SectionFlowViewer
@@ -2272,52 +2508,58 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const downloadPDF = async () => {
     if (!projectPlan) {
-      setError('No project plan available to download');
+      setError("No project plan available to download");
       return;
     }
 
     setIsDownloadingPdf(true);
-    setError('');
-    
+    setError("");
+
     try {
       // Import libraries dynamically
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-      
+      const html2canvas = (await import("html2canvas")).default;
+      const jsPDF = (await import("jspdf")).default;
+
       // Clean the project plan content to remove code block markers
       let cleanedContent = projectPlan.trim();
-      
+
       // Remove ```html and ``` markers if present
-      if (cleanedContent.startsWith('```html')) {
-        cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+      if (cleanedContent.startsWith("```html")) {
+        cleanedContent = cleanedContent
+          .replace(/^```html\s*/, "")
+          .replace(/```\s*$/, "");
       }
-      if (cleanedContent.startsWith('```')) {
-        cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      if (cleanedContent.startsWith("```")) {
+        cleanedContent = cleanedContent
+          .replace(/^```\s*/, "")
+          .replace(/```\s*$/, "");
       }
 
       // Check if it's HTML content
-      const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
-                          cleanedContent.startsWith('<html') || 
-                          cleanedContent.startsWith('<div') || 
-                          cleanedContent.includes('<style>');
+      const isHtmlContent =
+        cleanedContent.startsWith("<!DOCTYPE html>") ||
+        cleanedContent.startsWith("<html") ||
+        cleanedContent.startsWith("<div") ||
+        cleanedContent.includes("<style>");
 
       if (isHtmlContent) {
         // For HTML content, create a temporary iframe to properly render it
-        const tempIframe = document.createElement('iframe');
-        tempIframe.style.position = 'absolute';
-        tempIframe.style.top = '-9999px';
-        tempIframe.style.left = '-9999px';
-        tempIframe.style.width = '1200px';
-        tempIframe.style.height = '8000px';
-        tempIframe.style.border = 'none';
-        tempIframe.style.backgroundColor = '#ffffff';
-        
+        const tempIframe = document.createElement("iframe");
+        tempIframe.style.position = "absolute";
+        tempIframe.style.top = "-9999px";
+        tempIframe.style.left = "-9999px";
+        tempIframe.style.width = "1200px";
+        tempIframe.style.height = "8000px";
+        tempIframe.style.border = "none";
+        tempIframe.style.backgroundColor = "#ffffff";
+
         document.body.appendChild(tempIframe);
 
         // Write content to iframe
-        const iframeDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
+        const iframeDoc =
+          tempIframe.contentDocument || tempIframe.contentWindow?.document;
         if (!iframeDoc) {
-          throw new Error('Cannot access iframe document');
+          throw new Error("Cannot access iframe document");
         }
 
         iframeDoc.open();
@@ -2325,7 +2567,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         iframeDoc.close();
 
         // Wait for content to render
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
 
         // Get the actual content height
         const body = iframeDoc.body;
@@ -2334,32 +2576,32 @@ Please provide the regenerated section content as properly formatted HTML:`;
           body?.scrollHeight || 0,
           body?.offsetHeight || 0,
           html?.scrollHeight || 0,
-          html?.offsetHeight || 0
+          html?.offsetHeight || 0,
         );
 
         // Adjust iframe height to content
         tempIframe.style.height = `${contentHeight + 100}px`;
 
         // Wait for final rendering
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Generate canvas from iframe content
         const canvas = await html2canvas(iframeDoc.body, {
           scale: 1.5,
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
           width: 1200,
-          height: contentHeight
+          height: contentHeight,
         });
 
         // Remove temporary iframe
         document.body.removeChild(tempIframe);
 
         // Create PDF with proper page handling
-        const imgData = canvas.toDataURL('image/png', 0.95);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
+        const imgData = canvas.toDataURL("image/png", 0.95);
+        const pdf = new jsPDF("p", "mm", "a4");
+
         const imgWidth = 190; // A4 width in mm with margins
         const pageHeight = 277; // A4 height in mm with margins
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -2367,68 +2609,69 @@ Please provide the regenerated section content as properly formatted HTML:`;
         let position = 0;
 
         // Add first page
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
         // Add additional pages if needed
         while (heightLeft >= 0) {
           position = heightLeft - imgHeight;
           pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+          pdf.addImage(imgData, "PNG", 10, position + 10, imgWidth, imgHeight);
           heightLeft -= pageHeight;
         }
 
         // Generate filename
-        const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+        const projectName = projectInput
+          .substring(0, 50)
+          .replace(/[^a-zA-Z0-9]/g, "_");
         const timestamp = new Date().toISOString().slice(0, 10);
         const filename = `project_plan_${projectName}_${timestamp}.pdf`;
 
         // Download PDF
         pdf.save(filename);
-
       } else {
         // For non-HTML content, create a styled container
-        const tempContainer = document.createElement('div');
-        tempContainer.style.position = 'absolute';
-        tempContainer.style.top = '-9999px';
-        tempContainer.style.left = '-9999px';
-        tempContainer.style.width = '1200px';
-        tempContainer.style.backgroundColor = '#ffffff';
-        tempContainer.style.padding = '40px';
-        tempContainer.style.fontFamily = 'Arial, sans-serif';
-        tempContainer.style.fontSize = '14px';
-        tempContainer.style.lineHeight = '1.6';
-        tempContainer.style.color = '#333333';
+        const tempContainer = document.createElement("div");
+        tempContainer.style.position = "absolute";
+        tempContainer.style.top = "-9999px";
+        tempContainer.style.left = "-9999px";
+        tempContainer.style.width = "1200px";
+        tempContainer.style.backgroundColor = "#ffffff";
+        tempContainer.style.padding = "40px";
+        tempContainer.style.fontFamily = "Arial, sans-serif";
+        tempContainer.style.fontSize = "14px";
+        tempContainer.style.lineHeight = "1.6";
+        tempContainer.style.color = "#333333";
 
         // Convert text content to HTML with proper formatting
         const formattedContent = cleanedContent
-          .split('\n')
-          .map(line => {
+          .split("\n")
+          .map((line) => {
             const trimmedLine = line.trim();
-            if (!trimmedLine) return '<br>';
-            
+            if (!trimmedLine) return "<br>";
+
             // Format headers
-            if (trimmedLine.startsWith('#')) {
-              const level = (trimmedLine.match(/^#+/) || [''])[0].length;
-              const text = trimmedLine.replace(/^#+\s*/, '');
+            if (trimmedLine.startsWith("#")) {
+              const level = (trimmedLine.match(/^#+/) || [""])[0].length;
+              const text = trimmedLine.replace(/^#+\s*/, "");
               return `<h${Math.min(level, 6)} style="color: #2563eb; margin: 1.5em 0 0.5em 0;">${text}</h${Math.min(level, 6)}>`;
             }
-            
+
             // Format bullet points
             if (trimmedLine.match(/^[\*\-]\s+/)) {
-              const text = trimmedLine.replace(/^[\*\-]\s+/, '');
+              const text = trimmedLine.replace(/^[\*\-]\s+/, "");
               return `<div style="margin: 0.5em 0; padding-left: 20px;">• ${text}</div>`;
             }
-            
+
             // Format numbered lists
             if (trimmedLine.match(/^\d+\./)) {
               return `<div style="margin: 0.5em 0; padding-left: 20px;">${trimmedLine}</div>`;
             }
-            
+
             // Regular paragraphs
             return `<p style="margin: 1em 0;">${trimmedLine}</p>`;
           })
-          .join('');
+          .join("");
 
         tempContainer.innerHTML = formattedContent;
         document.body.appendChild(tempContainer);
@@ -2438,18 +2681,18 @@ Please provide the regenerated section content as properly formatted HTML:`;
           scale: 1.5,
           useCORS: true,
           allowTaint: true,
-          backgroundColor: '#ffffff',
+          backgroundColor: "#ffffff",
           width: 1200,
-          height: tempContainer.scrollHeight
+          height: tempContainer.scrollHeight,
         });
 
         // Remove temporary container
         document.body.removeChild(tempContainer);
 
         // Create PDF
-        const imgData = canvas.toDataURL('image/png', 0.95);
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
+        const imgData = canvas.toDataURL("image/png", 0.95);
+        const pdf = new jsPDF("p", "mm", "a4");
+
         const imgWidth = 190; // A4 width in mm with margins
         const pageHeight = 277; // A4 height in mm with margins
         const imgHeight = (canvas.height * imgWidth) / canvas.width;
@@ -2457,29 +2700,30 @@ Please provide the regenerated section content as properly formatted HTML:`;
         let position = 0;
 
         // Add first page
-        pdf.addImage(imgData, 'PNG', 10, 10, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
         heightLeft -= pageHeight;
 
         // Add additional pages if needed
         while (heightLeft >= 0) {
           position = heightLeft - imgHeight;
           pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 10, position + 10, imgWidth, imgHeight);
+          pdf.addImage(imgData, "PNG", 10, position + 10, imgWidth, imgHeight);
           heightLeft -= pageHeight;
         }
 
         // Generate filename
-        const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+        const projectName = projectInput
+          .substring(0, 50)
+          .replace(/[^a-zA-Z0-9]/g, "_");
         const timestamp = new Date().toISOString().slice(0, 10);
         const filename = `project_plan_${projectName}_${timestamp}.pdf`;
 
         // Download PDF
         pdf.save(filename);
       }
-      
     } catch (error) {
-      console.error('Error generating PDF:', error);
-      setError('Failed to generate PDF. Please try again.');
+      console.error("Error generating PDF:", error);
+      setError("Failed to generate PDF. Please try again.");
     } finally {
       setIsDownloadingPdf(false);
     }
@@ -2487,18 +2731,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const downloadBpmnScript = () => {
     if (!generatedBpmnXml) {
-      setError('No BPMN script available to download');
+      setError("No BPMN script available to download");
       return;
     }
 
-    const blob = new Blob([generatedBpmnXml], { type: 'application/xml' });
+    const blob = new Blob([generatedBpmnXml], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const link = document.createElement("a");
+
+    const projectName = projectInput
+      .substring(0, 50)
+      .replace(/[^a-zA-Z0-9]/g, "_");
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `bpmn_diagram_${projectName}_${timestamp}.bpmn`;
-    
+
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -2509,7 +2755,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const copyBpmnScript = async () => {
     if (!generatedBpmnXml) {
-      setError('No BPMN script available to copy');
+      setError("No BPMN script available to copy");
       return;
     }
 
@@ -2517,26 +2763,26 @@ Please provide the regenerated section content as properly formatted HTML:`;
       await navigator.clipboard.writeText(generatedBpmnXml);
       // You could add a toast notification here
     } catch (error) {
-      console.error('Failed to copy BPMN script:', error);
-      setError('Failed to copy BPMN script to clipboard');
+      console.error("Failed to copy BPMN script:", error);
+      setError("Failed to copy BPMN script to clipboard");
     }
   };
 
   const generateSitemap = async () => {
     if (!projectInput.trim()) {
-      setError('Please enter a project description first');
+      setError("Please enter a project description first");
       return;
     }
 
     setIsGeneratingSitemap(true);
-    setError('');
+    setError("");
 
     try {
       const sitemapXml = await generateSitemapXml(projectInput);
       setGeneratedSitemapXml(sitemapXml);
     } catch (error) {
-      console.error('Error generating sitemap:', error);
-      setError('Failed to generate sitemap. Please try again.');
+      console.error("Error generating sitemap:", error);
+      setError("Failed to generate sitemap. Please try again.");
     } finally {
       setIsGeneratingSitemap(false);
     }
@@ -2544,18 +2790,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const downloadSitemapXml = () => {
     if (!generatedSitemapXml) {
-      setError('No sitemap XML available to download');
+      setError("No sitemap XML available to download");
       return;
     }
 
-    const blob = new Blob([generatedSitemapXml], { type: 'application/xml' });
+    const blob = new Blob([generatedSitemapXml], { type: "application/xml" });
     const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    
-    const projectName = projectInput.substring(0, 50).replace(/[^a-zA-Z0-9]/g, '_');
+    const link = document.createElement("a");
+
+    const projectName = projectInput
+      .substring(0, 50)
+      .replace(/[^a-zA-Z0-9]/g, "_");
     const timestamp = new Date().toISOString().slice(0, 10);
     const filename = `sitemap_${projectName}_${timestamp}.xml`;
-    
+
     link.href = url;
     link.download = filename;
     document.body.appendChild(link);
@@ -2566,15 +2814,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const copySitemapXml = async () => {
     if (!generatedSitemapXml) {
-      setError('No sitemap XML available to copy');
+      setError("No sitemap XML available to copy");
       return;
     }
 
     try {
       await navigator.clipboard.writeText(generatedSitemapXml);
     } catch (error) {
-      console.error('Error copying sitemap XML:', error);
-      setError('Failed to copy sitemap XML to clipboard');
+      console.error("Error copying sitemap XML:", error);
+      setError("Failed to copy sitemap XML to clipboard");
     }
   };
 
@@ -2582,16 +2830,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
     try {
       // Basic XML validation - check if it starts and ends with proper XML tags
       const trimmedScript = editedBpmnScript.trim();
-      if (!trimmedScript.startsWith('<?xml') && !trimmedScript.startsWith('<bpmn:definitions')) {
-        throw new Error('Invalid BPMN XML format');
+      if (
+        !trimmedScript.startsWith("<?xml") &&
+        !trimmedScript.startsWith("<bpmn:definitions")
+      ) {
+        throw new Error("Invalid BPMN XML format");
       }
-      
+
       setGeneratedBpmnXml(editedBpmnScript);
       localStorage.setItem(STORAGE_KEYS.CURRENT_DIAGRAM, editedBpmnScript);
       setIsEditingBpmn(false);
-      setEditedBpmnScript('');
+      setEditedBpmnScript("");
     } catch (error) {
-      setError('Invalid BPMN XML format. Please check your script syntax.');
+      setError("Invalid BPMN XML format. Please check your script syntax.");
     }
   };
 
@@ -2604,10 +2855,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   const cancelBpmnEditing = () => {
     setIsEditingBpmn(false);
-    setEditedBpmnScript('');
+    setEditedBpmnScript("");
   };
 
-  const startEditingSection = (sectionId: string, content?: string, tabId?: string) => {
+  const startEditingSection = (
+    sectionId: string,
+    content?: string,
+    tabId?: string,
+  ) => {
     if (content && tabId) {
       // Called with 3 parameters
       setEditingSectionId(sectionId);
@@ -2615,7 +2870,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
       setActiveTabId(tabId);
     } else {
       // Called with 1 parameter - find section from enhanced sections
-      const section = enhancedSections.find(s => s.id === sectionId);
+      const section = enhancedSections.find((s) => s.id === sectionId);
       if (section) {
         setEditingSectionId(sectionId);
         setEditedSectionContent(section.content);
@@ -2628,21 +2883,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
     if (!editingSectionId || !activeTabId) return;
 
     // Update the enhanced sections
-    setEnhancedSections(prev => prev.map(section => 
-      section.id === editingSectionId 
-        ? { ...section, content: editedSectionContent }
-        : section
-    ));
+    setEnhancedSections((prev) =>
+      prev.map((section) =>
+        section.id === editingSectionId
+          ? { ...section, content: editedSectionContent }
+          : section,
+      ),
+    );
 
     // Also update the main project plan if it exists
     if (projectPlan) {
       // For HTML content, we need to update the specific section
       let updatedPlan = projectPlan;
-      const sectionTitle = enhancedSections.find(s => s.id === editingSectionId)?.title || '';
-      
+      const sectionTitle =
+        enhancedSections.find((s) => s.id === editingSectionId)?.title || "";
+
       if (sectionTitle && updatedPlan.includes(sectionTitle)) {
         // Simple replacement for now - could be more sophisticated
-        const sectionPattern = new RegExp(`(<h[1-6][^>]*>${sectionTitle}</h[1-6]>)(.*?)(?=<h[1-6]|$)`, 'is');
+        const sectionPattern = new RegExp(
+          `(<h[1-6][^>]*>${sectionTitle}</h[1-6]>)(.*?)(?=<h[1-6]|$)`,
+          "is",
+        );
         const replacement = `$1\n${editedSectionContent}\n`;
         updatedPlan = updatedPlan.replace(sectionPattern, replacement);
         setProjectPlan(updatedPlan);
@@ -2650,66 +2911,82 @@ Please provide the regenerated section content as properly formatted HTML:`;
     }
 
     setEditingSectionId(null);
-    setEditedSectionContent('');
+    setEditedSectionContent("");
     setActiveTabId(null);
   };
 
   const cancelSectionEdit = () => {
     setEditingSectionId(null);
-    setEditedSectionContent('');
+    setEditedSectionContent("");
     setActiveTabId(null);
   };
 
-
-
   const getStepStatus = (step: string) => {
-    if (step === 'input') return currentStep === 'input' ? 'active' : currentStep === 'plan' || currentStep === 'diagram' ? 'completed' : 'pending';
-    if (step === 'plan') return currentStep === 'plan' ? 'active' : currentStep === 'diagram' ? 'completed' : 'pending';
-    if (step === 'diagram') return currentStep === 'diagram' ? 'completed' : 'pending';
-    return 'pending';
+    if (step === "input")
+      return currentStep === "input"
+        ? "active"
+        : currentStep === "plan" || currentStep === "diagram"
+          ? "completed"
+          : "pending";
+    if (step === "plan")
+      return currentStep === "plan"
+        ? "active"
+        : currentStep === "diagram"
+          ? "completed"
+          : "pending";
+    if (step === "diagram")
+      return currentStep === "diagram" ? "completed" : "pending";
+    return "pending";
   };
 
   const renderProjectPlan = () => {
     // Clean the project plan content to remove code block markers
     let cleanedContent = projectPlan.trim();
-    
+
     // Remove ```html and ``` markers if present
-    if (cleanedContent.startsWith('```html')) {
-      cleanedContent = cleanedContent.replace(/^```html\s*/, '').replace(/```\s*$/, '');
+    if (cleanedContent.startsWith("```html")) {
+      cleanedContent = cleanedContent
+        .replace(/^```html\s*/, "")
+        .replace(/```\s*$/, "");
     }
-    if (cleanedContent.startsWith('```')) {
-      cleanedContent = cleanedContent.replace(/^```\s*/, '').replace(/```\s*$/, '');
+    if (cleanedContent.startsWith("```")) {
+      cleanedContent = cleanedContent
+        .replace(/^```\s*/, "")
+        .replace(/```\s*$/, "");
     }
-    
+
     // Check if it's HTML content
-    const isHtmlContent = cleanedContent.startsWith('<!DOCTYPE html>') || 
-                        cleanedContent.startsWith('<html') || 
-                        cleanedContent.startsWith('<div') || 
-                        cleanedContent.includes('<style>');
-    
+    const isHtmlContent =
+      cleanedContent.startsWith("<!DOCTYPE html>") ||
+      cleanedContent.startsWith("<html") ||
+      cleanedContent.startsWith("<div") ||
+      cleanedContent.includes("<style>");
+
     if (isHtmlContent) {
       // Split HTML content into sections and render each in an iframe
       const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
       const sections = cleanedContent.match(sectionPattern) || [];
-      
+
       if (sections.length === 0) {
         // If no sections found, treat entire content as one section
-        const blob = new Blob([cleanedContent], { type: 'text/html' });
+        const blob = new Blob([cleanedContent], { type: "text/html" });
         const blobUrl = URL.createObjectURL(blob);
-        
+
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
               <div className="border-b border-gray-200 p-4">
-                <h3 className="text-lg font-semibold text-gray-900">Project Plan Content</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Project Plan Content
+                </h3>
               </div>
               <div className="p-0">
                 <iframe
                   src={blobUrl}
                   className="w-full border-0"
                   style={{
-                    height: '600px',
-                    backgroundColor: '#ffffff'
+                    height: "600px",
+                    backgroundColor: "#ffffff",
                   }}
                   title="Project Plan Content"
                   sandbox="allow-same-origin allow-scripts"
@@ -2722,15 +2999,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
           </div>
         );
       }
-      
+
       // Render multiple sections in individual iframes
       return (
         <div className="space-y-0">
           {sections.map((sectionHtml, index) => {
             // Extract section title if available
-            const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-            const sectionTitle = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : `Section ${index + 1}`;
-            
+            const titleMatch = sectionHtml.match(
+              /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i,
+            );
+            const sectionTitle = titleMatch
+              ? titleMatch[1].replace(/<[^>]*>/g, "").trim()
+              : `Section ${index + 1}`;
+
             // Create enhanced HTML with modern styling
             const enhancedHtml = `
               <!DOCTYPE html>
@@ -4440,18 +4721,23 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </body>
               </html>
             `;
-            
-            const blob = new Blob([enhancedHtml], { type: 'text/html' });
+
+            const blob = new Blob([enhancedHtml], { type: "text/html" });
             const blobUrl = URL.createObjectURL(blob);
-            
+
             return (
-              <div key={`section-${index}`} className="bg-white border border-gray-200 overflow-hidden">
+              <div
+                key={`section-${index}`}
+                className="bg-white border border-gray-200 overflow-hidden"
+              >
                 <div className="border-b border-gray-200 p-3">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded flex items-center justify-center text-white font-bold text-xs">
                       {index + 1}
                     </div>
-                    <h3 className="text-sm font-semibold text-gray-900">{sectionTitle}</h3>
+                    <h3 className="text-sm font-semibold text-gray-900">
+                      {sectionTitle}
+                    </h3>
                   </div>
                 </div>
                 <div className="p-0">
@@ -4459,69 +4745,76 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     src={blobUrl}
                     className="w-full border-0 block"
                     style={{
-                      height: '200px', // Initial small height
-                      backgroundColor: '#ffffff',
+                      height: "200px", // Initial small height
+                      backgroundColor: "#ffffff",
                       margin: 0,
                       padding: 0,
-                      display: 'block'
+                      display: "block",
                     }}
                     title={sectionTitle}
                     sandbox="allow-same-origin allow-scripts"
                     onLoad={(e) => {
                       const iframe = e.target as HTMLIFrameElement;
-                      
+
                       // Precise height adjustment handler
                       const handleMessage = (event: MessageEvent) => {
-                        if (event.data.type === 'resize' && event.source === iframe.contentWindow) {
+                        if (
+                          event.data.type === "resize" &&
+                          event.source === iframe.contentWindow
+                        ) {
                           const newHeight = Math.max(event.data.height, 50);
-                          
+
                           // Apply height immediately
                           iframe.style.height = `${newHeight}px`;
-                          
+
                           // Force layout recalculation
                           iframe.offsetHeight;
-                          
-                          console.log(`Iframe height adjusted to: ${newHeight}px`);
+
+                          console.log(
+                            `Iframe height adjusted to: ${newHeight}px`,
+                          );
                         }
                       };
-                      
+
                       // Direct height adjustment for same-origin content
                       const adjustHeightDirect = () => {
                         try {
                           if (iframe.contentDocument) {
                             const body = iframe.contentDocument.body;
                             const html = iframe.contentDocument.documentElement;
-                            
+
                             // Get all possible measurements
                             const measurements = [
                               body.scrollHeight,
                               body.offsetHeight,
                               html.scrollHeight,
                               html.offsetHeight,
-                              html.clientHeight
-                            ].filter(h => h > 0);
-                            
+                              html.clientHeight,
+                            ].filter((h) => h > 0);
+
                             if (measurements.length > 0) {
                               const height = Math.max(...measurements);
                               iframe.style.height = `${height + 2}px`;
-                              console.log(`Direct height adjustment: ${height + 2}px`);
+                              console.log(
+                                `Direct height adjustment: ${height + 2}px`,
+                              );
                             }
                           }
                         } catch (error) {
                           // Expected for blob URLs - will use message-based approach
                         }
                       };
-                      
-                      window.addEventListener('message', handleMessage);
-                      
+
+                      window.addEventListener("message", handleMessage);
+
                       // Try direct adjustment first, then rely on message-based
                       setTimeout(adjustHeightDirect, 50);
                       setTimeout(adjustHeightDirect, 200);
-                      
+
                       // Clean up
                       setTimeout(() => {
                         URL.revokeObjectURL(blobUrl);
-                        window.removeEventListener('message', handleMessage);
+                        window.removeEventListener("message", handleMessage);
                       }, 5000);
                     }}
                   />
@@ -4532,27 +4825,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
         </div>
       );
     }
-    
+
     // If not HTML, render as markdown with modern styling
     return (
       <div className="space-y-6">
-        {cleanedContent.split('\n').map((line, index) => {
+        {cleanedContent.split("\n").map((line, index) => {
           const trimmedLine = line.trim();
-          
+
           if (!trimmedLine) return null;
-          
+
           // Clean markdown symbols and format content
           let cleanLine = trimmedLine
-            .replace(/^\*\s+/, '')
-            .replace(/^\-\s+/, '')
-            .replace(/^#+\s+/, '')
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*(.*?)\*/g, '$1');
-          
+            .replace(/^\*\s+/, "")
+            .replace(/^\-\s+/, "")
+            .replace(/^#+\s+/, "")
+            .replace(/\*\*(.*?)\*\*/g, "$1")
+            .replace(/\*(.*?)\*/g, "$1");
+
           if (!cleanLine) return null;
-          
+
           // Format section headers
-          if (trimmedLine.startsWith('# ')) {
+          if (trimmedLine.startsWith("# ")) {
             return (
               <div key={`h1-${index}`} className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4 pb-2 border-b-2 border-blue-200">
@@ -4561,19 +4854,21 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </div>
             );
           }
-          
-          if (trimmedLine.startsWith('## ')) {
+
+          if (trimmedLine.startsWith("## ")) {
             return (
               <div key={`h2-${index}`} className="mb-6">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-full"></div>
-                  <h2 className="text-2xl font-semibold text-gray-900">{cleanLine}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    {cleanLine}
+                  </h2>
                 </div>
               </div>
             );
           }
-          
-          if (trimmedLine.startsWith('### ')) {
+
+          if (trimmedLine.startsWith("### ")) {
             return (
               <div key={`h3-${index}`} className="mb-4">
                 <h3 className="text-xl font-medium text-gray-800 mb-3 flex items-center gap-2">
@@ -4583,47 +4878,65 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </div>
             );
           }
-          
+
           // Format bullet points
           if (trimmedLine.match(/^[\*\-]\s+/)) {
             return (
-              <div key={`bullet-${index}`} className="flex items-start gap-3 mb-3 ml-4">
+              <div
+                key={`bullet-${index}`}
+                className="flex items-start gap-3 mb-3 ml-4"
+              >
                 <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                <span className="text-gray-700 leading-relaxed">{cleanLine}</span>
+                <span className="text-gray-700 leading-relaxed">
+                  {cleanLine}
+                </span>
               </div>
             );
           }
-          
+
           // Format numbered lists
           if (trimmedLine.match(/^\d+\./)) {
             const number = trimmedLine.match(/^(\d+)/)?.[1];
             return (
-              <div key={`numbered-${index}`} className="flex items-start gap-4 mb-4 ml-2">
+              <div
+                key={`numbered-${index}`}
+                className="flex items-start gap-4 mb-4 ml-2"
+              >
                 <div className="w-7 h-7 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 shadow-sm">
                   {number}
                 </div>
                 <div className="flex-1">
-                  <span className="text-gray-800 font-medium leading-relaxed">{cleanLine}</span>
+                  <span className="text-gray-800 font-medium leading-relaxed">
+                    {cleanLine}
+                  </span>
                 </div>
               </div>
             );
           }
-        
+
           // Format key-value pairs or important statements
-          if (cleanLine.includes(':') && cleanLine.length < 100) {
-            const [key, ...valueParts] = cleanLine.split(':');
-            const value = valueParts.join(':').trim();
+          if (cleanLine.includes(":") && cleanLine.length < 100) {
+            const [key, ...valueParts] = cleanLine.split(":");
+            const value = valueParts.join(":").trim();
             return (
-              <div key={`keyvalue-${index}`} className="mb-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
-                <span className="font-semibold text-blue-800">{key.trim()}:</span>
+              <div
+                key={`keyvalue-${index}`}
+                className="mb-3 p-4 bg-white rounded-lg border border-gray-200 shadow-sm"
+              >
+                <span className="font-semibold text-blue-800">
+                  {key.trim()}:
+                </span>
                 {value && <span className="text-gray-700 ml-2">{value}</span>}
               </div>
             );
           }
-          
+
           // Regular paragraphs
           return (
-            <p key={`paragraph-${index}`} className="text-gray-700 mb-4 leading-relaxed">
+            <p
+              key={`paragraph-${index}`}
+              className="text-gray-700 mb-4 leading-relaxed"
+            >
               {cleanLine}
             </p>
           );
@@ -4636,8 +4949,6 @@ Please provide the regenerated section content as properly formatted HTML:`;
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="AI Project Planner" showBackButton={false} />
       <div className="max-w-7xl mx-auto px-4 py-6">
-        
-
         <WorkflowProgress currentStep={currentStep} />
 
         {/* Error Display */}
@@ -4662,16 +4973,21 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </CardHeader>
               <CardContent className="p-6">
                 <p className="text-gray-600 mb-6">
-                  Select additional features and requirements to include in your project plan. These will be integrated into the comprehensive architecture and development timeline.
+                  Select additional features and requirements to include in your
+                  project plan. These will be integrated into the comprehensive
+                  architecture and development timeline.
                 </p>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
                   {suggestions.map((suggestion) => {
                     const isChecked = selectedSuggestions.includes(suggestion);
                     return (
-                      <div key={suggestion} className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                      <div
+                        key={suggestion}
+                        className="flex items-center space-x-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
                         <Checkbox
-                          id={`suggestion-${suggestion.replace(/\s+/g, '-')}`}
+                          id={`suggestion-${suggestion.replace(/\s+/g, "-")}`}
                           checked={isChecked}
                           onCheckedChange={(checked) => {
                             toggleSuggestion(suggestion);
@@ -4679,7 +4995,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           className="h-5 w-5 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-2 border-gray-300"
                         />
                         <label
-                          htmlFor={`suggestion-${suggestion.replace(/\s+/g, '-')}`}
+                          htmlFor={`suggestion-${suggestion.replace(/\s+/g, "-")}`}
                           className="text-sm text-gray-700 cursor-pointer flex-1 leading-relaxed"
                           onClick={() => toggleSuggestion(suggestion)}
                         >
@@ -4689,19 +5005,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     );
                   })}
                 </div>
-                
+
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-blue-800 mb-2">Selected Requirements ({selectedSuggestions.length})</h4>
+                  <h4 className="font-medium text-blue-800 mb-2">
+                    Selected Requirements ({selectedSuggestions.length})
+                  </h4>
                   {selectedSuggestions.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {selectedSuggestions.map((suggestion) => (
-                        <Badge key={suggestion} variant="outline" className="bg-white border-blue-300 text-blue-700">
+                        <Badge
+                          key={suggestion}
+                          variant="outline"
+                          className="bg-white border-blue-300 text-blue-700"
+                        >
                           {suggestion}
                         </Badge>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-blue-600 text-sm">No additional requirements selected</p>
+                    <p className="text-blue-600 text-sm">
+                      No additional requirements selected
+                    </p>
                   )}
                 </div>
 
@@ -4709,17 +5033,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 mb-6">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h4 className="font-medium text-purple-800 mb-1">Plan Generation Method</h4>
-                      <p className="text-sm text-purple-600">Choose between standard, enhanced 10-section, or comprehensive planning</p>
+                      <h4 className="font-medium text-purple-800 mb-1">
+                        Plan Generation Method
+                      </h4>
+                      <p className="text-sm text-purple-600">
+                        Choose between standard, enhanced 10-section, or
+                        comprehensive planning
+                      </p>
                     </div>
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
                         <Checkbox
                           id="enhanced-planner"
                           checked={useEnhancedPlanner}
-                          onCheckedChange={(checked) => setUseEnhancedPlanner(checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            setUseEnhancedPlanner(checked as boolean)
+                          }
                         />
-                        <label htmlFor="enhanced-planner" className="text-sm font-medium text-purple-700 cursor-pointer">
+                        <label
+                          htmlFor="enhanced-planner"
+                          className="text-sm font-medium text-purple-700 cursor-pointer"
+                        >
                           Enhanced 10-Section Plan
                         </label>
                       </div>
@@ -4727,51 +5061,83 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <Checkbox
                           id="advanced-agent"
                           checked={useAdvancedAgent}
-                          onCheckedChange={(checked) => setUseAdvancedAgent(checked as boolean)}
+                          onCheckedChange={(checked) =>
+                            setUseAdvancedAgent(checked as boolean)
+                          }
                         />
-                        <label htmlFor="advanced-agent" className="text-sm font-medium text-purple-700 cursor-pointer">
+                        <label
+                          htmlFor="advanced-agent"
+                          className="text-sm font-medium text-purple-700 cursor-pointer"
+                        >
                           Advanced AI Agent
                         </label>
                       </div>
                     </div>
                   </div>
-                  
+
                   {useAdvancedAgent && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 pt-4 border-t border-purple-200">
                       <div>
-                        <label className="block text-xs font-medium text-purple-700 mb-1">Project Scope</label>
-                        <select 
+                        <label className="block text-xs font-medium text-purple-700 mb-1">
+                          Project Scope
+                        </label>
+                        <select
                           className="w-full text-xs p-2 border border-purple-200 rounded"
-                          value={projectRequirements.scope || 'medium'}
-                          onChange={(e) => setProjectRequirements(prev => ({...prev, scope: e.target.value as any}))}
+                          value={projectRequirements.scope || "medium"}
+                          onChange={(e) =>
+                            setProjectRequirements((prev) => ({
+                              ...prev,
+                              scope: e.target.value as any,
+                            }))
+                          }
                         >
                           <option value="small">Small (1-3 months)</option>
                           <option value="medium">Medium (3-6 months)</option>
                           <option value="large">Large (6-12 months)</option>
-                          <option value="enterprise">Enterprise (12+ months)</option>
+                          <option value="enterprise">
+                            Enterprise (12+ months)
+                          </option>
                         </select>
                       </div>
-                      
+
                       <div>
-                        <label className="block text-xs font-medium text-purple-700 mb-1">Technical Complexity</label>
-                        <select 
+                        <label className="block text-xs font-medium text-purple-700 mb-1">
+                          Technical Complexity
+                        </label>
+                        <select
                           className="w-full text-xs p-2 border border-purple-200 rounded"
-                          value={projectRequirements.technicalComplexity || 'medium'}
-                          onChange={(e) => setProjectRequirements(prev => ({...prev, technicalComplexity: e.target.value as any}))}
+                          value={
+                            projectRequirements.technicalComplexity || "medium"
+                          }
+                          onChange={(e) =>
+                            setProjectRequirements((prev) => ({
+                              ...prev,
+                              technicalComplexity: e.target.value as any,
+                            }))
+                          }
                         >
                           <option value="low">Low - Basic CRUD</option>
-                          <option value="medium">Medium - Standard Features</option>
+                          <option value="medium">
+                            Medium - Standard Features
+                          </option>
                           <option value="high">High - Advanced Features</option>
                           <option value="expert">Expert - Cutting Edge</option>
                         </select>
                       </div>
-                      
+
                       <div>
-                        <label className="block text-xs font-medium text-purple-700 mb-1">Industry</label>
-                        <select 
+                        <label className="block text-xs font-medium text-purple-700 mb-1">
+                          Industry
+                        </label>
+                        <select
                           className="w-full text-xs p-2 border border-purple-200 rounded"
-                          value={projectRequirements.industry || 'technology'}
-                          onChange={(e) => setProjectRequirements(prev => ({...prev, industry: e.target.value}))}
+                          value={projectRequirements.industry || "technology"}
+                          onChange={(e) =>
+                            setProjectRequirements((prev) => ({
+                              ...prev,
+                              industry: e.target.value,
+                            }))
+                          }
                         >
                           <option value="technology">Technology</option>
                           <option value="healthcare">Healthcare</option>
@@ -4782,47 +5148,70 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <option value="other">Other</option>
                         </select>
                       </div>
-                      
+
                       <div>
-                        <label className="block text-xs font-medium text-purple-700 mb-1">Team Size</label>
-                        <select 
+                        <label className="block text-xs font-medium text-purple-700 mb-1">
+                          Team Size
+                        </label>
+                        <select
                           className="w-full text-xs p-2 border border-purple-200 rounded"
-                          value={projectRequirements.teamSize || '5-8 developers'}
-                          onChange={(e) => setProjectRequirements(prev => ({...prev, teamSize: e.target.value}))}
+                          value={
+                            projectRequirements.teamSize || "5-8 developers"
+                          }
+                          onChange={(e) =>
+                            setProjectRequirements((prev) => ({
+                              ...prev,
+                              teamSize: e.target.value,
+                            }))
+                          }
                         >
                           <option value="1-2 developers">1-2 developers</option>
                           <option value="3-5 developers">3-5 developers</option>
                           <option value="5-8 developers">5-8 developers</option>
-                          <option value="8-15 developers">8-15 developers</option>
+                          <option value="8-15 developers">
+                            8-15 developers
+                          </option>
                           <option value="15+ developers">15+ developers</option>
                         </select>
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="mt-3 p-3 bg-white/60 rounded border border-purple-100">
                     <div className="text-xs text-purple-700">
                       {useEnhancedPlanner ? (
                         <div>
-                          <strong>Enhanced 10-Section Plan:</strong> Generates dedicated sections for Executive Summary, Technical Architecture, Feature Specifications, Development Methodology, UX Design, Quality Assurance, DevOps Strategy, Risk Management, Stakeholder Management, and Post-Launch Strategy with individual API calls for each section.
+                          <strong>Enhanced 10-Section Plan:</strong> Generates
+                          dedicated sections for Executive Summary, Technical
+                          Architecture, Feature Specifications, Development
+                          Methodology, UX Design, Quality Assurance, DevOps
+                          Strategy, Risk Management, Stakeholder Management, and
+                          Post-Launch Strategy with individual API calls for
+                          each section.
                         </div>
                       ) : useAdvancedAgent ? (
                         <div>
-                          <strong>Advanced AI Agent:</strong> Generates comprehensive 18-section project plan including technical architecture, risk management, compliance, scalability, security framework, detailed timelines, cost estimates, and critical path analysis.
+                          <strong>Advanced AI Agent:</strong> Generates
+                          comprehensive 18-section project plan including
+                          technical architecture, risk management, compliance,
+                          scalability, security framework, detailed timelines,
+                          cost estimates, and critical path analysis.
                         </div>
                       ) : (
                         <div>
-                          <strong>Standard Generation:</strong> Creates focused project plan with core requirements, basic timeline, and development phases.
+                          <strong>Standard Generation:</strong> Creates focused
+                          project plan with core requirements, basic timeline,
+                          and development phases.
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-                
+
                 {/* Enhanced Progress Tracker for 10-Section Plan */}
                 {isGeneratingEnhanced && (
                   <div className="mb-6">
-                    <EnhancedProgressTracker 
+                    <EnhancedProgressTracker
                       progress={enhancedProgress}
                       sections={enhancedSections}
                     />
@@ -4834,12 +5223,16 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium text-blue-800">
-                        {useAdvancedAgent ? 'Generating Comprehensive Project Plan' : 'Creating Project Plan'}
+                        {useAdvancedAgent
+                          ? "Generating Comprehensive Project Plan"
+                          : "Creating Project Plan"}
                       </h4>
-                      <span className="text-sm text-blue-600 font-medium">{Math.round(overallProgress)}%</span>
+                      <span className="text-sm text-blue-600 font-medium">
+                        {Math.round(overallProgress)}%
+                      </span>
                     </div>
                     <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
                         style={{ width: `${overallProgress}%` }}
                       ></div>
@@ -4850,18 +5243,23 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         {currentProgressStep}
                       </div>
                     )}
-                    
+
                     {useAdvancedAgent && isGeneratingComprehensive && (
                       <div className="text-xs text-purple-700 bg-purple-50 p-2 rounded mb-3">
-                        Advanced AI Agent is generating 18 comprehensive sections including technical architecture, 
-                        risk management, compliance requirements, scalability planning, and detailed cost analysis.
+                        Advanced AI Agent is generating 18 comprehensive
+                        sections including technical architecture, risk
+                        management, compliance requirements, scalability
+                        planning, and detailed cost analysis.
                       </div>
                     )}
-                    
+
                     {progressSteps.length > 0 && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                         {progressSteps.map((step, index) => (
-                          <div key={index} className="flex items-center text-sm bg-white/40 rounded-md p-2">
+                          <div
+                            key={index}
+                            className="flex items-center text-sm bg-white/40 rounded-md p-2"
+                          >
                             {step.completed ? (
                               <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
                             ) : step.current ? (
@@ -4869,7 +5267,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             ) : (
                               <div className="h-4 w-4 rounded-full border-2 border-gray-300 mr-2 flex-shrink-0"></div>
                             )}
-                            <span className={`${step.completed ? 'text-green-700 font-medium' : step.current ? 'text-blue-700 font-medium' : 'text-gray-500'} truncate`}>
+                            <span
+                              className={`${step.completed ? "text-green-700 font-medium" : step.current ? "text-blue-700 font-medium" : "text-gray-500"} truncate`}
+                            >
                               {step.step}
                             </span>
                           </div>
@@ -4878,38 +5278,63 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     )}
                   </div>
                 )}
-                
+
                 {/* Dynamic Section Configuration */}
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-6">
-                  <h4 className="font-medium text-green-800 mb-3">Dynamic Project Plan Sections</h4>
-                  <p className="text-sm text-green-600 mb-4">Configure which sections to include in your project plan. Each section will be generated with individual API calls for maximum quality.</p>
-                  
+                  <h4 className="font-medium text-green-800 mb-3">
+                    Dynamic Project Plan Sections
+                  </h4>
+                  <p className="text-sm text-green-600 mb-4">
+                    Configure which sections to include in your project plan.
+                    Each section will be generated with individual API calls for
+                    maximum quality.
+                  </p>
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                     {projectSections.map((section) => (
-                      <div key={section.id} className="flex items-center space-x-3 p-3 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
+                      <div
+                        key={section.id}
+                        className="flex items-center space-x-3 p-3 border border-green-200 rounded-lg hover:bg-green-50 transition-colors"
+                      >
                         <Checkbox
                           id={section.id}
                           checked={section.enabled}
                           onCheckedChange={(checked) => {
-                            setProjectSections(prev => prev.map(s => 
-                              s.id === section.id ? { ...s, enabled: checked as boolean } : s
-                            ));
+                            setProjectSections((prev) =>
+                              prev.map((s) =>
+                                s.id === section.id
+                                  ? { ...s, enabled: checked as boolean }
+                                  : s,
+                              ),
+                            );
                           }}
                           className="h-4 w-4 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
                         />
                         <div className="flex-1">
-                          <label htmlFor={section.id} className="text-sm font-medium text-green-800 cursor-pointer block">
+                          <label
+                            htmlFor={section.id}
+                            className="text-sm font-medium text-green-800 cursor-pointer block"
+                          >
                             {section.title}
                           </label>
-                          <p className="text-xs text-green-600 mt-1">{section.description}</p>
+                          <p className="text-xs text-green-600 mt-1">
+                            {section.description}
+                          </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">{section.estimatedHours}h</span>
-                            <span className={`text-xs px-2 py-0.5 rounded ${
-                              section.priority === 'critical' ? 'bg-red-100 text-red-700' :
-                              section.priority === 'high' ? 'bg-orange-100 text-orange-700' :
-                              section.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
+                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">
+                              {section.estimatedHours}h
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-0.5 rounded ${
+                                section.priority === "critical"
+                                  ? "bg-red-100 text-red-700"
+                                  : section.priority === "high"
+                                    ? "bg-orange-100 text-orange-700"
+                                    : section.priority === "medium"
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : "bg-gray-100 text-gray-700"
+                              }`}
+                            >
                               {section.priority}
                             </span>
                           </div>
@@ -4917,12 +5342,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="bg-white/60 rounded border border-green-100 p-3">
                     <div className="text-xs text-green-700">
-                      <strong>Selected:</strong> {projectSections.filter(s => s.enabled).length} sections 
+                      <strong>Selected:</strong>{" "}
+                      {projectSections.filter((s) => s.enabled).length} sections
                       <span className="mx-2">•</span>
-                      <strong>Estimated:</strong> {projectSections.filter(s => s.enabled).reduce((total, s) => total + (s.estimatedHours || 0), 0)} hours
+                      <strong>Estimated:</strong>{" "}
+                      {projectSections
+                        .filter((s) => s.enabled)
+                        .reduce(
+                          (total, s) => total + (s.estimatedHours || 0),
+                          0,
+                        )}{" "}
+                      hours
                     </div>
                   </div>
                 </div>
@@ -4931,11 +5364,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 {isGeneratingDynamic && (
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-green-800">Generating Dynamic Project Plan</h4>
-                      <span className="text-sm text-green-600 font-medium">{Math.round(overallProgress)}%</span>
+                      <h4 className="font-medium text-green-800">
+                        Generating Dynamic Project Plan
+                      </h4>
+                      <span className="text-sm text-green-600 font-medium">
+                        {Math.round(overallProgress)}%
+                      </span>
                     </div>
                     <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
-                      <div 
+                      <div
                         className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
                         style={{ width: `${overallProgress}%` }}
                       ></div>
@@ -4943,28 +5380,39 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     {currentGeneratingSection && (
                       <div className="flex items-center text-sm text-green-700 mb-3 font-medium">
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Generating: {currentGeneratingSection} ({sectionProgress.current}/{sectionProgress.total})
+                        Generating: {currentGeneratingSection} (
+                        {sectionProgress.current}/{sectionProgress.total})
                       </div>
                     )}
-                    
+
                     <div className="text-xs text-green-700 bg-green-50 p-2 rounded">
-                      Making individual API calls for each selected section to ensure maximum quality and detail.
+                      Making individual API calls for each selected section to
+                      ensure maximum quality and detail.
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex flex-col sm:flex-row gap-3 justify-end">
                   <Button
                     variant="outline"
                     onClick={() => setShowSuggestions(false)}
                     className="border-gray-300 hover:bg-gray-50"
-                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic}
+                    disabled={
+                      isGeneratingPlan ||
+                      isGeneratingComprehensive ||
+                      isGeneratingDynamic
+                    }
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleGenerateDynamicPlan}
-                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic || projectSections.filter(s => s.enabled).length === 0}
+                    disabled={
+                      isGeneratingPlan ||
+                      isGeneratingComprehensive ||
+                      isGeneratingDynamic ||
+                      projectSections.filter((s) => s.enabled).length === 0
+                    }
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                   >
                     {isGeneratingDynamic ? (
@@ -4975,24 +5423,34 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 mr-2" />
-                        Generate Dynamic Plan ({projectSections.filter(s => s.enabled).length} sections)
+                        Generate Dynamic Plan (
+                        {projectSections.filter((s) => s.enabled).length}{" "}
+                        sections)
                       </>
                     )}
                   </Button>
                   <Button
                     onClick={handleGenerateWithSuggestions}
-                    disabled={isGeneratingPlan || isGeneratingComprehensive || isGeneratingDynamic}
+                    disabled={
+                      isGeneratingPlan ||
+                      isGeneratingComprehensive ||
+                      isGeneratingDynamic
+                    }
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
                   >
                     {isGeneratingPlan || isGeneratingComprehensive ? (
                       <>
                         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {useAdvancedAgent ? 'Generating Comprehensive Plan...' : 'Generating Plan...'}
+                        {useAdvancedAgent
+                          ? "Generating Comprehensive Plan..."
+                          : "Generating Plan..."}
                       </>
                     ) : (
                       <>
                         <Sparkles className="h-4 w-4 mr-2" />
-                        {useAdvancedAgent ? 'Generate Comprehensive Plan' : 'Generate Enhanced Plan'}
+                        {useAdvancedAgent
+                          ? "Generate Comprehensive Plan"
+                          : "Generate Enhanced Plan"}
                       </>
                     )}
                   </Button>
@@ -5003,7 +5461,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         )}
 
         {/* Step 1: Project Input */}
-        {currentStep === 'input' && (
+        {currentStep === "input" && (
           <Card className="mb-6 border-0 shadow-sm bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
@@ -5015,9 +5473,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
             </CardHeader>
             <CardContent className="px-6 pb-6 space-y-4">
               <p className="text-gray-600">
-                Provide a detailed description of your project. Include features, requirements, and any specific goals you want to achieve.
+                Provide a detailed description of your project. Include
+                features, requirements, and any specific goals you want to
+                achieve.
               </p>
-              
+
               <Textarea
                 placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
                 value={projectInput}
@@ -5025,7 +5485,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 className="min-h-32 text-sm"
                 disabled={isGeneratingPlan}
               />
-              
+
               {/* Compact Example Projects Section */}
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
@@ -5033,54 +5493,121 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   Quick Start Examples
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Social Media</h5>
-                    <p className="text-xs text-gray-500">Profiles, messaging, content sharing</p>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Social Media
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Profiles, messaging, content sharing
+                    </p>
                   </div>
-                  
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Project Management</h5>
-                    <p className="text-xs text-gray-500">Tasks, collaboration, timelines</p>
+
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Project Management
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Tasks, collaboration, timelines
+                    </p>
                   </div>
-                  
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Learning Platform</h5>
-                    <p className="text-xs text-gray-500">Courses, quizzes, certifications</p>
+
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Learning Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Courses, quizzes, certifications
+                    </p>
                   </div>
-                  
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Finance App</h5>
-                    <p className="text-xs text-gray-500">Expense tracking, investments</p>
+
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Finance App
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Expense tracking, investments
+                    </p>
                   </div>
-                  
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">Healthcare Platform</h5>
-                    <p className="text-xs text-gray-500">Records, telemedicine, billing</p>
+
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Healthcare Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Records, telemedicine, billing
+                    </p>
                   </div>
-                  
-                  <div className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                       onClick={() => setProjectInput("Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.")}>
-                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">IoT Platform</h5>
-                    <p className="text-xs text-gray-500">Smart devices, automation</p>
+
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.",
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      IoT Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Smart devices, automation
+                    </p>
                   </div>
                 </div>
-                <p className="text-xs text-blue-600 mt-3">Click any example to use it as a starting point, then customize as needed.</p>
+                <p className="text-xs text-blue-600 mt-3">
+                  Click any example to use it as a starting point, then
+                  customize as needed.
+                </p>
               </div>
-              
+
               {/* Progress Bar for Dynamic Generation */}
               {isGeneratingDynamic && (
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-green-800">Generating Project Plan - Individual API Calls</h4>
-                    <span className="text-sm text-green-600 font-medium">{Math.round(overallProgress)}%</span>
+                    <h4 className="font-medium text-green-800">
+                      Generating Project Plan - Individual API Calls
+                    </h4>
+                    <span className="text-sm text-green-600 font-medium">
+                      {Math.round(overallProgress)}%
+                    </span>
                   </div>
                   <div className="w-full bg-white/60 rounded-full h-3 mb-4 shadow-inner">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-700 ease-out shadow-sm"
                       style={{ width: `${overallProgress}%` }}
                     ></div>
@@ -5088,13 +5615,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   {currentGeneratingSection && (
                     <div className="flex items-center text-sm text-green-700 mb-3 font-medium">
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Currently generating: {currentGeneratingSection} ({sectionProgress.current}/{sectionProgress.total})
+                      Currently generating: {currentGeneratingSection} (
+                      {sectionProgress.current}/{sectionProgress.total})
                     </div>
                   )}
-                  
+
                   <div className="text-xs text-green-700 bg-green-50 p-2 rounded">
-                    Each section is generated with a separate API call for maximum quality and detail. 
-                    Total sections: {projectSections.filter(s => s.enabled).length}
+                    Each section is generated with a separate API call for
+                    maximum quality and detail. Total sections:{" "}
+                    {projectSections.filter((s) => s.enabled).length}
                   </div>
                 </div>
               )}
@@ -5103,11 +5632,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
               {isGeneratingSuggestions && progressSteps.length > 0 && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                   <div className="flex items-center justify-between mb-2">
-                    <h4 className="font-medium text-blue-800 text-sm">Analyzing Project Requirements</h4>
-                    <span className="text-xs text-blue-600">{Math.round(overallProgress)}%</span>
+                    <h4 className="font-medium text-blue-800 text-sm">
+                      Analyzing Project Requirements
+                    </h4>
+                    <span className="text-xs text-blue-600">
+                      {Math.round(overallProgress)}%
+                    </span>
                   </div>
                   <div className="w-full bg-blue-100 rounded-full h-2 mb-3">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-purple-600 h-2 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${overallProgress}%` }}
                     ></div>
@@ -5128,7 +5661,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         ) : (
                           <div className="h-3 w-3 rounded-full border border-gray-300 mr-2"></div>
                         )}
-                        <span className={step.completed ? 'text-green-700' : step.current ? 'text-blue-700' : 'text-gray-500'}>
+                        <span
+                          className={
+                            step.completed
+                              ? "text-green-700"
+                              : step.current
+                                ? "text-blue-700"
+                                : "text-gray-500"
+                          }
+                        >
                           {step.step}
                         </span>
                       </div>
@@ -5136,21 +5677,30 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
                 </div>
               )}
-              
+
               <div className="flex justify-between items-center pt-2">
                 <div className="text-xs text-gray-400">
                   {projectInput.length}/1000 characters
                 </div>
                 <Button
                   onClick={handleGenerateEnhancedPlan}
-                  disabled={!projectInput.trim() || isGeneratingDynamic || isGeneratingPlan || isGeneratingSuggestions || isGeneratingEnhanced}
+                  disabled={
+                    !projectInput.trim() ||
+                    isGeneratingDynamic ||
+                    isGeneratingPlan ||
+                    isGeneratingSuggestions ||
+                    isGeneratingEnhanced
+                  }
                   size="sm"
                   className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
                 >
                   {isGeneratingDynamic || isGeneratingEnhanced ? (
                     <>
                       <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                      Generating {currentGeneratingSection ? `${currentGeneratingSection}...` : 'Sections...'}
+                      Generating{" "}
+                      {currentGeneratingSection
+                        ? `${currentGeneratingSection}...`
+                        : "Sections..."}
                     </>
                   ) : isGeneratingSuggestions ? (
                     <>
@@ -5165,7 +5715,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   ) : (
                     <>
                       <Sparkles className="h-3 w-3 mr-2" />
-                      Generate Plan ({projectSectionsSettings.filter(s => s.enabled).length} sections)
+                      Generate Plan (
+                      {
+                        projectSectionsSettings.filter((s) => s.enabled).length
+                      }{" "}
+                      sections)
                     </>
                   )}
                 </Button>
@@ -5175,7 +5729,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         )}
 
         {/* Step 2: Project Plan */}
-        {currentStep === 'plan' && (
+        {currentStep === "plan" && (
           <Card className="mb-6 border-0 shadow-sm bg-white">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center justify-between text-lg font-semibold text-gray-800">
@@ -5186,7 +5740,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   Generated Project Plan
                 </div>
                 <div className="flex gap-1.5">
-                  <ProjectSectionsSettings 
+                  <ProjectSectionsSettings
                     sections={projectSectionsSettings}
                     onSectionsChange={setProjectSectionsSettings}
                   />
@@ -5194,7 +5748,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     onClick={downloadPDF}
                     variant="outline"
                     size="sm"
-                    disabled={isDownloadingPdf || isEditingPlan || isEnhancing || isGeneratingBpmn}
+                    disabled={
+                      isDownloadingPdf ||
+                      isEditingPlan ||
+                      isEnhancing ||
+                      isGeneratingBpmn
+                    }
                     className="border-green-200 text-green-600 hover:bg-green-50 text-xs px-2 py-1"
                   >
                     {isDownloadingPdf ? (
@@ -5209,14 +5768,17 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </>
                     )}
                   </Button>
-                  
-                  
-                  
+
                   <Button
                     onClick={startEditingPlan}
                     variant="outline"
                     size="sm"
-                    disabled={isEditingPlan || isEnhancing || isGeneratingBpmn || isDownloadingPdf}
+                    disabled={
+                      isEditingPlan ||
+                      isEnhancing ||
+                      isGeneratingBpmn ||
+                      isDownloadingPdf
+                    }
                     className="border-blue-200 text-blue-600 hover:bg-blue-50 text-xs px-2 py-1"
                   >
                     <Edit className="h-3 w-3 mr-1" />
@@ -5230,7 +5792,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
               {isEditingPlan ? (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-800">Edit Project Plan</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">
+                      Edit Project Plan
+                    </h3>
                     <div className="flex gap-2">
                       <Button
                         onClick={saveEditedPlan}
@@ -5251,14 +5815,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Formatting Toolbar */}
                   <div className="border border-gray-300 rounded-t-lg p-3 bg-gray-50 border-b-0">
                     <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('bold')}
+                        onClick={() => executeCommand("bold")}
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5267,7 +5831,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('italic')}
+                        onClick={() => executeCommand("italic")}
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5276,7 +5840,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('underline')}
+                        onClick={() => executeCommand("underline")}
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5314,7 +5878,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('insertUnorderedList')}
+                        onClick={() => executeCommand("insertUnorderedList")}
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5323,7 +5887,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('insertOrderedList')}
+                        onClick={() => executeCommand("insertOrderedList")}
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5332,7 +5896,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('formatBlock', 'blockquote')}
+                        onClick={() =>
+                          executeCommand("formatBlock", "blockquote")
+                        }
                         className="h-8 px-2"
                         type="button"
                       >
@@ -5342,7 +5908,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('undo')}
+                        onClick={() => executeCommand("undo")}
                         className="h-8 px-3 text-xs"
                         type="button"
                       >
@@ -5351,7 +5917,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => executeCommand('redo')}
+                        onClick={() => executeCommand("redo")}
                         className="h-8 px-3 text-xs"
                         type="button"
                       >
@@ -5359,15 +5925,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </Button>
                     </div>
                   </div>
-                  
+
                   <div className="border border-gray-300 rounded-b-lg border-t-0">
-                    <div 
+                    <div
                       contentEditable
                       suppressContentEditableWarning={true}
                       className="min-h-[600px] p-4 focus:outline-none focus:ring-2 focus:ring-blue-500 prose prose-gray max-w-none"
                       style={{
-                        lineHeight: '1.6',
-                        fontSize: '14px'
+                        lineHeight: "1.6",
+                        fontSize: "14px",
                       }}
                       dangerouslySetInnerHTML={{ __html: editedPlanContent }}
                       onInput={(e) => {
@@ -5380,10 +5946,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       }}
                     />
                   </div>
-                  
+
                   <div className="text-sm text-gray-500 flex justify-between">
-                    <span>Visual HTML editor - use toolbar buttons to format content</span>
-                    <span>{editedPlanContent.replace(/<[^>]*>/g, '').length} characters (text only)</span>
+                    <span>
+                      Visual HTML editor - use toolbar buttons to format content
+                    </span>
+                    <span>
+                      {editedPlanContent.replace(/<[^>]*>/g, "").length}{" "}
+                      characters (text only)
+                    </span>
                   </div>
                 </div>
               ) : (
@@ -5396,20 +5967,30 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <FileText className="h-4 w-4 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900">Project Sections</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Project Sections
+                          </h3>
                           <p className="text-xs text-gray-500">
-                            {projectSectionsSettings.filter(s => s.enabled).length} of {projectSectionsSettings.length} enabled
+                            {
+                              projectSectionsSettings.filter((s) => s.enabled)
+                                .length
+                            }{" "}
+                            of {projectSectionsSettings.length} enabled
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <ProjectSectionsSettings 
+                        <ProjectSectionsSettings
                           sections={projectSectionsSettings}
                           onSectionsChange={setProjectSectionsSettings}
                         />
                         <Button
                           onClick={handleGenerateEnhancedPlan}
-                          disabled={!projectInput.trim() || isGeneratingEnhanced || isGeneratingPlan}
+                          disabled={
+                            !projectInput.trim() ||
+                            isGeneratingEnhanced ||
+                            isGeneratingPlan
+                          }
                           size="sm"
                           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-sm text-xs"
                         >
@@ -5431,22 +6012,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     {/* Enhanced Progress Tracker */}
                     {isGeneratingEnhanced && (
                       <div className="mb-4">
-                        <EnhancedProgressTracker 
+                        <EnhancedProgressTracker
                           progress={enhancedProgress}
                           sections={enhancedSections}
                         />
                       </div>
                     )}
-
-
                   </div>
-                  
+
                   {/* Combined Project Plan Content */}
-                  {(enhancedSections && enhancedSections.length > 0 && enhancedSections.some(s => s.content)) || projectPlan ? (
+                  {(enhancedSections &&
+                    enhancedSections.length > 0 &&
+                    enhancedSections.some((s) => s.content)) ||
+                  projectPlan ? (
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
                       <div className="border-b border-gray-200 p-4">
                         <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">Project Plan Sections</h3>
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Project Plan Sections
+                          </h3>
                           <div className="flex items-center gap-2">
                             <Button
                               onClick={downloadPDF}
@@ -5466,8 +6050,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         </div>
                       </div>
                       <div className="p-6">
-                        <Tabs 
-                          defaultValue={enhancedSections.filter(s => s.content)[0]?.id || (projectPlan ? "generated-plan" : undefined)} 
+                        <Tabs
+                          defaultValue={
+                            enhancedSections.filter((s) => s.content)[0]?.id ||
+                            (projectPlan ? "generated-plan" : undefined)
+                          }
                           className="w-full"
                           onValueChange={(value) => {
                             // Cancel any active editing when switching tabs
@@ -5478,157 +6065,183 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         >
                           <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
                             {/* Enhanced Plan Section Tabs */}
-                            {enhancedSections.filter(s => s.content).map((section, index) => {
-                              const { icon: SectionIcon, description } = getSectionIconAndDescription(section.title);
-                              return (
-                                <TabsTrigger 
-                                  key={section.id} 
-                                  value={section.id} 
-                                  className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                            {enhancedSections
+                              .filter((s) => s.content)
+                              .map((section, index) => {
+                                const { icon: SectionIcon, description } =
+                                  getSectionIconAndDescription(section.title);
+                                return (
+                                  <TabsTrigger
+                                    key={section.id}
+                                    value={section.id}
+                                    className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                                  >
+                                    <div className="flex flex-col items-center gap-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <SectionIcon className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                        <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
+                                          {section.title}
+                                        </div>
+                                        <div className="text-xs text-slate-500 group-data-[state=active]:text-blue-100 transition-colors duration-300 mt-0.5">
+                                          {description}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                                  </TabsTrigger>
+                                );
+                              })}
+
+                            {/* Generated Plan Tab (if exists and no enhanced sections) */}
+                            {projectPlan &&
+                              !enhancedSections.some((s) => s.content) && (
+                                <TabsTrigger
+                                  value="generated-plan"
+                                  className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-green-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
                                 >
                                   <div className="flex flex-col items-center gap-1.5">
                                     <div className="flex items-center gap-2">
-                                      <SectionIcon className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white transition-colors duration-300" />
-                                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                      <FileText className="w-4 h-4 text-green-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
                                     </div>
                                     <div className="text-center">
                                       <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
-                                        {section.title}
+                                        Generated Plan
                                       </div>
-                                      <div className="text-xs text-slate-500 group-data-[state=active]:text-blue-100 transition-colors duration-300 mt-0.5">
-                                        {description}
+                                      <div className="text-xs text-slate-500 group-data-[state=active]:text-green-100 transition-colors duration-300 mt-0.5">
+                                        Complete Plan
                                       </div>
                                     </div>
                                   </div>
-                                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
                                 </TabsTrigger>
-                              );
-                            })}
-                            
-                            {/* Generated Plan Tab (if exists and no enhanced sections) */}
-                            {projectPlan && !enhancedSections.some(s => s.content) && (
-                              <TabsTrigger 
-                                value="generated-plan"
-                                className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-green-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
-                              >
-                                <div className="flex flex-col items-center gap-1.5">
-                                  <div className="flex items-center gap-2">
-                                    <FileText className="w-4 h-4 text-green-600 group-data-[state=active]:text-white transition-colors duration-300" />
-                                    <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
-                                  </div>
-                                  <div className="text-center">
-                                    <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
-                                      Generated Plan
-                                    </div>
-                                    <div className="text-xs text-slate-500 group-data-[state=active]:text-green-100 transition-colors duration-300 mt-0.5">
-                                      Complete Plan
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
-                              </TabsTrigger>
-                            )}
+                              )}
                           </TabsList>
-                          
+
                           {/* Enhanced Plan Section Content */}
-                          {enhancedSections.filter(s => s.content).map((section) => (
-                            <TabsContent key={section.id} value={section.id} className="mt-0 animate-in fade-in-50 duration-200">
-                              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                                
-                                {/* Section Header with Actions */}
-                                <div className="border-b border-gray-100 px-6 py-4">
-                                  <div className="flex items-center justify-between">
-                                    <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        onClick={() => openCustomPromptModal(section.id)}
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={isRegeneratingSection}
-                                        className="text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
-                                      >
-                                        <RefreshCw className="h-3 w-3 mr-1" />
-                                        Regenerate
-                                      </Button>
-                                      <Button
-                                        onClick={() => startEditingSection(section.id)}
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={editingSectionId === section.id}
-                                        className="text-xs"
-                                      >
-                                        <Edit className="h-3 w-3 mr-1" />
-                                        Edit
-                                      </Button>
+                          {enhancedSections
+                            .filter((s) => s.content)
+                            .map((section) => (
+                              <TabsContent
+                                key={section.id}
+                                value={section.id}
+                                className="mt-0 animate-in fade-in-50 duration-200"
+                              >
+                                <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                  {/* Section Header with Actions */}
+                                  <div className="border-b border-gray-100 px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="text-lg font-semibold text-gray-900">
+                                        {section.title}
+                                      </h3>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={() =>
+                                            openCustomPromptModal(section.id)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={isRegeneratingSection}
+                                          className="text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
+                                        >
+                                          <RefreshCw className="h-3 w-3 mr-1" />
+                                          Regenerate
+                                        </Button>
+                                        <Button
+                                          onClick={() =>
+                                            startEditingSection(section.id)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={
+                                            editingSectionId === section.id
+                                          }
+                                          className="text-xs"
+                                        >
+                                          <Edit className="h-3 w-3 mr-1" />
+                                          Edit
+                                        </Button>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
 
-                                <div className="p-6 bg-gradient-to-br from-white via-gray-50 to-blue-50/30">
-                                  {editingSectionId === section.id && activeTabId === section.id ? (
-                                    <div className="space-y-4">
-                                      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                          <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                                            <Edit className="h-4 w-4 text-white" />
+                                  <div className="p-6 bg-gradient-to-br from-white via-gray-50 to-blue-50/30">
+                                    {editingSectionId === section.id &&
+                                    activeTabId === section.id ? (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                              <Edit className="h-4 w-4 text-white" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-blue-800">
+                                                Editing Section Content
+                                              </p>
+                                              <p className="text-xs text-blue-600">
+                                                You can use HTML markup or plain
+                                                text for rich formatting
+                                              </p>
+                                            </div>
                                           </div>
-                                          <div>
-                                            <p className="text-sm font-medium text-blue-800">
-                                              Editing Section Content
-                                            </p>
-                                            <p className="text-xs text-blue-600">
-                                              You can use HTML markup or plain text for rich formatting
-                                            </p>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              onClick={saveSectionEdit}
+                                              size="sm"
+                                              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs shadow-lg border-0"
+                                            >
+                                              <Save className="h-3 w-3 mr-1" />
+                                              Save Changes
+                                            </Button>
+                                            <Button
+                                              onClick={cancelSectionEdit}
+                                              variant="outline"
+                                              size="sm"
+                                              className="text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                                            >
+                                              <X className="h-3 w-3 mr-1" />
+                                              Cancel
+                                            </Button>
                                           </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                          <Button
-                                            onClick={saveSectionEdit}
-                                            size="sm"
-                                            className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs shadow-lg border-0"
-                                          >
-                                            <Save className="h-3 w-3 mr-1" />
-                                            Save Changes
-                                          </Button>
-                                          <Button
-                                            onClick={cancelSectionEdit}
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-                                          >
-                                            <X className="h-3 w-3 mr-1" />
-                                            Cancel
-                                          </Button>
+
+                                        <div className="relative">
+                                          <Textarea
+                                            value={editedSectionContent}
+                                            onChange={(e) =>
+                                              setEditedSectionContent(
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="min-h-[400px] font-mono text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm transition-all duration-200 resize-y"
+                                            placeholder="Enter content for this section... You can use HTML tags for formatting."
+                                          />
+                                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-gray-500 border border-gray-200">
+                                            HTML Supported
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                            {editedSectionContent.length}{" "}
+                                            characters
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            HTML markup and plain text supported
+                                          </div>
                                         </div>
                                       </div>
-                                      
-                                      <div className="relative">
-                                        <Textarea
-                                          value={editedSectionContent}
-                                          onChange={(e) => setEditedSectionContent(e.target.value)}
-                                          className="min-h-[400px] font-mono text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm transition-all duration-200 resize-y"
-                                          placeholder="Enter content for this section... You can use HTML tags for formatting."
-                                        />
-                                        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-gray-500 border border-gray-200">
-                                          HTML Supported
-                                        </div>
-                                      </div>
-                                      
-                                      <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                                          <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-                                          {editedSectionContent.length} characters
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          HTML markup and plain text supported
-                                        </div>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div className="modern-section-content">
-                                      <div 
-                                        dangerouslySetInnerHTML={{ __html: section.content }}
-                                        className="enhanced-content-display prose prose-sm max-w-none
+                                    ) : (
+                                      <div className="modern-section-content">
+                                        <div
+                                          dangerouslySetInnerHTML={{
+                                            __html: section.content,
+                                          }}
+                                          className="enhanced-content-display prose prose-sm max-w-none
                                           prose-headings:text-gray-900 prose-headings:font-semibold
                                           prose-p:text-gray-700 prose-p:leading-relaxed
                                           prose-ul:text-gray-700 prose-ol:text-gray-700
@@ -5666,44 +6279,49 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                           [&_.modern-list_li]:transition-all [&_.modern-list_li]:duration-200 [&_.modern-list_li]:hover:shadow-md
                                           [&_.modern-list_li]:hover:scale-[1.01] [&_.modern-list_li]:hover:bg-blue-50/50
                                         "
-                                      />
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </TabsContent>
-                          ))}
-                          
-                          {/* Generated Plan Content (only if no enhanced sections) */}
-                          {projectPlan && !enhancedSections.some(s => s.content) && (
-                            <TabsContent value="generated-plan" className="mt-0 animate-in fade-in-50 duration-200">
-                              <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                                
-                                {/* Section Header with Actions */}
-                                <div className="border-b border-gray-100 px-3 py-2">
-                                  <div className="flex items-center justify-between">
-                                    <h3 className="text-base font-semibold text-gray-900">Complete Generated Plan</h3>
-                                    <div className="flex gap-2">
-                                      <Button
-                                        onClick={startEditingPlan}
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={isEditingPlan}
-                                        className="text-xs"
-                                      >
-                                        <Edit className="h-3 w-3 mr-1" />
-                                        Edit
-                                      </Button>
-                                    </div>
+                                        />
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
+                              </TabsContent>
+                            ))}
 
-                                <div className="p-3">
-                                  {renderTabbedProjectPlan()}
+                          {/* Generated Plan Content (only if no enhanced sections) */}
+                          {projectPlan &&
+                            !enhancedSections.some((s) => s.content) && (
+                              <TabsContent
+                                value="generated-plan"
+                                className="mt-0 animate-in fade-in-50 duration-200"
+                              >
+                                <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                  {/* Section Header with Actions */}
+                                  <div className="border-b border-gray-100 px-3 py-2">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="text-base font-semibold text-gray-900">
+                                        Complete Generated Plan
+                                      </h3>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={startEditingPlan}
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={isEditingPlan}
+                                          className="text-xs"
+                                        >
+                                          <Edit className="h-3 w-3 mr-1" />
+                                          Edit
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-3">
+                                    {renderTabbedProjectPlan()}
+                                  </div>
                                 </div>
-                              </div>
-                            </TabsContent>
-                          )}
+                              </TabsContent>
+                            )}
                         </Tabs>
                       </div>
                     </div>
@@ -5721,8 +6339,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <Code className="h-3 w-3 text-white" />
                         </div>
                         <div>
-                          <h3 className="text-base font-semibold text-gray-900">BPMN 2.0 Script</h3>
-                          <p className="text-xs text-gray-600">Export and manage your workflow script</p>
+                          <h3 className="text-base font-semibold text-gray-900">
+                            BPMN 2.0 Script
+                          </h3>
+                          <p className="text-xs text-gray-600">
+                            Export and manage your workflow script
+                          </p>
                         </div>
                       </div>
                       <div className="flex gap-2">
@@ -5757,13 +6379,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-3">
                     {isEditingBpmn ? (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
                           <p className="text-xs text-gray-600">
-                            Edit the BPMN XML script. Ensure proper XML syntax before saving.
+                            Edit the BPMN XML script. Ensure proper XML syntax
+                            before saving.
                           </p>
                           <div className="flex gap-2">
                             <Button
@@ -5785,30 +6408,32 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             </Button>
                           </div>
                         </div>
-                        
+
                         <Textarea
                           value={editedBpmnScript}
                           onChange={(e) => setEditedBpmnScript(e.target.value)}
                           className="min-h-[300px] font-mono text-xs bg-gray-50 border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                           placeholder="Edit BPMN XML script..."
                         />
-                        
+
                         <div className="text-xs text-gray-500">
-                          {editedBpmnScript.length} characters | Maintain valid BPMN XML structure
+                          {editedBpmnScript.length} characters | Maintain valid
+                          BPMN XML structure
                         </div>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <p className="text-xs text-gray-600">
-                          Generated BPMN 2.0 script that powers your visual workflow diagram. Compatible with any BPMN editor.
+                          Generated BPMN 2.0 script that powers your visual
+                          workflow diagram. Compatible with any BPMN editor.
                         </p>
-                        
+
                         <div className="bg-gray-50 border border-gray-300 rounded-lg p-3 max-h-[300px] overflow-y-auto">
                           <pre className="text-xs text-gray-800 font-mono whitespace-pre-wrap">
                             {generatedBpmnXml}
                           </pre>
                         </div>
-                        
+
                         <div className="flex justify-between items-center text-xs text-gray-500">
                           <span>BPMN 2.0 XML format with swimlanes</span>
                           <span>{generatedBpmnXml.length} characters</span>
@@ -5818,7 +6443,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
                 </div>
               )}
-              
+
               {/* Stakeholder Analysis Section */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="border-b border-gray-200 p-3">
@@ -5827,17 +6452,24 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Users className="h-3 w-3 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-gray-900">Stakeholder Analysis</h3>
-                      <p className="text-xs text-gray-600">Identify and analyze all project stakeholders with AI-powered insights</p>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Stakeholder Analysis
+                      </h3>
+                      <p className="text-xs text-gray-600">
+                        Identify and analyze all project stakeholders with
+                        AI-powered insights
+                      </p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate comprehensive stakeholder analysis including roles, responsibilities, influence levels, and interest mapping for your project.
+                    Generate comprehensive stakeholder analysis including roles,
+                    responsibilities, influence levels, and interest mapping for
+                    your project.
                   </div>
-                  
+
                   <Button
                     onClick={generateStakeholders}
                     disabled={isGeneratingStakeholders || !projectInput.trim()}
@@ -5860,17 +6492,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   <div className="mt-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Plus className="h-4 w-4 text-purple-600" />
-                      <span className="text-sm font-medium text-gray-700">Add Stakeholder</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        Add Stakeholder
+                      </span>
                     </div>
                     <div className="flex gap-2">
                       <div className="flex-1 relative">
                         <input
                           type="text"
                           value={newStakeholderName}
-                          onChange={(e) => setNewStakeholderName(e.target.value)}
+                          onChange={(e) =>
+                            setNewStakeholderName(e.target.value)
+                          }
                           placeholder="Enter stakeholder name (e.g., Project Manager, End User, Admin)"
                           className="w-full h-10 rounded-lg border border-purple-200 bg-white px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-all placeholder:text-gray-400"
-                          onKeyPress={(e) => e.key === 'Enter' && newStakeholderName.trim() && addStakeholder()}
+                          onKeyPress={(e) =>
+                            e.key === "Enter" &&
+                            newStakeholderName.trim() &&
+                            addStakeholder()
+                          }
                         />
                         {newStakeholderName.trim() && (
                           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -5888,7 +6528,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </Button>
                     </div>
                     <div className="mt-2 text-xs text-gray-500">
-                      💡 Tip: Press Enter to quickly add stakeholders, or click "Generate AI Suggestions" for ideas
+                      💡 Tip: Press Enter to quickly add stakeholders, or click
+                      "Generate AI Suggestions" for ideas
                     </div>
                   </div>
 
@@ -5899,21 +6540,33 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <div className="w-5 h-5 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg flex items-center justify-center">
                             <Users className="h-3 w-3 text-white" />
                           </div>
-                          <span className="font-semibold text-gray-800 text-sm">Stakeholders</span>
-                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">{stakeholderNames.length}</span>
+                          <span className="font-semibold text-gray-800 text-sm">
+                            Stakeholders
+                          </span>
+                          <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">
+                            {stakeholderNames.length}
+                          </span>
                         </div>
 
                         <div className="flex flex-wrap gap-2">
                           {stakeholderNames.map((name, index) => (
-                            <div key={index} className="group bg-white/90 backdrop-blur-sm border border-purple-200/60 rounded-xl p-3 hover:bg-white hover:shadow-lg hover:border-purple-300 transition-all duration-300 flex-shrink-0 min-w-[120px]">
+                            <div
+                              key={index}
+                              className="group bg-white/90 backdrop-blur-sm border border-purple-200/60 rounded-xl p-3 hover:bg-white hover:shadow-lg hover:border-purple-300 transition-all duration-300 flex-shrink-0 min-w-[120px]"
+                            >
                               {editingStakeholderIndex === index ? (
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="text"
                                     value={editingStakeholderName}
-                                    onChange={(e) => setEditingStakeholderName(e.target.value)}
+                                    onChange={(e) =>
+                                      setEditingStakeholderName(e.target.value)
+                                    }
                                     className="flex-1 h-8 rounded-lg border border-purple-300 bg-white px-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
-                                    onKeyPress={(e) => e.key === 'Enter' && saveEditingStakeholder()}
+                                    onKeyPress={(e) =>
+                                      e.key === "Enter" &&
+                                      saveEditingStakeholder()
+                                    }
                                     placeholder="Enter stakeholder name"
                                     autoFocus
                                   />
@@ -5936,11 +6589,18 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 <div className="flex items-center justify-between min-w-0">
                                   <div className="flex items-center gap-2 min-w-0 flex-1">
                                     <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full flex-shrink-0"></div>
-                                    <span className="text-sm font-medium text-gray-800 truncate" title={name}>{name}</span>
+                                    <span
+                                      className="text-sm font-medium text-gray-800 truncate"
+                                      title={name}
+                                    >
+                                      {name}
+                                    </span>
                                   </div>
                                   <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                     <button
-                                      onClick={() => startEditingStakeholder(index)}
+                                      onClick={() =>
+                                        startEditingStakeholder(index)
+                                      }
                                       title="Edit stakeholder name"
                                       className="h-7 w-7 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center transition-all hover:scale-110 shadow-sm"
                                     >
@@ -5958,12 +6618,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               )}
                             </div>
                           ))}
-                          
+
                           {/* Empty state with helpful message */}
                           {stakeholderNames.length === 0 && (
                             <div className="flex items-center gap-2 text-sm text-gray-500 italic bg-purple-50/50 rounded-lg p-3 border border-dashed border-purple-200">
                               <Users className="h-4 w-4" />
-                              <span>No stakeholders added yet. Click "Generate AI Suggestions" or add manually.</span>
+                              <span>
+                                No stakeholders added yet. Click "Generate AI
+                                Suggestions" or add manually.
+                              </span>
                             </div>
                           )}
                         </div>
@@ -5972,7 +6635,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   )}
                 </div>
               </div>
-              
+
               {/* Flow Diagram Generation Section */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="border-b border-gray-200 p-3">
@@ -5981,20 +6644,31 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Workflow className="h-3 w-3 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-gray-900">Generate Flow Diagram</h3>
-                      <p className="text-xs text-gray-600">Create an interactive workflow diagram based on your project</p>
+                      <h3 className="text-base font-semibold text-gray-900">
+                        Generate Flow Diagram
+                      </h3>
+                      <p className="text-xs text-gray-600">
+                        Create an interactive workflow diagram based on your
+                        project
+                      </p>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate a consolidated multi-stakeholder user journey flow diagram showing how all stakeholders interact, collaborate, and achieve their goals within your system.
+                    Generate a consolidated multi-stakeholder user journey flow
+                    diagram showing how all stakeholders interact, collaborate,
+                    and achieve their goals within your system.
                   </div>
-                  
+
                   <Button
                     onClick={generateProjectFlowDiagram}
-                    disabled={isGeneratingFlowDiagram || !projectInput.trim() || stakeholderNames.length === 0}
+                    disabled={
+                      isGeneratingFlowDiagram ||
+                      !projectInput.trim() ||
+                      stakeholderNames.length === 0
+                    }
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm disabled:from-gray-400 disabled:to-gray-500"
                   >
                     {isGeneratingFlowDiagram ? (
@@ -6009,12 +6683,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </>
                     )}
                   </Button>
-                  
+
                   {stakeholderNames.length === 0 && (
                     <div className="mt-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-200">
                       <div className="flex items-center gap-1">
                         <AlertCircle className="h-3 w-3" />
-                        <span>Add stakeholders above to generate a comprehensive multi-stakeholder flow diagram</span>
+                        <span>
+                          Add stakeholders above to generate a comprehensive
+                          multi-stakeholder flow diagram
+                        </span>
                       </div>
                     </div>
                   )}
@@ -6027,7 +6704,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 via-indigo-400/5 to-purple-400/5 rounded-2xl"></div>
                         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-300/10 to-transparent rounded-2xl"></div>
                         <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-300/10 to-transparent rounded-2xl"></div>
-                        
+
                         {/* Header section */}
                         <div className="relative flex items-center justify-between mb-6">
                           <div className="flex items-center gap-3">
@@ -6043,19 +6720,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               </p>
                             </div>
                           </div>
-                          
+
                           {/* Action buttons */}
                           <div className="flex items-center gap-3">
                             <Button
-                              onClick={() => setShowFlowDiagramEditor(true)}
-                              className="group relative px-4 py-2 bg-white/80 backdrop-blur-sm border border-blue-200/50 text-blue-700 hover:bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-300 rounded-xl font-medium text-sm"
-                            >
-                              <Edit className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                              Edit Flow
-                              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            </Button>
-                            <Button
-                              onClick={regenerateFlowDiagram}
+                              onClick={generateProjectFlowDiagram}
                               disabled={isGeneratingFlowDiagram}
                               className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium text-sm"
                             >
@@ -6064,7 +6733,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               ) : (
                                 <RefreshCw className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
                               )}
-                              {isGeneratingFlowDiagram ? 'Regenerating...' : 'Regenerate'}
+                              {isGeneratingFlowDiagram
+                                ? "Regenerating..."
+                                : "Regenerate"}
                               <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </Button>
                             <Button
@@ -6077,18 +6748,24 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             </Button>
                           </div>
                         </div>
-                        
+
                         {/* Flow diagram container with modern styling */}
                         <div className="relative group">
                           <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/60 rounded-2xl shadow-2xl backdrop-blur-sm"></div>
                           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/3 to-purple-500/5 rounded-2xl"></div>
-                          <div className="relative bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-inner overflow-hidden" style={{height: '360px'}}>
+                          <div
+                            className="relative bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-inner overflow-hidden"
+                            style={{ height: "360px" }}
+                          >
                             {/* Subtle grid pattern overlay */}
-                            <div className="absolute inset-0 opacity-[0.02]" style={{
-                              backgroundImage: `radial-gradient(circle at 1px 1px, #3B82F6 1px, transparent 0)`,
-                              backgroundSize: '20px 20px'
-                            }}></div>
-                            
+                            <div
+                              className="absolute inset-0 opacity-[0.02]"
+                              style={{
+                                backgroundImage: `radial-gradient(circle at 1px 1px, #3B82F6 1px, transparent 0)`,
+                                backgroundSize: "20px 20px",
+                              }}
+                            ></div>
+
                             <FlowDiagramViewer
                               flowData={generatedFlowDiagram.flowData}
                               title={generatedFlowDiagram.title}
@@ -6097,41 +6774,53 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               onFlowUpdate={(updatedFlow) => {
                                 setGeneratedFlowDiagram({
                                   ...generatedFlowDiagram,
-                                  flowData: updatedFlow
+                                  flowData: updatedFlow,
                                 });
-                                localStorage.setItem('project-flow-diagram', JSON.stringify({
-                                  ...generatedFlowDiagram,
-                                  flowData: updatedFlow
-                                }));
+                                localStorage.setItem(
+                                  "project-flow-diagram",
+                                  JSON.stringify({
+                                    ...generatedFlowDiagram,
+                                    flowData: updatedFlow,
+                                  }),
+                                );
                               }}
                             />
-                            
+
                             {/* Hover overlay effect */}
                             <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"></div>
                           </div>
                         </div>
-                        
+
                         {/* Stats section */}
                         <div className="relative mt-6 flex items-center justify-between">
                           <div className="flex items-center gap-6">
                             <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-blue-200/30">
                               <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse"></div>
                               <span className="text-sm font-semibold text-blue-800">
-                                {generatedFlowDiagram.flowData.nodes?.length || 0} nodes
+                                {generatedFlowDiagram.flowData.nodes?.length ||
+                                  0}{" "}
+                                nodes
                               </span>
                             </div>
                             <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-200/30">
-                              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                              <div
+                                className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full animate-pulse"
+                                style={{ animationDelay: "0.5s" }}
+                              ></div>
                               <span className="text-sm font-semibold text-indigo-800">
-                                {generatedFlowDiagram.flowData.edges?.length || 0} connections
+                                {generatedFlowDiagram.flowData.edges?.length ||
+                                  0}{" "}
+                                connections
                               </span>
                             </div>
                           </div>
-                          
+
                           {/* Status indicator */}
                           <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm rounded-full border border-emerald-200/50">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span className="text-xs font-medium text-emerald-700">Live & Interactive</span>
+                            <span className="text-xs font-medium text-emerald-700">
+                              Live & Interactive
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -6139,7 +6828,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   )}
                 </div>
               </div>
-              
+
               {/* Action Buttons */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
                 <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
@@ -6152,14 +6841,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     <ArrowLeft className="h-4 w-4 mr-2" />
                     Start Over
                   </Button>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
                     <Link href="/market-research" className="w-full sm:w-auto">
                       <Button
                         variant="outline"
-                        className={`w-full ${hasMarketResearchData() 
-                          ? 'bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700' 
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600'
+                        className={`w-full ${
+                          hasMarketResearchData()
+                            ? "bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700"
+                            : "bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600"
                         } text-white border-0 shadow-lg relative`}
                       >
                         <TrendingUp className="h-4 w-4 mr-2" />
@@ -6169,7 +6859,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         )}
                       </Button>
                     </Link>
-                    
+
                     <Link href="/user-journey" className="w-full sm:w-auto">
                       <Button
                         variant="outline"
@@ -6187,7 +6877,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         )}
 
         {/* Step 3: Success */}
-        {currentStep === 'diagram' && (
+        {currentStep === "diagram" && (
           <Card className="mb-6">
             <CardContent className="py-8">
               <div className="text-center mb-6">
@@ -6198,7 +6888,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   Visual Diagram Created Successfully!
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Your project plan has been converted into a comprehensive BPMN diagram with process flows and decision points.
+                  Your project plan has been converted into a comprehensive BPMN
+                  diagram with process flows and decision points.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <Link href="/editor">
@@ -6262,10 +6953,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         </Button>
                       </div>
                     </div>
-                    
+
                     <p className="text-sm text-purple-700 mb-4">
-                      Access and manage the underlying BPMN 2.0 JSON script that powers your visual workflow diagram. 
-                      This script can be imported into any BPMN-compatible editor or system.
+                      Access and manage the underlying BPMN 2.0 JSON script that
+                      powers your visual workflow diagram. This script can be
+                      imported into any BPMN-compatible editor or system.
                     </p>
 
                     {showBpmnScript && (
@@ -6274,7 +6966,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
                               <p className="text-sm text-purple-700">
-                                Edit the BPMN JSON script. Ensure proper JSON syntax before saving.
+                                Edit the BPMN JSON script. Ensure proper JSON
+                                syntax before saving.
                               </p>
                               <div className="flex gap-2">
                                 <Button
@@ -6296,16 +6989,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 </Button>
                               </div>
                             </div>
-                            
+
                             <Textarea
                               value={editedBpmnScript}
-                              onChange={(e) => setEditedBpmnScript(e.target.value)}
+                              onChange={(e) =>
+                                setEditedBpmnScript(e.target.value)
+                              }
                               className="min-h-[400px] font-mono text-sm bg-gray-50 border-purple-300 focus:border-purple-500 focus:ring-purple-500"
                               placeholder="Edit BPMN XML script..."
                             />
-                            
+
                             <div className="text-sm text-gray-500">
-                              {editedBpmnScript.length} characters | Make sure to maintain valid BPMN XML structure
+                              {editedBpmnScript.length} characters | Make sure
+                              to maintain valid BPMN XML structure
                             </div>
                           </div>
                         ) : (
@@ -6313,7 +7009,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             <div className="flex items-center justify-between">
                               <div className="text-sm text-gray-500">
                                 <span>BPMN 2.0 XML format with swimlanes</span>
-                                <span className="ml-4">{generatedBpmnXml.length} characters total</span>
+                                <span className="ml-4">
+                                  {generatedBpmnXml.length} characters total
+                                </span>
                               </div>
                               <Button
                                 onClick={startEditingBpmn}
@@ -6325,7 +7023,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 Edit Script
                               </Button>
                             </div>
-                            
+
                             <div className="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                               <pre className="text-sm text-gray-800 font-mono whitespace-pre-wrap">
                                 {generatedBpmnXml}
@@ -6355,10 +7053,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   <CardContent className="p-3">
                     <div className="space-y-3">
                       <p className="text-gray-600 text-sm">
-                        Generate a comprehensive XML sitemap for your project including all suggested pages, 
-                        content hierarchy, SEO metadata, and navigation structure.
+                        Generate a comprehensive XML sitemap for your project
+                        including all suggested pages, content hierarchy, SEO
+                        metadata, and navigation structure.
                       </p>
-                      
+
                       <div className="flex gap-2">
                         <Button
                           onClick={generateSitemap}
@@ -6410,10 +7109,11 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               Generated Sitemap XML
                             </h4>
                             <p className="text-sm text-teal-700 mb-4">
-                              Complete XML sitemap with all application pages, URLs, priorities, and SEO metadata. 
-                              Ready for implementation and search engine submission.
+                              Complete XML sitemap with all application pages,
+                              URLs, priorities, and SEO metadata. Ready for
+                              implementation and search engine submission.
                             </p>
-                            
+
                             <div className="bg-gray-900 border border-gray-700 rounded-lg p-4 max-h-[400px] overflow-y-auto">
                               <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap">
                                 {generatedSitemapXml}
@@ -6441,8 +7141,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     <Wand2 className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">Regenerate Section</h3>
-                    <p className="text-sm text-gray-600">Use AI to regenerate content with custom instructions</p>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      Regenerate Section
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      Use AI to regenerate content with custom instructions
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -6460,34 +7164,54 @@ Please provide the regenerated section content as properly formatted HTML:`;
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertCircle className="h-4 w-4 text-purple-600" />
-                  <span className="text-sm font-medium text-purple-800">Section Information</span>
+                  <span className="text-sm font-medium text-purple-800">
+                    Section Information
+                  </span>
                 </div>
                 <p className="text-sm text-purple-700">
-                  {customPromptSectionId && (() => {
-                    // For HTML content, extract sections directly from the current content
-                    if (projectPlan && (projectPlan.includes('<section') || projectPlan.includes('<!DOCTYPE html>'))) {
-                      const sectionPattern = /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
-                      let match;
-                      while ((match = sectionPattern.exec(projectPlan)) !== null) {
-                        const sectionHtml = match[0];
-                        const titleMatch = sectionHtml.match(/<h[1-3][^>]*>(.*?)<\/h[1-3]>/i);
-                        const title = titleMatch ? titleMatch[1].replace(/<[^>]*>/g, '').trim() : 'Unknown Section';
-                        const id = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-                        
-                        if (id === customPromptSectionId) {
-                          return `Regenerating: "${title}"`;
+                  {customPromptSectionId &&
+                    (() => {
+                      // For HTML content, extract sections directly from the current content
+                      if (
+                        projectPlan &&
+                        (projectPlan.includes("<section") ||
+                          projectPlan.includes("<!DOCTYPE html>"))
+                      ) {
+                        const sectionPattern =
+                          /<section[^>]*>((?:.|\s)*?)<\/section>/gi;
+                        let match;
+                        while (
+                          (match = sectionPattern.exec(projectPlan)) !== null
+                        ) {
+                          const sectionHtml = match[0];
+                          const titleMatch = sectionHtml.match(
+                            /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i,
+                          );
+                          const title = titleMatch
+                            ? titleMatch[1].replace(/<[^>]*>/g, "").trim()
+                            : "Unknown Section";
+                          const id = title
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]+/g, "-")
+                            .replace(/^-|-$/g, "");
+
+                          if (id === customPromptSectionId) {
+                            return `Regenerating: "${title}"`;
+                          }
                         }
                       }
-                    }
-                    
-                    // Fallback: just show the section ID
-                    return `Regenerating section: ${customPromptSectionId}`;
-                  })()}
+
+                      // Fallback: just show the section ID
+                      return `Regenerating section: ${customPromptSectionId}`;
+                    })()}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <label htmlFor="customPrompt" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="customPrompt"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Custom Instructions
                 </label>
                 <Textarea
@@ -6498,17 +7222,22 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   className="min-h-[120px] border-gray-300 focus:border-purple-500 focus:ring-purple-500"
                 />
                 <p className="text-xs text-gray-500">
-                  Example: "Make this more technical and include code examples" or "Focus on cost analysis and budget breakdown"
+                  Example: "Make this more technical and include code examples"
+                  or "Focus on cost analysis and budget breakdown"
                 </p>
               </div>
 
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-800">Important</span>
+                  <span className="text-sm font-medium text-yellow-800">
+                    Important
+                  </span>
                 </div>
                 <p className="text-sm text-yellow-700">
-                  This will completely replace the current section content. The regeneration will maintain the section title but recreate all content based on your instructions.
+                  This will completely replace the current section content. The
+                  regeneration will maintain the section title but recreate all
+                  content based on your instructions.
                 </p>
               </div>
             </div>
@@ -6522,7 +7251,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 Cancel
               </Button>
               <Button
-                onClick={() => customPromptSectionId && regenerateSectionWithCustomPrompt(customPromptSectionId, customPrompt)}
+                onClick={() =>
+                  customPromptSectionId &&
+                  regenerateSectionWithCustomPrompt(
+                    customPromptSectionId,
+                    customPrompt,
+                  )
+                }
                 disabled={!customPrompt.trim() || isRegeneratingSection}
                 className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
               >
