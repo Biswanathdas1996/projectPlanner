@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize AI Agent for BPMN Generation
-const genAI = new GoogleGenerativeAI("AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI");
+const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
 
 export interface StructuredWorkflowData {
   processName: string;

@@ -51,7 +51,7 @@ export class WireframeAnalysisAgent {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
     );
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
@@ -62,7 +62,7 @@ export class WireframeAnalysisAgent {
 
       // Get stakeholder flow data from local storage - try multiple possible keys
       const stakeholderFlowData =
-        localStorage.getItem("bpmn-stakeholder-flow-data") ||
+        localStorage.getItem("project-flow-diagram") ||
         localStorage.getItem("bpmn-stakeholder-flows") ||
         localStorage.getItem("bpmn-user-journey-flows");
       const personaFlowTypes = localStorage.getItem("bpmn-persona-flow-types");
@@ -322,13 +322,12 @@ You are an expert UX/UI analyst and wireframe designer. Analyze the following st
 ${projectDescription || "Not provided"}
 
 **Stakeholders:**
-${stakeholders.join(", ")}
-
+${localStorage.getItem("stakeholder-names")}
+ 
 **Flow Data:**
-${JSON.stringify(flowData, null, 2)}
+${localStorage.getItem("project-flow-data-intrim")}
 
-**Flow Types by Stakeholder:**
-${JSON.stringify(flowTypes, null, 2)}
+
 
 **Analysis Requirements:**
 1. Identify all unique pages/screens needed based on the stakeholder flows

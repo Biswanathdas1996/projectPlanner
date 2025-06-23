@@ -1114,7 +1114,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
     try {
       // Use AI to analyze project and identify stakeholder names
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1300,7 +1300,7 @@ Generate a detailed flow diagram that shows:
 
       // Use AI to analyze project plan and create project-specific processes
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1765,7 +1765,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${
 
     try {
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 

@@ -287,7 +287,7 @@ export default function CodeGenerator() {
   };
 
   const generateAIConsolidatedFlow = async (flows: ProjectFlow[]) => {
-    const API_KEY = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
+    const API_KEY = "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg";
 
     // Prepare flow data for AI analysis
     const flowSummaries = flows.map((flow) => ({

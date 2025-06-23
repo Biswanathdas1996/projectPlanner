@@ -109,7 +109,7 @@ export class MarketResearchAgent {
     // Use Gemini to generate market insights based on the project description
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
     );
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -212,7 +212,7 @@ CRITICAL: Only include REAL company names that actually exist in the industry. D
     // Use Gemini to analyze and structure the search results
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
     );
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 

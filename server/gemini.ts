@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Request, Response } from "express";
 
-const genAI = new GoogleGenerativeAI("AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI");
+const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
 
 export async function generateProjectPlan(req: Request, res: Response) {
   try {

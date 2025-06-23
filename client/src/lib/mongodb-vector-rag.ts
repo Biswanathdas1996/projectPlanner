@@ -48,7 +48,7 @@ export class MongoDBVectorRAG {
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(
-      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
     );
     this.embeddingModel = this.genAI.getGenerativeModel({
       model: "embedding-001",

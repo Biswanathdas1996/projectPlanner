@@ -154,7 +154,7 @@ export class BrandGuidelineExtractor {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
     );
     this.genAI = genAI;
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });

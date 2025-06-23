@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini for client-side usage
-const genAI = new GoogleGenerativeAI("AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI");
+const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
 
 // Add error handling and logging for debugging
 const originalConsoleError = console.error;
