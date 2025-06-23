@@ -43,7 +43,7 @@ export class AIFlowDiagramGenerator {
   }
 
   async generateFlowDiagram(
-    flowDetails: FlowDetails,
+    flowDetails: any,
     stakeholder: string,
     flowType: string
   ): Promise<FlowDiagramData> {
@@ -64,73 +64,33 @@ export class AIFlowDiagramGenerator {
   }
 
   private buildFlowDiagramPrompt(
-    flowDetails: FlowDetails,
+    flowDetails: any,
     stakeholder: string,
     flowType: string
   ): string {
-    return `Generate a USER JOURNEY-FOCUSED ReactFlow diagram JSON structure for stakeholder-specific user flows:
+    // Compose a detailed prompt using the provided flow details, stakeholder, and flow type.
+    return `
+  Generate a ReactFlow diagram JSON structure for a stakeholder-specific user journey.
 
 **Flow Focus:** User Journey Mapping for Multiple Stakeholder Types
 **Process Description:** ${flowDetails.processDescription}
-**Trigger:** ${flowDetails.trigger}
-**Stakeholder Types:** ${flowDetails.participants.join(", ")}
-**Detailed User Activities:** ${flowDetails.activities.join(" | ")}
-**User Decision Points:** ${flowDetails.decisionPoints.join(", ")}
-**End Event:** ${flowDetails.endEvent}
-**User Support Elements:** ${flowDetails.additionalElements.join(", ")}
-
-Create a USER-CENTERED ReactFlow diagram with 25-35 nodes showing DETAILED STAKEHOLDER JOURNEYS:
-
-## REQUIRED USER JOURNEY COMPONENTS:
-
-### 1. USER DISCOVERY & ONBOARDING (5-7 nodes)
-- User Discovers App
-- Explores Features
-- Views Demo/Tutorial
-- Creates Account
-- Email Verification
-- Profile Setup
-- Guided Tour
-
-### 2. STAKEHOLDER-SPECIFIC WORKFLOWS (15-20 nodes)
-Create separate flow paths for each stakeholder type:
-- First-time Visitor Journey
-- Registered User Daily Flow
-- Premium User Advanced Flow
-- Mobile User Experience
-- Admin User Management
-- Guest User Limited Access
-- Power User Advanced Features
-- Business User Collaboration
-- Content Creator Workflow
-- Customer Support Process
-
-### 3. USER INTERACTION TOUCHPOINTS (6-8 nodes)
-- Dashboard/Home
-- Navigation Menu
-- Search Functions
-- User Settings
-- Help/Support
-- Notifications
-- Feedback System
-- User Profile
-
-### 4. USER DECISION POINTS (4-6 nodes)
-- Registration Choice
-- Feature Selection
-- Upgrade Decision
-- Sharing Preferences
-- Settings Configuration
-- Support Contact
+**Flow Details:** ${flowDetails}
 
 ## LAYOUT REQUIREMENTS:
 - **Stakeholder Swim Lanes**: Arrange in 4-6 horizontal swimlanes by user type
-- **User Journey Flow**: Show linear progression from discovery to goal completion
+- **User Journey Flow**: Show  all progression from discovery to goal completion
 - **Alternative Paths**: Include different user pathways and choice branches
 - **Decision Points**: Show user decision moments with clear outcomes
-- **Support Touchpoints**: Include help, feedback, and assistance points
+- **Support Touch points**: Include help, feedback, and assistance points
+  Requirements:
+  - Generate a user journey flow for the stakeholder "${stakeholder}" based on the process description and activities.
+  - Include all relevant activities, decision points, and support elements for this stakeholder.
+  - Use 25-35 nodes to represent the complete journey from discovery to completion.
+  - Position nodes in swimlanes or layers according to user journey stages (discovery, onboarding, core, advanced, support, completion).
+  - Style nodes according to their type (see below).
+  - Edges should clearly show the flow, alternative paths, and decision outcomes.
 
-## NODE SPECIFICATIONS:
+  ## NODE SPECIFICATIONS:
 - **Discovery Nodes**: Green (#10B981) for user entry points
 - **Onboarding Nodes**: Blue (#3B82F6) for registration/setup processes
 - **Core Activity Nodes**: Indigo (#4F46E5) for main user tasks
@@ -140,70 +100,75 @@ Create separate flow paths for each stakeholder type:
 - **Premium Nodes**: Emerald (#059669) for paid features
 - **Completion Nodes**: Gray (#6B7280) for successful outcomes
 
-## POSITIONING:
-- Discovery Layer: Y = 50-150 (app discovery, landing page)
-- Onboarding Layer: Y = 200-300 (registration, setup)
-- Core Usage Layer: Y = 350-500 (main features, daily tasks)
-- Advanced Features Layer: Y = 550-650 (premium, power user features)
-- Support/Exit Layer: Y = 700-800 (help, completion, feedback)
-- X spacing: 200px between stakeholder paths
-- Create separate horizontal flows for each stakeholder type
+** Node Text color must be white 
 
-## EDGE REQUIREMENTS:
-- Primary user flow edges: solid lines
-- Alternative path edges: dashed lines
-- Decision outcome edges: labeled with user choices
-- Support flow edges: animated blue lines
-- Premium upgrade edges: thick green lines
-- User feedback edges: dotted lines
-- Include clear labels for user decision outcomes
-
-Generate a JSON object with 'nodes' and 'edges' arrays showing STAKEHOLDER-SPECIFIC USER JOURNEYS.
-Each node must represent a user action, decision point, or interface touchpoint.
-
-CRITICAL: Generate 25-35 detailed nodes representing COMPLETE USER JOURNEYS for different stakeholder types showing their step-by-step progression through the application.
-
-**CRITICAL: Response Format Requirements:**
-Return ONLY a valid JSON object. Do NOT include any extra properties beyond these allowed fields:
-
-For nodes, ONLY use these properties:
-- id (string, required)
-- position (object with x, y numbers, required)
-- data (object with label string, required)
-- type (string, optional: "input", "output", "default")
-- style (object, optional)
-
-For edges, ONLY use these properties:
-- id (string, required)
-- source (string, required)
-- target (string, required)
-- animated (boolean, optional)
-- style (object, optional)
-
-DO NOT ADD: participant, description, or any other custom properties.
-
-Example structure:
-{
-  "nodes": [
-    {
-      "id": "node-1",
-      "position": { "x": 50, "y": 50 },
-      "data": { "label": "Start: User submits form" },
-      "type": "input",
-      "style": { "backgroundColor": "#10B981", "color": "white", "border": "2px solid #059669" }
-    }
-  ],
-  "edges": [
-    {
-      "id": "edge-1",
-      "source": "node-1",
-      "target": "node-2",
-      "animated": true
-    }
-  ]
-}
-
-Generate a comprehensive flow with proper positioning and styling for all elements.`;
+ 
+  ## POSITIONING:
+  - Discovery Layer: Y = 50-150 (app discovery, landing page)
+  - Onboarding Layer: Y = 200-300 (registration, setup)
+  - Core Usage Layer: Y = 350-500 (main features, daily tasks)
+  - Advanced Features Layer: Y = 550-650 (premium, power user features)
+  - Support/Exit Layer: Y = 700-800 (help, completion, feedback)
+  - X spacing: 200px between stakeholder paths
+  - Create separate horizontal flows for each stakeholder type
+  
+  ## EDGE REQUIREMENTS:
+  - Primary user flow edges: solid lines
+  - Alternative path edges: dashed lines
+  - Decision outcome edges: labeled with user choices
+  - Support flow edges: animated blue lines
+  - Premium upgrade edges: thick green lines
+  - User feedback edges: dotted lines
+  - Include clear labels for user decision outcomes
+  
+  Generate a JSON object with 'nodes' and 'edges' arrays showing STAKEHOLDER-SPECIFIC USER JOURNEYS.
+  Each node must represent a user action, decision point, or interface touchpoint.
+  
+  CRITICAL: Generate 25-35 detailed nodes representing COMPLETE USER JOURNEYS for different stakeholder types showing their step-by-step progression through the application.
+  
+  **CRITICAL: Response Format Requirements:**
+  Return ONLY a valid JSON object. Do NOT include any extra properties beyond these allowed fields:
+  All the interactions should be joined 
+  
+  For nodes, ONLY use these properties:
+  - id (string, required)
+  - position (object with x, y numbers, required)
+  - data (object with label string, required)
+  - type (string, optional: "input", "output", "default")
+  - style (object, optional)
+  
+  For edges, ONLY use these properties:
+  - id (string, required)
+  - source (string, required)
+  - target (string, required)
+  - animated (boolean, optional)
+  - style (object, optional)
+  
+  DO NOT ADD: description, or any other custom properties.
+  All the participant name should be visible
+  Example structure:
+  {
+    "nodes": [
+      {
+        "id": "node-1",
+        "position": { "x": 50, "y": 50 },
+        "data": { "label": "Start: User submits form" },
+        "type": "input",
+        "style": { "backgroundColor": "#10B981", "color": "white", "border": "2px solid #059669" }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "source": "node-1",
+        "target": "node-2",
+        "animated": true
+      }
+    ]
+  }
+  
+  Generate the full flow diagram JSON for the "${stakeholder}" user journey.
+  `;
   }
 
   private parseFlowDiagramResponse(response: string): FlowDiagramData {

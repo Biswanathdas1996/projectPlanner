@@ -1340,78 +1340,79 @@ Generate a detailed flow diagram that shows:
           : ["End Users", "Admin Users", "Content Managers"];
 
       const flowAnalysisPrompt = `
-Analyze this project and create a CONSOLIDATED User Journey Flow that incorporates ALL stakeholders into ONE comprehensive diagram:
+    Analyze this project and create a COMPREHENSIVE User Journey Flow that provides detailed workflows for EACH stakeholder while showcasing their interactions with one another across various processes:
 
-PROJECT DESCRIPTION: ${projectInput}
+    PROJECT DESCRIPTION: ${projectInput}
 
-PROJECT PLAN CONTENT: ${planContent}
+    IDENTIFIED STAKEHOLDERS: ${stakeholderData.join(", ")}
 
-IDENTIFIED STAKEHOLDERS: ${stakeholderData.join(", ")}
+    For EACH stakeholder, generate:
+    1. A detailed workflow that outlines their specific journey through the system.
+    2. Key actions, decision points, and outcomes for their role.
+    3. Interactions with other stakeholders at various stages of the workflow.
+    4. Shared processes and collaboration points with other stakeholders.
+    5. Role-specific tasks and responsibilities.
 
-Create ONE consolidated flow diagram that shows how ALL stakeholders interact with the system. The flow should:
+    Additionally:
+    - Highlight decision points where workflows diverge based on stakeholder roles.
+    - Include shared resources or processes where multiple stakeholders interact.
+    - Ensure all major system processes involving multiple stakeholders are represented.
+    - Provide a consolidated view of how all stakeholders contribute to the overall system goals.
 
-1. Show entry points for each stakeholder type
-2. Display shared processes and stakeholder-specific paths
-3. Include decision points where paths diverge based on stakeholder role
-4. Show interaction points between different stakeholder types
-5. Include all major system processes that involve multiple stakeholders
+    Return a JSON object with the following structure:
+    {
+      "processDescription": "Comprehensive multi-stakeholder user journey flow",
+      "stakeholders": [
+        {
+      "name": "Stakeholder Name",
+      "workflow": [
+        "Step 1: Description of the first step",
+        "Step 2: Description of the second step",
+        "Step 3: Description of the third step",
+        "...additional steps"
+      ],
+      "interactions": [
+        "Interaction with Stakeholder X at Step Y",
+        "Collaboration with Stakeholder Z during Process A",
+        "...additional interactions"
+      ]
+        },
+        "...additional stakeholders"
+      ],
+      "sharedProcesses": [
+        "Description of shared process 1",
+        "Description of shared process 2",
+        "...additional shared processes"
+      ],
+      "decisionPoints": [
+        "Decision point 1: Description",
+        "Decision point 2: Description",
+        "...additional decision points"
+      ],
+      "endEvent": "All stakeholders successfully complete their workflows and achieve their objectives",
+      "additionalElements": [
+        "Collaboration tools for stakeholders",
+        "Role-based permissions and access controls",
+        "Notification and communication systems",
+        "Cross-role handoff mechanisms",
+        "Unified reporting and analytics for all stakeholders"
+      ]
+    }
 
-Return a JSON object with consolidated multi-stakeholder activities:
-{
-  "processDescription": "Consolidated multi-stakeholder user journey flow",
-  "participants": ${JSON.stringify(stakeholderData)},
-  "trigger": "Different stakeholders enter the system to accomplish their specific goals",
-  "activities": [
-    "System Entry Point: All stakeholders access the platform",
-    "Authentication: Role-based login/registration for ${stakeholderData.join(
-      ", "
-    )}",
-    "Role Detection: System identifies stakeholder type and redirects to appropriate dashboard",
-    "${
-      stakeholderData[0] || "Primary User"
-    }: Completes their main workflow (discovery → action → completion)",
-    "${
-      stakeholderData[1] || "Secondary User"
-    }: Performs their specific tasks (access → manage → review)",
-    "${
-      stakeholderData[2] || "Third User"
-    }: Executes their role-based activities (monitor → control → optimize)",
-    "Cross-stakeholder Interactions: Points where different stakeholders collaborate or hand-off",
-    "Shared Resources: Common areas where all stakeholders might interact",
-    "Feedback Loop: All stakeholders provide input that improves the system",
-    "System Completion: Each stakeholder achieves their specific objectives"
-  ],
-  "decisionPoints": [
-    "Which stakeholder type is accessing the system?",
-    "Does this action require approval from another stakeholder?",
-    "Should this process involve multiple stakeholder types?",
-    "Is escalation to a different stakeholder role needed?"
-  ],
-  "endEvent": "All stakeholders successfully complete their interconnected workflows",
-  "additionalElements": [
-    "Multi-stakeholder collaboration tools",
-    "Role-based permissions and access controls", 
-    "Stakeholder notification and communication systems",
-    "Cross-role handoff mechanisms",
-    "Unified reporting and analytics for all stakeholder types"
-  ]
-}
-
-Generate a SINGLE consolidated flow that shows how ALL ${
-        stakeholderData.length
-      } stakeholder types work together in the system.`;
+    Generate a detailed and COMPREHENSIVE flow that includes individual workflows for EACH stakeholder and their interactions with others in the system.
+    `;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
 
-      let flowDetails;
+      let flowDetails: string;
       try {
         // Parse AI response to get project-specific flow details
         const cleanResponse = responseText
           .replace(/```json\n?/g, "")
           .replace(/```\n?/g, "")
           .trim();
-        flowDetails = JSON.parse(cleanResponse);
+        flowDetails = cleanResponse;
       } catch (parseError) {
         console.log(
           "Using fallback flow details due to parsing error:",
@@ -1423,60 +1424,14 @@ Generate a SINGLE consolidated flow that shows how ALL ${
             ? stakeholderData
             : ["End Users", "Admin Users", "Content Managers"];
 
-        flowDetails = {
-          processDescription: `Consolidated multi-stakeholder user journey flow for: ${projectInput}`,
-          participants: fallbackStakeholders,
-          trigger:
-            "Multiple stakeholder types enter the system to accomplish their interconnected goals",
-          activities: [
-            "System Entry Point: All stakeholders access the unified platform",
-            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(
-              ", "
-            )}`,
-            "Role Detection & Routing: System identifies stakeholder type and provides appropriate access",
-            `${
-              fallbackStakeholders[0] || "Primary Stakeholder"
-            }: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
-            `${
-              fallbackStakeholders[1] || "Secondary Stakeholder"
-            }: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
-            `${
-              fallbackStakeholders[2] || "Third Stakeholder"
-            }: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
-            "Cross-Stakeholder Collaboration: Points where different stakeholders interact and collaborate",
-            "Shared Resource Access: Common areas where multiple stakeholder types converge",
-            "Notification & Communication: System alerts and messages between stakeholder types",
-            "Data Integration: Information flows between different stakeholder workflows",
-            "Feedback & Improvement Loop: All stakeholders contribute to system enhancement",
-            "Unified Completion: All stakeholder types achieve their specific objectives within the integrated system",
-          ],
-          decisionPoints: [
-            "Which stakeholder role is accessing the system?",
-            `Does ${fallbackStakeholders[0] || "Primary User"} action require ${
-              fallbackStakeholders[1] || "Secondary User"
-            } approval?`,
-            "Should this process involve multiple stakeholder collaboration?",
-            "Is escalation between stakeholder roles required?",
-            "Does this workflow need cross-stakeholder validation?",
-          ],
-          endEvent:
-            "All stakeholder types successfully complete their interconnected and collaborative workflows",
-          additionalElements: [
-            "Multi-stakeholder collaboration workspace",
-            "Role-based permission management system",
-            "Inter-stakeholder communication channels",
-            "Cross-role workflow handoff mechanisms",
-            "Unified analytics dashboard for all stakeholder types",
-            "Stakeholder-specific onboarding and training modules",
-          ],
-        };
+        flowDetails = "";
       }
 
       const flowDiagramGenerator = createAIFlowDiagramGenerator();
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
-        "System",
-        "Comprehensive Project Workflow"
+        stakeholderData.join(", "),
+        "Comprehensive Project Workflow, "
       );
 
       const flowDiagramResult = {
@@ -1514,158 +1469,6 @@ Generate a SINGLE consolidated flow that shows how ALL ${
     } catch (err) {
       console.error("Flow diagram generation error:", err);
       setError("Failed to generate flow diagram. Please try again.");
-    } finally {
-      setIsGeneratingFlowDiagram(false);
-    }
-  };
-
-  const regenerateFlowDiagram = async () => {
-    if (!projectInput.trim()) {
-      setError("Please enter project description first");
-      return;
-    }
-
-    // Clear existing flow diagram first
-    setGeneratedFlowDiagram(null);
-    localStorage.removeItem("project-flow-diagram");
-
-    setIsGeneratingFlowDiagram(true);
-    setError("");
-
-    try {
-      // Create user-centered FlowDetails object with alternative user journeys
-      const flowDetails = {
-        processDescription: `Alternative user journey for project: ${projectInput}. Enhanced with different user paths and interaction patterns for comprehensive user experience mapping.`,
-        participants: [
-          "First-time Visitors",
-          "Registered Users",
-          "Premium Users",
-          "Mobile Users",
-          "Desktop Users",
-          "Admin Users",
-          "Guest Users",
-          "Power Users",
-          "Casual Users",
-          "Business Users",
-          "Customer Support",
-          "Content Creators",
-        ],
-        trigger: "User has a specific need or goal they want to accomplish",
-        activities: [
-          "FIRST-TIME VISITOR: Discovers landing page → Explores features → Reads testimonials → Watches demo → Decides to sign up → Creates account → Completes onboarding",
-          "REGISTERED USER: Logs in → Checks dashboard → Reviews notifications → Completes daily tasks → Updates profile → Saves work → Logs out",
-          "PREMIUM USER: Logs in with premium credentials → Accesses premium features → Uses advanced tools → Downloads premium content → Manages subscription → Contacts priority support",
-          "MOBILE USER: Opens mobile app → Authenticates with biometrics → Syncs data → Uses offline features → Enables location services → Shares content → Receives push notifications",
-          "ADMIN USER: Logs into admin panel → Reviews system metrics → Manages user accounts → Configures settings → Reviews reports → Handles escalations → Updates system",
-          "GUEST USER: Browses without login → Views limited content → Receives registration prompts → Explores free features → Considers signup → Completes trial registration",
-          "POWER USER: Uses keyboard shortcuts → Bulk operations → Custom workflows → API integrations → Advanced configurations → Automation setup → Performance optimization",
-          "BUSINESS USER: Team login → Collaborative workspace → Project management → Resource allocation → Progress tracking → Team communication → Reporting dashboard",
-          "CONTENT CREATOR: Content management → Create new content → Media upload → Content editing → Publishing workflow → Analytics review → Audience engagement",
-          "CUSTOMER SUPPORT: Support dashboard → Ticket management → User assistance → Knowledge base updates → Escalation handling → Performance metrics → Training updates",
-        ],
-        decisionPoints: [
-          "First-time visitor ready to create account?",
-          "Registered user wants to upgrade to premium?",
-          "Premium user satisfied with advanced features?",
-          "Mobile user enables push notifications?",
-          "Admin user approves new system changes?",
-          "Guest user ready to register for full access?",
-          "Power user wants to create custom workflows?",
-          "Business user needs team collaboration features?",
-          "Content creator ready to publish content?",
-          "Customer support escalates complex issues?",
-          "User prefers mobile or desktop experience?",
-          "User wants to enable biometric authentication?",
-          "User interested in API integrations?",
-          "User needs offline functionality?",
-          "User wants to share content publicly?",
-          "User considering subscription renewal?",
-          "User satisfied with loading performance?",
-          "User wants personalized recommendations?",
-          "User interested in community features?",
-          "User needs data export capabilities?",
-          "User wants advanced reporting features?",
-          "User ready for automated workflows?",
-          "User interested in third-party integrations?",
-          "User planning long-term usage?",
-        ],
-        endEvent:
-          "User successfully completes their journey and achieves their goals",
-        additionalElements: [
-          "User onboarding tutorials",
-          "Interactive feature guides",
-          "Contextual help tooltips",
-          "User feedback collection",
-          "Customer support chat",
-          "User preference settings",
-          "Accessibility options",
-          "Multi-language support",
-          "User progress tracking",
-          "Achievement badges",
-          "User community forums",
-          "Knowledge base articles",
-          "Video tutorials",
-          "User testimonials",
-          "Referral program",
-          "User analytics dashboard",
-          "Personalization engine",
-          "User notification center",
-          "Mobile app companion",
-          "Offline mode support",
-          "User data export tools",
-          "Account security settings",
-          "User subscription management",
-          "Social sharing features",
-          "User collaboration tools",
-          "Custom user workflows",
-          "User success metrics",
-          "User retention programs",
-          "User experience surveys",
-          "User journey optimization",
-        ],
-      };
-
-      const flowDiagramGenerator = createAIFlowDiagramGenerator();
-      const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
-        flowDetails,
-        "System",
-        "Enhanced Project Workflow"
-      );
-
-      const flowDiagramResult = {
-        title: "Alternative User Journey Flow",
-        description:
-          "Enhanced user-centered flow diagram with alternative user paths and interaction patterns",
-        flowData: flowDiagramData,
-      };
-
-      setGeneratedFlowDiagram(flowDiagramResult);
-
-      // Save to both formats for compatibility
-      localStorage.setItem(
-        "project-flow-diagram",
-        JSON.stringify(flowDiagramResult)
-      );
-
-      // Save to flowDiagrams structure for FlowDiagramEditor
-      try {
-        const existingFlows = JSON.parse(
-          localStorage.getItem("flowDiagrams") || "{}"
-        );
-        existingFlows["project-flow-diagram"] = flowDiagramResult.flowData;
-        localStorage.setItem("flowDiagrams", JSON.stringify(existingFlows));
-        console.log(
-          "✅ Project flow regenerated and saved to flowDiagrams structure"
-        );
-      } catch (error) {
-        console.error(
-          "Error saving regenerated flow to flowDiagrams structure:",
-          error
-        );
-      }
-    } catch (err) {
-      console.error("Flow diagram regeneration error:", err);
-      setError("Failed to regenerate flow diagram. Please try again.");
     } finally {
       setIsGeneratingFlowDiagram(false);
     }
