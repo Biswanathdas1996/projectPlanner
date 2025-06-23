@@ -271,6 +271,15 @@ Changelog:
   - Enhanced both AI-generated and fallback master flows with localStorage integration
   - Added comprehensive console logging for debugging save/load operations
   - Ensured master flow diagrams persist across browser sessions and page refreshes
+- June 23, 2025. Project Flow Diagram Generator added to Project Planner page
+  - Built comprehensive flow diagram generation section under Project Plan Sections
+  - Added AI-powered workflow analysis using Gemini 1.5 Flash for detailed process flows
+  - Implemented interactive FlowDiagramViewer with drag-and-drop editing capabilities
+  - Created real-time flow updates with automatic localStorage persistence ('project-flow-diagram' key)
+  - Added export functionality for downloading flow diagrams as JSON files
+  - Integrated with existing project context to generate relevant workflow processes
+  - Flow diagrams show user journeys, system processes, decision points, and integration touchpoints
+  - Enhanced project planning workflow with visual process documentation capabilities
 ```
 
 ## User Preferences

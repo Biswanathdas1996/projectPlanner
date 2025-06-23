@@ -25,6 +25,8 @@ import {
 import { EnhancedProgressTracker } from '@/components/enhanced-progress-tracker';
 import { ProjectSectionsSettings, loadProjectSectionsSettings, ProjectSection as SettingsProjectSection } from '@/components/project-sections-settings';
 import { SectionFlowViewer } from '@/components/section-flow-viewer';
+import { FlowDiagramViewer } from '@/components/flow-diagram-viewer';
+import { createAIFlowDiagramGenerator, FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
 
@@ -235,6 +237,11 @@ export default function ProjectPlanner() {
   const [showCustomPromptModal, setShowCustomPromptModal] = useState(false);
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
   const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(null);
+
+  // Flow diagram generation state
+  const [generatedFlowDiagram, setGeneratedFlowDiagram] = useState<{title: string, description: string, flowData: FlowDiagramData} | null>(null);
+  const [isGeneratingFlowDiagram, setIsGeneratingFlowDiagram] = useState(false);
+  const [showFlowDiagramEditor, setShowFlowDiagramEditor] = useState(false);
 
   // Project sections settings state
   const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
@@ -917,6 +924,110 @@ Return the complete enhanced project plan as HTML with all existing content plus
     } finally {
       setIsEnhancing(false);
     }
+  };
+
+  const generateProjectFlowDiagram = async () => {
+    if (!projectInput.trim()) {
+      setError('Please enter project description first');
+      return;
+    }
+
+    setIsGeneratingFlowDiagram(true);
+    setError('');
+
+    try {
+      // Load any existing flow from localStorage
+      const savedFlowDiagram = localStorage.getItem('project-flow-diagram');
+      if (savedFlowDiagram) {
+        try {
+          const parsed = JSON.parse(savedFlowDiagram);
+          setGeneratedFlowDiagram(parsed);
+          setIsGeneratingFlowDiagram(false);
+          return;
+        } catch (error) {
+          console.error('Error parsing saved flow diagram:', error);
+        }
+      }
+
+      // Create a comprehensive project analysis
+      const projectAnalysis = `
+Project Description: ${projectInput}
+
+${projectPlan ? `Existing Project Plan Context: ${getPlanContentForExternalUse(projectPlan)}` : ''}
+
+Generate a detailed flow diagram that shows:
+1. Main user entry points and onboarding processes
+2. Core system processes and workflows  
+3. Decision points and conditional flows
+4. Integration points with external systems
+5. Data flow and processing steps
+6. Error handling and exception paths
+7. User interaction touchpoints
+8. Administrative and management processes
+`;
+
+      // Create FlowDetails object with proper structure
+      const flowDetails = {
+        processDescription: `Main workflow for project: ${projectInput}. ${projectPlan ? 'Enhanced with project plan context for comprehensive flow generation.' : ''}`,
+        participants: ["User", "System", "Administrator", "External Services"],
+        trigger: "User initiates project workflow",
+        activities: [
+          "User Registration/Login",
+          "Project Setup",
+          "Core Process Execution",
+          "Data Processing",
+          "Result Generation",
+          "Notification Delivery"
+        ],
+        decisionPoints: [
+          "User Authentication Valid?",
+          "Input Data Complete?",
+          "Process Successful?",
+          "Additional Actions Required?"
+        ],
+        endEvent: "Workflow completed successfully",
+        additionalElements: ["Error Handling", "Audit Logging", "Performance Monitoring"]
+      };
+
+      const flowDiagramGenerator = createAIFlowDiagramGenerator();
+      const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
+        flowDetails,
+        "System",
+        "Comprehensive Project Workflow"
+      );
+
+      const flowDiagramResult = {
+        title: "Project Workflow Diagram",
+        description: "Comprehensive flow diagram showing all main processes and user interactions for the project",
+        flowData: flowDiagramData
+      };
+
+      setGeneratedFlowDiagram(flowDiagramResult);
+      
+      // Save to localStorage
+      localStorage.setItem('project-flow-diagram', JSON.stringify(flowDiagramResult));
+      
+    } catch (err) {
+      console.error('Flow diagram generation error:', err);
+      setError('Failed to generate flow diagram. Please try again.');
+    } finally {
+      setIsGeneratingFlowDiagram(false);
+    }
+  };
+
+  const downloadFlowDiagram = () => {
+    if (!generatedFlowDiagram) return;
+    
+    const flowData = JSON.stringify(generatedFlowDiagram, null, 2);
+    const blob = new Blob([flowData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'project-flow-diagram.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   const startEditingPlan = () => {
@@ -5357,7 +5468,97 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 </div>
               )}
               
-              
+              {/* Flow Diagram Generation Section */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="border-b border-gray-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-md flex items-center justify-center">
+                      <Workflow className="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900">Generate Flow Diagram</h3>
+                      <p className="text-xs text-gray-600">Create an interactive workflow diagram based on your project</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-3 space-y-3">
+                  <div className="text-sm text-gray-600">
+                    Generate a comprehensive flow diagram showing the main processes, user interactions, and decision points for your project.
+                  </div>
+                  
+                  <Button
+                    onClick={generateProjectFlowDiagram}
+                    disabled={isGeneratingFlowDiagram || !projectInput.trim()}
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg text-sm"
+                  >
+                    {isGeneratingFlowDiagram ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                        Generating Flow Diagram...
+                      </>
+                    ) : (
+                      <>
+                        <Workflow className="h-3 w-3 mr-2" />
+                        Generate Interactive Flow Diagram
+                      </>
+                    )}
+                  </Button>
+
+                  {generatedFlowDiagram && (
+                    <div className="mt-4 border border-blue-200 rounded-lg p-4 bg-blue-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-blue-800">Generated Flow Diagram</h4>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setShowFlowDiagramEditor(true)}
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-100 text-xs"
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            onClick={downloadFlowDiagram}
+                            variant="outline"
+                            size="sm"
+                            className="border-green-300 text-green-600 hover:bg-green-50 text-xs"
+                          >
+                            <Download className="h-3 w-3 mr-1" />
+                            Export
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Flow Diagram Viewer */}
+                      <div className="bg-white rounded-lg border border-blue-200 p-2" style={{height: '300px'}}>
+                        <FlowDiagramViewer
+                          flowData={generatedFlowDiagram.flowData}
+                          title={generatedFlowDiagram.title}
+                          className="h-full"
+                          flowKey="project-flow-diagram"
+                          onFlowUpdate={(updatedFlow) => {
+                            setGeneratedFlowDiagram({
+                              ...generatedFlowDiagram,
+                              flowData: updatedFlow
+                            });
+                            // Save to localStorage
+                            localStorage.setItem('project-flow-diagram', JSON.stringify({
+                              ...generatedFlowDiagram,
+                              flowData: updatedFlow
+                            }));
+                          }}
+                        />
+                      </div>
+                      
+                      <div className="mt-2 text-xs text-blue-600">
+                        {generatedFlowDiagram.flowData.nodes?.length || 0} nodes • {generatedFlowDiagram.flowData.edges?.length || 0} connections
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               
               {/* Action Buttons */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
