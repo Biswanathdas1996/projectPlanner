@@ -243,18 +243,19 @@ export default function ProjectPlanner() {
   const [isGeneratingFlowDiagram, setIsGeneratingFlowDiagram] = useState(false);
   const [showFlowDiagramEditor, setShowFlowDiagramEditor] = useState(false);
 
-  // Stakeholder analysis state
-  const [stakeholders, setStakeholders] = useState<Array<{
+  // User analysis state
+  const [applicationUsers, setApplicationUsers] = useState<Array<{
     id: string;
-    name: string;
-    role: string;
+    userType: string;
     description: string;
-    responsibilities: string[];
-    influence: 'high' | 'medium' | 'low';
-    interest: 'high' | 'medium' | 'low';
+    primaryUseCases: string[];
+    goals: string[];
+    painPoints: string[];
+    frequency: 'daily' | 'weekly' | 'monthly' | 'occasional';
+    technicalLevel: 'beginner' | 'intermediate' | 'advanced';
     category: string;
   }>>([]);
-  const [isGeneratingStakeholders, setIsGeneratingStakeholders] = useState(false);
+  const [isGeneratingUsers, setIsGeneratingUsers] = useState(false);
 
   // Project sections settings state
   const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
@@ -291,14 +292,14 @@ export default function ProjectPlanner() {
     const sectionsSettings = loadProjectSectionsSettings();
     setProjectSectionsSettings(sectionsSettings);
 
-    // Load saved stakeholders if available
-    const savedStakeholders = localStorage.getItem('project-stakeholders');
-    if (savedStakeholders) {
+    // Load saved application users if available
+    const savedUsers = localStorage.getItem('application-users');
+    if (savedUsers) {
       try {
-        const parsedStakeholders = JSON.parse(savedStakeholders);
-        setStakeholders(parsedStakeholders);
+        const parsedUsers = JSON.parse(savedUsers);
+        setApplicationUsers(parsedUsers);
       } catch (error) {
-        console.error('Failed to parse saved stakeholders:', error);
+        console.error('Failed to parse saved application users:', error);
       }
     }
 
@@ -950,65 +951,68 @@ Return the complete enhanced project plan as HTML with all existing content plus
     }
   };
 
-  const generateStakeholders = async () => {
+  const generateApplicationUsers = async () => {
     if (!projectInput.trim()) {
       setError('Please enter project description first');
       return;
     }
 
-    setIsGeneratingStakeholders(true);
+    setIsGeneratingUsers(true);
     setError('');
 
     try {
-      // Use AI to analyze project and identify stakeholders
+      // Use AI to analyze project and identify all possible users and use cases
       const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
       
-      const stakeholderAnalysisPrompt = `
-Analyze this project and identify ALL relevant stakeholders. Be comprehensive and detailed.
+      const userAnalysisPrompt = `
+Analyze this application idea and identify ALL possible users and their use cases. Focus on who would use this application and how they would use it.
 
-PROJECT DESCRIPTION: ${projectInput}
+APPLICATION IDEA: ${projectInput}
 
 ${planContent ? `EXISTING PROJECT PLAN CONTEXT: ${planContent}` : ''}
 
 INSTRUCTIONS:
-1. Identify 8-12 distinct stakeholder types/roles for this specific project
-2. For each stakeholder, provide:
-   - Name: Clear, descriptive role name
-   - Role: Brief role description
-   - Description: Detailed explanation of their involvement
-   - Responsibilities: 3-5 specific responsibilities
-   - Influence: high/medium/low (their power to affect project success)
-   - Interest: high/medium/low (their level of engagement/concern)
-   - Category: Primary/Secondary/Internal/External/Regulatory
+1. Identify 8-15 distinct user types who could benefit from this application
+2. For each user type, provide:
+   - userType: Clear, descriptive user type name
+   - description: Detailed explanation of who this user is and why they'd use the app
+   - primaryUseCases: 4-6 specific ways they would use the application
+   - goals: 3-4 main objectives they want to achieve
+   - painPoints: 3-4 current problems this app could solve for them
+   - frequency: daily/weekly/monthly/occasional (how often they'd use it)
+   - technicalLevel: beginner/intermediate/advanced
+   - category: Primary/Secondary/Power/Casual/Professional
 
-3. Include stakeholders across these categories:
-   - End users (different user types)
-   - Business stakeholders (executives, product managers, business analysts)
-   - Technical stakeholders (developers, architects, DevOps, QA)
-   - External stakeholders (customers, partners, vendors, regulators)
-   - Support stakeholders (marketing, sales, support teams)
+3. Think broadly about different user personas:
+   - Direct users who benefit from core features
+   - Indirect users who benefit from secondary features
+   - Professional users who might use it for work
+   - Personal users who might use it for lifestyle
+   - Different age groups, skill levels, and contexts
+   - Users with different motivations and needs
 
-4. Make stakeholders specific to the project domain and requirements
-5. Ensure diverse influence/interest combinations for proper stakeholder mapping
+4. Focus on USE CASES - be very specific about HOW each user type would interact with the application
+5. Consider edge cases and unexpected user types who might find value
 
 Return ONLY a valid JSON array with this exact structure:
 [
   {
     "id": "unique-id",
-    "name": "Stakeholder Name",
-    "role": "Brief Role",
-    "description": "Detailed description of their involvement and impact",
-    "responsibilities": ["Responsibility 1", "Responsibility 2", "Responsibility 3"],
-    "influence": "high|medium|low",
-    "interest": "high|medium|low",
-    "category": "Primary|Secondary|Internal|External|Regulatory"
+    "userType": "User Type Name",
+    "description": "Detailed description of this user type and their context",
+    "primaryUseCases": ["Use case 1", "Use case 2", "Use case 3", "Use case 4"],
+    "goals": ["Goal 1", "Goal 2", "Goal 3"],
+    "painPoints": ["Pain point 1", "Pain point 2", "Pain point 3"],
+    "frequency": "daily|weekly|monthly|occasional",
+    "technicalLevel": "beginner|intermediate|advanced",
+    "category": "Primary|Secondary|Power|Casual|Professional"
   }
 ]`;
 
-      const response = await model.generateContent(stakeholderAnalysisPrompt);
+      const response = await model.generateContent(userAnalysisPrompt);
       const responseText = response.response.text();
       
       // Clean and parse the response
@@ -1021,110 +1025,74 @@ Return ONLY a valid JSON array with this exact structure:
       }
 
       try {
-        const parsedStakeholders = JSON.parse(cleanedResponse).map((s: any) => ({
-          ...s,
-          influence: s.influence === 'high' || s.influence === 'medium' || s.influence === 'low' ? s.influence : 'medium',
-          interest: s.interest === 'high' || s.interest === 'medium' || s.interest === 'low' ? s.interest : 'medium'
+        const parsedUsers = JSON.parse(cleanedResponse).map((u: any) => ({
+          ...u,
+          frequency: ['daily', 'weekly', 'monthly', 'occasional'].includes(u.frequency) ? u.frequency : 'weekly',
+          technicalLevel: ['beginner', 'intermediate', 'advanced'].includes(u.technicalLevel) ? u.technicalLevel : 'intermediate'
         }));
-        setStakeholders(parsedStakeholders);
+        setApplicationUsers(parsedUsers);
         
         // Save to localStorage
-        localStorage.setItem('project-stakeholders', JSON.stringify(parsedStakeholders));
+        localStorage.setItem('application-users', JSON.stringify(parsedUsers));
         
       } catch (parseError) {
-        console.error('Failed to parse stakeholder response:', parseError);
-        // Fallback stakeholders for any project
-        const fallbackStakeholders = [
+        console.error('Failed to parse user response:', parseError);
+        // Fallback users for any application
+        const fallbackUsers = [
           {
-            id: "end-users",
-            name: "End Users",
-            role: "Primary Application Users",
-            description: "Individuals who will directly interact with and use the application to accomplish their goals",
-            responsibilities: ["Use core application features", "Provide feedback and usage data", "Adopt new features and workflows", "Report issues and bugs"],
-            influence: "high" as const,
-            interest: "high" as const,
+            id: "primary-end-users",
+            userType: "Primary End Users",
+            description: "Main target audience who will use the core features of the application regularly",
+            primaryUseCases: ["Access main functionality", "Complete primary tasks", "Track progress and results", "Share achievements with others"],
+            goals: ["Accomplish main objectives efficiently", "Save time on routine tasks", "Improve personal productivity"],
+            painPoints: ["Current manual processes are time-consuming", "Lack of centralized solution", "Difficulty tracking progress"],
+            frequency: "daily" as const,
+            technicalLevel: "intermediate" as const,
             category: "Primary"
           },
           {
-            id: "product-manager",
-            name: "Product Manager",
-            role: "Product Strategy & Vision",
-            description: "Responsible for defining product requirements, roadmap, and ensuring alignment with business objectives",
-            responsibilities: ["Define product requirements", "Prioritize features", "Coordinate stakeholder communication", "Monitor product performance"],
-            influence: "high" as const,
-            interest: "high" as const,
-            category: "Internal"
+            id: "casual-users",
+            userType: "Casual Users",
+            description: "Occasional users who access the application for specific needs or situations",
+            primaryUseCases: ["Use specific features when needed", "Access information occasionally", "Try out new features", "Get quick solutions"],
+            goals: ["Solve immediate problems", "Explore available options", "Learn new capabilities"],
+            painPoints: ["Don't need complex features", "Want simple, intuitive interface", "Limited time investment"],
+            frequency: "monthly" as const,
+            technicalLevel: "beginner" as const,
+            category: "Casual"
           },
           {
-            id: "development-team",
-            name: "Development Team",
-            role: "Technical Implementation",
-            description: "Software engineers responsible for designing, building, and maintaining the application",
-            responsibilities: ["Write clean, maintainable code", "Implement features per specifications", "Perform code reviews", "Fix bugs and optimize performance"],
-            influence: "high" as const,
-            interest: "medium" as const,
-            category: "Internal"
+            id: "power-users",
+            userType: "Power Users",
+            description: "Advanced users who maximize the application's potential and use advanced features",
+            primaryUseCases: ["Utilize advanced features", "Customize workflows", "Integrate with other tools", "Optimize performance"],
+            goals: ["Maximize efficiency", "Leverage all available features", "Achieve expert-level results"],
+            painPoints: ["Need more control and customization", "Want advanced analytics", "Require integration capabilities"],
+            frequency: "daily" as const,
+            technicalLevel: "advanced" as const,
+            category: "Power"
           },
           {
-            id: "business-owner",
-            name: "Business Owner",
-            role: "Executive Sponsor",
-            description: "Senior executive who provides strategic direction and funding approval for the project",
-            responsibilities: ["Approve budget and resources", "Set strategic direction", "Make key business decisions", "Ensure ROI achievement"],
-            influence: "high" as const,
-            interest: "medium" as const,
-            category: "Primary"
-          },
-          {
-            id: "qa-team",
-            name: "QA Team",
-            role: "Quality Assurance",
-            description: "Responsible for testing the application to ensure it meets quality standards and requirements",
-            responsibilities: ["Create and execute test plans", "Identify and report bugs", "Verify feature functionality", "Ensure quality standards"],
-            influence: "medium" as const,
-            interest: "high" as const,
-            category: "Internal"
-          },
-          {
-            id: "customers",
-            name: "Customers",
-            role: "Revenue Source",
-            description: "Paying customers whose satisfaction directly impacts business success and revenue",
-            responsibilities: ["Provide revenue through usage", "Give feedback on features", "Refer new users", "Support business growth"],
-            influence: "high" as const,
-            interest: "medium" as const,
-            category: "External"
-          },
-          {
-            id: "it-operations",
-            name: "IT Operations",
-            role: "Infrastructure & Deployment",
-            description: "Team responsible for deploying, monitoring, and maintaining the application infrastructure",
-            responsibilities: ["Deploy applications", "Monitor system performance", "Ensure security compliance", "Manage infrastructure scaling"],
-            influence: "medium" as const,
-            interest: "medium" as const,
-            category: "Internal"
-          },
-          {
-            id: "support-team",
-            name: "Customer Support",
-            role: "User Assistance",
-            description: "Team that helps users resolve issues and provides guidance on using the application",
-            responsibilities: ["Handle user inquiries", "Troubleshoot user issues", "Document common problems", "Provide user training"],
-            influence: "low" as const,
-            interest: "high" as const,
-            category: "Secondary"
+            id: "business-professionals",
+            userType: "Business Professionals",
+            description: "Users who need the application for work-related tasks and professional objectives",
+            primaryUseCases: ["Complete work-related tasks", "Generate reports", "Collaborate with team members", "Meet business objectives"],
+            goals: ["Improve work efficiency", "Meet professional standards", "Support business goals"],
+            painPoints: ["Need reliable, professional features", "Require collaboration tools", "Want enterprise-level security"],
+            frequency: "daily" as const,
+            technicalLevel: "intermediate" as const,
+            category: "Professional"
           }
         ];
-        setStakeholders(fallbackStakeholders);
-        localStorage.setItem('project-stakeholders', JSON.stringify(fallbackStakeholders));
+        setApplicationUsers(fallbackUsers);
+        localStorage.setItem('application-users', JSON.stringify(fallbackUsers));
       }
       
     } catch (err) {
-      console.error('Stakeholder generation error:', err);
-      setError('Failed to generate stakeholder analysis. Please try again.');
+      console.error('User analysis generation error:', err);
+      setError('Failed to generate user analysis. Please try again.');
     } finally {
-      setIsGeneratingStakeholders(false);
+      setIsGeneratingUsers(false);
     }
   };
 
@@ -5848,7 +5816,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 </div>
               )}
               
-              {/* Stakeholder Analysis Section */}
+              {/* Application Users Analysis Section */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <div className="border-b border-gray-200 p-3">
                   <div className="flex items-center gap-2">
@@ -5856,36 +5824,36 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       <Users className="h-3 w-3 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-gray-900">Stakeholder Analysis</h3>
-                      <p className="text-xs text-gray-600">Identify and analyze all project stakeholders with AI-powered insights</p>
+                      <h3 className="text-base font-semibold text-gray-900">Application Users Analysis</h3>
+                      <p className="text-xs text-gray-600">Identify all possible users and their use cases for your application</p>
                     </div>
                   </div>
                 </div>
                 
                 <div className="p-3 space-y-3">
                   <div className="text-sm text-gray-600">
-                    Generate comprehensive stakeholder analysis including roles, responsibilities, influence levels, and interest mapping for your project.
+                    Generate comprehensive analysis of all user types who could benefit from your application, including their specific use cases, goals, and pain points.
                   </div>
                   
                   <Button
-                    onClick={generateStakeholders}
-                    disabled={isGeneratingStakeholders || !projectInput.trim()}
+                    onClick={generateApplicationUsers}
+                    disabled={isGeneratingUsers || !projectInput.trim()}
                     className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg text-sm"
                   >
-                    {isGeneratingStakeholders ? (
+                    {isGeneratingUsers ? (
                       <>
                         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Analyzing Stakeholders...
+                        Analyzing Application Users...
                       </>
                     ) : (
                       <>
                         <Users className="h-3 w-3 mr-2" />
-                        Generate Stakeholder Analysis
+                        Generate User Analysis
                       </>
                     )}
                   </Button>
 
-                  {stakeholders.length > 0 && (
+                  {applicationUsers.length > 0 && (
                     <div className="mt-6 relative">
                       {/* Modern glassmorphism container */}
                       <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-50/80 via-pink-50/60 to-indigo-50/80 border border-purple-200/50 rounded-2xl p-6 shadow-xl">
@@ -5901,89 +5869,127 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               <Users className="h-5 w-5 text-white" />
                             </div>
                             <div>
-                              <h4 className="text-lg font-bold text-gray-900">Project Stakeholders</h4>
-                              <p className="text-sm text-gray-600">{stakeholders.length} stakeholders identified</p>
+                              <h4 className="text-lg font-bold text-gray-900">Application Users</h4>
+                              <p className="text-sm text-gray-600">{applicationUsers.length} user types identified</p>
                             </div>
                           </div>
                           
                           <div className="flex items-center gap-2">
                             <div className="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-lg border border-purple-200/50">
-                              <span className="text-xs font-medium text-purple-700">{stakeholders.filter(s => s.influence === 'high').length} High Influence</span>
+                              <span className="text-xs font-medium text-purple-700">{applicationUsers.filter(u => u.frequency === 'daily').length} Daily Users</span>
                             </div>
                             <div className="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-lg border border-pink-200/50">
-                              <span className="text-xs font-medium text-pink-700">{stakeholders.filter(s => s.interest === 'high').length} High Interest</span>
+                              <span className="text-xs font-medium text-pink-700">{applicationUsers.filter(u => u.category === 'Primary').length} Primary Users</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Stakeholder Grid */}
+                        {/* User Grid */}
                         <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {stakeholders.map((stakeholder, index) => {
-                            const getInfluenceColor = (influence: string) => {
-                              switch (influence) {
-                                case 'high': return 'bg-red-100 text-red-800 border-red-200';
-                                case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-                                case 'low': return 'bg-green-100 text-green-800 border-green-200';
+                          {applicationUsers.map((user, index) => {
+                            const getFrequencyColor = (frequency: string) => {
+                              switch (frequency) {
+                                case 'daily': return 'bg-red-100 text-red-800 border-red-200';
+                                case 'weekly': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                case 'monthly': return 'bg-blue-100 text-blue-800 border-blue-200';
+                                case 'occasional': return 'bg-green-100 text-green-800 border-green-200';
                                 default: return 'bg-gray-100 text-gray-800 border-gray-200';
                               }
                             };
 
-                            const getInterestColor = (interest: string) => {
-                              switch (interest) {
-                                case 'high': return 'bg-blue-100 text-blue-800 border-blue-200';
-                                case 'medium': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-                                case 'low': return 'bg-purple-100 text-purple-800 border-purple-200';
+                            const getTechnicalLevelColor = (level: string) => {
+                              switch (level) {
+                                case 'advanced': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                                case 'intermediate': return 'bg-purple-100 text-purple-800 border-purple-200';
+                                case 'beginner': return 'bg-pink-100 text-pink-800 border-pink-200';
                                 default: return 'bg-gray-100 text-gray-800 border-gray-200';
                               }
                             };
 
                             return (
-                              <div key={stakeholder.id} className="group relative">
+                              <div key={user.id} className="group relative">
                                 <div className="h-full bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm hover:shadow-lg transition-all duration-300 p-4">
-                                  {/* Stakeholder Header */}
+                                  {/* User Header */}
                                   <div className="flex items-start justify-between mb-3">
                                     <div className="flex-1">
-                                      <h5 className="font-semibold text-gray-900 text-sm leading-tight">{stakeholder.name}</h5>
-                                      <p className="text-xs text-gray-600 mt-1">{stakeholder.role}</p>
+                                      <h5 className="font-semibold text-gray-900 text-sm leading-tight">{user.userType}</h5>
+                                      <p className="text-xs text-gray-600 mt-1">{user.category} User</p>
                                     </div>
                                     <div className="ml-2">
-                                      <div className={`px-2 py-1 rounded-md text-xs font-medium border ${stakeholder.category === 'Primary' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 
-                                        stakeholder.category === 'Internal' ? 'bg-blue-100 text-blue-800 border-blue-200' :
-                                        stakeholder.category === 'External' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                      <div className={`px-2 py-1 rounded-md text-xs font-medium border ${user.category === 'Primary' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 
+                                        user.category === 'Professional' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                        user.category === 'Power' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                        user.category === 'Casual' ? 'bg-green-100 text-green-800 border-green-200' :
                                         'bg-gray-100 text-gray-800 border-gray-200'}`}>
-                                        {stakeholder.category}
+                                        {user.category}
                                       </div>
                                     </div>
                                   </div>
 
                                   {/* Description */}
                                   <p className="text-xs text-gray-700 mb-3 leading-relaxed">
-                                    {stakeholder.description}
+                                    {user.description}
                                   </p>
 
-                                  {/* Influence & Interest Tags */}
+                                  {/* Frequency & Technical Level Tags */}
                                   <div className="flex gap-2 mb-3">
-                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getInfluenceColor(stakeholder.influence)}`}>
-                                      {stakeholder.influence.charAt(0).toUpperCase() + stakeholder.influence.slice(1)} Influence
+                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getFrequencyColor(user.frequency)}`}>
+                                      {user.frequency.charAt(0).toUpperCase() + user.frequency.slice(1)}
                                     </div>
-                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getInterestColor(stakeholder.interest)}`}>
-                                      {stakeholder.interest.charAt(0).toUpperCase() + stakeholder.interest.slice(1)} Interest
+                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getTechnicalLevelColor(user.technicalLevel)}`}>
+                                      {user.technicalLevel.charAt(0).toUpperCase() + user.technicalLevel.slice(1)}
                                     </div>
                                   </div>
 
-                                  {/* Responsibilities */}
-                                  <div>
-                                    <h6 className="text-xs font-medium text-gray-900 mb-2">Key Responsibilities:</h6>
+                                  {/* Primary Use Cases */}
+                                  <div className="mb-3">
+                                    <h6 className="text-xs font-medium text-gray-900 mb-2">Primary Use Cases:</h6>
                                     <ul className="space-y-1">
-                                      {stakeholder.responsibilities.slice(0, 3).map((responsibility, respIndex) => (
-                                        <li key={respIndex} className="text-xs text-gray-600 flex items-start gap-1">
+                                      {user.primaryUseCases.slice(0, 3).map((useCase, useCaseIndex) => (
+                                        <li key={useCaseIndex} className="text-xs text-gray-600 flex items-start gap-1">
                                           <span className="w-1 h-1 bg-purple-400 rounded-full mt-1.5 flex-shrink-0"></span>
-                                          <span className="leading-relaxed">{responsibility}</span>
+                                          <span className="leading-relaxed">{useCase}</span>
                                         </li>
                                       ))}
-                                      {stakeholder.responsibilities.length > 3 && (
+                                      {user.primaryUseCases.length > 3 && (
                                         <li className="text-xs text-purple-600 font-medium">
-                                          +{stakeholder.responsibilities.length - 3} more
+                                          +{user.primaryUseCases.length - 3} more use cases
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+
+                                  {/* Goals */}
+                                  <div className="mb-3">
+                                    <h6 className="text-xs font-medium text-gray-900 mb-2">Goals:</h6>
+                                    <ul className="space-y-1">
+                                      {user.goals.slice(0, 2).map((goal, goalIndex) => (
+                                        <li key={goalIndex} className="text-xs text-blue-600 flex items-start gap-1">
+                                          <span className="w-1 h-1 bg-blue-400 rounded-full mt-1.5 flex-shrink-0"></span>
+                                          <span className="leading-relaxed">{goal}</span>
+                                        </li>
+                                      ))}
+                                      {user.goals.length > 2 && (
+                                        <li className="text-xs text-blue-600 font-medium">
+                                          +{user.goals.length - 2} more goals
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+
+                                  {/* Pain Points */}
+                                  <div>
+                                    <h6 className="text-xs font-medium text-gray-900 mb-2">Pain Points:</h6>
+                                    <ul className="space-y-1">
+                                      {user.painPoints.slice(0, 2).map((painPoint, painIndex) => (
+                                        <li key={painIndex} className="text-xs text-red-600 flex items-start gap-1">
+                                          <span className="w-1 h-1 bg-red-400 rounded-full mt-1.5 flex-shrink-0"></span>
+                                          <span className="leading-relaxed">{painPoint}</span>
+                                        </li>
+                                      ))}
+                                      {user.painPoints.length > 2 && (
+                                        <li className="text-xs text-red-600 font-medium">
+                                          +{user.painPoints.length - 2} more pain points
                                         </li>
                                       )}
                                     </ul>
@@ -5998,20 +6004,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <div className="relative mt-6 pt-4 border-t border-white/50">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div className="text-center">
-                              <div className="text-lg font-bold text-purple-600">{stakeholders.filter(s => s.category === 'Primary').length}</div>
+                              <div className="text-lg font-bold text-purple-600">{applicationUsers.filter(u => u.category === 'Primary').length}</div>
                               <div className="text-xs text-gray-600">Primary</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-lg font-bold text-blue-600">{stakeholders.filter(s => s.category === 'Internal').length}</div>
-                              <div className="text-xs text-gray-600">Internal</div>
+                              <div className="text-lg font-bold text-blue-600">{applicationUsers.filter(u => u.category === 'Professional').length}</div>
+                              <div className="text-xs text-gray-600">Professional</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-lg font-bold text-orange-600">{stakeholders.filter(s => s.category === 'External').length}</div>
-                              <div className="text-xs text-gray-600">External</div>
+                              <div className="text-lg font-bold text-orange-600">{applicationUsers.filter(u => u.category === 'Power').length}</div>
+                              <div className="text-xs text-gray-600">Power</div>
                             </div>
                             <div className="text-center">
-                              <div className="text-lg font-bold text-gray-600">{stakeholders.filter(s => s.category === 'Secondary').length}</div>
-                              <div className="text-xs text-gray-600">Secondary</div>
+                              <div className="text-lg font-bold text-green-600">{applicationUsers.filter(u => u.category === 'Casual').length}</div>
+                              <div className="text-xs text-gray-600">Casual</div>
                             </div>
                           </div>
                         </div>
