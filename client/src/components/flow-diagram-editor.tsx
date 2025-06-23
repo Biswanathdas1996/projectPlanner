@@ -451,7 +451,7 @@ function FlowDiagramEditorInner({
                             onClick={() => startEditNode(selectedNodes[0])}
                             variant="outline"
                             size="sm"
-                            className="h-8 px-2"
+                            className="h-8 px-2 ml-[27px] mr-[27px]"
                           >
                             <Edit className="h-3 w-3 mr-1" />
                             Edit
