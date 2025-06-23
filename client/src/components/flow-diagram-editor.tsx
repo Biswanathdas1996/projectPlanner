@@ -305,13 +305,6 @@ function FlowDiagramEditorInner({
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
-              <Button
-                onClick={onClose}
-                variant="outline"
-                size="sm"
-              >
-                <X className="h-4 w-4" />
-              </Button>
             </div>
           </div>
         </DialogHeader>
