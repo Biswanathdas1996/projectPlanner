@@ -5506,54 +5506,107 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </Button>
 
                   {generatedFlowDiagram && (
-                    <div className="mt-4 border border-blue-200 rounded-lg p-4 bg-blue-50">
-                      <div className="flex items-center justify-between mb-3">
-                        <h4 className="text-sm font-semibold text-blue-800">Generated Flow Diagram</h4>
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => setShowFlowDiagramEditor(true)}
-                            variant="outline"
-                            size="sm"
-                            className="border-blue-300 text-blue-600 hover:bg-blue-100 text-xs"
-                          >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            onClick={downloadFlowDiagram}
-                            variant="outline"
-                            size="sm"
-                            className="border-green-300 text-green-600 hover:bg-green-50 text-xs"
-                          >
-                            <Download className="h-3 w-3 mr-1" />
-                            Export
-                          </Button>
+                    <div className="mt-6 relative">
+                      {/* Modern glassmorphism container */}
+                      <div className="relative backdrop-blur-xl bg-gradient-to-br from-blue-50/80 via-indigo-50/60 to-purple-50/80 border border-blue-200/50 rounded-2xl p-6 shadow-xl">
+                        {/* Decorative background elements */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 via-indigo-400/5 to-purple-400/5 rounded-2xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-300/10 to-transparent rounded-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-indigo-300/10 to-transparent rounded-2xl"></div>
+                        
+                        {/* Header section */}
+                        <div className="relative flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg flex items-center justify-center">
+                              <Workflow className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-bold bg-gradient-to-r from-blue-800 to-indigo-800 bg-clip-text text-transparent">
+                                Generated Flow Diagram
+                              </h4>
+                              <p className="text-sm text-blue-600/80 font-medium">
+                                Interactive workflow visualization
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-3">
+                            <Button
+                              onClick={() => setShowFlowDiagramEditor(true)}
+                              className="group relative px-4 py-2 bg-white/80 backdrop-blur-sm border border-blue-200/50 text-blue-700 hover:bg-white hover:border-blue-300 hover:shadow-lg transition-all duration-300 rounded-xl font-medium text-sm"
+                            >
+                              <Edit className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                              Edit Flow
+                              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </Button>
+                            <Button
+                              onClick={downloadFlowDiagram}
+                              className="group relative px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium text-sm"
+                            >
+                              <Download className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                              Export
+                              <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </Button>
+                          </div>
                         </div>
-                      </div>
-                      
-                      {/* Flow Diagram Viewer */}
-                      <div className="bg-white rounded-lg border border-blue-200 p-2" style={{height: '300px'}}>
-                        <FlowDiagramViewer
-                          flowData={generatedFlowDiagram.flowData}
-                          title={generatedFlowDiagram.title}
-                          className="h-full"
-                          flowKey="project-flow-diagram"
-                          onFlowUpdate={(updatedFlow) => {
-                            setGeneratedFlowDiagram({
-                              ...generatedFlowDiagram,
-                              flowData: updatedFlow
-                            });
-                            // Save to localStorage
-                            localStorage.setItem('project-flow-diagram', JSON.stringify({
-                              ...generatedFlowDiagram,
-                              flowData: updatedFlow
-                            }));
-                          }}
-                        />
-                      </div>
-                      
-                      <div className="mt-2 text-xs text-blue-600">
-                        {generatedFlowDiagram.flowData.nodes?.length || 0} nodes • {generatedFlowDiagram.flowData.edges?.length || 0} connections
+                        
+                        {/* Flow diagram container with modern styling */}
+                        <div className="relative group">
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/90 to-white/60 rounded-2xl shadow-2xl backdrop-blur-sm"></div>
+                          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-indigo-500/3 to-purple-500/5 rounded-2xl"></div>
+                          <div className="relative bg-white/70 backdrop-blur-md rounded-2xl border border-white/50 shadow-inner overflow-hidden" style={{height: '360px'}}>
+                            {/* Subtle grid pattern overlay */}
+                            <div className="absolute inset-0 opacity-[0.02]" style={{
+                              backgroundImage: `radial-gradient(circle at 1px 1px, #3B82F6 1px, transparent 0)`,
+                              backgroundSize: '20px 20px'
+                            }}></div>
+                            
+                            <FlowDiagramViewer
+                              flowData={generatedFlowDiagram.flowData}
+                              title={generatedFlowDiagram.title}
+                              className="h-full relative z-10"
+                              flowKey="project-flow-diagram"
+                              onFlowUpdate={(updatedFlow) => {
+                                setGeneratedFlowDiagram({
+                                  ...generatedFlowDiagram,
+                                  flowData: updatedFlow
+                                });
+                                localStorage.setItem('project-flow-diagram', JSON.stringify({
+                                  ...generatedFlowDiagram,
+                                  flowData: updatedFlow
+                                }));
+                              }}
+                            />
+                            
+                            {/* Hover overlay effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-400/5 to-indigo-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-2xl"></div>
+                          </div>
+                        </div>
+                        
+                        {/* Stats section */}
+                        <div className="relative mt-6 flex items-center justify-between">
+                          <div className="flex items-center gap-6">
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-blue-200/30">
+                              <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-pulse"></div>
+                              <span className="text-sm font-semibold text-blue-800">
+                                {generatedFlowDiagram.flowData.nodes?.length || 0} nodes
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 px-4 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-indigo-200/30">
+                              <div className="w-2 h-2 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                              <span className="text-sm font-semibold text-indigo-800">
+                                {generatedFlowDiagram.flowData.edges?.length || 0} connections
+                              </span>
+                            </div>
+                          </div>
+                          
+                          {/* Status indicator */}
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 backdrop-blur-sm rounded-full border border-emerald-200/50">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span className="text-xs font-medium text-emerald-700">Live & Interactive</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}
