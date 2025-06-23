@@ -304,6 +304,16 @@ Changelog:
   - Updated node specifications to focus on user actions, decisions, and interface touchpoints
   - Enhanced layout requirements to use stakeholder swim lanes instead of technical layers
   - Flow generation now creates 25-35 nodes showing complete user progression from discovery to goal completion
+- June 23, 2025. User Journey Page Refactored to Use Project Plan Flow Data
+  - Completely refactored /user-journey page to use User Journey Flow data from /plan page as base source
+  - Updated data loading logic to read from 'project-flow-diagram' localStorage key instead of generating independent flows
+  - Implemented extractStakeholdersFromFlowData function to analyze flow nodes and extract stakeholder types
+  - Added intelligent stakeholder detection from flow node labels (Admin, Premium, Mobile, Guest, Customer, etc.)
+  - Created generateFlowTypesForStakeholder helper to assign appropriate flow types per stakeholder
+  - Updated UI to display User Journey Flow data with node/edge statistics and interactive viewer
+  - Added fallback message directing users to generate flow data from Project Plan page first
+  - Maintained existing BPMN generation capabilities but now based on extracted stakeholder data
+  - Streamlined workflow: Project Plan → User Journey Flow → Stakeholder Analysis → BPMN Generation
 ```
 
 ## User Preferences

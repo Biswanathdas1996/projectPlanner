@@ -77,29 +77,31 @@ interface FlowDetails {
   additionalElements: string[];
 }
 
+// User Journey Flow from project planner
+interface UserJourneyFlowData {
+  title: string;
+  description: string;
+  flowData: FlowDiagramData;
+}
+
 export default function UserJourneyEnhanced() {
+  // Base data from project planner
+  const [userJourneyFlowData, setUserJourneyFlowData] = useState<UserJourneyFlowData | null>(null);
   const [projectPlan, setProjectPlan] = useState("");
   const [projectDescription, setProjectDescription] = useState("");
-  const [userJourneyFlows, setUserJourneyFlows] = useState<string>("");
-  const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>(
-    []
-  );
-  const [isGeneratingFlows, setIsGeneratingFlows] = useState(false);
-  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<
-    Record<string, boolean>
-  >({});
-  const [isExtractingStakeholders, setIsExtractingStakeholders] =
-    useState(false);
+  
+  // Derived data from base flow
+  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>([]);
+  const [personaFlowTypes, setPersonaFlowTypes] = useState<Record<string, string[]>>({});
+  const [stakeholderFlows, setStakeholderFlows] = useState<StakeholderFlow[]>([]);
+  
+  // Generation states
+  const [isGeneratingBpmn, setIsGeneratingBpmn] = useState<Record<string, boolean>>({});
+  const [isExtractingStakeholders, setIsExtractingStakeholders] = useState(false);
   const [error, setError] = useState("");
   const [showFlowDetails, setShowFlowDetails] = useState(false);
   const [autoGenerationStatus, setAutoGenerationStatus] = useState<string>("");
   const [isLoadingFromStorage, setIsLoadingFromStorage] = useState(true);
-  const [extractedStakeholders, setExtractedStakeholders] = useState<string[]>(
-    []
-  );
-  const [personaFlowTypes, setPersonaFlowTypes] = useState<
-    Record<string, string[]>
-  >({});
 
   // Stakeholder management state
   const [newStakeholderName, setNewStakeholderName] = useState("");
@@ -145,84 +147,68 @@ export default function UserJourneyEnhanced() {
 
   // Load data from localStorage when component mounts
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem(
-      STORAGE_KEYS.PROJECT_DESCRIPTION
-    );
-    const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
-    const savedUserJourneyFlows = localStorage.getItem(
-      STORAGE_KEYS.USER_JOURNEY_FLOWS
-    );
-    const savedStakeholders = localStorage.getItem(
-      STORAGE_KEYS.EXTRACTED_STAKEHOLDERS
-    );
-    const savedFlowTypes = localStorage.getItem(
-      STORAGE_KEYS.PERSONA_FLOW_TYPES
-    );
-    const savedStakeholderFlows = localStorage.getItem(
-      STORAGE_KEYS.STAKEHOLDER_FLOWS
-    );
+    const loadUserJourneyData = async () => {
+      // Load base User Journey Flow data from project planner
+      const savedUserJourneyFlow = localStorage.getItem('project-flow-diagram');
+      const savedProjectDescription = localStorage.getItem(STORAGE_KEYS.PROJECT_DESCRIPTION);
+      const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
 
-    if (savedProjectDescription) {
-      setProjectDescription(savedProjectDescription);
-    }
-    if (savedProjectPlan) {
-      setProjectPlan(savedProjectPlan);
-    }
-    if (savedUserJourneyFlows) {
-      setUserJourneyFlows(savedUserJourneyFlows);
-    }
-    if (savedStakeholders) {
-      try {
-        setExtractedStakeholders(JSON.parse(savedStakeholders));
-      } catch (error) {
-        console.error("Error parsing saved stakeholders:", error);
+      if (savedProjectDescription) {
+        setProjectDescription(savedProjectDescription);
       }
-    }
-    if (savedFlowTypes) {
-      try {
-        setPersonaFlowTypes(JSON.parse(savedFlowTypes));
-      } catch (error) {
-        console.error("Error parsing saved flow types:", error);
+      if (savedProjectPlan) {
+        setProjectPlan(savedProjectPlan);
       }
-    }
-    if (savedStakeholderFlows) {
-      try {
-        setStakeholderFlows(JSON.parse(savedStakeholderFlows));
-      } catch (error) {
-        console.error("Error parsing saved stakeholder flows:", error);
-      }
-    }
 
-    // Load saved flow details
-    const savedFlowDetails = localStorage.getItem("flowDetails");
-    if (savedFlowDetails) {
-      try {
-        setFlowDetails(JSON.parse(savedFlowDetails));
-      } catch (error) {
-        console.error("Error parsing saved flow details:", error);
+      if (savedUserJourneyFlow) {
+        try {
+          const flowData = JSON.parse(savedUserJourneyFlow);
+          setUserJourneyFlowData(flowData);
+          
+          // Extract stakeholders from the User Journey Flow data
+          await extractStakeholdersFromFlowData(flowData);
+        } catch (error) {
+          console.error("Error parsing User Journey Flow data:", error);
+          setError("Failed to load User Journey Flow data. Please regenerate it from the Project Plan page.");
+        }
+      } else {
+        setError("No User Journey Flow data found. Please generate it first from the Project Plan page.");
       }
-    }
 
-    // Load saved flow diagrams
-    const savedFlowDiagrams = localStorage.getItem("flowDiagrams");
-    if (savedFlowDiagrams) {
-      try {
-        setFlowDiagrams(JSON.parse(savedFlowDiagrams));
-      } catch (error) {
-        console.error("Error parsing saved flow diagrams:", error);
+      // Load existing stakeholder flows if available
+      const savedStakeholderFlows = localStorage.getItem(STORAGE_KEYS.STAKEHOLDER_FLOWS);
+      if (savedStakeholderFlows) {
+        try {
+          setStakeholderFlows(JSON.parse(savedStakeholderFlows));
+        } catch (error) {
+          console.error("Error parsing saved stakeholder flows:", error);
+        }
       }
-    }
 
-    setIsLoadingFromStorage(false);
+      // Load saved flow details
+      const savedFlowDetails = localStorage.getItem("flowDetails");
+      if (savedFlowDetails) {
+        try {
+          setFlowDetails(JSON.parse(savedFlowDetails));
+        } catch (error) {
+          console.error("Error parsing saved flow details:", error);
+        }
+      }
 
-    // Auto-extract stakeholders if we have a project plan
-    const planContent = savedProjectPlan || savedProjectDescription;
-    if (planContent && !savedStakeholders) {
-      setAutoGenerationStatus("Extracting stakeholders from project plan...");
-      extractProjectStakeholders().finally(() => {
-        setAutoGenerationStatus("");
-      });
-    }
+      // Load saved flow diagrams
+      const savedFlowDiagrams = localStorage.getItem("flowDiagrams");
+      if (savedFlowDiagrams) {
+        try {
+          setFlowDiagrams(JSON.parse(savedFlowDiagrams));
+        } catch (error) {
+          console.error("Error parsing saved flow diagrams:", error);
+        }
+      }
+
+      setIsLoadingFromStorage(false);
+    };
+
+    loadUserJourneyData();
   }, []);
 
   // Save stakeholder flows to localStorage
@@ -241,6 +227,114 @@ export default function UserJourneyEnhanced() {
   const updateStakeholderFlows = (newFlows: StakeholderFlow[]) => {
     setStakeholderFlows(newFlows);
     saveStakeholderFlowsToStorage(newFlows);
+  };
+
+  // Extract stakeholders from User Journey Flow data
+  const extractStakeholdersFromFlowData = async (flowData: UserJourneyFlowData) => {
+    setIsExtractingStakeholders(true);
+    setError("");
+    setAutoGenerationStatus("Extracting stakeholders from User Journey Flow data...");
+
+    try {
+      // Extract stakeholders from flow data nodes and activities
+      const stakeholdersSet = new Set<string>();
+      const flowTypesMap: Record<string, string[]> = {};
+
+      // Extract from flow diagram nodes
+      if (flowData.flowData && flowData.flowData.nodes) {
+        flowData.flowData.nodes.forEach(node => {
+          const label = node.data?.label || '';
+          // Extract stakeholder types from node labels
+          if (label.includes('User') || label.includes('Admin') || label.includes('Customer') || 
+              label.includes('Manager') || label.includes('Support') || label.includes('Guest')) {
+            const stakeholder = extractStakeholderFromLabel(label);
+            if (stakeholder) {
+              stakeholdersSet.add(stakeholder);
+            }
+          }
+        });
+      }
+
+      // If no stakeholders found in nodes, use default stakeholders based on project type
+      if (stakeholdersSet.size === 0) {
+        const defaultStakeholders = ['End User', 'Admin User', 'Guest User', 'Premium User', 'Mobile User'];
+        defaultStakeholders.forEach(stakeholder => stakeholdersSet.add(stakeholder));
+      }
+
+      const stakeholders = Array.from(stakeholdersSet);
+
+      // Generate flow types for each stakeholder
+      stakeholders.forEach(stakeholder => {
+        const flowTypes = generateFlowTypesForStakeholder(stakeholder);
+        flowTypesMap[stakeholder] = flowTypes;
+      });
+
+      setExtractedStakeholders(stakeholders);
+      setPersonaFlowTypes(flowTypesMap);
+
+      // Initialize stakeholder flows
+      const initialFlows: StakeholderFlow[] = [];
+      stakeholders.forEach((stakeholder) => {
+        flowTypesMap[stakeholder]?.forEach((flowType) => {
+          initialFlows.push({
+            stakeholder,
+            flowType,
+            bpmnXml: "",
+            customPrompt: "",
+          });
+        });
+      });
+      updateStakeholderFlows(initialFlows);
+
+      // Save to localStorage
+      localStorage.setItem(STORAGE_KEYS.EXTRACTED_STAKEHOLDERS, JSON.stringify(stakeholders));
+      localStorage.setItem(STORAGE_KEYS.PERSONA_FLOW_TYPES, JSON.stringify(flowTypesMap));
+
+    } catch (error) {
+      console.error("Error extracting stakeholders from flow data:", error);
+      setError("Failed to extract stakeholders from User Journey Flow data. Please try again.");
+    } finally {
+      setIsExtractingStakeholders(false);
+      setAutoGenerationStatus("");
+    }
+  };
+
+  // Helper function to extract stakeholder from node label
+  const extractStakeholderFromLabel = (label: string): string | null => {
+    const lowerLabel = label.toLowerCase();
+    if (lowerLabel.includes('admin')) return 'Admin User';
+    if (lowerLabel.includes('premium')) return 'Premium User';
+    if (lowerLabel.includes('mobile')) return 'Mobile User';
+    if (lowerLabel.includes('guest')) return 'Guest User';
+    if (lowerLabel.includes('customer')) return 'Customer';
+    if (lowerLabel.includes('support')) return 'Customer Support';
+    if (lowerLabel.includes('manager')) return 'Content Manager';
+    if (lowerLabel.includes('user')) return 'End User';
+    return null;
+  };
+
+  // Helper function to generate flow types for stakeholder
+  const generateFlowTypesForStakeholder = (stakeholder: string): string[] => {
+    const baseFlowTypes = ['Registration Flow', 'Login Flow', 'Main Task Flow', 'Profile Management'];
+    
+    switch (stakeholder) {
+      case 'Admin User':
+        return [...baseFlowTypes, 'User Management', 'System Configuration', 'Analytics Review'];
+      case 'Premium User':
+        return [...baseFlowTypes, 'Premium Features Access', 'Subscription Management', 'Priority Support'];
+      case 'Mobile User':
+        return [...baseFlowTypes, 'Mobile App Onboarding', 'Offline Mode', 'Push Notifications'];
+      case 'Guest User':
+        return ['Browse Content', 'Demo Access', 'Registration Prompt', 'Limited Features'];
+      case 'Customer':
+        return [...baseFlowTypes, 'Purchase Flow', 'Order Management', 'Customer Support'];
+      case 'Customer Support':
+        return ['Support Dashboard', 'Ticket Management', 'User Assistance', 'Knowledge Base'];
+      case 'Content Manager':
+        return ['Content Creation', 'Content Publishing', 'Content Review', 'Analytics'];
+      default:
+        return baseFlowTypes;
+    }
   };
 
   // Extract stakeholders from project plan
@@ -295,29 +389,9 @@ export default function UserJourneyEnhanced() {
     }
   };
 
-  // Generate user journey flows overview
-  const generateFlows = async () => {
-    const planContent = projectPlan || projectDescription;
-    if (!planContent.trim()) {
-      setError(
-        "No project plan available. Please generate a project plan first."
-      );
-      return;
-    }
-
-    setIsGeneratingFlows(true);
-    setError("");
-
-    try {
-      const flows = await generateUserJourneyFlows(planContent);
-      setUserJourneyFlows(flows);
-      localStorage.setItem(STORAGE_KEYS.USER_JOURNEY_FLOWS, flows);
-    } catch (error) {
-      console.error("Error generating user journey flows:", error);
-      setError("Failed to generate user journey flows. Please try again.");
-    } finally {
-      setIsGeneratingFlows(false);
-    }
+  // This function is now deprecated as we use User Journey Flow data from project planner
+  const generateFlows = () => {
+    setError("This feature is deprecated. User Journey Flows are now generated from the Project Plan page. Please generate the User Journey Flow diagram there first.");
   };
 
   // Generate BPMN for a specific stakeholder flow
@@ -424,14 +498,14 @@ export default function UserJourneyEnhanced() {
     updateStakeholderFlows(updatedFlows);
   };
 
-  // Download user journeys
+  // Download user journey flow data
   const downloadUserJourneys = () => {
-    if (!userJourneyFlows) {
-      setError("No user journey flows available to download");
+    if (!userJourneyFlowData) {
+      setError("No User Journey Flow data available to download");
       return;
     }
 
-    const blob = new Blob([userJourneyFlows], { type: "text/html" });
+    const blob = new Blob([JSON.stringify(userJourneyFlowData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -441,7 +515,7 @@ export default function UserJourneyEnhanced() {
     const timestamp = new Date().toISOString().slice(0, 10);
 
     link.href = url;
-    link.download = `user-journey-flows-${projectName}-${timestamp}.html`;
+    link.download = `user-journey-flow-${projectName}-${timestamp}.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -454,7 +528,7 @@ export default function UserJourneyEnhanced() {
       extractedStakeholders,
       personaFlowTypes,
       stakeholderFlows,
-      userJourneyFlows,
+      userJourneyFlowData,
       projectDescription,
       projectPlan,
       timestamp: new Date().toISOString(),
@@ -2021,6 +2095,137 @@ Data Objects: Request form, User profile`,
                 <span className="text-blue-800 font-medium">
                   {autoGenerationStatus}
                 </span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Journey Flow Data Display */}
+        {userJourneyFlowData ? (
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <GitBranch className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl text-gray-900">
+                      {userJourneyFlowData.title}
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {userJourneyFlowData.description}
+                    </p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                  Loaded from Project Plan
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 mb-2 flex items-center">
+                    <Target className="h-4 w-4 mr-2" />
+                    Flow Overview
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <span className="font-medium text-blue-800">Nodes:</span>
+                      <span className="ml-2 text-blue-700">{userJourneyFlowData.flowData.nodes?.length || 0}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Connections:</span>
+                      <span className="ml-2 text-blue-700">{userJourneyFlowData.flowData.edges?.length || 0}</span>
+                    </div>
+                    <div>
+                      <span className="font-medium text-blue-800">Stakeholders:</span>
+                      <span className="ml-2 text-blue-700">{extractedStakeholders.length}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* User Journey Flow Viewer */}
+                <div className="border rounded-lg p-4 bg-white">
+                  <FlowDiagramViewer
+                    flowData={userJourneyFlowData.flowData}
+                    title={userJourneyFlowData.title}
+                    className="h-96"
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card className="mb-6 border-orange-200 bg-orange-50">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <AlertTriangle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-orange-900 mb-2">
+                  No User Journey Flow Data Found
+                </h3>
+                <p className="text-orange-700 mb-4">
+                  Please generate the User Journey Flow diagram from the Project Plan page first.
+                </p>
+                <Link href="/plan">
+                  <Button className="bg-orange-600 hover:bg-orange-700 text-white">
+                    <ArrowLeft className="h-4 w-4 mr-2" />
+                    Go to Project Plan
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Extracted Stakeholders Section */}
+        {extractedStakeholders.length > 0 && (
+          <Card className="mb-6">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5 text-indigo-600" />
+                  <span>Extracted Stakeholders ({extractedStakeholders.length})</span>
+                </CardTitle>
+                <Button
+                  onClick={generateFlowDetails}
+                  disabled={isGeneratingFlowDetails}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                >
+                  {isGeneratingFlowDetails ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  Generate Flow Details
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {extractedStakeholders.map((stakeholder) => (
+                  <div key={stakeholder} className="border rounded-lg p-4 bg-white">
+                    <div className="flex items-center space-x-3 mb-3">
+                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                        <User className="h-5 w-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900">{stakeholder}</h4>
+                        <p className="text-sm text-gray-500">
+                          {personaFlowTypes[stakeholder]?.length || 0} flow types
+                        </p>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      {personaFlowTypes[stakeholder]?.map((flowType) => (
+                        <Badge key={flowType} variant="outline" className="mr-2 mb-1">
+                          {flowType}
+                        </Badge>
+                      )) || <p className="text-sm text-gray-500">No flow types available</p>}
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
