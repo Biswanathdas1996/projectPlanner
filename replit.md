@@ -280,6 +280,13 @@ Changelog:
   - Integrated with existing project context to generate relevant workflow processes
   - Flow diagrams show user journeys, system processes, decision points, and integration touchpoints
   - Enhanced project planning workflow with visual process documentation capabilities
+- June 23, 2025. Flow Diagram Regeneration and Enhanced Display
+  - Added regenerate functionality to flow diagram generator with proper function scope handling
+  - Implemented comprehensive enterprise-level flow details with 35+ advanced business components
+  - Fixed function reference issues and proper state management for diagram regeneration
+  - Enhanced flow diagram viewer height from 500px to 800px to accommodate large enterprise workflows
+  - Added purple gradient styling for regenerate button matching existing design system
+  - Regeneration clears existing diagrams and generates alternative workflow processes with enhanced components
 ```
 
 ## User Preferences
