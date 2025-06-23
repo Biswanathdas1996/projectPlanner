@@ -5614,6 +5614,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-indigo-500/10 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                             </Button>
                             <Button
+                              onClick={generateProjectFlowDiagram}
+                              disabled={isGeneratingFlowDiagram}
+                              className="group relative px-4 py-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium text-sm"
+                            >
+                              {isGeneratingFlowDiagram ? (
+                                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              ) : (
+                                <RefreshCw className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform duration-200" />
+                              )}
+                              {isGeneratingFlowDiagram ? 'Regenerating...' : 'Regenerate'}
+                              <div className="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </Button>
+                            <Button
                               onClick={downloadFlowDiagram}
                               className="group relative px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl font-medium text-sm"
                             >
