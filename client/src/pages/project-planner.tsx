@@ -5853,9 +5853,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-xs font-medium">{stakeholderNames.length}</span>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-2">
+                        <div className="flex flex-wrap gap-2">
                           {stakeholderNames.map((name, index) => (
-                            <div key={index} className="group bg-white/80 backdrop-blur-sm border border-white/60 rounded-lg p-2 hover:bg-white hover:shadow-md transition-all duration-200">
+                            <div key={index} className="group bg-white/80 backdrop-blur-sm border border-white/60 rounded-lg p-2 hover:bg-white hover:shadow-md transition-all duration-200 flex-shrink-0">
                               {editingStakeholderIndex === index ? (
                                 <div className="flex items-center gap-2">
                                   <input
