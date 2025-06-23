@@ -35,7 +35,7 @@ export class AICodeGenerator {
   constructor() {
     try {
       const genAI = new GoogleGenerativeAI(
-        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
+        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
       );
       this.gemini = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
       console.log("AI Code Generator initialized with Gemini successfully");

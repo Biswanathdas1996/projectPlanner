@@ -39,7 +39,9 @@ export class DynamicProjectPlanner {
   private readonly retryDelay = 1000;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+    );
     this.model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
       generationConfig: {
@@ -53,11 +55,15 @@ export class DynamicProjectPlanner {
 
   async generateProjectPlan(
     config: ProjectPlanConfig,
-    progressCallback?: (section: string, progress: number, total: number) => void
+    progressCallback?: (
+      section: string,
+      progress: number,
+      total: number
+    ) => void
   ): Promise<ProjectPlanResult> {
     const startTime = Date.now();
     const enabledSections = config.sections
-      .filter(section => section.enabled)
+      .filter((section) => section.enabled)
       .sort((a, b) => a.order - b.order);
 
     const generatedSections: GeneratedSection[] = [];
@@ -79,7 +85,7 @@ export class DynamicProjectPlanner {
 
         // Add delay between API calls to prevent rate limiting
         if (i < enabledSections.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay));
+          await new Promise((resolve) => setTimeout(resolve, this.retryDelay));
         }
       } catch (error) {
         console.error(`Failed to generate section: ${section.title}`, error);
@@ -90,19 +96,22 @@ export class DynamicProjectPlanner {
           content: `<p>Failed to generate content for ${section.title}. Please try again.</p>`,
           generated: false,
           estimatedHours: section.estimatedHours || 8,
-          priority: section.priority || "medium"
+          priority: section.priority || "medium",
         });
       }
     }
 
-    const htmlContent = this.generateHtmlDocument(generatedSections, config.projectDescription);
+    const htmlContent = this.generateHtmlDocument(
+      generatedSections,
+      config.projectDescription
+    );
     const generationTime = Date.now() - startTime;
 
     return {
       sections: generatedSections,
       totalEstimatedHours,
       generationTime,
-      htmlContent
+      htmlContent,
     };
   }
 
@@ -114,7 +123,7 @@ export class DynamicProjectPlanner {
     const enhancedPrompt = `
 Project Description: "${projectDescription}"
 
-${additionalContext ? `Additional Context: ${additionalContext}` : ''}
+${additionalContext ? `Additional Context: ${additionalContext}` : ""}
 
 Section: ${section.title}
 Description: ${section.description}
@@ -135,43 +144,46 @@ Use professional styling classes like 'section-header', 'key-point', 'recommenda
     const result = await this.retryableRequest(() =>
       this.model.generateContent(enhancedPrompt)
     );
-    
+
     const response = result.response.text();
     const cleanedContent = this.cleanHtmlContent(response);
-    
+
     return {
       id: section.id,
       title: section.title,
       content: cleanedContent,
       generated: true,
-      estimatedHours: section.estimatedHours || this.estimateHours(section.title),
-      priority: section.priority || "medium"
+      estimatedHours:
+        section.estimatedHours || this.estimateHours(section.title),
+      priority: section.priority || "medium",
     };
   }
 
   private async retryableRequest(requestFn: () => Promise<any>): Promise<any> {
     let lastError: any;
-    
+
     for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
       try {
         return await requestFn();
       } catch (error) {
         lastError = error;
         console.warn(`Attempt ${attempt} failed:`, error);
-        
+
         if (attempt < this.maxRetries) {
-          await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.retryDelay * attempt)
+          );
         }
       }
     }
-    
+
     throw lastError;
   }
 
   private cleanHtmlContent(content: string): string {
     // Remove code blocks and clean up formatting
     let cleaned = content.trim();
-    
+
     if (cleaned.startsWith("```html")) {
       cleaned = cleaned.replace(/^```html\s*/, "").replace(/```\s*$/, "");
     } else if (cleaned.startsWith("```")) {
@@ -179,10 +191,16 @@ Use professional styling classes like 'section-header', 'key-point', 'recommenda
     }
 
     // Ensure proper HTML structure
-    if (!cleaned.includes('<')) {
-      cleaned = `<div class="section-content">${cleaned.replace(/\n/g, '</p><p>')}</div>`;
-      cleaned = cleaned.replace('<div class="section-content"><p>', '<div class="section-content"><p>');
-      cleaned = cleaned.replace('</p></div>', '</p></div>');
+    if (!cleaned.includes("<")) {
+      cleaned = `<div class="section-content">${cleaned.replace(
+        /\n/g,
+        "</p><p>"
+      )}</div>`;
+      cleaned = cleaned.replace(
+        '<div class="section-content"><p>',
+        '<div class="section-content"><p>'
+      );
+      cleaned = cleaned.replace("</p></div>", "</p></div>");
     }
 
     return cleaned;
@@ -199,14 +217,19 @@ Use professional styling classes like 'section-header', 'key-point', 'recommenda
       "Deployment Strategy": 10,
       "Risk Management": 6,
       "Stakeholder Management": 4,
-      "Post-Launch Strategy": 6
+      "Post-Launch Strategy": 6,
     };
 
     return hourEstimates[sectionTitle] || 8;
   }
 
-  private generateHtmlDocument(sections: GeneratedSection[], projectDescription: string): string {
-    const sectionsHtml = sections.map(section => `
+  private generateHtmlDocument(
+    sections: GeneratedSection[],
+    projectDescription: string
+  ): string {
+    const sectionsHtml = sections
+      .map(
+        (section) => `
       <section class="project-section" id="${section.id}">
         <div class="section-header">
           <h2 class="section-title">${section.title}</h2>
@@ -219,7 +242,9 @@ Use professional styling classes like 'section-header', 'key-point', 'recommenda
           ${section.content}
         </div>
       </section>
-    `).join('\n');
+    `
+      )
+      .join("\n");
 
     return `
 <!DOCTYPE html>
@@ -310,103 +335,122 @@ export const DEFAULT_PROJECT_SECTIONS: ProjectSection[] = [
   {
     id: "executive-summary",
     title: "Executive Summary",
-    description: "High-level overview of the project including objectives, scope, and expected outcomes",
-    prompt: "Create a comprehensive executive summary that includes project vision, key objectives, success metrics, budget overview, timeline summary, and strategic importance. Make it suitable for stakeholders and decision-makers.",
+    description:
+      "High-level overview of the project including objectives, scope, and expected outcomes",
+    prompt:
+      "Create a comprehensive executive summary that includes project vision, key objectives, success metrics, budget overview, timeline summary, and strategic importance. Make it suitable for stakeholders and decision-makers.",
     order: 1,
     enabled: true,
     estimatedHours: 4,
-    priority: "critical"
+    priority: "critical",
   },
   {
     id: "technical-architecture",
     title: "Technical Architecture & Infrastructure",
-    description: "Detailed technical design, system architecture, and infrastructure requirements",
-    prompt: "Design a comprehensive technical architecture including system diagrams, technology stack recommendations, database design, API architecture, security framework, performance considerations, scalability planning, and infrastructure requirements.",
+    description:
+      "Detailed technical design, system architecture, and infrastructure requirements",
+    prompt:
+      "Design a comprehensive technical architecture including system diagrams, technology stack recommendations, database design, API architecture, security framework, performance considerations, scalability planning, and infrastructure requirements.",
     order: 2,
     enabled: true,
     estimatedHours: 16,
-    priority: "critical"
+    priority: "critical",
   },
   {
     id: "feature-specifications",
     title: "Detailed Feature Specifications",
-    description: "Comprehensive breakdown of all features, user stories, and functional requirements",
-    prompt: "Create detailed feature specifications including user stories, acceptance criteria, functional requirements, non-functional requirements, feature prioritization, and integration requirements. Include wireframes descriptions where relevant.",
+    description:
+      "Comprehensive breakdown of all features, user stories, and functional requirements",
+    prompt:
+      "Create detailed feature specifications including user stories, acceptance criteria, functional requirements, non-functional requirements, feature prioritization, and integration requirements. Include wireframes descriptions where relevant.",
     order: 3,
     enabled: true,
     estimatedHours: 12,
-    priority: "high"
+    priority: "high",
   },
   {
     id: "development-methodology",
     title: "Development Methodology & Timeline",
-    description: "Development approach, project phases, milestones, and detailed timeline",
-    prompt: "Define the development methodology (Agile, Scrum, etc.), sprint planning, milestone definitions, detailed project timeline, resource allocation, dependencies, and risk buffers. Include a realistic delivery schedule.",
+    description:
+      "Development approach, project phases, milestones, and detailed timeline",
+    prompt:
+      "Define the development methodology (Agile, Scrum, etc.), sprint planning, milestone definitions, detailed project timeline, resource allocation, dependencies, and risk buffers. Include a realistic delivery schedule.",
     order: 4,
     enabled: true,
     estimatedHours: 8,
-    priority: "high"
+    priority: "high",
   },
   {
     id: "user-experience-design",
     title: "User Experience & Interface Design",
-    description: "UX/UI design strategy, user journey mapping, and design system specifications",
-    prompt: "Create a comprehensive UX/UI strategy including user persona analysis, user journey mapping, design system specifications, accessibility requirements, responsive design approach, and usability testing plans.",
+    description:
+      "UX/UI design strategy, user journey mapping, and design system specifications",
+    prompt:
+      "Create a comprehensive UX/UI strategy including user persona analysis, user journey mapping, design system specifications, accessibility requirements, responsive design approach, and usability testing plans.",
     order: 5,
     enabled: true,
     estimatedHours: 12,
-    priority: "high"
+    priority: "high",
   },
   {
     id: "quality-assurance",
     title: "Quality Assurance & Testing Strategy",
     description: "Testing methodology, QA processes, and quality standards",
-    prompt: "Design a comprehensive QA strategy including testing methodologies, test case development, automated testing approach, performance testing, security testing, user acceptance testing, and bug tracking processes.",
+    prompt:
+      "Design a comprehensive QA strategy including testing methodologies, test case development, automated testing approach, performance testing, security testing, user acceptance testing, and bug tracking processes.",
     order: 6,
     enabled: true,
     estimatedHours: 10,
-    priority: "high"
+    priority: "high",
   },
   {
     id: "deployment-devops",
     title: "Deployment & DevOps Strategy",
-    description: "Deployment pipeline, DevOps practices, and production environment setup",
-    prompt: "Create a detailed deployment and DevOps strategy including CI/CD pipeline design, environment management, deployment automation, monitoring and alerting, backup strategies, and rollback procedures.",
+    description:
+      "Deployment pipeline, DevOps practices, and production environment setup",
+    prompt:
+      "Create a detailed deployment and DevOps strategy including CI/CD pipeline design, environment management, deployment automation, monitoring and alerting, backup strategies, and rollback procedures.",
     order: 7,
     enabled: true,
     estimatedHours: 10,
-    priority: "medium"
+    priority: "medium",
   },
   {
     id: "risk-management",
     title: "Risk Management & Mitigation",
-    description: "Risk assessment, mitigation strategies, and contingency planning",
-    prompt: "Develop a comprehensive risk management plan including risk identification, risk assessment matrix, mitigation strategies, contingency planning, and monitoring procedures. Cover technical, business, and operational risks.",
+    description:
+      "Risk assessment, mitigation strategies, and contingency planning",
+    prompt:
+      "Develop a comprehensive risk management plan including risk identification, risk assessment matrix, mitigation strategies, contingency planning, and monitoring procedures. Cover technical, business, and operational risks.",
     order: 8,
     enabled: true,
     estimatedHours: 6,
-    priority: "medium"
+    priority: "medium",
   },
   {
     id: "stakeholder-management",
     title: "Stakeholder Management",
-    description: "Stakeholder identification, communication plan, and engagement strategy",
-    prompt: "Create a stakeholder management plan including stakeholder identification, influence/interest matrix, communication strategy, feedback mechanisms, decision-making processes, and escalation procedures.",
+    description:
+      "Stakeholder identification, communication plan, and engagement strategy",
+    prompt:
+      "Create a stakeholder management plan including stakeholder identification, influence/interest matrix, communication strategy, feedback mechanisms, decision-making processes, and escalation procedures.",
     order: 9,
     enabled: true,
     estimatedHours: 4,
-    priority: "medium"
+    priority: "medium",
   },
   {
     id: "post-launch-strategy",
     title: "Post-Launch Strategy",
-    description: "Maintenance, support, monitoring, and future enhancement planning",
-    prompt: "Design a comprehensive post-launch strategy including maintenance planning, user support processes, performance monitoring, analytics implementation, user feedback collection, and future enhancement roadmap.",
+    description:
+      "Maintenance, support, monitoring, and future enhancement planning",
+    prompt:
+      "Design a comprehensive post-launch strategy including maintenance planning, user support processes, performance monitoring, analytics implementation, user feedback collection, and future enhancement roadmap.",
     order: 10,
     enabled: true,
     estimatedHours: 6,
-    priority: "low"
-  }
+    priority: "low",
+  },
 ];
 
 export function createDynamicProjectPlanner(): DynamicProjectPlanner {

@@ -28,7 +28,7 @@ export class PreciseElementEnhancer {
   private model: any;
 
   constructor() {
-    const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+    const apiKey = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }

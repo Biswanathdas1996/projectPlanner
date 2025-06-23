@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -13,18 +13,44 @@ import ReactFlow, {
   Panel,
   Node,
   useReactFlow,
-} from 'reactflow';
-import 'reactflow/dist/style.css';
-import { FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { X, Save, Download, Maximize2, Plus, Trash2, Edit, RotateCcw, Settings, EyeOff, ChevronUp, ChevronDown, Sparkles, Loader2 } from 'lucide-react';
+} from "reactflow";
+import "reactflow/dist/style.css";
+import { FlowDiagramData } from "@/lib/ai-flow-diagram-generator";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  X,
+  Save,
+  Download,
+  Maximize2,
+  Plus,
+  Trash2,
+  Edit,
+  RotateCcw,
+  Settings,
+  EyeOff,
+  ChevronUp,
+  ChevronDown,
+  Sparkles,
+  Loader2,
+} from "lucide-react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast";
 
 interface FlowDiagramEditorProps {
   isOpen: boolean;
@@ -37,13 +63,13 @@ interface FlowDiagramEditorProps {
 
 const nodeTypes = {};
 
-function FlowDiagramEditorInner({ 
-  isOpen, 
-  onClose, 
-  flowData, 
-  title, 
+function FlowDiagramEditorInner({
+  isOpen,
+  onClose,
+  flowData,
+  title,
   flowKey,
-  onSave 
+  onSave,
 }: FlowDiagramEditorProps) {
   const { toast } = useToast();
   const [nodes, setNodes, onNodesChange] = useNodesState(flowData.nodes || []);
@@ -52,11 +78,11 @@ function FlowDiagramEditorInner({
   const [selectedNodes, setSelectedNodes] = useState<Node[]>([]);
   const [selectedEdges, setSelectedEdges] = useState<Edge[]>([]);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
-  const [newNodeLabel, setNewNodeLabel] = useState('');
-  const [newNodeType, setNewNodeType] = useState('default');
+  const [newNodeLabel, setNewNodeLabel] = useState("");
+  const [newNodeType, setNewNodeType] = useState("default");
   const [isPanelVisible, setIsPanelVisible] = useState(true);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiPrompt, setAiPrompt] = useState("");
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
   const reactFlowInstance = useReactFlow();
 
@@ -66,10 +92,10 @@ function FlowDiagramEditorInner({
     const originalEdgesStr = JSON.stringify(flowData.edges);
     const currentNodesStr = JSON.stringify(nodes);
     const currentEdgesStr = JSON.stringify(edges);
-    
+
     setHasChanges(
-      originalNodesStr !== currentNodesStr || 
-      originalEdgesStr !== currentEdgesStr
+      originalNodesStr !== currentNodesStr ||
+        originalEdgesStr !== currentEdgesStr
     );
   }, [nodes, edges, flowData]);
 
@@ -79,23 +105,29 @@ function FlowDiagramEditorInner({
       // Try to load saved data from localStorage first
       if (flowKey) {
         try {
-          const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+          const existingFlows = JSON.parse(
+            localStorage.getItem("flowDiagrams") || "{}"
+          );
           const savedFlow = existingFlows[flowKey];
-          
+
           if (savedFlow && savedFlow.nodes && savedFlow.edges) {
-            console.log(`🔄 Loading saved flow from localStorage for key: ${flowKey}`);
+            console.log(
+              `🔄 Loading saved flow from localStorage for key: ${flowKey}`
+            );
             setNodes(savedFlow.nodes);
             setEdges(savedFlow.edges);
             setHasChanges(false);
             return;
           }
         } catch (error) {
-          console.error('Error loading from localStorage:', error);
+          console.error("Error loading from localStorage:", error);
         }
       }
-      
+
       // Fallback to original flowData if no saved version exists
-      console.log(`📄 Loading original flow data for key: ${flowKey || 'no-key'}`);
+      console.log(
+        `📄 Loading original flow data for key: ${flowKey || "no-key"}`
+      );
       setNodes(flowData.nodes || []);
       setEdges(flowData.edges || []);
       setHasChanges(false);
@@ -103,10 +135,19 @@ function FlowDiagramEditorInner({
   }, [isOpen, flowData, flowKey, setNodes, setEdges]);
 
   // Track selected elements
-  const onSelectionChange = useCallback(({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[], edges: Edge[] }) => {
-    setSelectedNodes(selectedNodes);
-    setSelectedEdges(selectedEdges);
-  }, []);
+  const onSelectionChange = useCallback(
+    ({
+      nodes: selectedNodes,
+      edges: selectedEdges,
+    }: {
+      nodes: Node[];
+      edges: Edge[];
+    }) => {
+      setSelectedNodes(selectedNodes);
+      setSelectedEdges(selectedEdges);
+    },
+    []
+  );
 
   const onConnect = useCallback(
     (params: Edge | Connection) => setEdges((eds) => addEdge(params, eds)),
@@ -119,7 +160,7 @@ function FlowDiagramEditorInner({
       toast({
         title: "Error",
         description: "Please enter a node label",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
@@ -129,14 +170,14 @@ function FlowDiagramEditorInner({
       position: { x: Math.random() * 400 + 100, y: Math.random() * 300 + 100 },
       data: { label: newNodeLabel.trim() },
       type: newNodeType,
-      style: getNodeStyle(newNodeType)
+      style: getNodeStyle(newNodeType),
     };
 
     setNodes((nds) => [...nds, newNode]);
-    setNewNodeLabel('');
+    setNewNodeLabel("");
     toast({
       title: "Success",
-      description: "Node added successfully"
+      description: "Node added successfully",
     });
   }, [newNodeLabel, newNodeType, setNodes, toast]);
 
@@ -146,97 +187,113 @@ function FlowDiagramEditorInner({
       toast({
         title: "No Selection",
         description: "Please select nodes or edges to delete",
-        variant: "destructive"
+        variant: "destructive",
       });
       return;
     }
 
-    const nodeIds = selectedNodes.map(node => node.id);
-    const edgeIds = selectedEdges.map(edge => edge.id);
+    const nodeIds = selectedNodes.map((node) => node.id);
+    const edgeIds = selectedEdges.map((edge) => edge.id);
 
-    setNodes((nds) => nds.filter(node => !nodeIds.includes(node.id)));
-    setEdges((eds) => eds.filter(edge => !edgeIds.includes(edge.id)));
+    setNodes((nds) => nds.filter((node) => !nodeIds.includes(node.id)));
+    setEdges((eds) => eds.filter((edge) => !edgeIds.includes(edge.id)));
 
     toast({
       title: "Success",
-      description: `Deleted ${nodeIds.length} nodes and ${edgeIds.length} edges`
+      description: `Deleted ${nodeIds.length} nodes and ${edgeIds.length} edges`,
     });
   }, [selectedNodes, selectedEdges, setNodes, setEdges, toast]);
 
   // Edit node
   const startEditNode = useCallback((node: Node) => {
     setEditingNode(node);
-    setNewNodeLabel(node.data.label || '');
-    setNewNodeType(node.type || 'default');
+    setNewNodeLabel(node.data.label || "");
+    setNewNodeType(node.type || "default");
   }, []);
 
   const saveNodeEdit = useCallback(() => {
     if (!editingNode || !newNodeLabel.trim()) return;
 
-    setNodes((nds) => nds.map(node => 
-      node.id === editingNode.id 
-        ? { 
-            ...node, 
-            data: { ...node.data, label: newNodeLabel.trim() },
-            type: newNodeType,
-            style: getNodeStyle(newNodeType)
-          }
-        : node
-    ));
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === editingNode.id
+          ? {
+              ...node,
+              data: { ...node.data, label: newNodeLabel.trim() },
+              type: newNodeType,
+              style: getNodeStyle(newNodeType),
+            }
+          : node
+      )
+    );
 
     setEditingNode(null);
-    setNewNodeLabel('');
+    setNewNodeLabel("");
     toast({
       title: "Success",
-      description: "Node updated successfully"
+      description: "Node updated successfully",
     });
   }, [editingNode, newNodeLabel, newNodeType, setNodes, toast]);
 
   const cancelEdit = useCallback(() => {
     setEditingNode(null);
-    setNewNodeLabel('');
-    setNewNodeType('default');
+    setNewNodeLabel("");
+    setNewNodeType("default");
   }, []);
 
   // Get node style based on type
   const getNodeStyle = (type: string) => {
     switch (type) {
-      case 'input':
-        return { backgroundColor: '#10B981', color: 'white', border: '2px solid #059669' };
-      case 'output':
-        return { backgroundColor: '#EF4444', color: 'white', border: '2px solid #DC2626' };
-      case 'default':
+      case "input":
+        return {
+          backgroundColor: "#10B981",
+          color: "white",
+          border: "2px solid #059669",
+        };
+      case "output":
+        return {
+          backgroundColor: "#EF4444",
+          color: "white",
+          border: "2px solid #DC2626",
+        };
+      case "default":
       default:
-        return { backgroundColor: '#3B82F6', color: 'white', border: '2px solid #2563EB' };
+        return {
+          backgroundColor: "#3B82F6",
+          color: "white",
+          border: "2px solid #2563EB",
+        };
     }
   };
 
   const handleSave = useCallback(() => {
     // Convert ReactFlow edges to FlowEdge format
-    const convertedEdges = edges.map(edge => ({
+    const convertedEdges = edges.map((edge) => ({
       id: edge.id,
       source: edge.source,
       target: edge.target,
       animated: edge.animated || false,
       style: edge.style,
-      label: typeof edge.label === 'string' ? edge.label : undefined
+      label: typeof edge.label === "string" ? edge.label : undefined,
     }));
-    
+
     const updatedFlowData = { nodes, edges: convertedEdges };
-    
+
     // Save to localStorage if flowKey is provided
     if (flowKey) {
       try {
-        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        const existingFlows = JSON.parse(
+          localStorage.getItem("flowDiagrams") || "{}"
+        );
         existingFlows[flowKey] = updatedFlowData;
-        localStorage.setItem('flowDiagrams', JSON.stringify(existingFlows));
-        
+        localStorage.setItem("flowDiagrams", JSON.stringify(existingFlows));
+
         toast({
           title: "Flow Saved",
           description: "Flow diagram has been saved to local storage",
         });
       } catch (error) {
-        console.error('Error saving to localStorage:', error);
+        console.error("Error saving to localStorage:", error);
         toast({
           title: "Save Error",
           description: "Failed to save flow diagram",
@@ -244,12 +301,12 @@ function FlowDiagramEditorInner({
         });
       }
     }
-    
+
     // Call parent save callback
     if (onSave) {
       onSave(updatedFlowData as FlowDiagramData);
     }
-    
+
     setHasChanges(false);
   }, [nodes, edges, flowKey, onSave, toast]);
 
@@ -257,9 +314,11 @@ function FlowDiagramEditorInner({
     // Try to reset to saved localStorage version first
     if (flowKey) {
       try {
-        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        const existingFlows = JSON.parse(
+          localStorage.getItem("flowDiagrams") || "{}"
+        );
         const savedFlow = existingFlows[flowKey];
-        
+
         if (savedFlow && savedFlow.nodes && savedFlow.edges) {
           setNodes(savedFlow.nodes);
           setEdges(savedFlow.edges);
@@ -271,10 +330,10 @@ function FlowDiagramEditorInner({
           return;
         }
       } catch (error) {
-        console.error('Error loading saved version for reset:', error);
+        console.error("Error loading saved version for reset:", error);
       }
     }
-    
+
     // Fallback to original flowData
     setNodes(flowData.nodes || []);
     setEdges(flowData.edges || []);
@@ -287,16 +346,16 @@ function FlowDiagramEditorInner({
 
   const handleExportJSON = useCallback(() => {
     const flowJSON = JSON.stringify({ nodes, edges }, null, 2);
-    const blob = new Blob([flowJSON], { type: 'application/json' });
+    const blob = new Blob([flowJSON], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_flow.json`;
+    a.download = `${title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}_flow.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
+
     toast({
       title: "Flow Exported",
       description: "Flow diagram JSON has been downloaded",
@@ -304,9 +363,9 @@ function FlowDiagramEditorInner({
   }, [nodes, edges, title, toast]);
 
   const nodeColor = (node: any) => {
-    if (node.type === 'input') return '#10B981';
-    if (node.type === 'output') return '#EF4444';
-    return '#3B82F6';
+    if (node.type === "input") return "#10B981";
+    if (node.type === "output") return "#EF4444";
+    return "#3B82F6";
   };
 
   // AI Flow Generation
@@ -314,19 +373,22 @@ function FlowDiagramEditorInner({
     if (!aiPrompt.trim() || selectedNodes.length !== 1) return;
 
     setIsGeneratingAI(true);
-    
+
     try {
-      const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+      const apiKey = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
       const selectedNode = selectedNodes[0];
       const currentFlowContext = {
-        existingNodes: nodes.map(n => ({ id: n.id, label: n.data?.label })),
-        existingEdges: edges.map(e => ({ source: e.source, target: e.target })),
+        existingNodes: nodes.map((n) => ({ id: n.id, label: n.data?.label })),
+        existingEdges: edges.map((e) => ({
+          source: e.source,
+          target: e.target,
+        })),
         selectedNode: { id: selectedNode.id, label: selectedNode.data?.label },
         nodeCount: nodes.length,
-        edgeCount: edges.length
+        edgeCount: edges.length,
       };
 
       const prompt = `You are an AI flow diagram generator. Generate new flow components based on the user's request, starting FROM the selected node and connecting new components to it.
@@ -334,7 +396,9 @@ function FlowDiagramEditorInner({
 Selected Starting Node: "${selectedNode.data?.label}" (ID: ${selectedNode.id})
 
 Current Flow Context:
-- Existing nodes: ${currentFlowContext.existingNodes.map(n => `${n.id}: ${n.label}`).join(', ')}
+- Existing nodes: ${currentFlowContext.existingNodes
+        .map((n) => `${n.id}: ${n.label}`)
+        .join(", ")}
 - Current node count: ${currentFlowContext.nodeCount}
 - Current edge count: ${currentFlowContext.edgeCount}
 
@@ -387,36 +451,46 @@ Use these colors for nodes:
       const result = await model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
-      
+
       // Parse AI response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("Invalid AI response format");
       }
-      
+
       const aiFlowData = JSON.parse(jsonMatch[0]);
-      
+
       // Position new nodes starting from selected node
-      const adjustedNodes = aiFlowData.newNodes.map((node: any, index: number) => ({
-        ...node,
-        position: {
-          x: selectedNode.position.x + 200 + (Math.floor(index / 3) * 200), // Spread horizontally every 3 nodes
-          y: selectedNode.position.y + ((index % 3) * 120) // Spread vertically within groups
-        }
-      }));
+      const adjustedNodes = aiFlowData.newNodes.map(
+        (node: any, index: number) => ({
+          ...node,
+          position: {
+            x: selectedNode.position.x + 200 + Math.floor(index / 3) * 200, // Spread horizontally every 3 nodes
+            y: selectedNode.position.y + (index % 3) * 120, // Spread vertically within groups
+          },
+        })
+      );
 
       // Create connection edge from selected node to first new node
-      const connectionToSelected = aiFlowData.connectionToSelected ? [{
-        id: aiFlowData.connectionToSelected.edgeId,
-        source: selectedNode.id,
-        target: aiFlowData.connectionToSelected.toNodeId,
-        animated: false,
-        style: { stroke: '#6366F1', strokeWidth: 2 }
-      }] : [];
+      const connectionToSelected = aiFlowData.connectionToSelected
+        ? [
+            {
+              id: aiFlowData.connectionToSelected.edgeId,
+              source: selectedNode.id,
+              target: aiFlowData.connectionToSelected.toNodeId,
+              animated: false,
+              style: { stroke: "#6366F1", strokeWidth: 2 },
+            },
+          ]
+        : [];
 
       // Add new nodes and edges to the existing flow
-      setNodes(prevNodes => [...prevNodes, ...adjustedNodes]);
-      setEdges(prevEdges => [...prevEdges, ...aiFlowData.newEdges, ...connectionToSelected]);
+      setNodes((prevNodes) => [...prevNodes, ...adjustedNodes]);
+      setEdges((prevEdges) => [
+        ...prevEdges,
+        ...aiFlowData.newEdges,
+        ...connectionToSelected,
+      ]);
 
       toast({
         title: "AI Flow Generated",
@@ -424,14 +498,14 @@ Use these colors for nodes:
       });
 
       // Clear the prompt
-      setAiPrompt('');
-      
+      setAiPrompt("");
     } catch (error) {
-      console.error('AI Flow Generation Error:', error);
+      console.error("AI Flow Generation Error:", error);
       toast({
         title: "Generation Failed",
-        description: "Could not generate AI flow. Please try a different prompt.",
-        variant: "destructive"
+        description:
+          "Could not generate AI flow. Please try a different prompt.",
+        variant: "destructive",
       });
     } finally {
       setIsGeneratingAI(false);
@@ -446,14 +520,20 @@ Use these colors for nodes:
         <DialogHeader className="px-6 py-4 border-b">
           <div className="flex items-center justify-between">
             <div>
-              <DialogTitle className="text-xl font-semibold">{title}</DialogTitle>
+              <DialogTitle className="text-xl font-semibold">
+                {title}
+              </DialogTitle>
               <p className="text-sm text-gray-600 mt-1">
-                Full-screen flow diagram editor • {nodes.length} nodes, {edges.length} edges
+                Full-screen flow diagram editor • {nodes.length} nodes,{" "}
+                {edges.length} edges
               </p>
             </div>
             <div className="flex items-center gap-2 ml-[25px] mr-[25px]">
               {hasChanges && (
-                <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
+                <Badge
+                  variant="secondary"
+                  className="bg-yellow-100 text-yellow-700"
+                >
                   Unsaved Changes
                 </Badge>
               )}
@@ -475,19 +555,18 @@ Use these colors for nodes:
                 <Save className="h-4 w-4 mr-2" />
                 Save
               </Button>
-              <Button
-                onClick={handleExportJSON}
-                variant="outline"
-                size="sm"
-              >
+              <Button onClick={handleExportJSON} variant="outline" size="sm">
                 <Download className="h-4 w-4 mr-2" />
                 Export
               </Button>
             </div>
           </div>
         </DialogHeader>
-        
-        <div className="flex-1 relative" style={{ height: 'calc(95vh - 100px)' }}>
+
+        <div
+          className="flex-1 relative"
+          style={{ height: "calc(95vh - 100px)" }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -503,36 +582,48 @@ Use these colors for nodes:
             multiSelectionKeyCode="Shift"
           >
             <Controls className="bg-white shadow-lg border" />
-            <MiniMap 
+            <MiniMap
               nodeColor={nodeColor}
               nodeStrokeWidth={3}
               zoomable
               pannable
               className="bg-white shadow-lg border"
             />
-            <Background 
-              variant={BackgroundVariant.Dots} 
-              gap={16} 
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={16}
               size={1}
               color="#e5e7eb"
             />
-            
+
             {/* Panel Toggle Button */}
-            <Panel position="top-right" className="bg-white shadow-lg border rounded-lg p-2">
+            <Panel
+              position="top-right"
+              className="bg-white shadow-lg border rounded-lg p-2"
+            >
               <Button
                 onClick={() => setIsPanelVisible(!isPanelVisible)}
                 variant="outline"
                 size="sm"
                 className="h-8 w-8 p-0"
-                title={isPanelVisible ? "Hide Editor Panel" : "Show Editor Panel"}
+                title={
+                  isPanelVisible ? "Hide Editor Panel" : "Show Editor Panel"
+                }
               >
-                {isPanelVisible ? <EyeOff className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
+                {isPanelVisible ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Settings className="h-4 w-4" />
+                )}
               </Button>
             </Panel>
-            
+
             {/* Editing Panel */}
             {isPanelVisible && (
-              <Panel position="top-left" className="bg-white shadow-lg border rounded-lg p-4 min-w-80">
+              <Panel
+                position="top-left"
+                className="bg-white shadow-lg border rounded-lg p-4 min-w-80"
+              >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-sm">Flow Editor</h3>
                   <Button
@@ -542,25 +633,34 @@ Use these colors for nodes:
                     className="h-6 w-6 p-0"
                     title={isPanelCollapsed ? "Expand Panel" : "Collapse Panel"}
                   >
-                    {isPanelCollapsed ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                    {isPanelCollapsed ? (
+                      <ChevronDown className="h-4 w-4" />
+                    ) : (
+                      <ChevronUp className="h-4 w-4" />
+                    )}
                   </Button>
                 </div>
-                
+
                 {/* Panel Content - Collapsible */}
                 {!isPanelCollapsed && (
                   <>
                     {/* Add Node Section */}
                     <div className="space-y-2 mb-4">
-                      <Label className="text-xs font-medium">Add New Node</Label>
+                      <Label className="text-xs font-medium">
+                        Add New Node
+                      </Label>
                       <div className="flex gap-2">
                         <Input
                           placeholder="Node label"
                           value={newNodeLabel}
                           onChange={(e) => setNewNodeLabel(e.target.value)}
                           className="text-xs h-8"
-                          onKeyPress={(e) => e.key === 'Enter' && addNode()}
+                          onKeyPress={(e) => e.key === "Enter" && addNode()}
                         />
-                        <Select value={newNodeType} onValueChange={setNewNodeType}>
+                        <Select
+                          value={newNodeType}
+                          onValueChange={setNewNodeType}
+                        >
                           <SelectTrigger className="w-24 h-8 text-xs">
                             <SelectValue />
                           </SelectTrigger>
@@ -570,7 +670,11 @@ Use these colors for nodes:
                             <SelectItem value="output">End</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Button onClick={addNode} size="sm" className="h-8 px-2">
+                        <Button
+                          onClick={addNode}
+                          size="sm"
+                          className="h-8 px-2"
+                        >
                           <Plus className="h-3 w-3" />
                         </Button>
                       </div>
@@ -579,16 +683,23 @@ Use these colors for nodes:
                     {/* Edit Node Section */}
                     {editingNode && (
                       <div className="space-y-2 mb-4 p-2 bg-blue-50 rounded border">
-                        <Label className="text-xs font-medium">Edit Node: {editingNode.id}</Label>
+                        <Label className="text-xs font-medium">
+                          Edit Node: {editingNode.id}
+                        </Label>
                         <div className="flex gap-2">
                           <Input
                             placeholder="Node label"
                             value={newNodeLabel}
                             onChange={(e) => setNewNodeLabel(e.target.value)}
                             className="text-xs h-8"
-                            onKeyPress={(e) => e.key === 'Enter' && saveNodeEdit()}
+                            onKeyPress={(e) =>
+                              e.key === "Enter" && saveNodeEdit()
+                            }
                           />
-                          <Select value={newNodeType} onValueChange={setNewNodeType}>
+                          <Select
+                            value={newNodeType}
+                            onValueChange={setNewNodeType}
+                          >
                             <SelectTrigger className="w-24 h-8 text-xs">
                               <SelectValue />
                             </SelectTrigger>
@@ -598,10 +709,19 @@ Use these colors for nodes:
                               <SelectItem value="output">End</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Button onClick={saveNodeEdit} size="sm" className="h-8 px-2 bg-green-600 hover:bg-green-700">
+                          <Button
+                            onClick={saveNodeEdit}
+                            size="sm"
+                            className="h-8 px-2 bg-green-600 hover:bg-green-700"
+                          >
                             <Save className="h-3 w-3" />
                           </Button>
-                          <Button onClick={cancelEdit} size="sm" variant="outline" className="h-8 px-2">
+                          <Button
+                            onClick={cancelEdit}
+                            size="sm"
+                            variant="outline"
+                            className="h-8 px-2"
+                          >
                             <X className="h-3 w-3" />
                           </Button>
                         </div>
@@ -611,7 +731,8 @@ Use these colors for nodes:
                     {/* Selection Actions */}
                     <div className="space-y-2 mb-4">
                       <Label className="text-xs font-medium">
-                        Selected: {selectedNodes.length} nodes, {selectedEdges.length} edges
+                        Selected: {selectedNodes.length} nodes,{" "}
+                        {selectedEdges.length} edges
                       </Label>
                       <div className="flex gap-2">
                         <Button
@@ -619,7 +740,10 @@ Use these colors for nodes:
                           variant="destructive"
                           size="sm"
                           className="h-8 px-2"
-                          disabled={selectedNodes.length === 0 && selectedEdges.length === 0}
+                          disabled={
+                            selectedNodes.length === 0 &&
+                            selectedEdges.length === 0
+                          }
                         >
                           <Trash2 className="h-3 w-3 mr-1" />
                           Delete
@@ -640,13 +764,16 @@ Use these colors for nodes:
 
                     {/* AI Flow Generator */}
                     <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded border border-purple-200">
-                      <p className="font-medium mb-2 text-purple-800 text-sm">AI Flow Generator</p>
+                      <p className="font-medium mb-2 text-purple-800 text-sm">
+                        AI Flow Generator
+                      </p>
                       {selectedNodes.length === 1 ? (
                         <div className="space-y-2">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-3 h-3 rounded-full bg-blue-500"></div>
                             <span className="text-xs text-gray-600">
-                              From: <strong>{selectedNodes[0].data?.label}</strong>
+                              From:{" "}
+                              <strong>{selectedNodes[0].data?.label}</strong>
                             </span>
                           </div>
                           <textarea
@@ -680,10 +807,9 @@ Use these colors for nodes:
                             <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           </div>
                           <p className="text-xs text-gray-500 mb-1">
-                            {selectedNodes.length === 0 
+                            {selectedNodes.length === 0
                               ? "Select a node to generate new flow components from it"
-                              : "Select only one node to generate connected flow components"
-                            }
+                              : "Select only one node to generate connected flow components"}
                           </p>
                           <p className="text-xs text-gray-400">
                             Click on a node in the diagram to start
@@ -696,8 +822,12 @@ Use these colors for nodes:
                     <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
                       <p className="font-medium mb-1">Instructions:</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• Select ONE node to enable AI flow generation from it</li>
-                        <li>• Use AI Generator to add connected flow components</li>
+                        <li>
+                          • Select ONE node to enable AI flow generation from it
+                        </li>
+                        <li>
+                          • Use AI Generator to add connected flow components
+                        </li>
                         <li>• Click nodes/edges to select</li>
                         <li>• Hold Shift for multi-select</li>
                         <li>• Drag nodes to reposition</li>

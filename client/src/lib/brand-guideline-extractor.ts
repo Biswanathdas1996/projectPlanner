@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // PDF image extraction utilities
 declare global {
@@ -154,7 +154,7 @@ export class BrandGuidelineExtractor {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
+      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
     );
     this.genAI = genAI;
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -162,27 +162,31 @@ export class BrandGuidelineExtractor {
 
   async extractFromPDF(file: File): Promise<BrandGuideline> {
     try {
-      console.log('Processing brand guidelines PDF:', file.name);
-      
+      console.log("Processing brand guidelines PDF:", file.name);
+
       // Extract logos and images from PDF
       const logoImages = await this.extractLogosFromPDF(file);
-      
+
       // Generate smart brand analysis based on file characteristics
       const analysisText = await this.analyzeFileBasics(file);
-      console.log('Generated analysis text length:', analysisText.length);
-      
+      console.log("Generated analysis text length:", analysisText.length);
+
       // Use Gemini to analyze and extract brand guidelines
       const guidelines = await this.analyzeWithGemini(analysisText);
-      
+
       // Integrate extracted logo images
       if (logoImages && Object.keys(logoImages).length > 0) {
         guidelines.logos.images = logoImages;
-        console.log('Extracted logo images:', Object.keys(logoImages).length, 'variants');
+        console.log(
+          "Extracted logo images:",
+          Object.keys(logoImages).length,
+          "variants"
+        );
       }
-      
+
       return guidelines;
     } catch (error) {
-      console.error('Error extracting brand guidelines:', error);
+      console.error("Error extracting brand guidelines:", error);
       return this.getDefaultGuidelines();
     }
   }
@@ -196,51 +200,56 @@ export class BrandGuidelineExtractor {
     try {
       // Load PDF.js library if not already loaded
       if (!window.pdfjsLib) {
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+        const script = document.createElement("script");
+        script.src =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
         document.head.appendChild(script);
         await new Promise((resolve) => {
           script.onload = resolve;
         });
-        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
       }
 
       // Convert file to array buffer
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer })
+        .promise;
+
       const extractedImages: { [key: string]: string } = {};
-      
+
       // Process first few pages to find logos
       const maxPages = Math.min(pdf.numPages, 5);
-      
+
       for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
         const page = await pdf.getPage(pageNum);
         const operatorList = await page.getOperatorList();
-        
+
         // Look for image operations in the PDF
         for (let i = 0; i < operatorList.fnArray.length; i++) {
-          if (operatorList.fnArray[i] === window.pdfjsLib.OPS.paintImageXObject) {
+          if (
+            operatorList.fnArray[i] === window.pdfjsLib.OPS.paintImageXObject
+          ) {
             try {
               const imgName = operatorList.argsArray[i][0];
               const resources = await page.getAnnotations();
-              
+
               // Extract image data and convert to base64
-              const canvas = document.createElement('canvas');
-              const context = canvas.getContext('2d');
+              const canvas = document.createElement("canvas");
+              const context = canvas.getContext("2d");
               const viewport = page.getViewport({ scale: 1.0 });
-              
+
               canvas.width = viewport.width;
               canvas.height = viewport.height;
-              
+
               await page.render({
                 canvasContext: context,
-                viewport: viewport
+                viewport: viewport,
               }).promise;
-              
+
               // Convert canvas to base64 and resize for logo use
               const imageData = await this.extractAndResizeImage(canvas);
-              
+
               if (imageData) {
                 // Categorize based on position and size
                 if (pageNum === 1) {
@@ -250,45 +259,55 @@ export class BrandGuidelineExtractor {
                 }
               }
             } catch (imgError) {
-              console.warn('Error extracting image from page', pageNum, imgError);
+              console.warn(
+                "Error extracting image from page",
+                pageNum,
+                imgError
+              );
             }
           }
         }
       }
-      
+
       // If we found images, process and categorize them
       if (Object.keys(extractedImages).length > 0) {
-        console.log('Successfully extracted', Object.keys(extractedImages).length, 'logo images from PDF');
+        console.log(
+          "Successfully extracted",
+          Object.keys(extractedImages).length,
+          "logo images from PDF"
+        );
         return this.processExtractedLogos(extractedImages);
       }
-      
+
       return {};
     } catch (error) {
-      console.error('Error extracting logos from PDF:', error);
+      console.error("Error extracting logos from PDF:", error);
       return {};
     }
   }
 
-  private async extractAndResizeImage(canvas: HTMLCanvasElement): Promise<string | null> {
+  private async extractAndResizeImage(
+    canvas: HTMLCanvasElement
+  ): Promise<string | null> {
     try {
       // Create a smaller canvas for logo optimization
-      const logoCanvas = document.createElement('canvas');
-      const logoContext = logoCanvas.getContext('2d');
-      
+      const logoCanvas = document.createElement("canvas");
+      const logoContext = logoCanvas.getContext("2d");
+
       // Set optimal logo dimensions (max 200px width/height)
       const maxSize = 200;
       const ratio = Math.min(maxSize / canvas.width, maxSize / canvas.height);
-      
+
       logoCanvas.width = canvas.width * ratio;
       logoCanvas.height = canvas.height * ratio;
-      
+
       // Draw resized image
       logoContext?.drawImage(canvas, 0, 0, logoCanvas.width, logoCanvas.height);
-      
+
       // Convert to base64 with compression
-      return logoCanvas.toDataURL('image/png', 0.8);
+      return logoCanvas.toDataURL("image/png", 0.8);
     } catch (error) {
-      console.error('Error resizing logo image:', error);
+      console.error("Error resizing logo image:", error);
       return null;
     }
   }
@@ -300,12 +319,12 @@ export class BrandGuidelineExtractor {
     monochrome?: string;
   } {
     const processed: any = {};
-    
+
     // Use the first extracted image as primary
     const imageKeys = Object.keys(images);
     if (imageKeys.length > 0) {
       processed.primary = images[imageKeys[0]];
-      
+
       // If we have multiple images, use them as variations
       if (imageKeys.length > 1) {
         processed.horizontal = images[imageKeys[1]];
@@ -314,19 +333,19 @@ export class BrandGuidelineExtractor {
         processed.icon = images[imageKeys[2]];
       }
     }
-    
+
     return processed;
   }
 
   private async analyzeFileBasics(file: File): Promise<string> {
     const filename = file.name.toLowerCase();
     const size = file.size;
-    
+
     // Determine brand characteristics based on filename patterns
     let brandType = "Corporate";
     let primaryColors = ["#2563eb", "#1d4ed8"];
     let accentColors = ["#dc2626", "#ea580c"];
-    
+
     if (filename.includes("tech") || filename.includes("software")) {
       brandType = "Technology";
       primaryColors = ["#0ea5e9", "#0284c7"];
@@ -335,7 +354,11 @@ export class BrandGuidelineExtractor {
       brandType = "Healthcare";
       primaryColors = ["#059669", "#047857"];
       accentColors = ["#2563eb", "#1d4ed8"];
-    } else if (filename.includes("food") || filename.includes("restaurant") || filename.includes("mcdonald")) {
+    } else if (
+      filename.includes("food") ||
+      filename.includes("restaurant") ||
+      filename.includes("mcdonald")
+    ) {
       brandType = "Food & Beverage";
       primaryColors = ["#FFD700", "#FFBC0D"];
       accentColors = ["#DA020E", "#FF0000"];
@@ -435,7 +458,9 @@ VISUAL STYLE:
 Clean minimal design, good whitespace usage, strong hierarchy, modern iconography`;
   }
 
-  private async analyzeWithGemini(analysisText: string): Promise<BrandGuideline> {
+  private async analyzeWithGemini(
+    analysisText: string
+  ): Promise<BrandGuideline> {
     try {
       const prompt = `Extract comprehensive brand guidelines from this analysis. Focus on capturing ALL key points, clauses, highlights, dos and don'ts, brand rules, compliance requirements, and usage guidelines from the document. Return a detailed JSON object:
 
@@ -646,17 +671,17 @@ Return this exact JSON structure with comprehensive brand information:
 
       try {
         const cleanedText = text
-          .replace(/```json\s*/, '')
-          .replace(/```\s*$/, '')
+          .replace(/```json\s*/, "")
+          .replace(/```\s*$/, "")
           .trim();
 
         return JSON.parse(cleanedText) as BrandGuideline;
       } catch (parseError) {
-        console.error('Error parsing Gemini response:', parseError);
+        console.error("Error parsing Gemini response:", parseError);
         return this.getDefaultGuidelines();
       }
     } catch (error) {
-      console.error('Error with Gemini analysis:', error);
+      console.error("Error with Gemini analysis:", error);
       return this.getDefaultGuidelines();
     }
   }
@@ -672,21 +697,21 @@ Return this exact JSON structure with comprehensive brand information:
         background: ["#ffffff", "#f9fafb", "#f3f4f6"],
         error: ["#dc2626", "#ef4444"],
         success: ["#16a34a", "#22c55e"],
-        warning: ["#d97706", "#f59e0b"]
+        warning: ["#d97706", "#f59e0b"],
       },
       typography: {
         fonts: ["Inter", "system-ui", "sans-serif"],
         fontFamilies: {
           primary: "Inter, system-ui, sans-serif",
           heading: "Inter, system-ui, sans-serif",
-          body: "Inter, system-ui, sans-serif"
+          body: "Inter, system-ui, sans-serif",
         },
         headingStyles: ["Bold", "Clean", "High Contrast"],
         bodyStyles: ["Regular", "Readable", "Professional"],
         weights: ["400", "500", "600", "700"],
         sizes: ["14px", "16px", "18px", "24px", "32px"],
         lineHeights: ["1.4", "1.6", "1.8"],
-        letterSpacing: ["normal", "0.025em"]
+        letterSpacing: ["normal", "0.025em"],
       },
       layout: {
         spacing: ["8px", "16px", "24px", "32px", "48px"],
@@ -694,7 +719,7 @@ Return this exact JSON structure with comprehensive brand information:
         breakpoints: ["640px", "768px", "1024px", "1280px"],
         containers: ["768px", "1024px", "1280px"],
         margins: ["16px", "24px", "32px"],
-        padding: ["16px", "24px", "32px"]
+        padding: ["16px", "24px", "32px"],
       },
       components: {
         buttons: {
@@ -702,60 +727,72 @@ Return this exact JSON structure with comprehensive brand information:
           secondary: "Outlined style with brand color borders",
           borderRadius: "8px",
           fontWeight: "500",
-          states: ["hover: darker shade", "active: pressed", "disabled: opacity 50%"]
+          states: [
+            "hover: darker shade",
+            "active: pressed",
+            "disabled: opacity 50%",
+          ],
         },
         cards: {
           design: "Subtle shadows with clean borders and good spacing",
           shadows: ["0 1px 3px rgba(0,0,0,0.1)", "0 4px 6px rgba(0,0,0,0.1)"],
           borderRadius: "8px",
-          spacing: "16px internal padding"
+          spacing: "16px internal padding",
         },
         forms: {
           inputStyles: "Clean inputs with focus states and validation styling",
           labelStyles: "Clear labels with medium font weight",
-          focusStates: "Brand color outline with 2px focus ring"
+          focusStates: "Brand color outline with 2px focus ring",
         },
         navigation: {
           primaryNav: "Horizontal layout with clear hierarchy",
           states: "Active, hover, and current page indicators",
-          mobileNav: "Hamburger menu with slide-out panel"
+          mobileNav: "Hamburger menu with slide-out panel",
         },
         sections: {
           headerDesign: "Brand logo with navigation menu",
           footerDesign: "Multi-column layout with links and contact info",
-          contentAreas: "Proper margins and readable layouts"
+          contentAreas: "Proper margins and readable layouts",
         },
         contactUs: {
           design: "Form layout with contact information display",
-          layout: "Two-column or single column based on space"
+          layout: "Two-column or single column based on space",
         },
         modals: ["centered overlay", "smooth animations"],
         tables: ["striped rows", "hover states"],
-        badges: ["solid fill", "outline variants"]
+        badges: ["solid fill", "outline variants"],
       },
       imagery: {
         style: "clean and modern",
         guidelines: ["high quality", "consistent style", "brand appropriate"],
-        restrictions: ["no low quality", "brand consistent", "appropriate context"],
+        restrictions: [
+          "no low quality",
+          "brand consistent",
+          "appropriate context",
+        ],
         aspectRatios: ["16:9", "4:3", "1:1"],
-        treatments: ["original", "filtered", "branded"]
+        treatments: ["original", "filtered", "branded"],
       },
       tone: {
         personality: ["professional", "approachable", "reliable", "modern"],
         voice: ["clear", "authoritative", "friendly"],
         messaging: ["trustworthy", "accessible", "innovative"],
-        doAndDont: ["be clear and concise", "avoid jargon", "stay on brand"]
+        doAndDont: ["be clear and concise", "avoid jargon", "stay on brand"],
       },
       logos: {
         primary: "Main brand logo",
         usage: ["proper spacing", "correct colors", "appropriate size"],
-        restrictions: ["no distortion", "minimum size requirements", "clear background"],
+        restrictions: [
+          "no distortion",
+          "minimum size requirements",
+          "clear background",
+        ],
         variations: ["horizontal", "vertical", "icon only"],
         spacing: ["minimum 20px clearance"],
         colors: ["full color", "monochrome", "reverse"],
         sizes: ["minimum 24px height"],
         formats: ["SVG", "PNG", "JPG"],
-        images: {}
+        images: {},
       },
       brandValues: ["innovation", "quality", "trust", "excellence"],
       logoUsage: ["maintain proportions", "use appropriate backgrounds"],
@@ -763,80 +800,84 @@ Return this exact JSON structure with comprehensive brand information:
       accessibility: {
         contrast: ["4.5:1 minimum", "7:1 preferred"],
         guidelines: ["WCAG 2.1 AA compliance"],
-        compliance: ["color contrast", "keyboard navigation", "screen reader support"]
+        compliance: [
+          "color contrast",
+          "keyboard navigation",
+          "screen reader support",
+        ],
       },
       keyPoints: [
         "Maintain brand consistency across all touchpoints",
         "Use approved color combinations for accessibility",
         "Follow typography hierarchy guidelines",
-        "Ensure proper logo placement and sizing"
+        "Ensure proper logo placement and sizing",
       ],
       keyClauses: [
         "Logo must maintain minimum size requirements",
         "Brand colors must meet accessibility standards",
         "Typography must be legible across all platforms",
-        "Consistent application across all touchpoints"
+        "Consistent application across all touchpoints",
       ],
       keyHighlights: [
         "Brand essence and unique value proposition",
         "Critical design specifications",
         "Important usage restrictions",
-        "Key differentiating factors"
+        "Key differentiating factors",
       ],
       dosAndDonts: {
         dos: [
           "Use approved color combinations",
           "Maintain proper logo clearspace",
           "Follow typography hierarchy",
-          "Ensure accessibility compliance"
+          "Ensure accessibility compliance",
         ],
         donts: [
           "Never distort or skew the logo",
           "Don't use unauthorized color variations",
           "Avoid poor contrast combinations",
-          "Never alter brand typography"
-        ]
+          "Never alter brand typography",
+        ],
       },
       brandRules: [
         "Always use official brand assets",
         "Maintain consistent visual hierarchy",
         "Follow approved color usage guidelines",
-        "Ensure proper logo placement and sizing"
+        "Ensure proper logo placement and sizing",
       ],
       compliance: {
         requirements: [
           "WCAG 2.1 AA accessibility standards",
           "Brand consistency across all platforms",
-          "Legal trademark usage compliance"
+          "Legal trademark usage compliance",
         ],
         restrictions: [
           "No unauthorized logo modifications",
           "Restricted color palette usage",
-          "Specific spacing requirements"
+          "Specific spacing requirements",
         ],
         guidelines: [
           "Follow established design patterns",
           "Maintain brand voice and tone",
-          "Use approved imagery styles"
-        ]
+          "Use approved imagery styles",
+        ],
       },
       usageGuidelines: {
         approved: [
           "Official marketing materials",
           "Digital platforms and websites",
-          "Print publications and collateral"
+          "Print publications and collateral",
         ],
         prohibited: [
           "Unauthorized logo alterations",
           "Off-brand color combinations",
-          "Inconsistent typography usage"
+          "Inconsistent typography usage",
         ],
         context: [
           "Business communications",
           "Marketing campaigns",
-          "Product packaging and design"
-        ]
-      }
+          "Product packaging and design",
+        ],
+      },
     };
   }
 
@@ -845,66 +886,70 @@ Return this exact JSON structure with comprehensive brand information:
 /* Enhanced Brand Guidelines CSS */
 :root {
   /* Primary Colors */
-  --brand-primary-1: ${guidelines.colors.primary[0] || '#2563eb'};
-  --brand-primary-2: ${guidelines.colors.primary[1] || '#1d4ed8'};
+  --brand-primary-1: ${guidelines.colors.primary[0] || "#2563eb"};
+  --brand-primary-2: ${guidelines.colors.primary[1] || "#1d4ed8"};
   
   /* Secondary Colors */
-  --brand-secondary-1: ${guidelines.colors.secondary[0] || '#64748b'};
-  --brand-secondary-2: ${guidelines.colors.secondary[1] || '#475569'};
+  --brand-secondary-1: ${guidelines.colors.secondary[0] || "#64748b"};
+  --brand-secondary-2: ${guidelines.colors.secondary[1] || "#475569"};
   
   /* Text Colors */
-  --brand-text-primary: ${guidelines.colors.text[0] || '#1f2937'};
-  --brand-text-secondary: ${guidelines.colors.text[1] || '#374151'};
-  --brand-text-muted: ${guidelines.colors.text[2] || '#6b7280'};
+  --brand-text-primary: ${guidelines.colors.text[0] || "#1f2937"};
+  --brand-text-secondary: ${guidelines.colors.text[1] || "#374151"};
+  --brand-text-muted: ${guidelines.colors.text[2] || "#6b7280"};
   
   /* Background Colors */
-  --brand-bg-primary: ${guidelines.colors.background[0] || '#ffffff'};
-  --brand-bg-secondary: ${guidelines.colors.background[1] || '#f9fafb'};
-  --brand-bg-tertiary: ${guidelines.colors.background[2] || '#f3f4f6'};
+  --brand-bg-primary: ${guidelines.colors.background[0] || "#ffffff"};
+  --brand-bg-secondary: ${guidelines.colors.background[1] || "#f9fafb"};
+  --brand-bg-tertiary: ${guidelines.colors.background[2] || "#f3f4f6"};
   
   /* State Colors */
-  --brand-error: ${guidelines.colors.error[0] || '#dc2626'};
-  --brand-success: ${guidelines.colors.success[0] || '#16a34a'};
-  --brand-warning: ${guidelines.colors.warning[0] || '#d97706'};
+  --brand-error: ${guidelines.colors.error[0] || "#dc2626"};
+  --brand-success: ${guidelines.colors.success[0] || "#16a34a"};
+  --brand-warning: ${guidelines.colors.warning[0] || "#d97706"};
   
   /* Accent Colors */
-  --brand-accent-1: ${guidelines.colors.accent[0] || '#dc2626'};
-  --brand-accent-2: ${guidelines.colors.accent[1] || '#b91c1c'};
+  --brand-accent-1: ${guidelines.colors.accent[0] || "#dc2626"};
+  --brand-accent-2: ${guidelines.colors.accent[1] || "#b91c1c"};
   
   /* Neutral Colors */
-  --brand-neutral-1: ${guidelines.colors.neutral[0] || '#f8fafc'};
-  --brand-neutral-2: ${guidelines.colors.neutral[1] || '#e2e8f0'};
-  --brand-neutral-3: ${guidelines.colors.neutral[2] || '#64748b'};
-  --brand-neutral-4: ${guidelines.colors.neutral[3] || '#1e293b'};
+  --brand-neutral-1: ${guidelines.colors.neutral[0] || "#f8fafc"};
+  --brand-neutral-2: ${guidelines.colors.neutral[1] || "#e2e8f0"};
+  --brand-neutral-3: ${guidelines.colors.neutral[2] || "#64748b"};
+  --brand-neutral-4: ${guidelines.colors.neutral[3] || "#1e293b"};
   
   /* Typography */
-  --brand-font-primary: ${guidelines.typography.fonts[0] || 'Inter'}, system-ui, sans-serif;
-  --brand-font-secondary: ${guidelines.typography.fonts[1] || '-apple-system'}, BlinkMacSystemFont, Segoe UI;
+  --brand-font-primary: ${
+    guidelines.typography.fonts[0] || "Inter"
+  }, system-ui, sans-serif;
+  --brand-font-secondary: ${
+    guidelines.typography.fonts[1] || "-apple-system"
+  }, BlinkMacSystemFont, Segoe UI;
   
   /* Spacing */
-  --brand-spacing-xs: ${guidelines.layout.spacing[0] || '8px'};
-  --brand-spacing-sm: ${guidelines.layout.spacing[1] || '16px'};
-  --brand-spacing-md: ${guidelines.layout.spacing[2] || '24px'};
-  --brand-spacing-lg: ${guidelines.layout.spacing[3] || '32px'};
-  --brand-spacing-xl: ${guidelines.layout.spacing[4] || '48px'};
+  --brand-spacing-xs: ${guidelines.layout.spacing[0] || "8px"};
+  --brand-spacing-sm: ${guidelines.layout.spacing[1] || "16px"};
+  --brand-spacing-md: ${guidelines.layout.spacing[2] || "24px"};
+  --brand-spacing-lg: ${guidelines.layout.spacing[3] || "32px"};
+  --brand-spacing-xl: ${guidelines.layout.spacing[4] || "48px"};
 }
 
 .brand-heading {
   font-family: var(--brand-font-primary);
-  font-weight: ${guidelines.typography.weights[2] || '700'};
+  font-weight: ${guidelines.typography.weights[2] || "700"};
   color: var(--brand-neutral-4);
 }
 
 .brand-body {
   font-family: var(--brand-font-primary);
-  font-weight: ${guidelines.typography.weights[0] || '400'};
+  font-weight: ${guidelines.typography.weights[0] || "400"};
   color: var(--brand-neutral-3);
   line-height: 1.6;
 }
 
 .brand-button {
   font-family: var(--brand-font-primary);
-  font-weight: ${guidelines.typography.weights[1] || '500'};
+  font-weight: ${guidelines.typography.weights[1] || "500"};
   background: var(--brand-primary-1);
   color: white;
   border: none;

@@ -27,7 +27,9 @@ export class EnhancedProjectPlanner {
   private model: any;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+    const genAI = new GoogleGenerativeAI(
+      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
+    );
     this.genAI = genAI;
     this.model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
@@ -40,7 +42,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 1
+        order: 1,
       },
       {
         id: "technical-architecture",
@@ -48,7 +50,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 2
+        order: 2,
       },
       {
         id: "feature-specifications",
@@ -56,7 +58,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 3
+        order: 3,
       },
       {
         id: "development-methodology",
@@ -64,7 +66,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 4
+        order: 4,
       },
       {
         id: "user-experience",
@@ -72,7 +74,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 5
+        order: 5,
       },
       {
         id: "quality-assurance",
@@ -80,7 +82,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 6
+        order: 6,
       },
       {
         id: "deployment-devops",
@@ -88,7 +90,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 7
+        order: 7,
       },
       {
         id: "risk-management",
@@ -96,7 +98,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 8
+        order: 8,
       },
       {
         id: "stakeholder-management",
@@ -104,7 +106,7 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 9
+        order: 9,
       },
       {
         id: "post-launch",
@@ -112,8 +114,8 @@ export class EnhancedProjectPlanner {
         content: "",
         isGenerating: false,
         isCompleted: false,
-        order: 10
-      }
+        order: 10,
+      },
     ];
   }
 
@@ -131,18 +133,21 @@ export class EnhancedProjectPlanner {
     }
   ): string {
     const baseContext = `Project Description: ${projectDescription}`;
-    const requirements = additionalRequirements && additionalRequirements.length > 0 
-      ? `\n\nAdditional Requirements:\n${additionalRequirements.map(req => `- ${req}`).join('\n')}`
-      : '';
+    const requirements =
+      additionalRequirements && additionalRequirements.length > 0
+        ? `\n\nAdditional Requirements:\n${additionalRequirements
+            .map((req) => `- ${req}`)
+            .join("\n")}`
+        : "";
 
     // Use configured AI prompts if available
     if (sectionConfig?.aiPrompts?.primary) {
       let prompt = sectionConfig.aiPrompts.primary;
-      
+
       if (sectionConfig.aiPrompts.secondary) {
         prompt += `\n\nAdditional Details: ${sectionConfig.aiPrompts.secondary}`;
       }
-      
+
       if (sectionConfig.aiPrompts.context) {
         prompt += `\n\nContext Guidelines: ${sectionConfig.aiPrompts.context}`;
       }
@@ -157,7 +162,11 @@ Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES.
     }
 
     // Fallback to original method if no AI prompts configured
-    return this.buildSectionPrompt(sectionTitle, projectDescription, additionalRequirements);
+    return this.buildSectionPrompt(
+      sectionTitle,
+      projectDescription,
+      additionalRequirements
+    );
   }
 
   private buildSectionPrompt(
@@ -166,9 +175,12 @@ Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES.
     additionalRequirements?: string[]
   ): string {
     const baseContext = `Project Description: ${projectDescription}`;
-    const requirements = additionalRequirements && additionalRequirements.length > 0 
-      ? `\n\nAdditional Requirements:\n${additionalRequirements.map(req => `- ${req}`).join('\n')}`
-      : '';
+    const requirements =
+      additionalRequirements && additionalRequirements.length > 0
+        ? `\n\nAdditional Requirements:\n${additionalRequirements
+            .map((req) => `- ${req}`)
+            .join("\n")}`
+        : "";
 
     const sectionPrompts: Record<string, string> = {
       "Executive Summary": `Create a comprehensive executive summary with rich HTML formatting. Include:
@@ -250,10 +262,12 @@ Create sophisticated, compact HTML sections using ONLY HTML and CSS - NO IMAGES.
         - Analytics stack: Google Analytics → Mixpanel → Amplitude → Hotjar → DataDog → Custom Dashboards
         - Post-launch metrics dashboard using display: flex layout (MAU, DAU, Retention Rate, Churn Rate, Revenue Growth, Feature Adoption)
         - Growth strategies: SEO Optimization → Content Marketing → Social Media → Paid Advertising → Referral Programs → Partnership Development
-        - Product roadmap: Bug Fixes → Performance Optimization → Feature Enhancements → New Integrations → Mobile App → Enterprise Features`
+        - Product roadmap: Bug Fixes → Performance Optimization → Feature Enhancements → New Integrations → Mobile App → Enterprise Features`,
     };
 
-    const prompt = sectionPrompts[sectionTitle as keyof typeof sectionPrompts] || `Create a detailed section about ${sectionTitle} for this project.`;
+    const prompt =
+      sectionPrompts[sectionTitle as keyof typeof sectionPrompts] ||
+      `Create a detailed section about ${sectionTitle} for this project.`;
 
     return `${baseContext}${requirements}
 
@@ -753,14 +767,14 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
       const result = await this.model.generateContent(prompt);
       const response = await result.response;
       let content = response.text();
-      
+
       // Clean up any markdown formatting or code blocks
       content = content
-        .replace(/```html\s*/gi, '')
-        .replace(/```\s*/g, '')
-        .replace(/^\s*html\s*/gi, '')
+        .replace(/```html\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .replace(/^\s*html\s*/gi, "")
         .trim();
-      
+
       return content;
     } catch (error) {
       console.error(`Error generating section ${sectionTitle}:`, error);
@@ -777,7 +791,7 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
 
     for (let i = 0; i < sections.length; i++) {
       const section = sections[i];
-      
+
       // Update progress - starting generation
       if (onProgress) {
         onProgress({
@@ -785,17 +799,19 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
           totalSections,
           currentSectionTitle: section.title,
           overallProgress: (i / totalSections) * 100,
-          isGenerating: true
+          isGenerating: true,
         });
       }
 
       try {
         // Generate content for this section
-        console.log(`Generating section ${i + 1}/${totalSections}: ${section.title}`);
+        console.log(
+          `Generating section ${i + 1}/${totalSections}: ${section.title}`
+        );
         section.content = await this.generateSection(section.title, config);
         section.isCompleted = true;
         section.isGenerating = false;
-        
+
         // Update progress - section completed
         if (onProgress) {
           onProgress({
@@ -803,7 +819,7 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
             totalSections,
             currentSectionTitle: section.title,
             overallProgress: ((i + 1) / totalSections) * 100,
-            isGenerating: i < totalSections - 1
+            isGenerating: i < totalSections - 1,
           });
         }
       } catch (error) {
@@ -815,7 +831,7 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
 
       // Small delay between sections to prevent rate limiting and allow UI updates
       if (i < totalSections - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
     }
 
@@ -826,7 +842,7 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
         totalSections,
         currentSectionTitle: "Complete",
         overallProgress: 100,
-        isGenerating: false
+        isGenerating: false,
       });
     }
 
@@ -836,14 +852,17 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
   generateHtmlReport(sections: ProjectPlanSection[]): string {
     const sectionsHtml = sections
       .sort((a, b) => a.order - b.order)
-      .map(section => `
+      .map(
+        (section) => `
         <section class="project-section" id="${section.id}">
           <h2 class="section-title">${section.title}</h2>
           <div class="section-content">
             ${this.formatSectionContent(section.content)}
           </div>
         </section>
-      `).join('\n');
+      `
+      )
+      .join("\n");
 
     return `
       <div class="enhanced-project-plan">
@@ -858,9 +877,13 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
         <nav class="plan-toc">
           <h3>Table of Contents</h3>
           <ol>
-            ${sections.map(section => `
+            ${sections
+              .map(
+                (section) => `
               <li><a href="#${section.id}">${section.title}</a></li>
-            `).join('')}
+            `
+              )
+              .join("")}
           </ol>
         </nav>
 
@@ -874,22 +897,22 @@ Use tables, flowcharts, timelines, cards, metrics, and status badges. Never sugg
   private formatSectionContent(content: string): string {
     // Convert markdown-like formatting to HTML
     let formatted = content
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^### (.*?)$/gm, '<h4>$1</h4>')
-      .replace(/^## (.*?)$/gm, '<h3>$1</h3>')
-      .replace(/^# (.*?)$/gm, '<h2>$1</h2>')
-      .replace(/^- (.*?)$/gm, '<li>$1</li>');
-    
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      .replace(/^### (.*?)$/gm, "<h4>$1</h4>")
+      .replace(/^## (.*?)$/gm, "<h3>$1</h3>")
+      .replace(/^# (.*?)$/gm, "<h2>$1</h2>")
+      .replace(/^- (.*?)$/gm, "<li>$1</li>");
+
     // Wrap list items in ul tags
-    formatted = formatted.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
-    
+    formatted = formatted.replace(/(<li>.*?<\/li>)/g, "<ul>$1</ul>");
+
     // Handle paragraphs
     formatted = formatted
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/^(.)/gm, '<p>$1')
-      .replace(/(.*)$/gm, '$1</p>');
-      
+      .replace(/\n\n/g, "</p><p>")
+      .replace(/^(.)/gm, "<p>$1")
+      .replace(/(.*)$/gm, "$1</p>");
+
     return formatted;
   }
 }

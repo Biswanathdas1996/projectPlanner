@@ -51,8 +51,8 @@ interface ProjectFlow {
   title: string;
   description: string;
   flowData: any;
-  category: 'onboarding' | 'core' | 'management';
-  priority: 'high' | 'medium' | 'low';
+  category: "onboarding" | "core" | "management";
+  priority: "high" | "medium" | "low";
   createdAt: string;
 }
 
@@ -82,8 +82,11 @@ export default function CodeGenerator() {
   const [apiKeyError, setApiKeyError] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [flows, setFlows] = useState<ProjectFlow[]>([]);
-  const [consolidatedFlow, setConsolidatedFlow] = useState<ProjectFlow | null>(null);
-  const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] = useState(false);
+  const [consolidatedFlow, setConsolidatedFlow] = useState<ProjectFlow | null>(
+    null
+  );
+  const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] =
+    useState(false);
 
   // Load data from localStorage
   useEffect(() => {
@@ -111,40 +114,47 @@ export default function CodeGenerator() {
 
     // Load ALL flows from localStorage - comprehensive workflow extraction
     const loadedFlows: ProjectFlow[] = [];
-    
+
     // Get all localStorage keys that might contain workflow data
     const allKeys = Object.keys(localStorage);
-    const workflowKeys = allKeys.filter(key => 
-      key.includes('flow') || key.includes('Flow') || 
-      key.includes('diagram') || key.includes('Diagram') ||
-      key.includes('workflow') || key.includes('Workflow') ||
-      key.includes('process') || key.includes('Process')
+    const workflowKeys = allKeys.filter(
+      (key) =>
+        key.includes("flow") ||
+        key.includes("Flow") ||
+        key.includes("diagram") ||
+        key.includes("Diagram") ||
+        key.includes("workflow") ||
+        key.includes("Workflow") ||
+        key.includes("process") ||
+        key.includes("Process")
     );
 
-    console.log('Found workflow keys in localStorage:', workflowKeys);
+    console.log("Found workflow keys in localStorage:", workflowKeys);
 
-    workflowKeys.forEach(key => {
+    workflowKeys.forEach((key) => {
       try {
         const rawData = localStorage.getItem(key);
-        if (!rawData || rawData.trim() === '') return;
+        if (!rawData || rawData.trim() === "") return;
 
         const data = JSON.parse(rawData);
         console.log(`Processing ${key}:`, data);
 
         // Handle different data structures
-        if (typeof data === 'object' && data !== null) {
+        if (typeof data === "object" && data !== null) {
           // Case 1: Direct flow data with nodes/edges
           if (data.nodes && data.edges) {
             loadedFlows.push(createFlowFromData(key, data));
           }
           // Case 2: Object containing multiple flows
-          else if (typeof data === 'object') {
-            Object.keys(data).forEach(subKey => {
+          else if (typeof data === "object") {
+            Object.keys(data).forEach((subKey) => {
               const flowData = data[subKey];
-              if (flowData && typeof flowData === 'object') {
+              if (flowData && typeof flowData === "object") {
                 // Check if it has flow structure
                 if (flowData.nodes || flowData.flowData || flowData.title) {
-                  loadedFlows.push(createFlowFromData(`${key}-${subKey}`, flowData));
+                  loadedFlows.push(
+                    createFlowFromData(`${key}-${subKey}`, flowData)
+                  );
                 }
               }
             });
@@ -155,18 +165,18 @@ export default function CodeGenerator() {
       }
     });
 
-    console.log('Total flows loaded:', loadedFlows.length);
+    console.log("Total flows loaded:", loadedFlows.length);
     setFlows(loadedFlows);
 
     // Load consolidated master flow from localStorage
-    const consolidatedFlowData = localStorage.getItem('consolidatedMasterFlow');
+    const consolidatedFlowData = localStorage.getItem("consolidatedMasterFlow");
     if (consolidatedFlowData) {
       try {
         const parsedConsolidatedFlow = JSON.parse(consolidatedFlowData);
         setConsolidatedFlow(parsedConsolidatedFlow);
-        console.log('✅ Loaded consolidated master flow from localStorage');
+        console.log("✅ Loaded consolidated master flow from localStorage");
       } catch (error) {
-        console.error('Error parsing consolidated master flow:', error);
+        console.error("Error parsing consolidated master flow:", error);
       }
     }
 
@@ -183,78 +193,104 @@ export default function CodeGenerator() {
   const createFlowFromData = (key: string, data: any): ProjectFlow => {
     return {
       id: `project-${key}`,
-      title: data.title || key.replace(/[-_]/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      title:
+        data.title ||
+        key
+          .replace(/[-_]/g, " ")
+          .replace(/\b\w/g, (l: string) => l.toUpperCase()),
       description: data.description || `Process workflow for ${key}`,
       flowData: data.flowData || data,
       category: determineCategory(key),
       priority: determinePriority(key),
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
     };
   };
 
-  const determineCategory = (key: string): 'onboarding' | 'core' | 'management' => {
-    if (key.includes('onboard') || key.includes('register') || key.includes('setup')) return 'onboarding';
-    if (key.includes('manage') || key.includes('admin') || key.includes('settings')) return 'management';
-    return 'core';
+  const determineCategory = (
+    key: string
+  ): "onboarding" | "core" | "management" => {
+    if (
+      key.includes("onboard") ||
+      key.includes("register") ||
+      key.includes("setup")
+    )
+      return "onboarding";
+    if (
+      key.includes("manage") ||
+      key.includes("admin") ||
+      key.includes("settings")
+    )
+      return "management";
+    return "core";
   };
 
-  const determinePriority = (key: string): 'high' | 'medium' | 'low' => {
-    if (key.includes('critical') || key.includes('main') || key.includes('primary')) return 'high';
-    if (key.includes('secondary') || key.includes('optional')) return 'low';
-    return 'medium';
+  const determinePriority = (key: string): "high" | "medium" | "low" => {
+    if (
+      key.includes("critical") ||
+      key.includes("main") ||
+      key.includes("primary")
+    )
+      return "high";
+    if (key.includes("secondary") || key.includes("optional")) return "low";
+    return "medium";
   };
 
   const generateConsolidatedFlow = async () => {
     if (flows.length === 0) return;
 
     setIsGeneratingConsolidatedFlow(true);
-    
+
     try {
       // Use Gemini AI to analyze and consolidate all flows
       const masterFlow = await generateAIConsolidatedFlow(flows);
       const consolidatedFlowData: ProjectFlow = {
-        id: 'ai-consolidated-master-flow',
+        id: "ai-consolidated-master-flow",
         title: masterFlow.title,
         description: masterFlow.description,
         flowData: masterFlow.flowData,
-        category: 'core',
-        priority: 'high',
-        createdAt: new Date().toISOString()
+        category: "core",
+        priority: "high",
+        createdAt: new Date().toISOString(),
       };
       setConsolidatedFlow(consolidatedFlowData);
-      
+
       // Save to localStorage
-      localStorage.setItem('consolidatedMasterFlow', JSON.stringify(consolidatedFlowData));
-      console.log('✅ Saved AI-generated master flow to localStorage');
-      
+      localStorage.setItem(
+        "consolidatedMasterFlow",
+        JSON.stringify(consolidatedFlowData)
+      );
+      console.log("✅ Saved AI-generated master flow to localStorage");
     } catch (error) {
-      console.error('Error generating AI consolidated flow:', error);
+      console.error("Error generating AI consolidated flow:", error);
       // Fallback to manual consolidation if AI fails
       const fallbackFlow = createFallbackConsolidatedFlow(flows);
       const fallbackFlowData: ProjectFlow = {
-        id: 'fallback-master-flow',
+        id: "fallback-master-flow",
         title: fallbackFlow.title,
         description: fallbackFlow.description,
         flowData: fallbackFlow.flowData,
-        category: 'core',
-        priority: 'high',
-        createdAt: new Date().toISOString()
+        category: "core",
+        priority: "high",
+        createdAt: new Date().toISOString(),
       };
       setConsolidatedFlow(fallbackFlowData);
-      
+
       // Save fallback to localStorage
-      localStorage.setItem('consolidatedMasterFlow', JSON.stringify(fallbackFlowData));
-      console.log('✅ Saved fallback master flow to localStorage');
+      localStorage.setItem(
+        "consolidatedMasterFlow",
+        JSON.stringify(fallbackFlowData)
+      );
+      console.log("✅ Saved fallback master flow to localStorage");
     } finally {
       setIsGeneratingConsolidatedFlow(false);
     }
   };
 
   const generateAIConsolidatedFlow = async (flows: ProjectFlow[]) => {
-    const API_KEY = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
-    
+    const API_KEY = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
+
     // Prepare flow data for AI analysis
-    const flowSummaries = flows.map(flow => ({
+    const flowSummaries = flows.map((flow) => ({
       id: flow.id,
       title: flow.title,
       description: flow.description,
@@ -262,20 +298,24 @@ export default function CodeGenerator() {
       priority: flow.priority,
       nodeCount: flow.flowData?.nodes?.length || 0,
       edgeCount: flow.flowData?.edges?.length || 0,
-      nodes: flow.flowData?.nodes?.map((node: any) => ({
-        id: node.id,
-        label: node.data?.label,
-        type: node.type,
-        position: node.position
-      })) || [],
-      edges: flow.flowData?.edges?.map((edge: any) => ({
-        source: edge.source,
-        target: edge.target,
-        id: edge.id
-      })) || []
+      nodes:
+        flow.flowData?.nodes?.map((node: any) => ({
+          id: node.id,
+          label: node.data?.label,
+          type: node.type,
+          position: node.position,
+        })) || [],
+      edges:
+        flow.flowData?.edges?.map((edge: any) => ({
+          source: edge.source,
+          target: edge.target,
+          id: edge.id,
+        })) || [],
     }));
 
-    const prompt = `Analyze these ${flows.length} application workflows and create a single comprehensive master flow diagram that consolidates ALL processes into one unified, detailed workflow.
+    const prompt = `Analyze these ${
+      flows.length
+    } application workflows and create a single comprehensive master flow diagram that consolidates ALL processes into one unified, detailed workflow.
 
 INPUT WORKFLOWS:
 ${JSON.stringify(flowSummaries, null, 2)}
@@ -388,23 +428,28 @@ RESPONSE FORMAT - Return ONLY valid JSON:
   }
 }`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{ text: prompt }]
-        }],
-        generationConfig: {
-          temperature: 0.1,
-          topK: 1,
-          topP: 1,
-          maxOutputTokens: 4000,
-        }
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [{ text: prompt }],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            topK: 1,
+            topP: 1,
+            maxOutputTokens: 4000,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`Gemini API error: ${response.status}`);
@@ -412,31 +457,37 @@ RESPONSE FORMAT - Return ONLY valid JSON:
 
     const data = await response.json();
     const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    
+
     if (!aiResponse) {
-      throw new Error('No response from Gemini AI');
+      throw new Error("No response from Gemini AI");
     }
 
     // Clean and parse the AI response
-    const cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, '').trim();
+    const cleanResponse = aiResponse.replace(/```json\n?|\n?```/g, "").trim();
     let parsedResponse;
-    
+
     try {
       parsedResponse = JSON.parse(cleanResponse);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', cleanResponse);
-      throw new Error('Invalid JSON response from AI');
+      console.error("Failed to parse AI response:", cleanResponse);
+      throw new Error("Invalid JSON response from AI");
     }
 
     // Validate the response structure
-    if (!parsedResponse.flowData || !parsedResponse.flowData.nodes || !parsedResponse.flowData.edges) {
-      throw new Error('Invalid flow structure from AI');
+    if (
+      !parsedResponse.flowData ||
+      !parsedResponse.flowData.nodes ||
+      !parsedResponse.flowData.edges
+    ) {
+      throw new Error("Invalid flow structure from AI");
     }
 
     // Ensure all nodes have proper IDs and edges have valid connections
-    const nodeIds = new Set(parsedResponse.flowData.nodes.map((node: any) => node.id));
-    const validEdges = parsedResponse.flowData.edges.filter((edge: any) => 
-      nodeIds.has(edge.source) && nodeIds.has(edge.target)
+    const nodeIds = new Set(
+      parsedResponse.flowData.nodes.map((node: any) => node.id)
+    );
+    const validEdges = parsedResponse.flowData.edges.filter(
+      (edge: any) => nodeIds.has(edge.source) && nodeIds.has(edge.target)
     );
 
     return {
@@ -444,8 +495,8 @@ RESPONSE FORMAT - Return ONLY valid JSON:
       description: parsedResponse.description,
       flowData: {
         nodes: parsedResponse.flowData.nodes,
-        edges: validEdges
-      }
+        edges: validEdges,
+      },
     };
   };
 
@@ -454,375 +505,426 @@ RESPONSE FORMAT - Return ONLY valid JSON:
     const nodes = [
       // PHASE 1 - INITIAL REGISTRATION & ONBOARDING (y=50)
       {
-        id: 'start',
+        id: "start",
         position: { x: 50, y: 50 },
-        data: { label: 'Patient Arrival' },
-        type: 'input',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Patient Arrival" },
+        type: "input",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'personal-info',
+        id: "personal-info",
         position: { x: 250, y: 50 },
-        data: { label: 'Personal Information Collection' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Personal Information Collection" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'contact-validation',
+        id: "contact-validation",
         position: { x: 450, y: 50 },
-        data: { label: 'Contact Details Validation' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Contact Details Validation" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'insurance-capture',
+        id: "insurance-capture",
         position: { x: 650, y: 50 },
-        data: { label: 'Insurance Information Capture' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Insurance Information Capture" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'document-upload',
+        id: "document-upload",
         position: { x: 850, y: 50 },
-        data: { label: 'Document Upload & Validation' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Document Upload & Validation" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'emergency-contact',
+        id: "emergency-contact",
         position: { x: 1050, y: 50 },
-        data: { label: 'Emergency Contact Setup' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Emergency Contact Setup" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
       {
-        id: 'initial-profile',
+        id: "initial-profile",
         position: { x: 1250, y: 50 },
-        data: { label: 'Initial Profile Creation' },
-        type: 'default',
-        style: { backgroundColor: '#10B981', color: 'white' }
+        data: { label: "Initial Profile Creation" },
+        type: "default",
+        style: { backgroundColor: "#10B981", color: "white" },
       },
 
       // PHASE 2 - AUTHENTICATION & VERIFICATION (y=150)
       {
-        id: 'credential-setup',
+        id: "credential-setup",
         position: { x: 50, y: 150 },
-        data: { label: 'Login Credential Setup' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Login Credential Setup" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'mfa-setup',
+        id: "mfa-setup",
         position: { x: 250, y: 150 },
-        data: { label: 'Multi-Factor Authentication' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Multi-Factor Authentication" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'identity-verification',
+        id: "identity-verification",
         position: { x: 450, y: 150 },
-        data: { label: 'Identity Document Verification' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Identity Document Verification" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'insurance-eligibility',
+        id: "insurance-eligibility",
         position: { x: 650, y: 150 },
-        data: { label: 'Insurance Eligibility Check' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Insurance Eligibility Check" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'medical-history',
+        id: "medical-history",
         position: { x: 850, y: 150 },
-        data: { label: 'Medical History Intake' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Medical History Intake" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'consent-forms',
+        id: "consent-forms",
         position: { x: 1050, y: 150 },
-        data: { label: 'Consent Forms Completion' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Consent Forms Completion" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
       {
-        id: 'account-activation',
+        id: "account-activation",
         position: { x: 1250, y: 150 },
-        data: { label: 'Account Activation' },
-        type: 'default',
-        style: { backgroundColor: '#1E88E5', color: 'white' }
+        data: { label: "Account Activation" },
+        type: "default",
+        style: { backgroundColor: "#1E88E5", color: "white" },
       },
 
       // PHASE 3 - PLATFORM SELECTION & ACCESS (y=250)
       {
-        id: 'platform-choice',
+        id: "platform-choice",
         position: { x: 200, y: 250 },
-        data: { label: 'Platform Choice Decision' },
-        type: 'default',
-        style: { backgroundColor: '#FFC107', color: 'black' }
+        data: { label: "Platform Choice Decision" },
+        type: "default",
+        style: { backgroundColor: "#FFC107", color: "black" },
       },
       {
-        id: 'mobile-download',
+        id: "mobile-download",
         position: { x: 50, y: 350 },
-        data: { label: 'Mobile App Download' },
-        type: 'default',
-        style: { backgroundColor: '#E91E63', color: 'white' }
+        data: { label: "Mobile App Download" },
+        type: "default",
+        style: { backgroundColor: "#E91E63", color: "white" },
       },
       {
-        id: 'mobile-setup',
+        id: "mobile-setup",
         position: { x: 250, y: 350 },
-        data: { label: 'Mobile Setup & Configuration' },
-        type: 'default',
-        style: { backgroundColor: '#E91E63', color: 'white' }
+        data: { label: "Mobile Setup & Configuration" },
+        type: "default",
+        style: { backgroundColor: "#E91E63", color: "white" },
       },
       {
-        id: 'web-dashboard',
+        id: "web-dashboard",
         position: { x: 450, y: 350 },
-        data: { label: 'Web Portal Dashboard Access' },
-        type: 'default',
-        style: { backgroundColor: '#2196F3', color: 'white' }
+        data: { label: "Web Portal Dashboard Access" },
+        type: "default",
+        style: { backgroundColor: "#2196F3", color: "white" },
       },
       {
-        id: 'feature-tutorial',
+        id: "feature-tutorial",
         position: { x: 650, y: 350 },
-        data: { label: 'Feature Navigation Tutorial' },
-        type: 'default',
-        style: { backgroundColor: '#9C27B0', color: 'white' }
+        data: { label: "Feature Navigation Tutorial" },
+        type: "default",
+        style: { backgroundColor: "#9C27B0", color: "white" },
       },
       {
-        id: 'notification-setup',
+        id: "notification-setup",
         position: { x: 850, y: 350 },
-        data: { label: 'Notification Setup' },
-        type: 'default',
-        style: { backgroundColor: '#9C27B0', color: 'white' }
+        data: { label: "Notification Setup" },
+        type: "default",
+        style: { backgroundColor: "#9C27B0", color: "white" },
       },
 
       // PHASE 4 - CORE HEALTHCARE SERVICES (y=450)
       {
-        id: 'provider-search',
+        id: "provider-search",
         position: { x: 50, y: 450 },
-        data: { label: 'Provider Search & Selection' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Provider Search & Selection" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'appointment-scheduling',
+        id: "appointment-scheduling",
         position: { x: 250, y: 450 },
-        data: { label: 'Appointment Scheduling Interface' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Appointment Scheduling Interface" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'calendar-integration',
+        id: "calendar-integration",
         position: { x: 450, y: 450 },
-        data: { label: 'Calendar Integration' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Calendar Integration" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'appointment-confirmation',
+        id: "appointment-confirmation",
         position: { x: 650, y: 450 },
-        data: { label: 'Appointment Confirmation' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Appointment Confirmation" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'pre-visit-questionnaire',
+        id: "pre-visit-questionnaire",
         position: { x: 850, y: 450 },
-        data: { label: 'Pre-Visit Questionnaire' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Pre-Visit Questionnaire" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'telemedicine-setup',
+        id: "telemedicine-setup",
         position: { x: 1050, y: 450 },
-        data: { label: 'Telemedicine Setup & Testing' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Telemedicine Setup & Testing" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'video-consultation',
+        id: "video-consultation",
         position: { x: 1250, y: 450 },
-        data: { label: 'Virtual Consultation Session' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Virtual Consultation Session" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
       {
-        id: 'prescription-management',
+        id: "prescription-management",
         position: { x: 1450, y: 450 },
-        data: { label: 'Prescription Management' },
-        type: 'default',
-        style: { backgroundColor: '#FF6B35', color: 'white' }
+        data: { label: "Prescription Management" },
+        type: "default",
+        style: { backgroundColor: "#FF6B35", color: "white" },
       },
 
       // PHASE 5 - ADMINISTRATIVE & BILLING (y=550)
       {
-        id: 'claim-preparation',
+        id: "claim-preparation",
         position: { x: 50, y: 550 },
-        data: { label: 'Insurance Claim Preparation' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Insurance Claim Preparation" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
       {
-        id: 'claim-submission',
+        id: "claim-submission",
         position: { x: 250, y: 550 },
-        data: { label: 'Claim Submission to Provider' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Claim Submission to Provider" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
       {
-        id: 'payment-processing',
+        id: "payment-processing",
         position: { x: 450, y: 550 },
-        data: { label: 'Payment Processing' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Payment Processing" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
       {
-        id: 'bill-generation',
+        id: "bill-generation",
         position: { x: 650, y: 550 },
-        data: { label: 'Bill Generation' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Bill Generation" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
       {
-        id: 'payment-confirmation',
+        id: "payment-confirmation",
         position: { x: 850, y: 550 },
-        data: { label: 'Payment Confirmation' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Payment Confirmation" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
       {
-        id: 'billing-reconciliation',
+        id: "billing-reconciliation",
         position: { x: 1050, y: 550 },
-        data: { label: 'Billing Reconciliation' },
-        type: 'default',
-        style: { backgroundColor: '#795548', color: 'white' }
+        data: { label: "Billing Reconciliation" },
+        type: "default",
+        style: { backgroundColor: "#795548", color: "white" },
       },
 
       // PHASE 6 - COMMUNICATION & SUPPORT (y=650)
       {
-        id: 'secure-messaging',
+        id: "secure-messaging",
         position: { x: 200, y: 650 },
-        data: { label: 'Secure Messaging System' },
-        type: 'default',
-        style: { backgroundColor: '#607D8B', color: 'white' }
+        data: { label: "Secure Messaging System" },
+        type: "default",
+        style: { backgroundColor: "#607D8B", color: "white" },
       },
       {
-        id: 'provider-communication',
+        id: "provider-communication",
         position: { x: 400, y: 650 },
-        data: { label: 'Provider Communication' },
-        type: 'default',
-        style: { backgroundColor: '#607D8B', color: 'white' }
+        data: { label: "Provider Communication" },
+        type: "default",
+        style: { backgroundColor: "#607D8B", color: "white" },
       },
       {
-        id: 'support-ticket',
+        id: "support-ticket",
         position: { x: 600, y: 650 },
-        data: { label: 'Support Ticket Creation' },
-        type: 'default',
-        style: { backgroundColor: '#607D8B', color: 'white' }
+        data: { label: "Support Ticket Creation" },
+        type: "default",
+        style: { backgroundColor: "#607D8B", color: "white" },
       },
       {
-        id: 'feedback-collection',
+        id: "feedback-collection",
         position: { x: 800, y: 650 },
-        data: { label: 'Feedback Collection' },
-        type: 'default',
-        style: { backgroundColor: '#607D8B', color: 'white' }
+        data: { label: "Feedback Collection" },
+        type: "default",
+        style: { backgroundColor: "#607D8B", color: "white" },
       },
       {
-        id: 'completion',
+        id: "completion",
         position: { x: 1000, y: 650 },
-        data: { label: 'Process Complete' },
-        type: 'output',
-        style: { backgroundColor: '#4CAF50', color: 'white' }
-      }
+        data: { label: "Process Complete" },
+        type: "output",
+        style: { backgroundColor: "#4CAF50", color: "white" },
+      },
     ];
 
     // Create comprehensive edge connections
     const edges = [
       // Phase 1 connections
-      { id: 'e1', source: 'start', target: 'personal-info' },
-      { id: 'e2', source: 'personal-info', target: 'contact-validation' },
-      { id: 'e3', source: 'contact-validation', target: 'insurance-capture' },
-      { id: 'e4', source: 'insurance-capture', target: 'document-upload' },
-      { id: 'e5', source: 'document-upload', target: 'emergency-contact' },
-      { id: 'e6', source: 'emergency-contact', target: 'initial-profile' },
-      
+      { id: "e1", source: "start", target: "personal-info" },
+      { id: "e2", source: "personal-info", target: "contact-validation" },
+      { id: "e3", source: "contact-validation", target: "insurance-capture" },
+      { id: "e4", source: "insurance-capture", target: "document-upload" },
+      { id: "e5", source: "document-upload", target: "emergency-contact" },
+      { id: "e6", source: "emergency-contact", target: "initial-profile" },
+
       // Phase 2 connections
-      { id: 'e7', source: 'initial-profile', target: 'credential-setup' },
-      { id: 'e8', source: 'credential-setup', target: 'mfa-setup' },
-      { id: 'e9', source: 'mfa-setup', target: 'identity-verification' },
-      { id: 'e10', source: 'identity-verification', target: 'insurance-eligibility' },
-      { id: 'e11', source: 'insurance-eligibility', target: 'medical-history' },
-      { id: 'e12', source: 'medical-history', target: 'consent-forms' },
-      { id: 'e13', source: 'consent-forms', target: 'account-activation' },
-      
+      { id: "e7", source: "initial-profile", target: "credential-setup" },
+      { id: "e8", source: "credential-setup", target: "mfa-setup" },
+      { id: "e9", source: "mfa-setup", target: "identity-verification" },
+      {
+        id: "e10",
+        source: "identity-verification",
+        target: "insurance-eligibility",
+      },
+      { id: "e11", source: "insurance-eligibility", target: "medical-history" },
+      { id: "e12", source: "medical-history", target: "consent-forms" },
+      { id: "e13", source: "consent-forms", target: "account-activation" },
+
       // Phase 3 connections
-      { id: 'e14', source: 'account-activation', target: 'platform-choice' },
-      { id: 'e15', source: 'platform-choice', target: 'mobile-download' },
-      { id: 'e16', source: 'platform-choice', target: 'web-dashboard' },
-      { id: 'e17', source: 'mobile-download', target: 'mobile-setup' },
-      { id: 'e18', source: 'mobile-setup', target: 'feature-tutorial' },
-      { id: 'e19', source: 'web-dashboard', target: 'feature-tutorial' },
-      { id: 'e20', source: 'feature-tutorial', target: 'notification-setup' },
-      
+      { id: "e14", source: "account-activation", target: "platform-choice" },
+      { id: "e15", source: "platform-choice", target: "mobile-download" },
+      { id: "e16", source: "platform-choice", target: "web-dashboard" },
+      { id: "e17", source: "mobile-download", target: "mobile-setup" },
+      { id: "e18", source: "mobile-setup", target: "feature-tutorial" },
+      { id: "e19", source: "web-dashboard", target: "feature-tutorial" },
+      { id: "e20", source: "feature-tutorial", target: "notification-setup" },
+
       // Phase 4 connections
-      { id: 'e21', source: 'notification-setup', target: 'provider-search' },
-      { id: 'e22', source: 'provider-search', target: 'appointment-scheduling' },
-      { id: 'e23', source: 'appointment-scheduling', target: 'calendar-integration' },
-      { id: 'e24', source: 'calendar-integration', target: 'appointment-confirmation' },
-      { id: 'e25', source: 'appointment-confirmation', target: 'pre-visit-questionnaire' },
-      { id: 'e26', source: 'pre-visit-questionnaire', target: 'telemedicine-setup' },
-      { id: 'e27', source: 'telemedicine-setup', target: 'video-consultation' },
-      { id: 'e28', source: 'video-consultation', target: 'prescription-management' },
-      
+      { id: "e21", source: "notification-setup", target: "provider-search" },
+      {
+        id: "e22",
+        source: "provider-search",
+        target: "appointment-scheduling",
+      },
+      {
+        id: "e23",
+        source: "appointment-scheduling",
+        target: "calendar-integration",
+      },
+      {
+        id: "e24",
+        source: "calendar-integration",
+        target: "appointment-confirmation",
+      },
+      {
+        id: "e25",
+        source: "appointment-confirmation",
+        target: "pre-visit-questionnaire",
+      },
+      {
+        id: "e26",
+        source: "pre-visit-questionnaire",
+        target: "telemedicine-setup",
+      },
+      { id: "e27", source: "telemedicine-setup", target: "video-consultation" },
+      {
+        id: "e28",
+        source: "video-consultation",
+        target: "prescription-management",
+      },
+
       // Phase 5 connections
-      { id: 'e29', source: 'prescription-management', target: 'claim-preparation' },
-      { id: 'e30', source: 'claim-preparation', target: 'claim-submission' },
-      { id: 'e31', source: 'claim-submission', target: 'payment-processing' },
-      { id: 'e32', source: 'payment-processing', target: 'bill-generation' },
-      { id: 'e33', source: 'bill-generation', target: 'payment-confirmation' },
-      { id: 'e34', source: 'payment-confirmation', target: 'billing-reconciliation' },
-      
+      {
+        id: "e29",
+        source: "prescription-management",
+        target: "claim-preparation",
+      },
+      { id: "e30", source: "claim-preparation", target: "claim-submission" },
+      { id: "e31", source: "claim-submission", target: "payment-processing" },
+      { id: "e32", source: "payment-processing", target: "bill-generation" },
+      { id: "e33", source: "bill-generation", target: "payment-confirmation" },
+      {
+        id: "e34",
+        source: "payment-confirmation",
+        target: "billing-reconciliation",
+      },
+
       // Phase 6 connections
-      { id: 'e35', source: 'billing-reconciliation', target: 'secure-messaging' },
-      { id: 'e36', source: 'secure-messaging', target: 'provider-communication' },
-      { id: 'e37', source: 'provider-communication', target: 'support-ticket' },
-      { id: 'e38', source: 'support-ticket', target: 'feedback-collection' },
-      { id: 'e39', source: 'feedback-collection', target: 'completion' },
-      
+      {
+        id: "e35",
+        source: "billing-reconciliation",
+        target: "secure-messaging",
+      },
+      {
+        id: "e36",
+        source: "secure-messaging",
+        target: "provider-communication",
+      },
+      { id: "e37", source: "provider-communication", target: "support-ticket" },
+      { id: "e38", source: "support-ticket", target: "feedback-collection" },
+      { id: "e39", source: "feedback-collection", target: "completion" },
+
       // Alternative pathways
-      { id: 'e40', source: 'video-consultation', target: 'secure-messaging' },
-      { id: 'e41', source: 'appointment-confirmation', target: 'support-ticket' },
-      { id: 'e42', source: 'mobile-setup', target: 'provider-search' },
-      { id: 'e43', source: 'web-dashboard', target: 'provider-search' }
+      { id: "e40", source: "video-consultation", target: "secure-messaging" },
+      {
+        id: "e41",
+        source: "appointment-confirmation",
+        target: "support-ticket",
+      },
+      { id: "e42", source: "mobile-setup", target: "provider-search" },
+      { id: "e43", source: "web-dashboard", target: "provider-search" },
     ];
 
     return {
       title: "Comprehensive Master Healthcare Application Flow",
-      description: "Detailed workflow covering all 35+ process steps from patient registration through completion, including all stakeholder flows",
-      flowData: { nodes, edges }
+      description:
+        "Detailed workflow covering all 35+ process steps from patient registration through completion, including all stakeholder flows",
+      flowData: { nodes, edges },
     };
   };
 
   const downloadProjectBundle = async () => {
     try {
       // Get master flow data
-      const masterFlowData = consolidatedFlow ? {
-        title: consolidatedFlow.title,
-        description: consolidatedFlow.description,
-        flowData: consolidatedFlow.flowData,
-        metadata: {
-          totalNodes: consolidatedFlow.flowData.nodes?.length || 0,
-          totalEdges: consolidatedFlow.flowData.edges?.length || 0,
-          sourceFlows: flows.length,
-          generatedAt: new Date().toISOString()
-        }
-      } : null;
+      const masterFlowData = consolidatedFlow
+        ? {
+            title: consolidatedFlow.title,
+            description: consolidatedFlow.description,
+            flowData: consolidatedFlow.flowData,
+            metadata: {
+              totalNodes: consolidatedFlow.flowData.nodes?.length || 0,
+              totalEdges: consolidatedFlow.flowData.edges?.length || 0,
+              sourceFlows: flows.length,
+              generatedAt: new Date().toISOString(),
+            },
+          }
+        : null;
 
       // Get brand guidelines data
-      const brandGuidelinesData = localStorage.getItem('brand_guidelines');
-      
+      const brandGuidelinesData = localStorage.getItem("brand_guidelines");
+
       // Create project plan PDF content
       const projectPlanContent = `
 # Comprehensive Project Plan
@@ -839,9 +941,9 @@ ${stakeholderFlows}
 - Source Flows Consolidated: ${flows.length}
 
 ## Generated Data Quality
-- Master Flow: ${masterFlowData ? 'Available' : 'Not Generated'}
-- Brand Guidelines: ${brandGuidelinesData ? 'Available' : 'Not Available'}
-- Project Plan: ${projectPlan ? 'Available' : 'Not Available'}
+- Master Flow: ${masterFlowData ? "Available" : "Not Generated"}
+- Brand Guidelines: ${brandGuidelinesData ? "Available" : "Not Available"}
+- Project Plan: ${projectPlan ? "Available" : "Not Available"}
 
 ## Export Information
 Generated on: ${new Date().toLocaleDateString()}
@@ -853,47 +955,62 @@ Time: ${new Date().toLocaleTimeString()}
 
       // Add master flow JSON
       if (masterFlowData) {
-        const masterFlowBlob = new Blob([JSON.stringify(masterFlowData, null, 2)], { type: 'application/json' });
-        files.push({ name: 'master-flow.json', blob: masterFlowBlob });
+        const masterFlowBlob = new Blob(
+          [JSON.stringify(masterFlowData, null, 2)],
+          { type: "application/json" }
+        );
+        files.push({ name: "master-flow.json", blob: masterFlowBlob });
       }
 
       // Add brand guidelines JSON
       if (brandGuidelinesData) {
-        const brandGuidelinesBlob = new Blob([brandGuidelinesData], { type: 'application/json' });
-        files.push({ name: 'brand-guidelines.json', blob: brandGuidelinesBlob });
+        const brandGuidelinesBlob = new Blob([brandGuidelinesData], {
+          type: "application/json",
+        });
+        files.push({
+          name: "brand-guidelines.json",
+          blob: brandGuidelinesBlob,
+        });
       }
 
       // Add project plan as text file
-      const projectPlanBlob = new Blob([projectPlanContent], { type: 'text/plain' });
-      files.push({ name: 'project-plan.txt', blob: projectPlanBlob });
+      const projectPlanBlob = new Blob([projectPlanContent], {
+        type: "text/plain",
+      });
+      files.push({ name: "project-plan.txt", blob: projectPlanBlob });
 
       // Download files individually with sequential delays
       if (files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i];
           const url = URL.createObjectURL(file.blob);
-          const a = document.createElement('a');
+          const a = document.createElement("a");
           a.href = url;
           a.download = file.name;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
-          
+
           // Small delay between downloads
           if (i < files.length - 1) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => setTimeout(resolve, 500));
           }
         }
-        
-        alert(`Successfully downloaded ${files.length} files:\n${files.map(f => f.name).join('\n')}`);
-      } else {
-        alert('No data available to download. Please generate master flow and ensure project data is available.');
-      }
 
+        alert(
+          `Successfully downloaded ${files.length} files:\n${files
+            .map((f) => f.name)
+            .join("\n")}`
+        );
+      } else {
+        alert(
+          "No data available to download. Please generate master flow and ensure project data is available."
+        );
+      }
     } catch (error) {
-      console.error('Error downloading project bundle:', error);
-      alert('Error creating download bundle. Please try again.');
+      console.error("Error downloading project bundle:", error);
+      alert("Error creating download bundle. Please try again.");
     }
   };
 
@@ -1211,7 +1328,7 @@ Time: ${new Date().toLocaleTimeString()}
                 <Activity className="h-6 w-6 text-purple-600" />
                 AI-Generated Master Flow Diagram
               </div>
-              <Button 
+              <Button
                 onClick={generateConsolidatedFlow}
                 disabled={isGeneratingConsolidatedFlow || flows.length === 0}
                 className="bg-purple-600 hover:bg-purple-700 text-white"
@@ -1234,24 +1351,26 @@ Time: ${new Date().toLocaleTimeString()}
             {!consolidatedFlow && !isGeneratingConsolidatedFlow && (
               <div className="text-center py-8">
                 <div className="text-gray-500 mb-4">
-                  Consolidate all individual flows into a single comprehensive master workflow diagram using AI analysis.
+                  Consolidate all individual flows into a single comprehensive
+                  master workflow diagram using AI analysis.
                 </div>
                 <div className="text-sm text-gray-400">
-                  {flows.length === 0 
+                  {flows.length === 0
                     ? "No flows available to consolidate. Please generate some flows first."
-                    : `Ready to consolidate ${flows.length} flows into a master diagram using Gemini AI.`
-                  }
+                    : `Ready to consolidate ${flows.length} flows into a master diagram using Gemini AI.`}
                 </div>
               </div>
             )}
-            
+
             {isGeneratingConsolidatedFlow && (
               <div className="text-center py-8">
                 <div className="text-purple-600 mb-4">
-                  AI is analyzing and consolidating all flows into a master workflow...
+                  AI is analyzing and consolidating all flows into a master
+                  workflow...
                 </div>
                 <div className="text-sm text-gray-500">
-                  This may take a moment as we merge {flows.length} individual flows.
+                  This may take a moment as we merge {flows.length} individual
+                  flows.
                 </div>
               </div>
             )}
@@ -1259,8 +1378,6 @@ Time: ${new Date().toLocaleTimeString()}
             {consolidatedFlow && (
               <div className="space-y-4">
                 <div className="bg-white rounded-lg p-4 border border-purple-200">
-                  
-                  
                   <div className="bg-gray-50 rounded-lg p-2 mb-4">
                     <FlowDiagramViewer
                       flowData={consolidatedFlow.flowData}
@@ -1268,24 +1385,37 @@ Time: ${new Date().toLocaleTimeString()}
                       className="h-96"
                     />
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm mb-4">
                     <div className="bg-green-50 p-3 rounded border border-green-200">
-                      <div className="font-medium text-green-800">Process Nodes</div>
-                      <div className="text-green-600">{consolidatedFlow.flowData.nodes?.length || 0} steps</div>
+                      <div className="font-medium text-green-800">
+                        Process Nodes
+                      </div>
+                      <div className="text-green-600">
+                        {consolidatedFlow.flowData.nodes?.length || 0} steps
+                      </div>
                     </div>
                     <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                      <div className="font-medium text-blue-800">Connections</div>
-                      <div className="text-blue-600">{consolidatedFlow.flowData.edges?.length || 0} transitions</div>
+                      <div className="font-medium text-blue-800">
+                        Connections
+                      </div>
+                      <div className="text-blue-600">
+                        {consolidatedFlow.flowData.edges?.length || 0}{" "}
+                        transitions
+                      </div>
                     </div>
                     <div className="bg-purple-50 p-3 rounded border border-purple-200">
-                      <div className="font-medium text-purple-800">Source Flows</div>
-                      <div className="text-purple-600">{flows.length} consolidated</div>
+                      <div className="font-medium text-purple-800">
+                        Source Flows
+                      </div>
+                      <div className="text-purple-600">
+                        {flows.length} consolidated
+                      </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-center">
-                    <Button 
+                    <Button
                       onClick={() => downloadProjectBundle()}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white"
                     >

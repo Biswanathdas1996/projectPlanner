@@ -47,7 +47,7 @@ export class AIProjectPlannerAgent {
 
   constructor() {
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM"
+      "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
     );
     this.model = genAI.getGenerativeModel({
       model: "gemini-1.5-flash",
@@ -168,7 +168,7 @@ Ensure realistic estimates based on project complexity.`;
 
     // Generate sections in batches to avoid rate limits and improve reliability
     const batchSize = 3;
-    
+
     for (let i = 0; i < sectionPrompts.length; i += batchSize) {
       const batch = sectionPrompts.slice(i, i + batchSize);
       const batchPromises = batch.map(async (sectionPrompt, batchIndex) => {
@@ -177,10 +177,16 @@ Ensure realistic estimates based on project complexity.`;
         progressCallback?.(sectionPrompt.title, progress);
 
         try {
-          const section = await this.generateSection(sectionPrompt, requirements);
+          const section = await this.generateSection(
+            sectionPrompt,
+            requirements
+          );
           return section;
         } catch (error) {
-          console.warn(`Failed to generate section: ${sectionPrompt.title}`, error);
+          console.warn(
+            `Failed to generate section: ${sectionPrompt.title}`,
+            error
+          );
           return this.getFallbackSection(sectionPrompt.title);
         }
       });

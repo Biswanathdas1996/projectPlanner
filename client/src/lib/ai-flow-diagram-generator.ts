@@ -37,7 +37,7 @@ export class AIFlowDiagramGenerator {
   private model: any;
 
   constructor() {
-    const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+    const apiKey = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
     this.genAI = new GoogleGenerativeAI(apiKey);
     this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
@@ -48,10 +48,14 @@ export class AIFlowDiagramGenerator {
     flowType: string
   ): Promise<FlowDiagramData> {
     try {
-      const prompt = this.buildFlowDiagramPrompt(flowDetails, stakeholder, flowType);
+      const prompt = this.buildFlowDiagramPrompt(
+        flowDetails,
+        stakeholder,
+        flowType
+      );
       const result = await this.model.generateContent(prompt);
       const response = result.response.text();
-      
+
       return this.parseFlowDiagramResponse(response);
     } catch (error) {
       console.error("Error generating flow diagram:", error);
@@ -205,17 +209,21 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
   private parseFlowDiagramResponse(response: string): FlowDiagramData {
     try {
       console.log("Raw AI response:", response);
-      
+
       // Clean the response to extract JSON
       let cleanedResponse = response.trim();
-      
+
       // Remove markdown code blocks if present
-      if (cleanedResponse.startsWith('```json')) {
-        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/```\s*$/, '');
-      } else if (cleanedResponse.startsWith('```')) {
-        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      if (cleanedResponse.startsWith("```json")) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "");
+      } else if (cleanedResponse.startsWith("```")) {
+        cleanedResponse = cleanedResponse
+          .replace(/^```\s*/, "")
+          .replace(/```\s*$/, "");
       }
-      
+
       const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         console.error("No JSON found in response");
@@ -224,7 +232,7 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
 
       const jsonString = jsonMatch[0];
       console.log("Extracted JSON string:", jsonString);
-      
+
       const flowData = JSON.parse(jsonString);
       console.log("Parsed flow data:", flowData);
 
@@ -244,7 +252,7 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
         position: node.position || { x: 0, y: 0 },
         data: node.data || { label: "Node" },
         type: node.type,
-        style: node.style
+        style: node.style,
       }));
 
       // Clean up edges - ensure all required properties are present
@@ -253,15 +261,21 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
         source: edge.source,
         target: edge.target,
         animated: edge.animated || false,
-        style: edge.style
+        style: edge.style,
       }));
 
       const cleanedFlowData = {
         nodes: cleanedNodes,
-        edges: cleanedEdges
+        edges: cleanedEdges,
       };
 
-      console.log("Successfully parsed and cleaned flow diagram with", cleanedNodes.length, "nodes and", cleanedEdges.length, "edges");
+      console.log(
+        "Successfully parsed and cleaned flow diagram with",
+        cleanedNodes.length,
+        "nodes and",
+        cleanedEdges.length,
+        "edges"
+      );
       return cleanedFlowData as FlowDiagramData;
     } catch (error) {
       console.error("Error parsing flow diagram response:", error);
@@ -273,7 +287,7 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
 
   private createFallbackDiagram(): FlowDiagramData {
     console.log("Creating comprehensive enterprise fallback diagram");
-    
+
     return {
       nodes: [
         {
@@ -281,284 +295,564 @@ Generate a comprehensive flow with proper positioning and styling for all elemen
           position: { x: 50, y: 50 },
           data: { label: "Start: Enterprise Request" },
           type: "input",
-          style: { backgroundColor: "#10B981", color: "white", border: "3px solid #059669" }
+          style: {
+            backgroundColor: "#10B981",
+            color: "white",
+            border: "3px solid #059669",
+          },
         },
         {
           id: "node-2",
           position: { x: 250, y: 50 },
           data: { label: "Identity Provider" },
           type: "default",
-          style: { backgroundColor: "#8B5CF6", color: "white", border: "2px solid #7C3AED" }
+          style: {
+            backgroundColor: "#8B5CF6",
+            color: "white",
+            border: "2px solid #7C3AED",
+          },
         },
         {
           id: "node-3",
           position: { x: 450, y: 50 },
           data: { label: "MFA Gateway" },
           type: "default",
-          style: { backgroundColor: "#8B5CF6", color: "white", border: "2px solid #7C3AED" }
+          style: {
+            backgroundColor: "#8B5CF6",
+            color: "white",
+            border: "2px solid #7C3AED",
+          },
         },
         {
           id: "node-4",
           position: { x: 650, y: 50 },
           data: { label: "RBAC Engine" },
           type: "default",
-          style: { backgroundColor: "#8B5CF6", color: "white", border: "2px solid #7C3AED" }
+          style: {
+            backgroundColor: "#8B5CF6",
+            color: "white",
+            border: "2px solid #7C3AED",
+          },
         },
         {
           id: "node-5",
           position: { x: 850, y: 50 },
           data: { label: "Auth Decision?" },
           type: "default",
-          style: { backgroundColor: "#F59E0B", color: "white", borderRadius: "50%" }
+          style: {
+            backgroundColor: "#F59E0B",
+            color: "white",
+            borderRadius: "50%",
+          },
         },
         {
           id: "node-6",
           position: { x: 1050, y: 50 },
           data: { label: "Security Token Service" },
           type: "default",
-          style: { backgroundColor: "#8B5CF6", color: "white", border: "2px solid #7C3AED" }
+          style: {
+            backgroundColor: "#8B5CF6",
+            color: "white",
+            border: "2px solid #7C3AED",
+          },
         },
         {
           id: "node-7",
           position: { x: 50, y: 250 },
           data: { label: "API Gateway" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-8",
           position: { x: 250, y: 250 },
           data: { label: "Load Balancer" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-9",
           position: { x: 450, y: 250 },
           data: { label: "Service Discovery" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-10",
           position: { x: 650, y: 250 },
           data: { label: "Circuit Breaker" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-11",
           position: { x: 850, y: 250 },
           data: { label: "Rate Limiter" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-12",
           position: { x: 1050, y: 250 },
           data: { label: "Service Mesh" },
           type: "default",
-          style: { backgroundColor: "#3B82F6", color: "white", border: "2px solid #2563EB" }
+          style: {
+            backgroundColor: "#3B82F6",
+            color: "white",
+            border: "2px solid #2563EB",
+          },
         },
         {
           id: "node-13",
           position: { x: 50, y: 450 },
           data: { label: "Business Rule Engine" },
           type: "default",
-          style: { backgroundColor: "#4F46E5", color: "white", border: "2px solid #4338CA" }
+          style: {
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "2px solid #4338CA",
+          },
         },
         {
           id: "node-14",
           position: { x: 250, y: 450 },
           data: { label: "Workflow Orchestrator" },
           type: "default",
-          style: { backgroundColor: "#4F46E5", color: "white", border: "2px solid #4338CA" }
+          style: {
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "2px solid #4338CA",
+          },
         },
         {
           id: "node-15",
           position: { x: 450, y: 450 },
           data: { label: "State Machine" },
           type: "default",
-          style: { backgroundColor: "#4F46E5", color: "white", border: "2px solid #4338CA" }
+          style: {
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "2px solid #4338CA",
+          },
         },
         {
           id: "node-16",
           position: { x: 650, y: 450 },
           data: { label: "Decision Matrix" },
           type: "default",
-          style: { backgroundColor: "#F59E0B", color: "white", borderRadius: "50%" }
+          style: {
+            backgroundColor: "#F59E0B",
+            color: "white",
+            borderRadius: "50%",
+          },
         },
         {
           id: "node-17",
           position: { x: 850, y: 450 },
           data: { label: "Approval Chain" },
           type: "default",
-          style: { backgroundColor: "#4F46E5", color: "white", border: "2px solid #4338CA" }
+          style: {
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "2px solid #4338CA",
+          },
         },
         {
           id: "node-18",
           position: { x: 1050, y: 450 },
           data: { label: "Document Processor" },
           type: "default",
-          style: { backgroundColor: "#4F46E5", color: "white", border: "2px solid #4338CA" }
+          style: {
+            backgroundColor: "#4F46E5",
+            color: "white",
+            border: "2px solid #4338CA",
+          },
         },
         {
           id: "node-19",
           position: { x: 50, y: 650 },
           data: { label: "Primary Database" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-20",
           position: { x: 250, y: 650 },
           data: { label: "Read Replica" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-21",
           position: { x: 450, y: 650 },
           data: { label: "Data Warehouse" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-22",
           position: { x: 650, y: 650 },
           data: { label: "Search Index" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-23",
           position: { x: 850, y: 650 },
           data: { label: "File Storage" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-24",
           position: { x: 1050, y: 650 },
           data: { label: "Backup Service" },
           type: "default",
-          style: { backgroundColor: "#059669", color: "white", border: "2px solid #047857" }
+          style: {
+            backgroundColor: "#059669",
+            color: "white",
+            border: "2px solid #047857",
+          },
         },
         {
           id: "node-25",
           position: { x: 250, y: 850 },
           data: { label: "Payment Gateway" },
           type: "default",
-          style: { backgroundColor: "#06B6D4", color: "white", border: "2px solid #0891B2" }
+          style: {
+            backgroundColor: "#06B6D4",
+            color: "white",
+            border: "2px solid #0891B2",
+          },
         },
         {
           id: "node-26",
           position: { x: 450, y: 850 },
           data: { label: "Third-party APIs" },
           type: "default",
-          style: { backgroundColor: "#06B6D4", color: "white", border: "2px solid #0891B2" }
+          style: {
+            backgroundColor: "#06B6D4",
+            color: "white",
+            border: "2px solid #0891B2",
+          },
         },
         {
           id: "node-27",
           position: { x: 650, y: 850 },
           data: { label: "Partner Systems" },
           type: "default",
-          style: { backgroundColor: "#06B6D4", color: "white", border: "2px solid #0891B2" }
+          style: {
+            backgroundColor: "#06B6D4",
+            color: "white",
+            border: "2px solid #0891B2",
+          },
         },
         {
           id: "node-28",
           position: { x: 50, y: 1050 },
           data: { label: "Health Monitor" },
           type: "default",
-          style: { backgroundColor: "#EA580C", color: "white", border: "2px solid #DC2626" }
+          style: {
+            backgroundColor: "#EA580C",
+            color: "white",
+            border: "2px solid #DC2626",
+          },
         },
         {
           id: "node-29",
           position: { x: 250, y: 1050 },
           data: { label: "Metrics Collector" },
           type: "default",
-          style: { backgroundColor: "#EA580C", color: "white", border: "2px solid #DC2626" }
+          style: {
+            backgroundColor: "#EA580C",
+            color: "white",
+            border: "2px solid #DC2626",
+          },
         },
         {
           id: "node-30",
           position: { x: 450, y: 1050 },
           data: { label: "Log Aggregator" },
           type: "default",
-          style: { backgroundColor: "#EA580C", color: "white", border: "2px solid #DC2626" }
+          style: {
+            backgroundColor: "#EA580C",
+            color: "white",
+            border: "2px solid #DC2626",
+          },
         },
         {
           id: "node-31",
           position: { x: 650, y: 1050 },
           data: { label: "Alert Manager" },
           type: "default",
-          style: { backgroundColor: "#EA580C", color: "white", border: "2px solid #DC2626" }
+          style: {
+            backgroundColor: "#EA580C",
+            color: "white",
+            border: "2px solid #DC2626",
+          },
         },
         {
           id: "node-32",
           position: { x: 850, y: 1050 },
           data: { label: "Performance Monitor" },
           type: "default",
-          style: { backgroundColor: "#EA580C", color: "white", border: "2px solid #DC2626" }
+          style: {
+            backgroundColor: "#EA580C",
+            color: "white",
+            border: "2px solid #DC2626",
+          },
         },
         {
           id: "node-33",
           position: { x: 1050, y: 1050 },
           data: { label: "Error Tracker" },
           type: "default",
-          style: { backgroundColor: "#DC2626", color: "white", border: "2px solid #B91C1C" }
+          style: {
+            backgroundColor: "#DC2626",
+            color: "white",
+            border: "2px solid #B91C1C",
+          },
         },
         {
           id: "node-34",
           position: { x: 850, y: 1250 },
           data: { label: "Success Completion" },
           type: "output",
-          style: { backgroundColor: "#6B7280", color: "white", border: "2px solid #4B5563" }
+          style: {
+            backgroundColor: "#6B7280",
+            color: "white",
+            border: "2px solid #4B5563",
+          },
         },
         {
           id: "node-35",
           position: { x: 1150, y: 200 },
           data: { label: "Auth Failure" },
           type: "output",
-          style: { backgroundColor: "#DC2626", color: "white", border: "2px solid #B91C1C" }
-        }
+          style: {
+            backgroundColor: "#DC2626",
+            color: "white",
+            border: "2px solid #B91C1C",
+          },
+        },
       ],
       edges: [
         { id: "edge-1", source: "node-1", target: "node-2", animated: false },
         { id: "edge-2", source: "node-2", target: "node-3", animated: false },
         { id: "edge-3", source: "node-3", target: "node-4", animated: false },
         { id: "edge-4", source: "node-4", target: "node-5", animated: false },
-        { id: "edge-5", source: "node-5", target: "node-6", animated: true, label: "Success" },
-        { id: "edge-6", source: "node-5", target: "node-35", animated: true, label: "Failure", style: { stroke: "#DC2626", strokeDasharray: "5,5" } },
+        {
+          id: "edge-5",
+          source: "node-5",
+          target: "node-6",
+          animated: true,
+          label: "Success",
+        },
+        {
+          id: "edge-6",
+          source: "node-5",
+          target: "node-35",
+          animated: true,
+          label: "Failure",
+          style: { stroke: "#DC2626", strokeDasharray: "5,5" },
+        },
         { id: "edge-7", source: "node-6", target: "node-7", animated: false },
         { id: "edge-8", source: "node-7", target: "node-8", animated: false },
         { id: "edge-9", source: "node-8", target: "node-9", animated: false },
         { id: "edge-10", source: "node-9", target: "node-10", animated: false },
-        { id: "edge-11", source: "node-10", target: "node-11", animated: false },
-        { id: "edge-12", source: "node-11", target: "node-12", animated: false },
-        { id: "edge-13", source: "node-12", target: "node-13", animated: false },
-        { id: "edge-14", source: "node-13", target: "node-14", animated: false },
-        { id: "edge-15", source: "node-14", target: "node-15", animated: false },
-        { id: "edge-16", source: "node-15", target: "node-16", animated: false },
-        { id: "edge-17", source: "node-16", target: "node-17", animated: true, label: "Approved" },
-        { id: "edge-18", source: "node-17", target: "node-18", animated: false },
-        { id: "edge-19", source: "node-18", target: "node-19", animated: false },
-        { id: "edge-20", source: "node-19", target: "node-20", animated: false },
-        { id: "edge-21", source: "node-19", target: "node-21", animated: false },
-        { id: "edge-22", source: "node-21", target: "node-22", animated: false },
-        { id: "edge-23", source: "node-19", target: "node-23", animated: false },
-        { id: "edge-24", source: "node-23", target: "node-24", animated: false },
-        { id: "edge-25", source: "node-18", target: "node-25", animated: false },
-        { id: "edge-26", source: "node-18", target: "node-26", animated: false },
-        { id: "edge-27", source: "node-18", target: "node-27", animated: false },
-        { id: "edge-28", source: "node-12", target: "node-28", animated: false },
-        { id: "edge-29", source: "node-28", target: "node-29", animated: false },
-        { id: "edge-30", source: "node-29", target: "node-30", animated: false },
-        { id: "edge-31", source: "node-30", target: "node-31", animated: false },
-        { id: "edge-32", source: "node-31", target: "node-32", animated: false },
-        { id: "edge-33", source: "node-32", target: "node-33", animated: true, style: { stroke: "#DC2626" } },
-        { id: "edge-34", source: "node-24", target: "node-34", animated: false },
-        { id: "edge-35", source: "node-32", target: "node-34", animated: false }
-      ]
+        {
+          id: "edge-11",
+          source: "node-10",
+          target: "node-11",
+          animated: false,
+        },
+        {
+          id: "edge-12",
+          source: "node-11",
+          target: "node-12",
+          animated: false,
+        },
+        {
+          id: "edge-13",
+          source: "node-12",
+          target: "node-13",
+          animated: false,
+        },
+        {
+          id: "edge-14",
+          source: "node-13",
+          target: "node-14",
+          animated: false,
+        },
+        {
+          id: "edge-15",
+          source: "node-14",
+          target: "node-15",
+          animated: false,
+        },
+        {
+          id: "edge-16",
+          source: "node-15",
+          target: "node-16",
+          animated: false,
+        },
+        {
+          id: "edge-17",
+          source: "node-16",
+          target: "node-17",
+          animated: true,
+          label: "Approved",
+        },
+        {
+          id: "edge-18",
+          source: "node-17",
+          target: "node-18",
+          animated: false,
+        },
+        {
+          id: "edge-19",
+          source: "node-18",
+          target: "node-19",
+          animated: false,
+        },
+        {
+          id: "edge-20",
+          source: "node-19",
+          target: "node-20",
+          animated: false,
+        },
+        {
+          id: "edge-21",
+          source: "node-19",
+          target: "node-21",
+          animated: false,
+        },
+        {
+          id: "edge-22",
+          source: "node-21",
+          target: "node-22",
+          animated: false,
+        },
+        {
+          id: "edge-23",
+          source: "node-19",
+          target: "node-23",
+          animated: false,
+        },
+        {
+          id: "edge-24",
+          source: "node-23",
+          target: "node-24",
+          animated: false,
+        },
+        {
+          id: "edge-25",
+          source: "node-18",
+          target: "node-25",
+          animated: false,
+        },
+        {
+          id: "edge-26",
+          source: "node-18",
+          target: "node-26",
+          animated: false,
+        },
+        {
+          id: "edge-27",
+          source: "node-18",
+          target: "node-27",
+          animated: false,
+        },
+        {
+          id: "edge-28",
+          source: "node-12",
+          target: "node-28",
+          animated: false,
+        },
+        {
+          id: "edge-29",
+          source: "node-28",
+          target: "node-29",
+          animated: false,
+        },
+        {
+          id: "edge-30",
+          source: "node-29",
+          target: "node-30",
+          animated: false,
+        },
+        {
+          id: "edge-31",
+          source: "node-30",
+          target: "node-31",
+          animated: false,
+        },
+        {
+          id: "edge-32",
+          source: "node-31",
+          target: "node-32",
+          animated: false,
+        },
+        {
+          id: "edge-33",
+          source: "node-32",
+          target: "node-33",
+          animated: true,
+          style: { stroke: "#DC2626" },
+        },
+        {
+          id: "edge-34",
+          source: "node-24",
+          target: "node-34",
+          animated: false,
+        },
+        {
+          id: "edge-35",
+          source: "node-32",
+          target: "node-34",
+          animated: false,
+        },
+      ],
     };
   }
 }

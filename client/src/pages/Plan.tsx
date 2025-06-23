@@ -62,7 +62,7 @@ const getEnhancedPlanSections = (): ProjectPlanSection[] => {
       console.log(
         "✅ Successfully loaded enhanced plan sections from localStorage:",
         parsed.length,
-        "sections",
+        "sections"
       );
       return parsed;
     } catch (error) {
@@ -82,7 +82,7 @@ const saveEnhancedPlanSections = (sections: ProjectPlanSection[]) => {
     console.log(
       "✅ Successfully saved enhanced plan sections to localStorage:",
       sections.length,
-      "sections",
+      "sections"
     );
 
     // Verify the save worked
@@ -104,7 +104,9 @@ const getPlanContentForExternalUse = (projectPlan: string): string => {
     return savedSections
       .map(
         (section) =>
-          `${section.title}:\n${section.content.replace(/<[^>]*>/g, " ").trim()}`,
+          `${section.title}:\n${section.content
+            .replace(/<[^>]*>/g, " ")
+            .trim()}`
       )
       .join("\n\n");
   }
@@ -226,7 +228,7 @@ export default function ProjectPlanner() {
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
   const [currentStep, setCurrentStep] = useState<"input" | "plan" | "diagram">(
-    "input",
+    "input"
   );
   const [error, setError] = useState("");
   const [generatedBpmnXml, setGeneratedBpmnXml] = useState<string>("");
@@ -263,7 +265,7 @@ export default function ProjectPlanner() {
 
   // Dynamic project planner state
   const [projectSections, setProjectSections] = useState<ProjectSection[]>(
-    DEFAULT_PROJECT_SECTIONS,
+    DEFAULT_PROJECT_SECTIONS
   );
   const [isGeneratingDynamic, setIsGeneratingDynamic] = useState(false);
   const [dynamicPlanResult, setDynamicPlanResult] =
@@ -287,7 +289,7 @@ export default function ProjectPlanner() {
       currentSectionTitle: "",
       overallProgress: 0,
       isGenerating: false,
-    },
+    }
   );
 
   // Custom prompt regeneration state
@@ -299,7 +301,7 @@ export default function ProjectPlanner() {
   const [showCustomPromptModal, setShowCustomPromptModal] = useState(false);
   const [useEnhancedPlanner, setUseEnhancedPlanner] = useState(true);
   const [generatingSectionId, setGeneratingSectionId] = useState<string | null>(
-    null,
+    null
   );
 
   // Flow diagram generation state
@@ -331,12 +333,12 @@ export default function ProjectPlanner() {
   // Load data from localStorage when component mounts or route changes
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(
-      STORAGE_KEYS.PROJECT_DESCRIPTION,
+      STORAGE_KEYS.PROJECT_DESCRIPTION
     );
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
     const savedEnhancedSections = localStorage.getItem(
-      "enhanced_plan_sections",
+      "enhanced_plan_sections"
     );
 
     if (savedProjectDescription) {
@@ -355,7 +357,7 @@ export default function ProjectPlanner() {
       console.log(
         "🔄 Setting enhanced sections from localStorage:",
         savedSections.length,
-        "sections",
+        "sections"
       );
       setEnhancedSections(savedSections);
     } else {
@@ -414,7 +416,7 @@ export default function ProjectPlanner() {
           current: false,
         },
         { step: "Saving project data", completed: false, current: false },
-        { step: "Finalizing setup", completed: false, current: false },
+        { step: "Finalizing setup", completed: false, current: false }
       );
     }
 
@@ -426,7 +428,7 @@ export default function ProjectPlanner() {
   const updateProgress = (
     stepIndex: number,
     isCompleted = false,
-    isCurrent = false,
+    isCurrent = false
   ) => {
     setProgressSteps((prev) => {
       const updated = prev.map((step, index) => ({
@@ -482,7 +484,7 @@ export default function ProjectPlanner() {
           setSectionProgress({ current, total });
           const progressPercentage = (current / total) * 100;
           setOverallProgress(progressPercentage);
-        },
+        }
       );
 
       setDynamicPlanResult(result);
@@ -494,7 +496,7 @@ export default function ProjectPlanner() {
       localStorage.setItem("dynamic_plan_result", JSON.stringify(result));
       localStorage.setItem(
         "project_sections_config",
-        JSON.stringify(projectSections),
+        JSON.stringify(projectSections)
       );
 
       setCurrentStep("plan");
@@ -569,13 +571,13 @@ export default function ProjectPlanner() {
             ...s,
             isGenerating: index === i,
             isCompleted: index < i,
-          })),
+          }))
         );
 
         try {
           // Generate content for this section using configured AI prompts
           console.log(
-            `Generating section ${i + 1}/${totalSections}: ${section.title}`,
+            `Generating section ${i + 1}/${totalSections}: ${section.title}`
           );
           const content = await planner.generateSection(section.title, config, {
             id: section.id,
@@ -598,8 +600,8 @@ export default function ProjectPlanner() {
             current.map((s, index) =>
               index === i
                 ? { ...s, content, isGenerating: false, isCompleted: true }
-                : s,
-            ),
+                : s
+            )
           );
 
           // Update progress
@@ -742,7 +744,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
         (step: string, progress: number) => {
           setCurrentProgressStep(step);
           setOverallProgress(progress);
-        },
+        }
       );
 
       setComprehensivePlan(plan);
@@ -761,7 +763,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
     } catch (err) {
       console.error("Comprehensive plan generation error:", err);
       setError(
-        "Failed to generate comprehensive project plan. Please try again.",
+        "Failed to generate comprehensive project plan. Please try again."
       );
     } finally {
       setIsGeneratingComprehensive(false);
@@ -804,7 +806,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
           setSectionProgress({ current, total });
           const progressPercentage = (current / total) * 100;
           setOverallProgress(progressPercentage);
-        },
+        }
       );
 
       setDynamicPlanResult(result);
@@ -816,7 +818,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       localStorage.setItem("dynamic_plan_result", JSON.stringify(result));
       localStorage.setItem(
         "project_sections_config",
-        JSON.stringify(projectSections),
+        JSON.stringify(projectSections)
       );
 
       setCurrentStep("plan");
@@ -834,7 +836,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
   };
 
   const formatComprehensivePlanAsHtml = (
-    plan: ComprehensiveProjectPlan,
+    plan: ComprehensiveProjectPlan
   ): string => {
     return `
 <!DOCTYPE html>
@@ -891,19 +893,27 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
         <div class="critical-path">
             <h3>🎯 Critical Path</h3>
             <ul>
-                ${plan.criticalPath.map((item) => `<li><strong>${item}</strong></li>`).join("")}
+                ${plan.criticalPath
+                  .map((item) => `<li><strong>${item}</strong></li>`)
+                  .join("")}
             </ul>
         </div>
 
         <div class="section-content priority-${plan.projectOverview.priority}">
             <h2>${plan.projectOverview.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.projectOverview.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.projectOverview.estimatedHours
+            }</div>
             ${plan.projectOverview.content}
         </div>
 
-        <div class="section-content priority-${plan.technicalArchitecture.priority}">
+        <div class="section-content priority-${
+          plan.technicalArchitecture.priority
+        }">
             <h2>${plan.technicalArchitecture.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.technicalArchitecture.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.technicalArchitecture.estimatedHours
+            }</div>
             ${plan.technicalArchitecture.content}
         </div>
 
@@ -916,73 +926,101 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
                 <div class="hours-estimate">Estimated Hours: ${phase.estimatedHours}</div>
                 ${phase.content}
             </div>
-        `,
+        `
           )
           .join("")}
 
         <div class="section-content priority-${plan.riskManagement.priority}">
             <h2>${plan.riskManagement.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.riskManagement.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.riskManagement.estimatedHours
+            }</div>
             ${plan.riskManagement.content}
         </div>
 
         <div class="section-content priority-${plan.qualityAssurance.priority}">
             <h2>${plan.qualityAssurance.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.qualityAssurance.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.qualityAssurance.estimatedHours
+            }</div>
             ${plan.qualityAssurance.content}
         </div>
 
         <div class="section-content priority-${plan.deployment.priority}">
             <h2>${plan.deployment.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.deployment.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.deployment.estimatedHours
+            }</div>
             ${plan.deployment.content}
         </div>
 
         <div class="section-content priority-${plan.maintenance.priority}">
             <h2>${plan.maintenance.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.maintenance.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.maintenance.estimatedHours
+            }</div>
             ${plan.maintenance.content}
         </div>
 
         <div class="section-content priority-${plan.budgetBreakdown.priority}">
             <h2>${plan.budgetBreakdown.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.budgetBreakdown.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.budgetBreakdown.estimatedHours
+            }</div>
             ${plan.budgetBreakdown.content}
         </div>
 
         <div class="section-content priority-${plan.timelineDetails.priority}">
             <h2>${plan.timelineDetails.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.timelineDetails.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.timelineDetails.estimatedHours
+            }</div>
             ${plan.timelineDetails.content}
         </div>
 
         <div class="section-content priority-${plan.teamStructure.priority}">
             <h2>${plan.teamStructure.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.teamStructure.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.teamStructure.estimatedHours
+            }</div>
             ${plan.teamStructure.content}
         </div>
 
-        <div class="section-content priority-${plan.stakeholderMatrix.priority}">
+        <div class="section-content priority-${
+          plan.stakeholderMatrix.priority
+        }">
             <h2>${plan.stakeholderMatrix.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.stakeholderMatrix.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.stakeholderMatrix.estimatedHours
+            }</div>
             ${plan.stakeholderMatrix.content}
         </div>
 
-        <div class="section-content priority-${plan.complianceRequirements.priority}">
+        <div class="section-content priority-${
+          plan.complianceRequirements.priority
+        }">
             <h2>${plan.complianceRequirements.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.complianceRequirements.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.complianceRequirements.estimatedHours
+            }</div>
             ${plan.complianceRequirements.content}
         </div>
 
         <div class="section-content priority-${plan.scalabilityPlan.priority}">
             <h2>${plan.scalabilityPlan.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.scalabilityPlan.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.scalabilityPlan.estimatedHours
+            }</div>
             ${plan.scalabilityPlan.content}
         </div>
 
-        <div class="section-content priority-${plan.securityFramework.priority}">
+        <div class="section-content priority-${
+          plan.securityFramework.priority
+        }">
             <h2>${plan.securityFramework.title}</h2>
-            <div class="hours-estimate">Estimated Hours: ${plan.securityFramework.estimatedHours}</div>
+            <div class="hours-estimate">Estimated Hours: ${
+              plan.securityFramework.estimatedHours
+            }</div>
             ${plan.securityFramework.content}
         </div>
     </div>
@@ -1076,7 +1114,7 @@ Return the complete enhanced project plan as HTML with all existing content plus
     try {
       // Use AI to analyze project and identify stakeholder names
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1144,7 +1182,7 @@ Return ONLY a JSON array of stakeholder name strings:
         setStakeholderNames(fallbackNames);
         localStorage.setItem(
           "stakeholder-names",
-          JSON.stringify(fallbackNames),
+          JSON.stringify(fallbackNames)
         );
       }
     } catch (err) {
@@ -1241,7 +1279,13 @@ Return ONLY a JSON array of stakeholder name strings:
       const projectAnalysis = `
 Project Description: ${projectInput}
 
-${projectPlan ? `Existing Project Plan Context: ${getPlanContentForExternalUse(projectPlan)}` : ""}
+${
+  projectPlan
+    ? `Existing Project Plan Context: ${getPlanContentForExternalUse(
+        projectPlan
+      )}`
+    : ""
+}
 
 Generate a detailed flow diagram that shows:
 1. Main user entry points and onboarding processes
@@ -1256,7 +1300,7 @@ Generate a detailed flow diagram that shows:
 
       // Use AI to analyze project plan and create project-specific processes
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1294,11 +1338,19 @@ Return a JSON object with consolidated multi-stakeholder activities:
   "trigger": "Different stakeholders enter the system to accomplish their specific goals",
   "activities": [
     "System Entry Point: All stakeholders access the platform",
-    "Authentication: Role-based login/registration for ${stakeholderData.join(", ")}",
+    "Authentication: Role-based login/registration for ${stakeholderData.join(
+      ", "
+    )}",
     "Role Detection: System identifies stakeholder type and redirects to appropriate dashboard",
-    "${stakeholderData[0] || "Primary User"}: Completes their main workflow (discovery → action → completion)",
-    "${stakeholderData[1] || "Secondary User"}: Performs their specific tasks (access → manage → review)",
-    "${stakeholderData[2] || "Third User"}: Executes their role-based activities (monitor → control → optimize)",
+    "${
+      stakeholderData[0] || "Primary User"
+    }: Completes their main workflow (discovery → action → completion)",
+    "${
+      stakeholderData[1] || "Secondary User"
+    }: Performs their specific tasks (access → manage → review)",
+    "${
+      stakeholderData[2] || "Third User"
+    }: Executes their role-based activities (monitor → control → optimize)",
     "Cross-stakeholder Interactions: Points where different stakeholders collaborate or hand-off",
     "Shared Resources: Common areas where all stakeholders might interact",
     "Feedback Loop: All stakeholders provide input that improves the system",
@@ -1320,7 +1372,9 @@ Return a JSON object with consolidated multi-stakeholder activities:
   ]
 }
 
-Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length} stakeholder types work together in the system.`;
+Generate a SINGLE consolidated flow that shows how ALL ${
+        stakeholderData.length
+      } stakeholder types work together in the system.`;
 
       const response = await model.generateContent(flowAnalysisPrompt);
       const responseText = response.response.text();
@@ -1336,7 +1390,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       } catch (parseError) {
         console.log(
           "Using fallback flow details due to parsing error:",
-          parseError,
+          parseError
         );
         // Fallback to consolidated stakeholder flow using actual stakeholder data
         const fallbackStakeholders =
@@ -1351,11 +1405,19 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
             "Multiple stakeholder types enter the system to accomplish their interconnected goals",
           activities: [
             "System Entry Point: All stakeholders access the unified platform",
-            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(", ")}`,
+            `Authentication Hub: Role-based login/registration for ${fallbackStakeholders.join(
+              ", "
+            )}`,
             "Role Detection & Routing: System identifies stakeholder type and provides appropriate access",
-            `${fallbackStakeholders[0] || "Primary Stakeholder"}: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
-            `${fallbackStakeholders[1] || "Secondary Stakeholder"}: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
-            `${fallbackStakeholders[2] || "Third Stakeholder"}: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
+            `${
+              fallbackStakeholders[0] || "Primary Stakeholder"
+            }: Discovers platform → Registers/Logs in → Completes onboarding → Performs core activities → Achieves primary goals`,
+            `${
+              fallbackStakeholders[1] || "Secondary Stakeholder"
+            }: Accesses management interface → Reviews and manages content/users → Makes decisions → Monitors outcomes`,
+            `${
+              fallbackStakeholders[2] || "Third Stakeholder"
+            }: Enters specialized dashboard → Performs administrative tasks → Configures system settings → Ensures compliance`,
             "Cross-Stakeholder Collaboration: Points where different stakeholders interact and collaborate",
             "Shared Resource Access: Common areas where multiple stakeholder types converge",
             "Notification & Communication: System alerts and messages between stakeholder types",
@@ -1365,7 +1427,9 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
           ],
           decisionPoints: [
             "Which stakeholder role is accessing the system?",
-            `Does ${fallbackStakeholders[0] || "Primary User"} action require ${fallbackStakeholders[1] || "Secondary User"} approval?`,
+            `Does ${fallbackStakeholders[0] || "Primary User"} action require ${
+              fallbackStakeholders[1] || "Secondary User"
+            } approval?`,
             "Should this process involve multiple stakeholder collaboration?",
             "Is escalation between stakeholder roles required?",
             "Does this workflow need cross-stakeholder validation?",
@@ -1387,12 +1451,14 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
         "System",
-        "Comprehensive Project Workflow",
+        "Comprehensive Project Workflow"
       );
 
       const flowDiagramResult = {
         title: "Consolidated Multi-Stakeholder User Journey Flow",
-        description: `Comprehensive flow diagram showing how all stakeholders (${stakeholderData.join(", ")}) interact, collaborate, and achieve their goals within the system`,
+        description: `Comprehensive flow diagram showing how all stakeholders (${stakeholderData.join(
+          ", "
+        )}) interact, collaborate, and achieve their goals within the system`,
         flowData: flowDiagramData,
       };
 
@@ -1401,7 +1467,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       // Save to localStorage
       localStorage.setItem(
         "project-flow-diagram",
-        JSON.stringify(flowDiagramResult),
+        JSON.stringify(flowDiagramResult)
       );
     } catch (err) {
       console.error("Flow diagram generation error:", err);
@@ -1521,7 +1587,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
         flowDetails,
         "System",
-        "Enhanced Project Workflow",
+        "Enhanced Project Workflow"
       );
 
       const flowDiagramResult = {
@@ -1536,7 +1602,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
       // Save to localStorage
       localStorage.setItem(
         "project-flow-diagram",
-        JSON.stringify(flowDiagramResult),
+        JSON.stringify(flowDiagramResult)
       );
     } catch (err) {
       console.error("Flow diagram regeneration error:", err);
@@ -1687,7 +1753,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
   const regenerateSectionWithCustomPrompt = async (
     sectionId: string,
-    prompt: string,
+    prompt: string
   ) => {
     if (!prompt.trim()) {
       setError("Please enter custom instructions for regeneration");
@@ -1699,7 +1765,7 @@ Generate a SINGLE consolidated flow that shows how ALL ${stakeholderData.length}
 
     try {
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM",
+        "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI"
       );
       const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -1760,8 +1826,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
         prev.map((section) =>
           section.id === sectionId
             ? { ...section, content: cleanedContent }
-            : section,
-        ),
+            : section
+        )
       );
 
       // Update the main project plan if it exists
@@ -1770,7 +1836,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         let updatedHtml = projectPlan;
         const sectionPattern = new RegExp(
           `<section[^>]*id="${sectionId}"[^>]*>(.*?)</section>`,
-          "gis",
+          "gis"
         );
 
         const newSectionHtml = `<section class="project-section" id="${sectionId}">
@@ -1795,13 +1861,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
       const updatedSections = enhancedSections.map((section) =>
         section.id === sectionId
           ? { ...section, content: cleanedContent }
-          : section,
+          : section
       );
       saveEnhancedPlanSections(updatedSections);
 
       // Force a re-render by updating the active tab
       const currentActiveTab = document.querySelector(
-        '[data-state="active"][data-orientation="horizontal"]',
+        '[data-state="active"][data-orientation="horizontal"]'
       );
       if (currentActiveTab) {
         const tabValue = currentActiveTab.getAttribute("value");
@@ -1864,7 +1930,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
   // Parse project plan into sections for tabbed interface
   const parseProjectPlanSections = (
-    planContent: string,
+    planContent: string
   ): ProjectPlanSection[] => {
     if (!planContent) return [];
 
@@ -2021,7 +2087,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 <div className="flex items-center justify-between p-6 bg-gradient-to-r from-slate-50 to-slate-100 border-b border-gray-200">
                   {(() => {
                     const { icon: SectionIcon } = getSectionIconAndDescription(
-                      section.title,
+                      section.title
                     );
                     return (
                       <div className="flex items-center gap-3">
@@ -2055,7 +2121,9 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         <meta name="viewport" content="width=device-width, initial-scale=1.0">
                         <title>${section.title}</title>
                         <style>
-                          ${/* Include the same enhanced styling from renderProjectPlan */ ""}
+                          ${
+                            /* Include the same enhanced styling from renderProjectPlan */ ""
+                          }
                           * {
                             margin: 0;
                             padding: 0;
@@ -2350,7 +2418,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           startEditingSection(
                             section.id,
                             section.content,
-                            section.id,
+                            section.id
                           )
                         }
                         size="sm"
@@ -2576,7 +2644,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
           body?.scrollHeight || 0,
           body?.offsetHeight || 0,
           html?.scrollHeight || 0,
-          html?.offsetHeight || 0,
+          html?.offsetHeight || 0
         );
 
         // Adjust iframe height to content
@@ -2654,7 +2722,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
             if (trimmedLine.startsWith("#")) {
               const level = (trimmedLine.match(/^#+/) || [""])[0].length;
               const text = trimmedLine.replace(/^#+\s*/, "");
-              return `<h${Math.min(level, 6)} style="color: #2563eb; margin: 1.5em 0 0.5em 0;">${text}</h${Math.min(level, 6)}>`;
+              return `<h${Math.min(
+                level,
+                6
+              )} style="color: #2563eb; margin: 1.5em 0 0.5em 0;">${text}</h${Math.min(
+                level,
+                6
+              )}>`;
             }
 
             // Format bullet points
@@ -2861,7 +2935,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
   const startEditingSection = (
     sectionId: string,
     content?: string,
-    tabId?: string,
+    tabId?: string
   ) => {
     if (content && tabId) {
       // Called with 3 parameters
@@ -2887,8 +2961,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
       prev.map((section) =>
         section.id === editingSectionId
           ? { ...section, content: editedSectionContent }
-          : section,
-      ),
+          : section
+      )
     );
 
     // Also update the main project plan if it exists
@@ -2902,7 +2976,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
         // Simple replacement for now - could be more sophisticated
         const sectionPattern = new RegExp(
           `(<h[1-6][^>]*>${sectionTitle}</h[1-6]>)(.*?)(?=<h[1-6]|$)`,
-          "is",
+          "is"
         );
         const replacement = `$1\n${editedSectionContent}\n`;
         updatedPlan = updatedPlan.replace(sectionPattern, replacement);
@@ -2926,14 +3000,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
       return currentStep === "input"
         ? "active"
         : currentStep === "plan" || currentStep === "diagram"
-          ? "completed"
-          : "pending";
+        ? "completed"
+        : "pending";
     if (step === "plan")
       return currentStep === "plan"
         ? "active"
         : currentStep === "diagram"
-          ? "completed"
-          : "pending";
+        ? "completed"
+        : "pending";
     if (step === "diagram")
       return currentStep === "diagram" ? "completed" : "pending";
     return "pending";
@@ -3006,7 +3080,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
           {sections.map((sectionHtml, index) => {
             // Extract section title if available
             const titleMatch = sectionHtml.match(
-              /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i,
+              /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i
             );
             const sectionTitle = titleMatch
               ? titleMatch[1].replace(/<[^>]*>/g, "").trim()
@@ -4771,7 +4845,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           iframe.offsetHeight;
 
                           console.log(
-                            `Iframe height adjusted to: ${newHeight}px`,
+                            `Iframe height adjusted to: ${newHeight}px`
                           );
                         }
                       };
@@ -4796,7 +4870,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               const height = Math.max(...measurements);
                               iframe.style.height = `${height + 2}px`;
                               console.log(
-                                `Direct height adjustment: ${height + 2}px`,
+                                `Direct height adjustment: ${height + 2}px`
                               );
                             }
                           }
@@ -4995,7 +5069,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           className="h-5 w-5 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-2 border-gray-300"
                         />
                         <label
-                          htmlFor={`suggestion-${suggestion.replace(/\s+/g, "-")}`}
+                          htmlFor={`suggestion-${suggestion.replace(
+                            /\s+/g,
+                            "-"
+                          )}`}
                           className="text-sm text-gray-700 cursor-pointer flex-1 leading-relaxed"
                           onClick={() => toggleSuggestion(suggestion)}
                         >
@@ -5268,7 +5345,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               <div className="h-4 w-4 rounded-full border-2 border-gray-300 mr-2 flex-shrink-0"></div>
                             )}
                             <span
-                              className={`${step.completed ? "text-green-700 font-medium" : step.current ? "text-blue-700 font-medium" : "text-gray-500"} truncate`}
+                              className={`${
+                                step.completed
+                                  ? "text-green-700 font-medium"
+                                  : step.current
+                                  ? "text-blue-700 font-medium"
+                                  : "text-gray-500"
+                              } truncate`}
                             >
                               {step.step}
                             </span>
@@ -5304,8 +5387,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               prev.map((s) =>
                                 s.id === section.id
                                   ? { ...s, enabled: checked as boolean }
-                                  : s,
-                              ),
+                                  : s
+                              )
                             );
                           }}
                           className="h-4 w-4 data-[state=checked]:bg-green-600 data-[state=checked]:border-green-600"
@@ -5329,10 +5412,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 section.priority === "critical"
                                   ? "bg-red-100 text-red-700"
                                   : section.priority === "high"
-                                    ? "bg-orange-100 text-orange-700"
-                                    : section.priority === "medium"
-                                      ? "bg-yellow-100 text-yellow-700"
-                                      : "bg-gray-100 text-gray-700"
+                                  ? "bg-orange-100 text-orange-700"
+                                  : section.priority === "medium"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-gray-100 text-gray-700"
                               }`}
                             >
                               {section.priority}
@@ -5353,7 +5436,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         .filter((s) => s.enabled)
                         .reduce(
                           (total, s) => total + (s.estimatedHours || 0),
-                          0,
+                          0
                         )}{" "}
                       hours
                     </div>
@@ -5497,7 +5580,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.",
+                        "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics."
                       )
                     }
                   >
@@ -5513,7 +5596,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.",
+                        "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles."
                       )
                     }
                   >
@@ -5529,7 +5612,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.",
+                        "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning."
                       )
                     }
                   >
@@ -5545,7 +5628,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.",
+                        "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance."
                       )
                     }
                   >
@@ -5561,7 +5644,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.",
+                        "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations."
                       )
                     }
                   >
@@ -5577,7 +5660,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
                     onClick={() =>
                       setProjectInput(
-                        "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.",
+                        "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands."
                       )
                     }
                   >
@@ -5666,8 +5749,8 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             step.completed
                               ? "text-green-700"
                               : step.current
-                                ? "text-blue-700"
-                                : "text-gray-500"
+                              ? "text-blue-700"
+                              : "text-gray-500"
                           }
                         >
                           {step.step}
@@ -6157,7 +6240,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                             value={editedSectionContent}
                                             onChange={(e) =>
                                               setEditedSectionContent(
-                                                e.target.value,
+                                                e.target.value
                                               )
                                             }
                                             className="min-h-[400px] font-mono text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm transition-all duration-200 resize-y"
@@ -6725,7 +6808,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                   JSON.stringify({
                                     ...generatedFlowDiagram,
                                     flowData: updatedFlow,
-                                  }),
+                                  })
                                 );
                               }}
                             />
@@ -7129,7 +7212,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         ) {
                           const sectionHtml = match[0];
                           const titleMatch = sectionHtml.match(
-                            /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i,
+                            /<h[1-3][^>]*>(.*?)<\/h[1-3]>/i
                           );
                           const title = titleMatch
                             ? titleMatch[1].replace(/<[^>]*>/g, "").trim()
@@ -7199,7 +7282,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   customPromptSectionId &&
                   regenerateSectionWithCustomPrompt(
                     customPromptSectionId,
-                    customPrompt,
+                    customPrompt
                   )
                 }
                 disabled={!customPrompt.trim() || isRegeneratingSection}

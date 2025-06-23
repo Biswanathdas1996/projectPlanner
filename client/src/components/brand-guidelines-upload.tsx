@@ -76,14 +76,14 @@ export function BrandGuidelinesUpload({
   const [showBrandModal, setShowBrandModal] = useState(false);
   const [showStoredGuidelines, setShowStoredGuidelines] = useState(false);
   const [storedGuidelines, setStoredGuidelines] = useState(
-    BrandGuidelinesStorage.getAll(),
+    BrandGuidelinesStorage.getAll()
   );
   const { toast } = useToast();
 
   if (!visible) return null;
 
   const handleBrandGuidelineUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -128,14 +128,14 @@ export function BrandGuidelinesUpload({
 
       const response = await fetch(
         "http://127.0.0.1:5001/extract-guidelines",
-        requestOptions,
+        requestOptions
       );
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error("External API error response:", errorText);
         throw new Error(
-          `External API failed with status: ${response.status} - ${errorText}`,
+          `External API failed with status: ${response.status} - ${errorText}`
         );
       }
 
@@ -165,7 +165,7 @@ export function BrandGuidelinesUpload({
       const stored = BrandGuidelinesStorage.save(
         extractedData as ExternalBrandJSON,
         extractedData.brand || "Brand Guidelines",
-        file.name,
+        file.name
       );
 
       // Update stored guidelines list
@@ -208,7 +208,7 @@ export function BrandGuidelinesUpload({
       }
 
       setBrandExtractionError(
-        `Failed to extract brand guidelines: ${errorMessage}`,
+        `Failed to extract brand guidelines: ${errorMessage}`
       );
       toast({
         title: "Extraction Service Unavailable",
@@ -236,7 +236,7 @@ export function BrandGuidelinesUpload({
       console.log("🚀 Starting Gemini-based wireframe generation");
 
       // Initialize Gemini AI
-      const apiKey = "AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM";
+      const apiKey = "AIzaSyBhd19j5bijrXpxpejIBCdiH5ToXO7eciI";
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -272,7 +272,7 @@ ${JSON.stringify(
     additionalContent: page.additionalContent || [],
   },
   null,
-  2,
+  2
 )}
 
 BRAND GUIDELINES:
@@ -302,7 +302,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
         const response = result.response.text();
 
         console.log(
-          `Generated wireframe for ${page.pageName}, length: ${response.length}`,
+          `Generated wireframe for ${page.pageName}, length: ${response.length}`
         );
 
         // Extract HTML, CSS, and JS from response
@@ -315,7 +315,9 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
         const jsCode = jsMatch ? jsMatch[1] : "";
 
         wireframes.push({
-          id: `wireframe-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          id: `wireframe-${Date.now()}-${Math.random()
+            .toString(36)
+            .substr(2, 9)}`,
           pageName: page.pageName,
           htmlCode: htmlCode,
           cssCode: cssCode,
@@ -377,7 +379,7 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
         const result = await htmlGenerator.generateDetailedWireframes(
           [detailedContent],
           "modern",
-          "desktop",
+          "desktop"
         );
         unifiedPages.push({
           pageName: page.pageName,
@@ -464,7 +466,9 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                   className="px-3"
                 >
                   <MessageSquare className="h-4 w-4" />
-                  <span className="ml-1 text-xs">({storedGuidelines.length})</span>
+                  <span className="ml-1 text-xs">
+                    ({storedGuidelines.length})
+                  </span>
                 </Button>
               </div>
 
@@ -476,27 +480,37 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                 </div>
               )}
 
-              {isPerformingMultimodalAnalysis && multimodalAnalysisProgress.total > 0 && (
-                <div className="bg-indigo-50 rounded-md p-3 border border-indigo-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
-                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                      Processing PDF
+              {isPerformingMultimodalAnalysis &&
+                multimodalAnalysisProgress.total > 0 && (
+                  <div className="bg-indigo-50 rounded-md p-3 border border-indigo-200">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
+                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                        Processing PDF
+                      </div>
+                      <span className="text-xs text-indigo-600">
+                        {Math.round(
+                          (multimodalAnalysisProgress.current /
+                            multimodalAnalysisProgress.total) *
+                            100
+                        )}
+                        %
+                      </span>
                     </div>
-                    <span className="text-xs text-indigo-600">
-                      {Math.round((multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100)}%
-                    </span>
+                    <div className="w-full bg-indigo-200 rounded-full h-2">
+                      <div
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${
+                            (multimodalAnalysisProgress.current /
+                              multimodalAnalysisProgress.total) *
+                            100
+                          }%`,
+                        }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full bg-indigo-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: `${(multimodalAnalysisProgress.current / multimodalAnalysisProgress.total) * 100}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              )}
+                )}
 
               {brandGuidelines && (
                 <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
@@ -537,12 +551,17 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                   </span>
                 </div>
                 <Progress
-                  value={(wireframeProgress.current / wireframeProgress.total) * 100}
+                  value={
+                    (wireframeProgress.current / wireframeProgress.total) * 100
+                  }
                   className="w-full mb-2 h-2"
                 />
                 <div className="text-xs text-blue-700">
                   {wireframeProgress.current < wireframeProgress.total ? (
-                    <span>Processing: <strong>{wireframeProgress.currentPage}</strong></span>
+                    <span>
+                      Processing:{" "}
+                      <strong>{wireframeProgress.currentPage}</strong>
+                    </span>
                   ) : (
                     <span className="font-medium">Finalizing...</span>
                   )}
@@ -660,9 +679,12 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                   <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <MessageSquare className="h-10 w-10 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No stored guidelines</h3>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    No stored guidelines
+                  </h3>
                   <p className="text-gray-500 max-w-sm mx-auto">
-                    Upload a PDF to automatically extract and save brand guidelines for future projects
+                    Upload a PDF to automatically extract and save brand
+                    guidelines for future projects
                   </p>
                 </div>
               ) : (
@@ -680,7 +702,11 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                             </h4>
                             <div className="flex items-center gap-2 text-xs text-gray-500">
                               <span>•</span>
-                              <time>{new Date(stored.extractedAt).toLocaleDateString()}</time>
+                              <time>
+                                {new Date(
+                                  stored.extractedAt
+                                ).toLocaleDateString()}
+                              </time>
                             </div>
                           </div>
                           {stored.pdfFileName && (
@@ -714,12 +740,11 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                         <div className="flex items-center gap-2 text-sm">
                           <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
                           <span className="text-gray-600">Brand:</span>
-                          <span className="font-medium text-gray-900">{stored.brandData.brand}</span>
+                          <span className="font-medium text-gray-900">
+                            {stored.brandData.brand}
+                          </span>
                         </div>
-                        
                       </div>
-
-                      
                     </div>
                   ))}
                 </div>
@@ -729,10 +754,14 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                 <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-xl">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-600">
-                      <span className="font-medium">Storage:</span> {BrandGuidelinesStorage.getStorageInfo().size} used
+                      <span className="font-medium">Storage:</span>{" "}
+                      {BrandGuidelinesStorage.getStorageInfo().size} used
                       {BrandGuidelinesStorage.getStorageInfo().lastUpdated && (
                         <span className="ml-2">
-                          • Updated {new Date(BrandGuidelinesStorage.getStorageInfo().lastUpdated!).toLocaleDateString()}
+                          • Updated{" "}
+                          {new Date(
+                            BrandGuidelinesStorage.getStorageInfo().lastUpdated!
+                          ).toLocaleDateString()}
                         </span>
                       )}
                     </div>
@@ -742,7 +771,8 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                         setStoredGuidelines([]);
                         toast({
                           title: "Storage Cleared",
-                          description: "All stored guidelines have been removed",
+                          description:
+                            "All stored guidelines have been removed",
                         });
                       }}
                       variant="outline"
