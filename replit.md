@@ -340,6 +340,9 @@ Changelog:
   - Added visual feedback showing which node is selected for flow generation
   - Enhanced user workflow: Select Node → Describe Flow → Generate Connected Components
   - Updated instructions to emphasize node selection requirement for AI generation
+  - Fixed localStorage persistence issue: Editor now loads saved changes on reload instead of reverting to original
+  - Enhanced Reset functionality to restore to last saved version instead of original flowData
+  - Added console logging for debugging localStorage load operations
 ```
 
 ## User Preferences

@@ -73,14 +73,34 @@ function FlowDiagramEditorInner({
     );
   }, [nodes, edges, flowData]);
 
-  // Reset to original data when dialog opens
+  // Reset to original data when dialog opens, but load from localStorage if available
   useEffect(() => {
     if (isOpen) {
+      // Try to load saved data from localStorage first
+      if (flowKey) {
+        try {
+          const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+          const savedFlow = existingFlows[flowKey];
+          
+          if (savedFlow && savedFlow.nodes && savedFlow.edges) {
+            console.log(`🔄 Loading saved flow from localStorage for key: ${flowKey}`);
+            setNodes(savedFlow.nodes);
+            setEdges(savedFlow.edges);
+            setHasChanges(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error loading from localStorage:', error);
+        }
+      }
+      
+      // Fallback to original flowData if no saved version exists
+      console.log(`📄 Loading original flow data for key: ${flowKey || 'no-key'}`);
       setNodes(flowData.nodes || []);
       setEdges(flowData.edges || []);
       setHasChanges(false);
     }
-  }, [isOpen, flowData, setNodes, setEdges]);
+  }, [isOpen, flowData, flowKey, setNodes, setEdges]);
 
   // Track selected elements
   const onSelectionChange = useCallback(({ nodes: selectedNodes, edges: selectedEdges }: { nodes: Node[], edges: Edge[] }) => {
@@ -234,10 +254,36 @@ function FlowDiagramEditorInner({
   }, [nodes, edges, flowKey, onSave, toast]);
 
   const handleReset = useCallback(() => {
+    // Try to reset to saved localStorage version first
+    if (flowKey) {
+      try {
+        const existingFlows = JSON.parse(localStorage.getItem('flowDiagrams') || '{}');
+        const savedFlow = existingFlows[flowKey];
+        
+        if (savedFlow && savedFlow.nodes && savedFlow.edges) {
+          setNodes(savedFlow.nodes);
+          setEdges(savedFlow.edges);
+          setHasChanges(false);
+          toast({
+            title: "Reset Complete",
+            description: "Flow reset to last saved version",
+          });
+          return;
+        }
+      } catch (error) {
+        console.error('Error loading saved version for reset:', error);
+      }
+    }
+    
+    // Fallback to original flowData
     setNodes(flowData.nodes || []);
     setEdges(flowData.edges || []);
     setHasChanges(false);
-  }, [flowData, setNodes, setEdges]);
+    toast({
+      title: "Reset Complete",
+      description: "Flow reset to original version",
+    });
+  }, [flowData, flowKey, setNodes, setEdges, toast]);
 
   const handleExportJSON = useCallback(() => {
     const flowJSON = JSON.stringify({ nodes, edges }, null, 2);
