@@ -5357,48 +5357,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                 </div>
               )}
               
-              {/* Enhancement Section */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-                <div className="border-b border-gray-200 p-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-md flex items-center justify-center">
-                      <Plus className="h-3 w-3 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-semibold text-gray-900">Enhance Project Plan</h3>
-                      <p className="text-xs text-gray-600">Add features and requirements to your plan</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-3 space-y-3">
-                  <Textarea
-                    value={enhancementPrompt}
-                    onChange={(e) => setEnhancementPrompt(e.target.value)}
-                    placeholder="e.g., Add user authentication system, Include mobile app requirements, Add payment gateway integration, Include security audit section..."
-                    className="min-h-[80px] resize-y border-gray-300 focus:border-emerald-500 focus:ring-emerald-500 text-sm"
-                    disabled={isEnhancing}
-                  />
-                  
-                  <Button
-                    onClick={enhanceProjectPlan}
-                    disabled={isEnhancing || !enhancementPrompt.trim()}
-                    className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg text-sm"
-                  >
-                    {isEnhancing ? (
-                      <>
-                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                        Enhancing Plan...
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-3 w-3 mr-2" />
-                        Enhance Project Plan
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </div>
+              
               
               {/* Action Buttons */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
