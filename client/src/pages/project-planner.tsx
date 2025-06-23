@@ -5360,7 +5360,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
               
               
               {/* Action Buttons */}
-              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3">
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 pt-[14px] pb-[14px] mt-[20px] mb-[20px]">
                 <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
                   <Button
                     variant="outline"
@@ -5649,7 +5649,6 @@ Please provide the regenerated section content as properly formatted HTML:`;
           </Card>
         )}
       </div>
-
       {/* Custom Prompt Regeneration Modal */}
       {showCustomPromptModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
