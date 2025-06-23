@@ -5843,97 +5843,69 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
 
                   {stakeholderNames.length > 0 && (
-                    <div className="mt-6 relative">
-                      {/* Modern glassmorphism container */}
-                      <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-50/80 via-pink-50/60 to-indigo-50/80 border border-purple-200/50 rounded-2xl p-6 shadow-xl">
-                        {/* Decorative background elements */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/5 via-pink-400/5 to-indigo-400/5 rounded-2xl"></div>
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-300/10 to-transparent rounded-2xl"></div>
-                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-300/10 to-transparent rounded-2xl"></div>
-                        
-                        {/* Header section */}
-                        <div className="relative flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg flex items-center justify-center">
-                              <Users className="h-5 w-5 text-white" />
-                            </div>
-                            <div>
-                              <h4 className="text-lg font-bold text-gray-900">Project Stakeholders</h4>
-                              <p className="text-sm text-gray-600">{stakeholderNames.length} stakeholders identified</p>
-                            </div>
+                    <div className="mt-4">
+                      <div className="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4 text-purple-600" />
+                            <span className="font-medium text-gray-900 text-sm">Stakeholders ({stakeholderNames.length})</span>
                           </div>
                         </div>
 
-                        {/* Stakeholder List */}
-                        <div className="relative space-y-3">
+                        <div className="space-y-2">
                           {stakeholderNames.map((name, index) => (
-                            <div key={index} className="group relative">
-                              <div className="flex items-center justify-between bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm hover:shadow-lg transition-all duration-300 p-4">
-                                {editingStakeholderIndex === index ? (
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <input
-                                      type="text"
-                                      value={editingStakeholderName}
-                                      onChange={(e) => setEditingStakeholderName(e.target.value)}
-                                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                      onKeyPress={(e) => e.key === 'Enter' && saveEditingStakeholder()}
-                                      autoFocus
-                                    />
+                            <div key={index} className="flex items-center justify-between bg-white rounded-lg border border-purple-100 p-2">
+                              {editingStakeholderIndex === index ? (
+                                <div className="flex items-center gap-2 flex-1">
+                                  <input
+                                    type="text"
+                                    value={editingStakeholderName}
+                                    onChange={(e) => setEditingStakeholderName(e.target.value)}
+                                    className="flex h-8 w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm"
+                                    onKeyPress={(e) => e.key === 'Enter' && saveEditingStakeholder()}
+                                    autoFocus
+                                  />
+                                  <Button
+                                    onClick={saveEditingStakeholder}
+                                    size="sm"
+                                    className="h-8 px-2 bg-green-600 hover:bg-green-700 text-white"
+                                  >
+                                    <Save className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    onClick={cancelEditingStakeholder}
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-8 px-2 border-gray-300"
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <>
+                                  <span className="text-sm text-gray-900">{name}</span>
+                                  <div className="flex items-center gap-1">
                                     <Button
-                                      onClick={saveEditingStakeholder}
-                                      size="sm"
-                                      className="bg-green-600 hover:bg-green-700 text-white"
-                                    >
-                                      <Save className="h-3 w-3" />
-                                    </Button>
-                                    <Button
-                                      onClick={cancelEditingStakeholder}
+                                      onClick={() => startEditingStakeholder(index)}
                                       size="sm"
                                       variant="outline"
-                                      className="border-gray-300"
+                                      className="h-7 w-7 p-0 border-blue-300 text-blue-600 hover:bg-blue-50"
                                     >
-                                      <X className="h-3 w-3" />
+                                      <Edit className="h-3 w-3" />
+                                    </Button>
+                                    <Button
+                                      onClick={() => deleteStakeholder(index)}
+                                      size="sm"
+                                      variant="outline"
+                                      className="h-7 w-7 p-0 border-red-300 text-red-600 hover:bg-red-50"
+                                    >
+                                      <Trash2 className="h-3 w-3" />
                                     </Button>
                                   </div>
-                                ) : (
-                                  <>
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
-                                        <Users className="h-4 w-4 text-white" />
-                                      </div>
-                                      <span className="font-medium text-gray-900 text-sm">{name}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                      <Button
-                                        onClick={() => startEditingStakeholder(index)}
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-blue-300 text-blue-600 hover:bg-blue-50"
-                                      >
-                                        <Edit className="h-3 w-3" />
-                                      </Button>
-                                      <Button
-                                        onClick={() => deleteStakeholder(index)}
-                                        size="sm"
-                                        variant="outline"
-                                        className="border-red-300 text-red-600 hover:bg-red-50"
-                                      >
-                                        <Trash2 className="h-3 w-3" />
-                                      </Button>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
+                                </>
+                              )}
                             </div>
                           ))}
-                        </div>
-
-                        {/* Summary */}
-                        <div className="relative mt-6 pt-4 border-t border-white/50">
-                          <div className="text-center">
-                            <div className="text-lg font-bold text-purple-600">{stakeholderNames.length}</div>
-                            <div className="text-xs text-gray-600">Total Stakeholders</div>
-                          </div>
                         </div>
                       </div>
                     </div>
