@@ -273,7 +273,7 @@ function FlowDiagramEditorInner({
                 Full-screen flow diagram editor • {nodes.length} nodes, {edges.length} edges
               </p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-[25px] mr-[25px]">
               {hasChanges && (
                 <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
                   Unsaved Changes
