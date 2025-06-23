@@ -265,7 +265,7 @@ function FlowDiagramEditorInner({
 
   // AI Flow Generation
   const generateAIFlow = useCallback(async () => {
-    if (!aiPrompt.trim()) return;
+    if (!aiPrompt.trim() || selectedNodes.length !== 1) return;
 
     setIsGeneratingAI(true);
     
@@ -274,14 +274,18 @@ function FlowDiagramEditorInner({
       const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
+      const selectedNode = selectedNodes[0];
       const currentFlowContext = {
         existingNodes: nodes.map(n => ({ id: n.id, label: n.data?.label })),
         existingEdges: edges.map(e => ({ source: e.source, target: e.target })),
+        selectedNode: { id: selectedNode.id, label: selectedNode.data?.label },
         nodeCount: nodes.length,
         edgeCount: edges.length
       };
 
-      const prompt = `You are an AI flow diagram generator. Generate new flow components based on the user's request and append them to the existing flow diagram without modifying existing components.
+      const prompt = `You are an AI flow diagram generator. Generate new flow components based on the user's request, starting FROM the selected node and connecting new components to it.
+
+Selected Starting Node: "${selectedNode.data?.label}" (ID: ${selectedNode.id})
 
 Current Flow Context:
 - Existing nodes: ${currentFlowContext.existingNodes.map(n => `${n.id}: ${n.label}`).join(', ')}
@@ -293,9 +297,10 @@ User Request: "${aiPrompt}"
 Generate new flow components that:
 1. DO NOT modify or replace existing nodes/edges
 2. Create new nodes with unique IDs starting from "ai-node-${Date.now()}-"
-3. Connect appropriately to existing flow or create a separate sub-flow
-4. Use logical positioning (avoid overlapping with existing nodes)
+3. MUST connect the first new node to the selected node "${selectedNode.id}"
+4. Position new nodes to the right or below the selected node
 5. Include 3-7 new nodes maximum to keep the flow manageable
+6. Create a logical flow sequence from the selected node
 
 Return ONLY a JSON object with this exact structure:
 {
@@ -315,14 +320,16 @@ Return ONLY a JSON object with this exact structure:
       "animated": false
     }
   ],
-  "connectionPoints": [
-    {
-      "existingNodeId": "existing-node-id",
-      "newNodeId": "new-node-id",
-      "edgeId": "connection-edge-id"
-    }
-  ]
+  "connectionToSelected": {
+    "edgeId": "connection-edge-id",
+    "fromNodeId": "${selectedNode.id}",
+    "toNodeId": "first-new-node-id"
+  }
 }
+
+Position the first new node at:
+- X: ${selectedNode.position.x + 200}
+- Y: ${selectedNode.position.y}
 
 Use these colors for nodes:
 - Start/Input: #10B981 (green)
@@ -343,35 +350,31 @@ Use these colors for nodes:
       
       const aiFlowData = JSON.parse(jsonMatch[0]);
       
-      // Find the rightmost and bottommost positions of existing nodes
-      const maxX = Math.max(...nodes.map(n => n.position.x), 0);
-      const maxY = Math.max(...nodes.map(n => n.position.y), 0);
-      
-      // Adjust positions of new nodes to avoid overlap
+      // Position new nodes starting from selected node
       const adjustedNodes = aiFlowData.newNodes.map((node: any, index: number) => ({
         ...node,
         position: {
-          x: node.position.x + maxX + 300, // Offset to the right
-          y: node.position.y + (index * 100) // Spread vertically
+          x: selectedNode.position.x + 200 + (Math.floor(index / 3) * 200), // Spread horizontally every 3 nodes
+          y: selectedNode.position.y + ((index % 3) * 120) // Spread vertically within groups
         }
       }));
 
-      // Generate connection edges if specified
-      const connectionEdges = aiFlowData.connectionPoints?.map((conn: any) => ({
-        id: conn.edgeId,
-        source: conn.existingNodeId,
-        target: conn.newNodeId,
+      // Create connection edge from selected node to first new node
+      const connectionToSelected = aiFlowData.connectionToSelected ? [{
+        id: aiFlowData.connectionToSelected.edgeId,
+        source: selectedNode.id,
+        target: aiFlowData.connectionToSelected.toNodeId,
         animated: false,
         style: { stroke: '#6366F1', strokeWidth: 2 }
-      })) || [];
+      }] : [];
 
       // Add new nodes and edges to the existing flow
       setNodes(prevNodes => [...prevNodes, ...adjustedNodes]);
-      setEdges(prevEdges => [...prevEdges, ...aiFlowData.newEdges, ...connectionEdges]);
+      setEdges(prevEdges => [...prevEdges, ...aiFlowData.newEdges, ...connectionToSelected]);
 
       toast({
         title: "AI Flow Generated",
-        description: `Added ${adjustedNodes.length} new nodes and ${aiFlowData.newEdges.length + connectionEdges.length} new connections`,
+        description: `Added ${adjustedNodes.length} new nodes connected from "${selectedNode.data?.label}"`,
       });
 
       // Clear the prompt
@@ -387,7 +390,7 @@ Use these colors for nodes:
     } finally {
       setIsGeneratingAI(false);
     }
-  }, [aiPrompt, nodes, edges, setNodes, setEdges, toast]);
+  }, [aiPrompt, selectedNodes, nodes, edges, setNodes, setEdges, toast]);
 
   if (!isOpen) return null;
 
@@ -592,39 +595,63 @@ Use these colors for nodes:
                     {/* AI Flow Generator */}
                     <div className="p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded border border-purple-200">
                       <p className="font-medium mb-2 text-purple-800 text-sm">AI Flow Generator</p>
-                      <div className="space-y-2">
-                        <textarea
-                          placeholder="Describe new flow components to add (e.g., 'Add user authentication flow with login, verification, and dashboard steps')"
-                          className="w-full h-16 px-2 py-1 text-xs border rounded resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                          value={aiPrompt}
-                          onChange={(e) => setAiPrompt(e.target.value)}
-                        />
-                        <Button
-                          onClick={generateAIFlow}
-                          disabled={isGeneratingAI || !aiPrompt.trim()}
-                          size="sm"
-                          className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
-                        >
-                          {isGeneratingAI ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin mr-1" />
-                              Generating...
-                            </>
-                          ) : (
-                            <>
-                              <Sparkles className="h-3 w-3 mr-1" />
-                              Generate & Append Flow
-                            </>
-                          )}
-                        </Button>
-                      </div>
+                      {selectedNodes.length === 1 ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                            <span className="text-xs text-gray-600">
+                              From: <strong>{selectedNodes[0].data?.label}</strong>
+                            </span>
+                          </div>
+                          <textarea
+                            placeholder={`Describe new flow components to add from "${selectedNodes[0].data?.label}" (e.g., 'Add error handling flow with validation and retry steps')`}
+                            className="w-full h-16 px-2 py-1 text-xs border rounded resize-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            value={aiPrompt}
+                            onChange={(e) => setAiPrompt(e.target.value)}
+                          />
+                          <Button
+                            onClick={generateAIFlow}
+                            disabled={isGeneratingAI || !aiPrompt.trim()}
+                            size="sm"
+                            className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                          >
+                            {isGeneratingAI ? (
+                              <>
+                                <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <Sparkles className="h-3 w-3 mr-1" />
+                                Generate Flow from Selected Node
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="text-center py-4">
+                          <div className="text-gray-400 mb-2">
+                            <Sparkles className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          </div>
+                          <p className="text-xs text-gray-500 mb-1">
+                            {selectedNodes.length === 0 
+                              ? "Select a node to generate new flow components from it"
+                              : "Select only one node to generate connected flow components"
+                            }
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            Click on a node in the diagram to start
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Instructions */}
                     <div className="p-2 bg-gray-50 rounded text-xs text-gray-600">
                       <p className="font-medium mb-1">Instructions:</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• Use AI Generator to add new flow components</li>
+                        <li>• Select ONE node to enable AI flow generation from it</li>
+                        <li>• Use AI Generator to add connected flow components</li>
                         <li>• Click nodes/edges to select</li>
                         <li>• Hold Shift for multi-select</li>
                         <li>• Drag nodes to reposition</li>

@@ -330,6 +330,16 @@ Changelog:
   - Added status indicator showing when stakeholders have been loaded from localStorage
   - Implemented fallback to AI extraction if no localStorage data is available
   - Enhanced user experience by eliminating need to manually regenerate stakeholder data
+- June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
+  - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
+  - Implemented Gemini AI integration for prompt-based flow component generation
+  - Added intelligent node selection UI showing selected node context and connection point
+  - Created node-specific flow generation that connects new components from selected starting node
+  - Added smart positioning system to place new nodes relative to selected node (right/below)
+  - Implemented proper connection logic ensuring first new node connects to selected node
+  - Added visual feedback showing which node is selected for flow generation
+  - Enhanced user workflow: Select Node → Describe Flow → Generate Connected Components
+  - Updated instructions to emphasize node selection requirement for AI generation
 ```
 
 ## User Preferences
