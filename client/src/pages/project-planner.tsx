@@ -5823,23 +5823,39 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </Button>
 
                   {/* Add New Stakeholder */}
-                  <div className="mt-4 flex gap-2">
-                    <input
-                      type="text"
-                      value={newStakeholderName}
-                      onChange={(e) => setNewStakeholderName(e.target.value)}
-                      placeholder="Add stakeholder name..."
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                      onKeyPress={(e) => e.key === 'Enter' && addStakeholder()}
-                    />
-                    <Button
-                      onClick={addStakeholder}
-                      disabled={!newStakeholderName.trim()}
-                      className="bg-purple-600 hover:bg-purple-700 text-white text-sm"
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Add
-                    </Button>
+                  <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Plus className="h-4 w-4 text-purple-600" />
+                      <span className="text-sm font-medium text-gray-700">Add Stakeholder</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={newStakeholderName}
+                          onChange={(e) => setNewStakeholderName(e.target.value)}
+                          placeholder="Enter stakeholder name (e.g., Project Manager, End User, Admin)"
+                          className="w-full h-10 rounded-lg border border-purple-200 bg-white px-4 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm transition-all placeholder:text-gray-400"
+                          onKeyPress={(e) => e.key === 'Enter' && newStakeholderName.trim() && addStakeholder()}
+                        />
+                        {newStakeholderName.trim() && (
+                          <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        onClick={addStakeholder}
+                        disabled={!newStakeholderName.trim()}
+                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-lg disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 px-6"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add
+                      </Button>
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500">
+                      💡 Tip: Press Enter to quickly add stakeholders, or click "Generate AI Suggestions" for ideas
+                    </div>
                   </div>
 
                   {stakeholderNames.length > 0 && (
@@ -5855,43 +5871,51 @@ Please provide the regenerated section content as properly formatted HTML:`;
 
                         <div className="flex flex-wrap gap-2">
                           {stakeholderNames.map((name, index) => (
-                            <div key={index} className="group bg-white/80 backdrop-blur-sm border border-white/60 rounded-lg p-2 hover:bg-white hover:shadow-md transition-all duration-200 flex-shrink-0">
+                            <div key={index} className="group bg-white/90 backdrop-blur-sm border border-purple-200/60 rounded-xl p-3 hover:bg-white hover:shadow-lg hover:border-purple-300 transition-all duration-300 flex-shrink-0 min-w-[120px]">
                               {editingStakeholderIndex === index ? (
                                 <div className="flex items-center gap-2">
                                   <input
                                     type="text"
                                     value={editingStakeholderName}
                                     onChange={(e) => setEditingStakeholderName(e.target.value)}
-                                    className="flex-1 h-7 rounded-md border border-gray-300 bg-white px-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="flex-1 h-8 rounded-lg border border-purple-300 bg-white px-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 shadow-sm"
                                     onKeyPress={(e) => e.key === 'Enter' && saveEditingStakeholder()}
+                                    placeholder="Enter stakeholder name"
                                     autoFocus
                                   />
                                   <button
                                     onClick={saveEditingStakeholder}
-                                    className="h-7 w-7 bg-green-500 hover:bg-green-600 text-white rounded-md flex items-center justify-center transition-colors"
+                                    title="Save changes"
+                                    className="h-8 w-8 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg flex items-center justify-center transition-all hover:scale-105 shadow-sm"
                                   >
-                                    <Save className="h-3 w-3" />
+                                    <Save className="h-3.5 w-3.5" />
                                   </button>
                                   <button
                                     onClick={cancelEditingStakeholder}
-                                    className="h-7 w-7 bg-gray-400 hover:bg-gray-500 text-white rounded-md flex items-center justify-center transition-colors"
+                                    title="Cancel editing"
+                                    className="h-8 w-8 bg-gray-400 hover:bg-gray-500 text-white rounded-lg flex items-center justify-center transition-all hover:scale-105 shadow-sm"
                                   >
-                                    <X className="h-3 w-3" />
+                                    <X className="h-3.5 w-3.5" />
                                   </button>
                                 </div>
                               ) : (
-                                <div className="flex items-center justify-between">
-                                  <span className="text-sm font-medium text-gray-800">{name}</span>
-                                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <div className="flex items-center justify-between min-w-0">
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <div className="w-2 h-2 bg-gradient-to-r from-purple-400 to-indigo-500 rounded-full flex-shrink-0"></div>
+                                    <span className="text-sm font-medium text-gray-800 truncate" title={name}>{name}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1 ml-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                                     <button
                                       onClick={() => startEditingStakeholder(index)}
-                                      className="h-6 w-6 bg-blue-500 hover:bg-blue-600 text-white rounded-md flex items-center justify-center transition-all hover:scale-105"
+                                      title="Edit stakeholder name"
+                                      className="h-7 w-7 bg-blue-500 hover:bg-blue-600 text-white rounded-lg flex items-center justify-center transition-all hover:scale-110 shadow-sm"
                                     >
                                       <Edit className="h-3 w-3" />
                                     </button>
                                     <button
                                       onClick={() => deleteStakeholder(index)}
-                                      className="h-6 w-6 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-all hover:scale-105"
+                                      title="Remove stakeholder"
+                                      className="h-7 w-7 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center transition-all hover:scale-110 shadow-sm"
                                     >
                                       <Trash2 className="h-3 w-3" />
                                     </button>
@@ -5900,6 +5924,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                               )}
                             </div>
                           ))}
+                          
+                          {/* Empty state with helpful message */}
+                          {stakeholderNames.length === 0 && (
+                            <div className="flex items-center gap-2 text-sm text-gray-500 italic bg-purple-50/50 rounded-lg p-3 border border-dashed border-purple-200">
+                              <Users className="h-4 w-4" />
+                              <span>No stakeholders added yet. Click "Generate AI Suggestions" or add manually.</span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
