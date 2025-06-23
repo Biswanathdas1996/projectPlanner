@@ -95,7 +95,7 @@ function FlowDiagramViewerInner({ flowData, title, className = "", flowKey, onFl
           </Button>
         </div>
         
-        <div className="w-full h-96 border border-gray-200 rounded-lg overflow-hidden bg-white">
+        <div className="w-full h-[500px] border border-gray-200 rounded-lg overflow-hidden bg-white">
           <ReactFlow
             nodes={nodes}
             edges={edges}
