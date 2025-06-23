@@ -868,7 +868,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
 <body>
     <div class="container">
         <h1>Comprehensive Project Plan</h1>
-        
+
         <div class="summary-grid">
             <div class="summary-card">
                 <h4>Total Estimated Hours</h4>
@@ -2061,7 +2061,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             padding: 0;
                             box-sizing: border-box;
                           }
-                          
+
                           body {
                             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
                             line-height: 1.7;
@@ -2071,14 +2071,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             font-size: 15px;
                             letter-spacing: -0.01em;
                           }
-                          
+
                           h1, h2, h3, h4, h5, h6 {
                             color: #0f172a;
                             margin-bottom: 20px;
                             font-weight: 700;
                             letter-spacing: -0.025em;
                           }
-                          
+
                           h1 {
                             font-size: 2.5rem;
                             background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
@@ -2091,7 +2091,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
                             position: relative;
                           }
-                          
+
                           h2 {
                             font-size: 1.75rem;
                             position: relative;
@@ -2102,7 +2102,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                             margin-bottom: 24px;
                           }
-                          
+
                           .grid {
                             display: flex;
                             flex-direction: row;
@@ -2112,7 +2112,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             justify-content: flex-start;
                             align-items: stretch;
                           }
-                          
+
                           .metric {
                             background: linear-gradient(135deg, #ffffff, #f8fafc);
                             border: 1px solid #e2e8f0;
@@ -2127,7 +2127,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             position: relative;
                             overflow: hidden;
                           }
-                          
+
                           /* Metrics Dashboard Flex Layouts */
                           .metrics-dashboard {
                             display: flex;
@@ -2138,7 +2138,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                             background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                             border-radius: 12px;
                           }
-                          
+
                           .metric-card {
                             display: flex;
                             flex-direction: column;
@@ -2184,7 +2184,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 justify-content: flex-start;
                                 align-items: stretch;
                               }
-                              
+
                               .metric {
                                 background: linear-gradient(135deg, #ffffff, #f8fafc);
                                 border: 1px solid #e2e8f0;
@@ -2199,7 +2199,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 position: relative;
                                 overflow: hidden;
                               }
-                              
+
                               .metrics-dashboard {
                                 display: flex;
                                 flex-wrap: wrap;
@@ -2209,7 +2209,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                                 border-radius: 12px;
                               }
-                              
+
                               .metric-card {
                                 display: flex;
                                 flex-direction: column;
@@ -2223,7 +2223,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 transition: all 0.2s ease;
                                 text-align: center;
                               }
-                              
+
                               h1 {
                                 font-size: 2.5rem;
                                 background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
@@ -2238,7 +2238,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 font-weight: 700;
                                 letter-spacing: -0.025em;
                               }
-                              
+
                               h2 {
                                 font-size: 1.75rem;
                                 position: relative;
@@ -2252,12 +2252,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                                 letter-spacing: -0.025em;
                                 color: #0f172a;
                               }
-                              
+
                               .metric-trend.positive::before {
                                 content: '↗';
                                 margin-right: 2px;
                               }
-                              
+
                               .metric-trend.negative::before {
                                 content: '↘';
                               }
@@ -3026,7 +3026,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     padding: 0;
                     box-sizing: border-box;
                   }
-                  
+
                   body {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
                     line-height: 1.5;
@@ -3036,14 +3036,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 14px;
                     letter-spacing: -0.01em;
                   }
-                  
+
                   h1, h2, h3, h4, h5, h6 {
                     color: #0f172a;
                     margin-bottom: 12px;
                     font-weight: 700;
                     letter-spacing: -0.025em;
                   }
-                  
+
                   h1 {
                     font-size: 1.875rem;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
@@ -3056,7 +3056,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
                     position: relative;
                   }
-                  
+
                   h1::after {
                     content: '';
                     position: absolute;
@@ -3067,7 +3067,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6);
                     border-radius: 1px;
                   }
-                  
+
                   h2 {
                     font-size: 1.375rem;
                     position: relative;
@@ -3078,7 +3078,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.06);
                     margin-bottom: 12px;
                   }
-                  
+
                   h3 {
                     font-size: 1.125rem;
                     display: flex;
@@ -3089,7 +3089,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-bottom: 1px solid #e2e8f0;
                     margin-bottom: 8px;
                   }
-                  
+
                   h3:before {
                     content: '';
                     width: 8px;
@@ -3098,25 +3098,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 50%;
                     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
                   }
-                  
+
                   p {
                     margin-bottom: 8px;
                     text-align: justify;
                   }
-                  
+
                   ul, ol {
                     margin: 8px 0;
                     padding-left: 0;
                     list-style: none;
                   }
-                  
+
                   li {
                     position: relative;
                     padding: 4px 0 4px 20px;
                     margin-bottom: 4px;
                     font-size: 13px;
                   }
-                  
+
                   ul li:before {
                     content: '';
                     position: absolute;
@@ -3127,15 +3127,15 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: #3b82f6;
                     border-radius: 50%;
                   }
-                  
+
                   ol {
                     counter-reset: item;
                   }
-                  
+
                   ol li {
                     counter-increment: item;
                   }
-                  
+
                   ol li:before {
                     content: counter(item);
                     position: absolute;
@@ -3152,7 +3152,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 10px;
                     font-weight: bold;
                   }
-                  
+
                   table {
                     width: 100%;
                     border-collapse: separate;
@@ -3166,7 +3166,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 14px;
                     position: relative;
                   }
-                  
+
                   table::before {
                     content: '';
                     position: absolute;
@@ -3177,7 +3177,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                     z-index: 1;
                   }
-                  
+
                   th, td {
                     padding: 16px 20px;
                     text-align: left;
@@ -3186,7 +3186,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.3s ease;
                     position: relative;
                   }
-                  
+
                   th {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
@@ -3198,54 +3198,54 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
                     border-bottom: 2px solid rgba(255, 255, 255, 0.2);
                   }
-                  
+
                   td {
                     background: rgba(255, 255, 255, 0.8);
                     backdrop-filter: blur(10px);
                     font-weight: 500;
                   }
-                  
+
                   tr:hover td {
                     background: rgba(99, 102, 241, 0.05);
                     transform: translateY(-1px);
                     box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.1);
                   }
-                  
+
                   td:first-child {
                     font-weight: 600;
                     color: #6366f1;
                     border-left: 3px solid transparent;
                   }
-                  
+
                   tr:hover td:first-child {
                     border-left-color: #6366f1;
                   }
-                  
+
                   th:first-child {
                     border-top-left-radius: 8px;
                   }
-                  
+
                   th:last-child {
                     border-top-right-radius: 8px;
                   }
-                  
+
                   tr:hover {
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                     transition: all 0.2s ease;
                   }
-                  
+
                   tr:last-child td:first-child {
                     border-bottom-left-radius: 8px;
                   }
-                  
+
                   tr:last-child td:last-child {
                     border-bottom-right-radius: 8px;
                   }
-                  
+
                   tr:last-child td {
                     border-bottom: none;
                   }
-                  
+
                   .card {
                     background: white;
                     border: 1px solid #e2e8f0;
@@ -3257,7 +3257,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     overflow: hidden;
                   }
-                  
+
                   .card::before {
                     content: '';
                     position: absolute;
@@ -3267,12 +3267,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 3px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   .card:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   .highlight {
                     background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
                     border: 1px solid #0ea5e9;
@@ -3283,7 +3283,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 2px 4px -1px rgba(14, 165, 233, 0.1);
                     font-size: 13px;
                   }
-                  
+
                   .highlight::before {
                     content: '💡';
                     position: absolute;
@@ -3295,7 +3295,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 12px;
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                   }
-                  
+
                   .flowchart {
                     display: flex;
                     flex-wrap: wrap;
@@ -3308,7 +3308,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 12px;
                     border: 1px solid #e2e8f0;
                   }
-                  
+
                   .flow-step {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
@@ -3323,13 +3323,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 13px;
                     border: 2px solid rgba(255, 255, 255, 0.2);
                   }
-                  
+
                   .flow-step:hover {
                     transform: translateY(-2px) scale(1.02);
                     box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4);
                     border-color: rgba(255, 255, 255, 0.4);
                   }
-                  
+
                   .flow-step:not(:last-child):after {
                     content: '';
                     position: absolute;
@@ -3343,7 +3343,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-left: 12px solid #6366f1;
                     z-index: 10;
                   }
-                  
+
                   .flow-step:not(:last-child):before {
                     content: '';
                     position: absolute;
@@ -3356,7 +3356,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 2px;
                     z-index: 9;
                   }
-                  
+
                   .architecture-diagram {
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                     border: 2px solid #e2e8f0;
@@ -3367,7 +3367,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     overflow: hidden;
                   }
-                  
+
                   .architecture-diagram::before {
                     content: '';
                     position: absolute;
@@ -3377,7 +3377,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 4px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   .diagram-container {
                     display: grid;
                     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -3385,7 +3385,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     align-items: center;
                     position: relative;
                   }
-                  
+
                   .diagram-box {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border: 2px solid #e2e8f0;
@@ -3401,7 +3401,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     justify-content: center;
                     align-items: center;
                   }
-                  
+
                   .diagram-box::before {
                     content: '';
                     position: absolute;
@@ -3412,31 +3412,31 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6);
                     border-radius: 12px 12px 0 0;
                   }
-                  
+
                   .diagram-box:hover {
                     transform: translateY(-4px);
                     box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
                     border-color: #6366f1;
                   }
-                  
+
                   .diagram-box.primary {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
                     border-color: #4f46e5;
                   }
-                  
+
                   .diagram-box.secondary {
                     background: linear-gradient(135deg, #10b981, #059669);
                     color: white;
                     border-color: #047857;
                   }
-                  
+
                   .diagram-box.accent {
                     background: linear-gradient(135deg, #f59e0b, #d97706);
                     color: white;
                     border-color: #b45309;
                   }
-                  
+
                   .diagram-title {
                     font-size: 14px;
                     font-weight: 700;
@@ -3444,13 +3444,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                   }
-                  
+
                   .diagram-subtitle {
                     font-size: 11px;
                     opacity: 0.8;
                     font-weight: 500;
                   }
-                  
+
                   .diagram-connector {
                     position: absolute;
                     width: 2px;
@@ -3459,7 +3459,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transform: translateX(-50%);
                     z-index: 1;
                   }
-                  
+
                   .diagram-connector.horizontal {
                     width: 100%;
                     height: 2px;
@@ -3468,21 +3468,21 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transform: translateY(-50%);
                     background: linear-gradient(to right, #6366f1, #8b5cf6);
                   }
-                  
+
                   .section-divider {
                     display: flex;
                     align-items: center;
                     margin: 20px 0;
                     position: relative;
                   }
-                  
+
                   .section-divider::before {
                     content: '';
                     flex: 1;
                     height: 2px;
                     background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);
                   }
-                  
+
                   .section-divider-text {
                     padding: 0 16px;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -3494,7 +3494,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     letter-spacing: 0.5px;
                     box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
                   }
-                  
+
                   .grid {
                     display: flex;
                     flex-direction: row;
@@ -3504,7 +3504,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     justify-content: flex-start;
                     align-items: stretch;
                   }
-                  
+
                   .metric {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border: 1px solid #e2e8f0;
@@ -3519,7 +3519,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     overflow: hidden;
                   }
-                  
+
                   .metric::before {
                     content: '';
                     position: absolute;
@@ -3529,12 +3529,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 3px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   .metric:hover {
                     transform: translateY(-2px);
                     box-shadow: 0 8px 12px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.08);
                   }
-                  
+
                   .metric-value {
                     font-size: 1.75rem;
                     font-weight: 800;
@@ -3546,7 +3546,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     letter-spacing: -0.025em;
                     margin-bottom: 4px;
                   }
-                  
+
                   .metric-label {
                     color: #64748b;
                     font-size: 11px;
@@ -3554,7 +3554,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 0.3px;
                   }
-                  
+
                   .timeline {
                     position: relative;
                     padding-left: 16px;
@@ -3564,7 +3564,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     padding: 8px 8px 8px 20px;
                     border: 1px solid #e2e8f0;
                   }
-                  
+
                   .timeline:before {
                     content: '';
                     position: absolute;
@@ -3575,7 +3575,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(to bottom, #3b82f6, #6366f1, #8b5cf6);
                     border-radius: 1px;
                   }
-                  
+
                   .timeline-item {
                     position: relative;
                     padding: 3px 0;
@@ -3588,12 +3588,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 1px 2px rgba(0,0,0,0.03);
                     transition: all 0.2s ease;
                   }
-                  
+
                   .timeline-item:hover {
                     box-shadow: 0 2px 6px rgba(0,0,0,0.08);
                     transform: translateY(-1px);
                   }
-                  
+
                   .timeline-item:before {
                     content: '●';
                     position: absolute;
@@ -3612,7 +3612,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border: 1px solid white;
                     box-shadow: 0 0 0 1px #3b82f6, 0 1px 2px rgba(59,130,246,0.2);
                   }
-                  
+
                   .timeline-item h3 {
                     font-size: 0.8rem;
                     margin-bottom: 2px;
@@ -3622,19 +3622,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     align-items: center;
                     gap: 6px;
                   }
-                  
+
                   .timeline-item h3:before {
                     content: '📅';
                     font-size: 0.7rem;
                   }
-                  
+
                   .timeline-item p {
                     font-size: 0.75rem;
                     margin-bottom: 0;
                     color: #64748b;
                     line-height: 1.3;
                   }
-                  
+
                   code {
                     background: #f3f4f6;
                     padding: 2px 6px;
@@ -3642,7 +3642,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-family: 'Monaco', 'Consolas', monospace;
                     font-size: 14px;
                   }
-                  
+
                   blockquote {
                     border-left: 4px solid #10b981;
                     background: #ecfdf5;
@@ -3651,7 +3651,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 0 8px 8px 0;
                     font-style: italic;
                   }
-                  
+
                   .status-badge {
                     display: inline-flex;
                     align-items: center;
@@ -3666,47 +3666,47 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.2s ease;
                     backdrop-filter: blur(10px);
                   }
-                  
+
                   .status-badge:hover {
                     transform: scale(1.05);
                   }
-                  
+
                   .status-success { 
                     background: linear-gradient(135deg, #ecfdf5, #d1fae5); 
                     color: #065f46; 
                     border-color: #10b981;
                     box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
                   }
-                  
+
                   .status-success::before { content: '✓'; }
-                  
+
                   .status-warning { 
                     background: linear-gradient(135deg, #fffbeb, #fef3c7); 
                     color: #92400e; 
                     border-color: #f59e0b;
                     box-shadow: 0 2px 4px rgba(245, 158, 11, 0.2);
                   }
-                  
+
                   .status-warning::before { content: '⚠'; }
-                  
+
                   .status-info { 
                     background: linear-gradient(135deg, #eff6ff, #dbeafe); 
                     color: #1e40af; 
                     border-color: #3b82f6;
                     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
                   }
-                  
+
                   .status-info::before { content: 'ℹ'; }
-                  
+
                   .status-danger { 
                     background: linear-gradient(135deg, #fef2f2, #fee2e2); 
                     color: #991b1b; 
                     border-color: #ef4444;
                     box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2);
                   }
-                  
+
                   .status-danger::before { content: '✕'; }
-                  
+
                   /* HTML-based Technical Diagrams */
                   .architecture-diagram {
                     display: flex;
@@ -3719,7 +3719,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 12px;
                     border: 1px solid #e2e8f0;
                   }
-                  
+
                   .diagram-layer {
                     display: flex;
                     justify-content: center;
@@ -3728,7 +3728,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     width: 100%;
                     position: relative;
                   }
-                  
+
                   .diagram-component {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border: 2px solid #6366f1;
@@ -3743,47 +3743,47 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     font-size: 13px;
                   }
-                  
+
                   .diagram-component:hover {
                     transform: translateY(-1px);
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
-                  
+
                   .diagram-component.database {
                     border-color: #10b981;
                     background: linear-gradient(135deg, #ecfdf5, #d1fae5);
                   }
-                  
+
                   .diagram-component.api {
                     border-color: #f59e0b;
                     background: linear-gradient(135deg, #fffbeb, #fef3c7);
                   }
-                  
+
                   .diagram-component.frontend {
                     border-color: #ec4899;
                     background: linear-gradient(135deg, #fdf2f8, #fce7f3);
                   }
-                  
+
                   .diagram-arrow {
                     position: absolute;
                     color: #6366f1;
                     font-size: 24px;
                     font-weight: bold;
                   }
-                  
+
                   .diagram-arrow.down {
                     bottom: -15px;
                     left: 50%;
                     transform: translateX(-50%);
                   }
-                  
+
                   .diagram-arrow.right {
                     right: -24px;
                     top: 50%;
                     transform: translateY(-50%);
                     font-size: 16px;
                   }
-                  
+
                   /* Organizational Chart */
                   .org-chart {
                     display: flex;
@@ -3795,7 +3795,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                     border-radius: 12px;
                   }
-                  
+
                   .org-level {
                     display: flex;
                     justify-content: center;
@@ -3803,7 +3803,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     flex-wrap: wrap;
                   }
-                  
+
                   .org-level-compact {
                     display: flex;
                     justify-content: center;
@@ -3811,7 +3811,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     flex-wrap: wrap;
                     margin: 4px 0;
                   }
-                  
+
                   .org-role {
                     background: white;
                     border: 2px solid #6366f1;
@@ -3825,27 +3825,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-weight: 600;
                     color: #1e293b;
                   }
-                  
+
                   .org-role:hover {
                     transform: translateY(-1px);
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
-                  
+
                   .org-role.manager {
                     background: linear-gradient(135deg, #eff6ff, #dbeafe);
                     border-color: #3b82f6;
                   }
-                  
+
                   .org-role.developer {
                     background: linear-gradient(135deg, #f0fdf4, #dcfce7);
                     border-color: #10b981;
                   }
-                  
+
                   .org-role.designer {
                     background: linear-gradient(135deg, #fdf2f8, #fce7f3);
                     border-color: #ec4899;
                   }
-                  
+
                   /* Process Flow Diagram */
                   .process-flow {
                     display: flex;
@@ -3856,7 +3856,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                     border-radius: 12px;
                   }
-                  
+
                   .process-step {
                     display: flex;
                     align-items: center;
@@ -3868,12 +3868,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
                     transition: all 0.2s ease;
                   }
-                  
+
                   .process-step:hover {
                     transform: translateX(2px);
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                   }
-                  
+
                   .process-number {
                     width: 24px;
                     height: 24px;
@@ -3887,24 +3887,24 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 12px;
                     flex-shrink: 0;
                   }
-                  
+
                   .process-content {
                     flex: 1;
                   }
-                  
+
                   .process-title {
                     font-weight: 600;
                     color: #1e293b;
                     margin-bottom: 2px;
                     font-size: 14px;
                   }
-                  
+
                   .process-description {
                     color: #64748b;
                     font-size: 12px;
                     line-height: 1.4;
                   }
-                  
+
                   /* Data Flow Diagram */
                   .data-flow {
                     display: grid;
@@ -3918,7 +3918,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     max-width: 100%;
                     overflow: hidden;
                   }
-                  
+
                   .data-node {
                     background: white;
                     border: 2px solid #6366f1;
@@ -3934,27 +3934,27 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
                     transition: all 0.2s ease;
                   }
-                  
+
                   .data-node:hover {
                     transform: translateY(-1px);
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
-                  
+
                   .data-node.input {
                     border-color: #10b981;
                     background: linear-gradient(135deg, #ecfdf5, #d1fae5);
                   }
-                  
+
                   .data-node.process {
                     border-color: #f59e0b;
                     background: linear-gradient(135deg, #fffbeb, #fef3c7);
                   }
-                  
+
                   .data-node.output {
                     border-color: #ec4899;
                     background: linear-gradient(135deg, #fdf2f8, #fce7f3);
                   }
-                  
+
                   /* Advanced Grid Flow Layout */
                   .advanced-flow-grid {
                     display: grid;
@@ -3967,7 +3967,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 12px;
                     position: relative;
                   }
-                  
+
                   .flow-node {
                     background: white;
                     border: 2px solid #6366f1;
@@ -3984,20 +3984,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.2s ease;
                     z-index: 1;
                   }
-                  
+
                   .flow-node:hover {
                     transform: scale(1.02);
                     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
                     z-index: 2;
                   }
-                  
+
                   /* Grid positioning for complex flows */
                   .flow-node.start { grid-column: 1; grid-row: 2; }
                   .flow-node.decision { grid-column: 2; grid-row: 2; }
                   .flow-node.process-a { grid-column: 3; grid-row: 1; }
                   .flow-node.process-b { grid-column: 3; grid-row: 3; }
                   .flow-node.end { grid-column: 4; grid-row: 2; }
-                  
+
                   /* Connection lines for grid flow */
                   .flow-connection {
                     position: absolute;
@@ -4005,20 +4005,20 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: #6366f1;
                     z-index: 0;
                   }
-                  
+
                   .flow-connection.horizontal {
                     width: calc(25% - 4px);
                     top: 50%;
                     transform: translateY(-50%);
                   }
-                  
+
                   .flow-connection.vertical {
                     width: 2px;
                     height: calc(33.33% - 4px);
                     left: 50%;
                     transform: translateX(-50%);
                   }
-                  
+
                   /* Metrics Dashboard Flex Layouts */
                   .metrics-dashboard {
                     display: flex;
@@ -4029,7 +4029,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
                     border-radius: 12px;
                   }
-                  
+
                   .metric-card {
                     display: flex;
                     flex-direction: column;
@@ -4043,12 +4043,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.2s ease;
                     text-align: center;
                   }
-                  
+
                   .metric-card:hover {
                     transform: translateY(-1px);
                     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
                   }
-                  
+
                   .metric-title {
                     font-size: 11px;
                     font-weight: 600;
@@ -4056,14 +4056,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     margin-bottom: 4px;
                     text-transform: uppercase;
                   }
-                  
+
                   .metric-value {
                     font-size: 18px;
                     font-weight: 700;
                     color: #1e293b;
                     margin-bottom: 2px;
                   }
-                  
+
                   .metric-trend {
                     font-size: 10px;
                     color: #10b981;
@@ -4071,70 +4071,70 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     align-items: center;
                     justify-content: center;
                   }
-                  
+
                   .metric-trend.negative {
                     color: #ef4444;
                   }
-                  
+
                   .metric-trend::before {
                     content: '↗';
                     margin-right: 2px;
                   }
-                  
+
                   .metric-trend.negative::before {
                     content: '↘';
                   }
-                  
+
                   /* Scrollbar Styling */
                   .scrollbar-hide {
                     -ms-overflow-style: none;
                     scrollbar-width: none;
                   }
-                  
+
                   .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                   }
-                  
+
                   /* Tab Animations */
                   @keyframes fadeIn {
                     from { opacity: 0; transform: translateY(10px); }
                     to { opacity: 1; transform: translateY(0); }
                   }
-                  
+
                   .animate-in {
                     animation: fadeIn 0.2s ease-out;
                   }
-                  
+
                   .fade-in-50 {
                     animation-duration: 0.3s;
                   }
-                  
+
                   /* Mobile Tab Responsiveness */
                   @media (max-width: 768px) {
                     .tab-scroll-container {
                       padding: 0 16px;
                     }
-                    
+
                     .tab-trigger-mobile {
                       min-width: 100px !important;
                       padding: 8px 12px !important;
                       font-size: 13px !important;
                     }
-                    
+
                     .tab-trigger-mobile span {
                       max-width: 80px !important;
                     }
                   }
-                  
+
                   /* Enhanced Tab Shadows */
                   .tab-content-shadow {
                     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   .tab-content-shadow:hover {
                     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.15), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
                   }
-                  
+
                   /* Modern Section Headers */
                   h1, h2, h3, h4, h5, h6 {
                     color: #1e293b;
@@ -4143,7 +4143,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     line-height: 1.2;
                     position: relative;
                   }
-                  
+
                   h1 {
                     font-size: 2.2rem;
                     color: transparent;
@@ -4157,7 +4157,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 1px;
                   }
-                  
+
                   h2 {
                     font-size: 1.6rem;
                     color: #6366f1;
@@ -4169,7 +4169,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     margin: 24px 0 20px 0;
                     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.1);
                   }
-                  
+
                   h2:before {
                     content: '';
                     position: absolute;
@@ -4180,7 +4180,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(to bottom, #6366f1, #8b5cf6, #ec4899);
                     border-radius: 0 12px 12px 0;
                   }
-                  
+
                   h2:after {
                     content: '';
                     position: absolute;
@@ -4191,7 +4191,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                     border-radius: 12px 12px 0 0;
                   }
-                  
+
                   h3 {
                     font-size: 1.3rem;
                     color: #6366f1;
@@ -4199,7 +4199,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     padding-left: 20px;
                     margin: 20px 0 12px 0;
                   }
-                  
+
                   h3:before {
                     content: '';
                     position: absolute;
@@ -4210,7 +4210,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(to bottom, #6366f1, #8b5cf6);
                     border-radius: 2px;
                   }
-                  
+
                   /* Modern Content Sections */
                   .section-container {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
@@ -4222,7 +4222,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     overflow: hidden;
                   }
-                  
+
                   .section-container::before {
                     content: '';
                     position: absolute;
@@ -4232,13 +4232,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 4px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   /* Enhanced List Styling */
                   ul, ol {
                     margin: 16px 0;
                     padding-left: 0;
                   }
-                  
+
                   li {
                     margin: 8px 0;
                     padding: 12px 16px 12px 40px;
@@ -4249,13 +4249,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.3s ease;
                     box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   li:hover {
                     transform: translateX(4px);
                     box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.15);
                     border-color: #6366f1;
                   }
-                  
+
                   li:before {
                     content: '';
                     position: absolute;
@@ -4268,7 +4268,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 50%;
                     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
                   }
-                  
+
                   /* Enhanced Paragraph Styling */
                   p {
                     margin: 12px 0;
@@ -4276,25 +4276,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     color: #374151;
                     font-size: 14px;
                   }
-                  
+
                   /* Strong and emphasis styling */
                   strong, b {
                     color: #6366f1;
                     font-weight: 700;
                   }
-                  
+
                   em, i {
                     color: #8b5cf6;
                     font-style: italic;
                   }
-                  
+
                   /* Modern Section Content Display */
                   .modern-section-content {
                     font-size: 14px;
                     line-height: 1.6;
                     color: #374151;
                   }
-                  
+
                   .enhanced-content-display {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
                     border-radius: 12px;
@@ -4302,7 +4302,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border: 1px solid #e2e8f0;
                     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   .enhanced-content-display h1 {
                     font-size: 1.8rem;
                     color: transparent;
@@ -4314,7 +4314,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                   }
-                  
+
                   .enhanced-content-display h2 {
                     font-size: 1.4rem;
                     color: #6366f1;
@@ -4325,7 +4325,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-left: 4px solid #6366f1;
                     font-weight: 600;
                   }
-                  
+
                   .enhanced-content-display h3 {
                     font-size: 1.2rem;
                     color: #6366f1;
@@ -4334,19 +4334,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-left: 3px solid #8b5cf6;
                     font-weight: 600;
                   }
-                  
+
                   .enhanced-content-display p {
                     margin: 12px 0;
                     line-height: 1.6;
                     color: #374151;
                   }
-                  
+
                   .enhanced-content-display ul,
                   .enhanced-content-display ol {
                     margin: 16px 0;
                     padding-left: 0;
                   }
-                  
+
                   .enhanced-content-display li {
                     margin: 8px 0;
                     padding: 10px 16px 10px 36px;
@@ -4357,13 +4357,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     transition: all 0.2s ease;
                     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   .enhanced-content-display li:hover {
                     transform: translateX(2px);
                     box-shadow: 0 2px 8px rgba(99, 102, 241, 0.1);
                     border-color: #6366f1;
                   }
-                  
+
                   .enhanced-content-display li:before {
                     content: '';
                     position: absolute;
@@ -4376,7 +4376,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 50%;
                     box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
                   }
-                  
+
                   /* Enhanced Architecture Diagrams */
                   .enhanced-content-display .architecture-diagram {
                     background: linear-gradient(135deg, #f8fafc, #f1f5f9);
@@ -4388,7 +4388,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     position: relative;
                     overflow: hidden;
                   }
-                  
+
                   .enhanced-content-display .architecture-diagram::before {
                     content: '';
                     position: absolute;
@@ -4398,7 +4398,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 4px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   /* Enhanced Flow Charts */
                   .enhanced-content-display .flowchart {
                     display: flex;
@@ -4413,7 +4413,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border: 1px solid #e2e8f0;
                     box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
                   }
-                  
+
                   .enhanced-content-display .flow-step {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
@@ -4428,13 +4428,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     font-size: 14px;
                     border: 2px solid rgba(255, 255, 255, 0.2);
                   }
-                  
+
                   .enhanced-content-display .flow-step:hover {
                     transform: translateY(-2px) scale(1.02);
                     box-shadow: 0 8px 25px -5px rgba(99, 102, 241, 0.4);
                     border-color: rgba(255, 255, 255, 0.4);
                   }
-                  
+
                   .enhanced-content-display .flow-step:not(:last-child):after {
                     content: '';
                     position: absolute;
@@ -4448,7 +4448,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-left: 14px solid #6366f1;
                     z-index: 10;
                   }
-                  
+
                   .enhanced-content-display .flow-step:not(:last-child):before {
                     content: '';
                     position: absolute;
@@ -4461,7 +4461,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-radius: 2px;
                     z-index: 9;
                   }
-                  
+
                   /* Enhanced Section Dividers */
                   .enhanced-content-display .section-divider {
                     display: flex;
@@ -4469,14 +4469,14 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     margin: 24px 0;
                     position: relative;
                   }
-                  
+
                   .enhanced-content-display .section-divider::before {
                     content: '';
                     flex: 1;
                     height: 2px;
                     background: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, transparent);
                   }
-                  
+
                   .enhanced-content-display .section-divider-text {
                     padding: 0 20px;
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
@@ -4488,7 +4488,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     letter-spacing: 0.5px;
                     box-shadow: 0 4px 12px -2px rgba(99, 102, 241, 0.3);
                   }
-                  
+
                   /* Enhanced Diagram Boxes */
                   .enhanced-content-display .diagram-box {
                     background: linear-gradient(135deg, #ffffff, #f8fafc);
@@ -4506,7 +4506,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     align-items: center;
                     margin: 8px;
                   }
-                  
+
                   .enhanced-content-display .diagram-box::before {
                     content: '';
                     position: absolute;
@@ -4517,31 +4517,31 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6);
                     border-radius: 12px 12px 0 0;
                   }
-                  
+
                   .enhanced-content-display .diagram-box:hover {
                     transform: translateY(-4px);
                     box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.15);
                     border-color: #6366f1;
                   }
-                  
+
                   .enhanced-content-display .diagram-box.primary {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
                     border-color: #4f46e5;
                   }
-                  
+
                   .enhanced-content-display .diagram-box.secondary {
                     background: linear-gradient(135deg, #10b981, #059669);
                     color: white;
                     border-color: #047857;
                   }
-                  
+
                   .enhanced-content-display .diagram-box.accent {
                     background: linear-gradient(135deg, #f59e0b, #d97706);
                     color: white;
                     border-color: #b45309;
                   }
-                  
+
                   .enhanced-content-display .diagram-title {
                     font-size: 14px;
                     font-weight: 700;
@@ -4549,13 +4549,13 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                   }
-                  
+
                   .enhanced-content-display .diagram-subtitle {
                     font-size: 11px;
                     opacity: 0.8;
                     font-weight: 500;
                   }
-                  
+
                   /* Enhanced Tables */
                   .enhanced-content-display table {
                     width: 100%;
@@ -4568,7 +4568,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
                     border: 2px solid #e2e8f0;
                   }
-                  
+
                   .enhanced-content-display table::before {
                     content: '';
                     position: absolute;
@@ -4578,7 +4578,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     height: 3px;
                     background: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899);
                   }
-                  
+
                   .enhanced-content-display th,
                   .enhanced-content-display td {
                     padding: 14px 18px;
@@ -4586,7 +4586,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     border-bottom: 1px solid #e2e8f0;
                     transition: all 0.2s ease;
                   }
-                  
+
                   .enhanced-content-display th {
                     background: linear-gradient(135deg, #6366f1, #8b5cf6);
                     color: white;
@@ -4595,12 +4595,12 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
                   }
-                  
+
                   .enhanced-content-display td {
                     background: rgba(255, 255, 255, 0.8);
                     backdrop-filter: blur(10px);
                   }
-                  
+
                   .enhanced-content-display tr:hover td {
                     background: rgba(99, 102, 241, 0.05);
                     transform: translateY(-1px);
@@ -4609,7 +4609,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
               </head>
               <body>
                 ${sectionHtml}
-                
+
                 <script>
                   // Auto-adjust iframe height to exact content size
                   function adjustHeight() {
@@ -4617,25 +4617,25 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     document.body.style.display = 'block';
                     document.body.style.overflow = 'hidden';
                     document.documentElement.style.overflow = 'hidden';
-                    
+
                     // Force a reflow
                     document.body.offsetHeight;
-                    
+
                     // Get precise measurements of all content
                     const body = document.body;
                     const html = document.documentElement;
-                    
+
                     // Calculate the actual content bounds
                     const rect = body.getBoundingClientRect();
                     const bodyHeight = body.scrollHeight;
                     const bodyOffset = body.offsetHeight;
                     const htmlHeight = html.scrollHeight;
                     const htmlClient = html.clientHeight;
-                    
+
                     // Find the last element to determine true bottom
                     const allElements = document.querySelectorAll('*');
                     let maxBottom = 0;
-                    
+
                     allElements.forEach(el => {
                       const elementRect = el.getBoundingClientRect();
                       const elementBottom = elementRect.bottom;
@@ -4643,7 +4643,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         maxBottom = elementBottom;
                       }
                     });
-                    
+
                     // Calculate precise height using multiple methods
                     const heights = [
                       bodyHeight,
@@ -4652,18 +4652,18 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       Math.ceil(maxBottom),
                       rect.height
                     ];
-                    
+
                     // Use the maximum height that represents actual content
                     const contentHeight = Math.max(...heights.filter(h => h > 0));
-                    
+
                     // Add minimal buffer (2px) to prevent any cutoff
                     const finalHeight = contentHeight + 2;
-                    
+
                     window.parent.postMessage({
                       type: 'resize',
                       height: finalHeight
                     }, '*');
-                    
+
                     console.log('Precise height calculated:', {
                       bodyHeight,
                       bodyOffset,
@@ -4673,7 +4673,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       finalHeight
                     });
                   }
-                  
+
                   // Multiple precise adjustment attempts
                   function performAdjustments() {
                     adjustHeight();
@@ -4684,19 +4684,19 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     setTimeout(adjustHeight, 600);
                     setTimeout(adjustHeight, 1200);
                   }
-                  
+
                   // Start adjustments when DOM is ready
                   if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', performAdjustments);
                   } else {
                     performAdjustments();
                   }
-                  
+
                   // Adjust on load
                   window.addEventListener('load', () => {
                     setTimeout(performAdjustments, 100);
                   });
-                  
+
                   // Watch for any content changes
                   if (window.ResizeObserver) {
                     const observer = new ResizeObserver(() => {
@@ -4705,7 +4705,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     observer.observe(document.body);
                     observer.observe(document.documentElement);
                   }
-                  
+
                   // Watch for dynamic content changes
                   if (window.MutationObserver) {
                     const mutationObserver = new MutationObserver(() => {
@@ -5923,6 +5923,34 @@ Please provide the regenerated section content as properly formatted HTML:`;
                           </p>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <ProjectSectionsSettings
+                          sections={projectSectionsSettings}
+                          onSectionsChange={setProjectSectionsSettings}
+                        />
+                        <Button
+                          onClick={handleGenerateEnhancedPlan}
+                          disabled={
+                            !projectInput.trim() ||
+                            isGeneratingEnhanced ||
+                            isGeneratingPlan
+                          }
+                          size="sm"
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-sm text-xs"
+                        >
+                          {isGeneratingEnhanced ? (
+                            <>
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Generating...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="h-3 w-3 mr-1" />
+                              Generate All
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
 
                     {/* Enhanced Progress Tracker */}
@@ -5937,6 +5965,311 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
 
                   {/* Combined Project Plan Content */}
+                  {(enhancedSections &&
+                    enhancedSections.length > 0 &&
+                    enhancedSections.some((s) => s.content)) ||
+                  projectPlan ? (
+                    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                      <div className="border-b border-gray-200 p-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Project Plan Sections
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={downloadPDF}
+                              variant="outline"
+                              size="sm"
+                              disabled={isDownloadingPdf}
+                              className="text-xs"
+                            >
+                              {isDownloadingPdf ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <Download className="h-3 w-3 mr-1" />
+                              )}
+                              PDF
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <Tabs
+                          defaultValue={
+                            enhancedSections.filter((s) => s.content)[0]?.id ||
+                            (projectPlan ? "generated-plan" : undefined)
+                          }
+                          className="w-full"
+                          onValueChange={(value) => {
+                            // Cancel any active editing when switching tabs
+                            if (editingSectionId && activeTabId !== value) {
+                              cancelSectionEdit();
+                            }
+                          }}
+                        >
+                          <TabsList className="w-full h-auto flex flex-wrap justify-start gap-3 p-4 mb-6 rounded-xl bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 border border-slate-200 shadow-inner">
+                            {/* Enhanced Plan Section Tabs */}
+                            {enhancedSections
+                              .filter((s) => s.content)
+                              .map((section, index) => {
+                                const { icon: SectionIcon, description } =
+                                  getSectionIconAndDescription(section.title);
+                                return (
+                                  <TabsTrigger
+                                    key={section.id}
+                                    value={section.id}
+                                    className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-600 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-blue-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                                  >
+                                    <div className="flex flex-col items-center gap-1.5">
+                                      <div className="flex items-center gap-2">
+                                        <SectionIcon className="w-4 h-4 text-blue-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                        <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                      </div>
+                                      <div className="text-center">
+                                        <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
+                                          {section.title}
+                                        </div>
+                                        <div className="text-xs text-slate-500 group-data-[state=active]:text-blue-100 transition-colors duration-300 mt-0.5">
+                                          {description}
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-blue-600/10 to-indigo-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                                  </TabsTrigger>
+                                );
+                              })}
+
+                            {/* Generated Plan Tab (if exists and no enhanced sections) */}
+                            {projectPlan &&
+                              !enhancedSections.some((s) => s.content) && (
+                                <TabsTrigger
+                                  value="generated-plan"
+                                  className="flex flex-col items-center justify-center rounded-xl px-4 py-3 text-sm font-medium ring-offset-white transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-600 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:scale-105 hover:bg-white hover:shadow-md hover:scale-102 relative group cursor-pointer border-2 border-transparent data-[state=active]:border-green-300 bg-white/80 backdrop-blur-sm min-w-[120px]"
+                                >
+                                  <div className="flex flex-col items-center gap-1.5">
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="w-4 h-4 text-green-600 group-data-[state=active]:text-white transition-colors duration-300" />
+                                      <div className="w-2 h-2 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 opacity-70 group-data-[state=active]:opacity-100 group-data-[state=active]:shadow-sm transition-all duration-300"></div>
+                                    </div>
+                                    <div className="text-center">
+                                      <div className="font-semibold text-slate-700 group-data-[state=active]:text-white transition-colors duration-300 whitespace-normal leading-tight text-xs">
+                                        Generated Plan
+                                      </div>
+                                      <div className="text-xs text-slate-500 group-data-[state=active]:text-green-100 transition-colors duration-300 mt-0.5">
+                                        Complete Plan
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-green-600/10 to-emerald-600/10 opacity-0 group-hover:opacity-100 group-data-[state=active]:opacity-20 transition-opacity duration-300"></div>
+                                </TabsTrigger>
+                              )}
+                          </TabsList>
+
+                          {/* Enhanced Plan Section Content */}
+                          {enhancedSections
+                            .filter((s) => s.content)
+                            .map((section) => (
+                              <TabsContent
+                                key={section.id}
+                                value={section.id}
+                                className="mt-0 animate-in fade-in-50 duration-200"
+                              >
+                                <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                  {/* Section Header with Actions */}
+                                  <div className="border-b border-gray-100 px-6 py-4">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="text-lg font-semibold text-gray-900">
+                                        {section.title}
+                                      </h3>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={() =>
+                                            openCustomPromptModal(section.id)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={isRegeneratingSection}
+                                          className="text-xs border-purple-300 text-purple-600 hover:bg-purple-50"
+                                        >
+                                          <RefreshCw className="h-3 w-3 mr-1" />
+                                          Regenerate
+                                        </Button>
+                                        <Button
+                                          onClick={() =>
+                                            startEditingSection(section.id)
+                                          }
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={
+                                            editingSectionId === section.id
+                                          }
+                                          className="text-xs"
+                                        >
+                                          <Edit className="h-3 w-3 mr-1" />
+                                          Edit
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-6 bg-gradient-to-br from-white via-gray-50 to-blue-50/30">
+                                    {editingSectionId === section.id &&
+                                    activeTabId === section.id ? (
+                                      <div className="space-y-4">
+                                        <div className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                                              <Edit className="h-4 w-4 text-white" />
+                                            </div>
+                                            <div>
+                                              <p className="text-sm font-medium text-blue-800">
+                                                Editing Section Content
+                                              </p>
+                                              <p className="text-xs text-blue-600">
+                                                You can use HTML markup or plain
+                                                text for rich formatting
+                                              </p>
+                                            </div>
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button
+                                              onClick={saveSectionEdit}
+                                              size="sm"
+                                              className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white text-xs shadow-lg border-0"
+                                            >
+                                              <Save className="h-3 w-3 mr-1" />
+                                              Save Changes
+                                            </Button>
+                                            <Button
+                                              onClick={cancelSectionEdit}
+                                              variant="outline"
+                                              size="sm"
+                                              className="text-xs border-gray-300 hover:bg-gray-50 hover:border-gray-400"
+                                            >
+                                              <X className="h-3 w-3 mr-1" />
+                                              Cancel
+                                            </Button>
+                                          </div>
+                                        </div>
+
+                                        <div className="relative">
+                                          <Textarea
+                                            value={editedSectionContent}
+                                            onChange={(e) =>
+                                              setEditedSectionContent(
+                                                e.target.value,
+                                              )
+                                            }
+                                            className="min-h-[400px] font-mono text-sm bg-white border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-xl shadow-sm transition-all duration-200 resize-y"
+                                            placeholder="Enter content for this section... You can use HTML tags for formatting."
+                                          />
+                                          <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs text-gray-500 border border-gray-200">
+                                            HTML Supported
+                                          </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                                          <div className="flex items-center gap-2 text-xs text-gray-600">
+                                            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                                            {editedSectionContent.length}{" "}
+                                            characters
+                                          </div>
+                                          <div className="text-xs text-gray-500">
+                                            HTML markup and plain text supported
+                                          </div>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <div className="modern-section-content">
+                                        <div
+                                          dangerouslySetInnerHTML={{
+                                            __html: section.content,
+                                          }}
+                                          className="enhanced-content-display prose prose-sm max-w-none
+                                          prose-headings:text-gray-900 prose-headings:font-semibold
+                                          prose-p:text-gray-700 prose-p:leading-relaxed
+                                          prose-ul:text-gray-700 prose-ol:text-gray-700
+                                          prose-li:text-gray-700 prose-li:leading-relaxed
+                                          prose-strong:text-gray-900 prose-strong:font-semibold
+                                          prose-table:border-collapse prose-table:border-spacing-0
+                                          prose-th:bg-gradient-to-r prose-th:from-blue-600 prose-th:to-indigo-600
+                                          prose-th:text-white prose-th:font-semibold prose-th:text-left
+                                          prose-td:border-b prose-td:border-gray-200 prose-td:bg-white/50
+                                          prose-tr:transition-colors prose-tr:hover:bg-blue-50/30
+                                          [&_.section-divider]:my-8 [&_.section-divider]:flex [&_.section-divider]:items-center
+                                          [&_.section-divider-text]:bg-gradient-to-r [&_.section-divider-text]:from-blue-600 [&_.section-divider-text]:to-indigo-600
+                                          [&_.section-divider-text]:text-white [&_.section-divider-text]:px-4 [&_.section-divider-text]:py-2
+                                          [&_.section-divider-text]:rounded-full [&_.section-divider-text]:font-medium [&_.section-divider-text]:text-sm
+                                          [&_.modern-card]:bg-gradient-to-br [&_.modern-card]:from-white [&_.modern-card]:to-gray-50
+                                          [&_.modern-card]:border-2 [&_.modern-card]:border-gray-200 [&_.modern-card]:rounded-xl
+                                          [&_.modern-card]:p-6 [&_.modern-card]:my-6 [&_.modern-card]:shadow-lg [&_.modern-card]:hover:shadow-xl
+                                          [&_.modern-card]:transition-all [&_.modern-card]:duration-300
+                                          [&_.flowchart]:bg-gradient-to-br [&_.flowchart]:from-blue-50 [&_.flowchart]:to-indigo-50
+                                          [&_.flowchart]:border-2 [&_.flowchart]:border-blue-200 [&_.flowchart]:rounded-xl
+                                          [&_.flowchart]:p-6 [&_.flowchart]:my-6 [&_.flowchart]:shadow-md
+                                          [&_.flow-step]:bg-gradient-to-r [&_.flow-step]:from-blue-600 [&_.flow-step]:to-indigo-600
+                                          [&_.flow-step]:text-white [&_.flow-step]:font-semibold [&_.flow-step]:px-4 [&_.flow-step]:py-3
+                                          [&_.flow-step]:rounded-lg [&_.flow-step]:shadow-lg [&_.flow-step]:hover:shadow-xl
+                                          [&_.flow-step]:transition-all [&_.flow-step]:duration-200 [&_.flow-step]:hover:scale-105
+                                          [&_.architecture-diagram]:bg-gradient-to-br [&_.architecture-diagram]:from-gray-50 [&_.architecture-diagram]:to-blue-50
+                                          [&_.architecture-diagram]:border-2 [&_.architecture-diagram]:border-gray-200 [&_.architecture-diagram]:rounded-xl
+                                          [&_.architecture-diagram]:p-6 [&_.architecture-diagram]:my-6 [&_.architecture-diagram]:shadow-lg
+                                          [&_.diagram-box]:transition-all [&_.diagram-box]:duration-200 [&_.diagram-box]:hover:scale-105
+                                          [&_.diagram-box]:hover:shadow-xl [&_.diagram-box]:cursor-pointer
+                                          [&_.tree-structure]:bg-gradient-to-br [&_.tree-structure]:from-gray-50 [&_.tree-structure]:to-blue-50
+                                          [&_.tree-structure]:border-2 [&_.tree-structure]:border-gray-200 [&_.tree-structure]:rounded-xl
+                                          [&_.tree-structure]:p-6 [&_.tree-structure]:my-6 [&_.tree-structure]:shadow-md
+                                          [&_.tree-node]:transition-all [&_.tree-node]:duration-200 [&_.tree-node]:hover:scale-[1.02]
+                                          [&_.modern-list_li]:transition-all [&_.modern-list_li]:duration-200 [&_.modern-list_li]:hover:shadow-md
+                                          [&_.modern-list_li]:hover:scale-[1.01] [&_.modern-list_li]:hover:bg-blue-50/50
+                                        "
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </TabsContent>
+                            ))}
+
+                          {/* Generated Plan Content (only if no enhanced sections) */}
+                          {projectPlan &&
+                            !enhancedSections.some((s) => s.content) && (
+                              <TabsContent
+                                value="generated-plan"
+                                className="mt-0 animate-in fade-in-50 duration-200"
+                              >
+                                <div className="bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                                  {/* Section Header with Actions */}
+                                  <div className="border-b border-gray-100 px-3 py-2">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="text-base font-semibold text-gray-900">
+                                        Complete Generated Plan
+                                      </h3>
+                                      <div className="flex gap-2">
+                                        <Button
+                                          onClick={startEditingPlan}
+                                          variant="outline"
+                                          size="sm"
+                                          disabled={isEditingPlan}
+                                          className="text-xs"
+                                        >
+                                          <Edit className="h-3 w-3 mr-1" />
+                                          Edit
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="p-3">
+                                    {renderTabbedProjectPlan()}
+                                  </div>
+                                </div>
+                              </TabsContent>
+                            )}
+                        </Tabs>
+                      </div>
+                    </div>
+                  ) : null}
                 </div>
               )}
 

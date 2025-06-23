@@ -2179,57 +2179,7 @@ Data Objects: Request form, User profile`,
           </Card>
         )}
 
-        {/* Extracted Stakeholders Section */}
-        {extractedStakeholders.length > 0 && (
-          <Card className="mb-6">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5 text-indigo-600" />
-                  <span>Extracted Stakeholders ({extractedStakeholders.length})</span>
-                </CardTitle>
-                <Button
-                  onClick={generateFlowDetails}
-                  disabled={isGeneratingFlowDetails}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  {isGeneratingFlowDetails ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-2" />
-                  )}
-                  Generate Flow Details
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {extractedStakeholders.map((stakeholder) => (
-                  <div key={stakeholder} className="border rounded-lg p-4 bg-white">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                        <User className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h4 className="font-semibold text-gray-900">{stakeholder}</h4>
-                        <p className="text-sm text-gray-500">
-                          {personaFlowTypes[stakeholder]?.length || 0} flow types
-                        </p>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      {personaFlowTypes[stakeholder]?.map((flowType) => (
-                        <Badge key={flowType} variant="outline" className="mr-2 mb-1">
-                          {flowType}
-                        </Badge>
-                      )) || <p className="text-sm text-gray-500">No flow types available</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        
 
         {/* Error Display */}
         {error && (
