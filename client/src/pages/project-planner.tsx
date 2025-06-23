@@ -29,6 +29,7 @@ import { FlowDiagramViewer } from '@/components/flow-diagram-viewer';
 import { createAIFlowDiagramGenerator, FlowDiagramData } from '@/lib/ai-flow-diagram-generator';
 import { STORAGE_KEYS } from '@/lib/bpmn-utils';
 import { hasMarketResearchData } from '@/lib/storage-utils';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Helper function to get enhanced plan sections from localStorage
 const getEnhancedPlanSections = (): ProjectPlanSection[] => {
@@ -126,7 +127,6 @@ import {
   Wand2,
   RefreshCw
 } from 'lucide-react';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Helper function to get icon and description for section types
 const getSectionIconAndDescription = (title: string) => {
@@ -966,101 +966,77 @@ Generate a detailed flow diagram that shows:
 8. Administrative and management processes
 `;
 
-      // Create comprehensive enterprise-level FlowDetails object
-      const flowDetails = {
-        processDescription: `Enterprise-grade workflow for project: ${projectInput}. ${projectPlan ? 'Enhanced with detailed project plan context for comprehensive enterprise flow generation with advanced business process modeling.' : 'Comprehensive business process with enterprise components and complex decision matrices.'}`,
-        participants: [
-          "End Users", "Business Analysts", "System Administrators", "Database Administrators",
-          "Security Team", "Compliance Officers", "DevOps Engineers", "API Gateway",
-          "Load Balancers", "Microservices", "External Partners", "Third-party APIs",
-          "Payment Processors", "Notification Services", "Analytics Platform", "Audit Systems"
-        ],
-        trigger: "Multi-channel business process initiation with enterprise validation",
-        activities: [
-          "Identity & Access Management (IAM)",
-          "Multi-factor Authentication (MFA)",
-          "Role-Based Access Control (RBAC)",
-          "Business Rule Engine Processing",
-          "Data Validation & Sanitization",
-          "Workflow Orchestration",
-          "Microservice Coordination",
-          "Database Transaction Management",
-          "Cache Layer Operations",
-          "API Gateway Routing",
-          "Load Balancing & Distribution",
-          "Business Logic Processing",
-          "Data Transformation Pipeline",
-          "Event-Driven Architecture Processing",
-          "Message Queue Handling",
-          "Real-time Notifications",
-          "Audit Trail Generation",
-          "Compliance Validation",
-          "Performance Metrics Collection",
-          "Error Recovery & Rollback",
-          "State Machine Management",
-          "Workflow Approval Chains",
-          "Document Management System",
-          "Integration Hub Processing",
-          "Service Mesh Communication",
-          "Container Orchestration",
-          "CI/CD Pipeline Triggers",
-          "Monitoring & Alerting",
-          "Backup & Recovery Operations",
-          "Data Archival & Retention"
-        ],
-        decisionPoints: [
-          "Authentication Success?",
-          "Authorization Level Sufficient?",
-          "Business Rules Validation Passed?",
-          "Data Quality Threshold Met?",
-          "Service Health Check Passed?",
-          "Load Capacity Available?",
-          "Transaction Limits Exceeded?",
-          "Approval Required?",
-          "Compliance Requirements Met?",
-          "Error Recovery Needed?",
-          "Fallback Service Available?",
-          "Rate Limiting Triggered?",
-          "Cache Hit/Miss Decision?",
-          "Async Processing Required?",
-          "Batch Processing Needed?",
-          "Real-time Processing Possible?",
-          "Circuit Breaker Open?",
-          "Retry Logic Applicable?",
-          "Escalation Path Required?",
-          "Manual Intervention Needed?"
-        ],
-        endEvent: "Enterprise workflow completed with full audit trail and compliance validation",
-        additionalElements: [
-          "Distributed Tracing",
-          "Centralized Logging",
-          "Metrics & KPI Dashboards",
-          "Health Checks & Heartbeats",
-          "Circuit Breaker Patterns",
-          "Bulkhead Isolation",
-          "Retry & Timeout Policies",
-          "Dead Letter Queues",
-          "Event Sourcing",
-          "CQRS Implementation",
-          "Saga Pattern Orchestration",
-          "Blue-Green Deployment",
-          "Canary Releases",
-          "Feature Flags",
-          "A/B Testing Framework",
-          "Rate Limiting & Throttling",
-          "API Versioning",
-          "Schema Evolution",
-          "Data Migration",
-          "Disaster Recovery",
-          "Security Scanning",
-          "Vulnerability Assessment",
-          "Penetration Testing",
-          "GDPR Compliance",
-          "SOX Compliance",
-          "HIPAA Compliance",
-          "PCI DSS Compliance"
-        ]
-      };
+      // Use AI to analyze project plan and create project-specific processes
+      const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
+      
+      const flowAnalysisPrompt = `
+Analyze this project and extract specific processes that should be included in a workflow diagram:
+
+PROJECT DESCRIPTION: ${projectInput}
+
+PROJECT PLAN CONTENT: ${planContent}
+
+Based on the project description and plan, identify:
+1. Specific participants/stakeholders involved
+2. Key business processes and activities
+3. Decision points specific to this project
+4. Integration points and systems
+5. User interactions and touchpoints
+
+Return a JSON object with the following structure:
+{
+  "processDescription": "Brief description of the main workflow",
+  "participants": ["list of specific participants"],
+  "trigger": "What starts the process",
+  "activities": ["list of specific activities for this project"],
+  "decisionPoints": ["specific decision points"],
+  "endEvent": "How the process concludes",
+  "additionalElements": ["supporting elements"]
+}
+
+Focus on the actual processes mentioned in the project plan rather than generic enterprise components.`;
+
+      const response = await model.generateContent(flowAnalysisPrompt);
+      const responseText = response.response.text();
+      
+      let flowDetails;
+      try {
+        // Parse AI response to get project-specific flow details
+        const cleanResponse = responseText.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+        flowDetails = JSON.parse(cleanResponse);
+      } catch (parseError) {
+        console.log('Using fallback flow details due to parsing error:', parseError);
+        // Fallback to project-aware generic flow
+        flowDetails = {
+          processDescription: `Workflow for project: ${projectInput}`,
+          participants: ["Users", "System", "Administrators", "External Services"],
+          trigger: "User initiates process",
+          activities: [
+            "User Registration/Login",
+            "Input Validation",
+            "Business Logic Processing",
+            "Data Storage",
+            "Notification Handling",
+            "Response Generation"
+          ],
+          decisionPoints: [
+            "Valid Input?",
+            "User Authorized?",
+            "Processing Successful?",
+            "Additional Steps Required?"
+          ],
+          endEvent: "Process completed successfully",
+          additionalElements: [
+            "Error Handling",
+            "Logging",
+            "Monitoring",
+            "Security Validation"
+          ]
+        };
+      }
 
       const flowDiagramGenerator = createAIFlowDiagramGenerator();
       const flowDiagramData = await flowDiagramGenerator.generateFlowDiagram(
