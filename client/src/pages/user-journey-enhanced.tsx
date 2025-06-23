@@ -205,6 +205,43 @@ export default function UserJourneyEnhanced() {
         }
       }
 
+      // Auto-load stakeholders from project planner if available
+      const savedStakeholders = localStorage.getItem('stakeholder_names');
+      if (savedStakeholders && extractedStakeholders.length === 0) {
+        try {
+          const stakeholderNames = JSON.parse(savedStakeholders);
+          if (stakeholderNames.length > 0) {
+            console.log(`🔄 Auto-loading ${stakeholderNames.length} stakeholders from project planner:`, stakeholderNames);
+            setExtractedStakeholders(stakeholderNames);
+            
+            // Generate default flow types for each stakeholder
+            const defaultFlowTypes: { [key: string]: string[] } = {};
+            stakeholderNames.forEach((stakeholder: string) => {
+              defaultFlowTypes[stakeholder] = [
+                "Onboarding Process",
+                "Main Workflow", 
+                "Task Completion",
+                "System Interaction"
+              ];
+            });
+            
+            setPersonaFlowTypes(defaultFlowTypes);
+            
+            // Save to storage
+            localStorage.setItem(
+              STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+              JSON.stringify(stakeholderNames)
+            );
+            localStorage.setItem(
+              STORAGE_KEYS.PERSONA_FLOW_TYPES,
+              JSON.stringify(defaultFlowTypes)
+            );
+          }
+        } catch (error) {
+          console.error("Error auto-loading stakeholders:", error);
+        }
+      }
+
       setIsLoadingFromStorage(false);
     };
 
@@ -339,18 +376,70 @@ export default function UserJourneyEnhanced() {
 
   // Extract stakeholders from project plan
   const extractProjectStakeholders = async () => {
-    const planContent = projectDescription;
-    if (!planContent.trim()) {
-      setError(
-        "No project plan available. Please generate a project plan first."
-      );
-      return;
-    }
-
     setIsExtractingStakeholders(true);
     setError("");
 
     try {
+      // First try to load stakeholders from localStorage (from project planner)
+      const savedStakeholders = localStorage.getItem('stakeholder_names');
+      
+      if (savedStakeholders) {
+        const stakeholderNames = JSON.parse(savedStakeholders);
+        if (stakeholderNames.length > 0) {
+          // Use stakeholders from project planner
+          setExtractedStakeholders(stakeholderNames);
+          
+          // Generate default flow types for each stakeholder
+          const defaultFlowTypes: { [key: string]: string[] } = {};
+          stakeholderNames.forEach((stakeholder: string) => {
+            defaultFlowTypes[stakeholder] = [
+              "Onboarding Process",
+              "Main Workflow",
+              "Task Completion",
+              "System Interaction"
+            ];
+          });
+          
+          setPersonaFlowTypes(defaultFlowTypes);
+
+          // Initialize stakeholder flows based on loaded data
+          const initialFlows: StakeholderFlow[] = [];
+          stakeholderNames.forEach((stakeholder: string) => {
+            defaultFlowTypes[stakeholder]?.forEach((flowType) => {
+              initialFlows.push({
+                stakeholder,
+                flowType,
+                bpmnXml: "",
+                customPrompt: "",
+              });
+            });
+          });
+          updateStakeholderFlows(initialFlows);
+
+          // Save to storage
+          localStorage.setItem(
+            STORAGE_KEYS.EXTRACTED_STAKEHOLDERS,
+            JSON.stringify(stakeholderNames)
+          );
+          localStorage.setItem(
+            STORAGE_KEYS.PERSONA_FLOW_TYPES,
+            JSON.stringify(defaultFlowTypes)
+          );
+          
+          console.log(`✅ Loaded ${stakeholderNames.length} stakeholders from project planner:`, stakeholderNames);
+          return;
+        }
+      }
+
+      // Fallback: Extract from project description if no stakeholders in localStorage
+      const planContent = projectDescription;
+      if (!planContent.trim()) {
+        setError(
+          "No stakeholders found in localStorage and no project plan available. Please add stakeholders in the Project Planner first."
+        );
+        return;
+      }
+
       const { stakeholders, flowTypes } = await extractStakeholdersFromProject(
         planContent
       );
@@ -380,9 +469,9 @@ export default function UserJourneyEnhanced() {
         JSON.stringify(flowTypes)
       );
     } catch (error) {
-      console.error("Error extracting stakeholders:", error);
+      console.error("Error loading stakeholders:", error);
       setError(
-        "Failed to extract stakeholders from project plan. Please try again."
+        "Failed to load stakeholders. Please add stakeholders in the Project Planner first."
       );
     } finally {
       setIsExtractingStakeholders(false);
@@ -2209,21 +2298,26 @@ Data Objects: Request form, User profile`,
                   <Download className="h-4 w-4 mr-2" />
                   Export Data
                 </Button>
-                <Button
-                  onClick={extractProjectStakeholders}
-                  disabled={
-                    isExtractingStakeholders ||
-                    (!projectPlan && !projectDescription)
-                  }
-                  size="sm"
-                >
-                  {isExtractingStakeholders ? (
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  ) : (
-                    <Activity className="h-4 w-4 mr-2" />
+                <div className="flex items-center gap-2">
+                  <Button
+                    onClick={extractProjectStakeholders}
+                    disabled={isExtractingStakeholders}
+                    size="sm"
+                  >
+                    {isExtractingStakeholders ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Users className="h-4 w-4 mr-2" />
+                    )}
+                    Load Stakeholders from Project Planner
+                  </Button>
+                  {extractedStakeholders.length > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded-md">
+                      <CheckCircle className="h-3 w-3" />
+                      <span>Loaded from localStorage</span>
+                    </div>
                   )}
-                  Extract Stakeholders
-                </Button>
+                </div>
               </div>
             </CardTitle>
           </CardHeader>
