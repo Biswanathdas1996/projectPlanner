@@ -243,6 +243,19 @@ export default function ProjectPlanner() {
   const [isGeneratingFlowDiagram, setIsGeneratingFlowDiagram] = useState(false);
   const [showFlowDiagramEditor, setShowFlowDiagramEditor] = useState(false);
 
+  // Stakeholder analysis state
+  const [stakeholders, setStakeholders] = useState<Array<{
+    id: string;
+    name: string;
+    role: string;
+    description: string;
+    responsibilities: string[];
+    influence: 'high' | 'medium' | 'low';
+    interest: 'high' | 'medium' | 'low';
+    category: string;
+  }>>([]);
+  const [isGeneratingStakeholders, setIsGeneratingStakeholders] = useState(false);
+
   // Project sections settings state
   const [projectSectionsSettings, setProjectSectionsSettings] = useState<SettingsProjectSection[]>([]);
 
@@ -277,6 +290,17 @@ export default function ProjectPlanner() {
     // Load project sections settings
     const sectionsSettings = loadProjectSectionsSettings();
     setProjectSectionsSettings(sectionsSettings);
+
+    // Load saved stakeholders if available
+    const savedStakeholders = localStorage.getItem('project-stakeholders');
+    if (savedStakeholders) {
+      try {
+        const parsedStakeholders = JSON.parse(savedStakeholders);
+        setStakeholders(parsedStakeholders);
+      } catch (error) {
+        console.error('Failed to parse saved stakeholders:', error);
+      }
+    }
 
     // Set current step based on route
     if (location === '/plan') {
@@ -923,6 +947,184 @@ Return the complete enhanced project plan as HTML with all existing content plus
       setError('Failed to enhance project plan. Please try again.');
     } finally {
       setIsEnhancing(false);
+    }
+  };
+
+  const generateStakeholders = async () => {
+    if (!projectInput.trim()) {
+      setError('Please enter project description first');
+      return;
+    }
+
+    setIsGeneratingStakeholders(true);
+    setError('');
+
+    try {
+      // Use AI to analyze project and identify stakeholders
+      const gemini = new GoogleGenerativeAI("AIzaSyA9c-wEUNJiwCwzbMKt1KvxGkxwDK5EYXM");
+      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+      const planContent = projectPlan ? getPlanContentForExternalUse(projectPlan) : '';
+      
+      const stakeholderAnalysisPrompt = `
+Analyze this project and identify ALL relevant stakeholders. Be comprehensive and detailed.
+
+PROJECT DESCRIPTION: ${projectInput}
+
+${planContent ? `EXISTING PROJECT PLAN CONTEXT: ${planContent}` : ''}
+
+INSTRUCTIONS:
+1. Identify 8-12 distinct stakeholder types/roles for this specific project
+2. For each stakeholder, provide:
+   - Name: Clear, descriptive role name
+   - Role: Brief role description
+   - Description: Detailed explanation of their involvement
+   - Responsibilities: 3-5 specific responsibilities
+   - Influence: high/medium/low (their power to affect project success)
+   - Interest: high/medium/low (their level of engagement/concern)
+   - Category: Primary/Secondary/Internal/External/Regulatory
+
+3. Include stakeholders across these categories:
+   - End users (different user types)
+   - Business stakeholders (executives, product managers, business analysts)
+   - Technical stakeholders (developers, architects, DevOps, QA)
+   - External stakeholders (customers, partners, vendors, regulators)
+   - Support stakeholders (marketing, sales, support teams)
+
+4. Make stakeholders specific to the project domain and requirements
+5. Ensure diverse influence/interest combinations for proper stakeholder mapping
+
+Return ONLY a valid JSON array with this exact structure:
+[
+  {
+    "id": "unique-id",
+    "name": "Stakeholder Name",
+    "role": "Brief Role",
+    "description": "Detailed description of their involvement and impact",
+    "responsibilities": ["Responsibility 1", "Responsibility 2", "Responsibility 3"],
+    "influence": "high|medium|low",
+    "interest": "high|medium|low",
+    "category": "Primary|Secondary|Internal|External|Regulatory"
+  }
+]`;
+
+      const response = await model.generateContent(stakeholderAnalysisPrompt);
+      const responseText = response.response.text();
+      
+      // Clean and parse the response
+      let cleanedResponse = responseText.trim();
+      if (cleanedResponse.startsWith('```json')) {
+        cleanedResponse = cleanedResponse.replace(/^```json\s*/, '').replace(/```\s*$/, '');
+      }
+      if (cleanedResponse.startsWith('```')) {
+        cleanedResponse = cleanedResponse.replace(/^```\s*/, '').replace(/```\s*$/, '');
+      }
+
+      try {
+        const parsedStakeholders = JSON.parse(cleanedResponse).map((s: any) => ({
+          ...s,
+          influence: s.influence === 'high' || s.influence === 'medium' || s.influence === 'low' ? s.influence : 'medium',
+          interest: s.interest === 'high' || s.interest === 'medium' || s.interest === 'low' ? s.interest : 'medium'
+        }));
+        setStakeholders(parsedStakeholders);
+        
+        // Save to localStorage
+        localStorage.setItem('project-stakeholders', JSON.stringify(parsedStakeholders));
+        
+      } catch (parseError) {
+        console.error('Failed to parse stakeholder response:', parseError);
+        // Fallback stakeholders for any project
+        const fallbackStakeholders = [
+          {
+            id: "end-users",
+            name: "End Users",
+            role: "Primary Application Users",
+            description: "Individuals who will directly interact with and use the application to accomplish their goals",
+            responsibilities: ["Use core application features", "Provide feedback and usage data", "Adopt new features and workflows", "Report issues and bugs"],
+            influence: "high" as const,
+            interest: "high" as const,
+            category: "Primary"
+          },
+          {
+            id: "product-manager",
+            name: "Product Manager",
+            role: "Product Strategy & Vision",
+            description: "Responsible for defining product requirements, roadmap, and ensuring alignment with business objectives",
+            responsibilities: ["Define product requirements", "Prioritize features", "Coordinate stakeholder communication", "Monitor product performance"],
+            influence: "high" as const,
+            interest: "high" as const,
+            category: "Internal"
+          },
+          {
+            id: "development-team",
+            name: "Development Team",
+            role: "Technical Implementation",
+            description: "Software engineers responsible for designing, building, and maintaining the application",
+            responsibilities: ["Write clean, maintainable code", "Implement features per specifications", "Perform code reviews", "Fix bugs and optimize performance"],
+            influence: "high" as const,
+            interest: "medium" as const,
+            category: "Internal"
+          },
+          {
+            id: "business-owner",
+            name: "Business Owner",
+            role: "Executive Sponsor",
+            description: "Senior executive who provides strategic direction and funding approval for the project",
+            responsibilities: ["Approve budget and resources", "Set strategic direction", "Make key business decisions", "Ensure ROI achievement"],
+            influence: "high" as const,
+            interest: "medium" as const,
+            category: "Primary"
+          },
+          {
+            id: "qa-team",
+            name: "QA Team",
+            role: "Quality Assurance",
+            description: "Responsible for testing the application to ensure it meets quality standards and requirements",
+            responsibilities: ["Create and execute test plans", "Identify and report bugs", "Verify feature functionality", "Ensure quality standards"],
+            influence: "medium" as const,
+            interest: "high" as const,
+            category: "Internal"
+          },
+          {
+            id: "customers",
+            name: "Customers",
+            role: "Revenue Source",
+            description: "Paying customers whose satisfaction directly impacts business success and revenue",
+            responsibilities: ["Provide revenue through usage", "Give feedback on features", "Refer new users", "Support business growth"],
+            influence: "high" as const,
+            interest: "medium" as const,
+            category: "External"
+          },
+          {
+            id: "it-operations",
+            name: "IT Operations",
+            role: "Infrastructure & Deployment",
+            description: "Team responsible for deploying, monitoring, and maintaining the application infrastructure",
+            responsibilities: ["Deploy applications", "Monitor system performance", "Ensure security compliance", "Manage infrastructure scaling"],
+            influence: "medium" as const,
+            interest: "medium" as const,
+            category: "Internal"
+          },
+          {
+            id: "support-team",
+            name: "Customer Support",
+            role: "User Assistance",
+            description: "Team that helps users resolve issues and provides guidance on using the application",
+            responsibilities: ["Handle user inquiries", "Troubleshoot user issues", "Document common problems", "Provide user training"],
+            influence: "low" as const,
+            interest: "high" as const,
+            category: "Secondary"
+          }
+        ];
+        setStakeholders(fallbackStakeholders);
+        localStorage.setItem('project-stakeholders', JSON.stringify(fallbackStakeholders));
+      }
+      
+    } catch (err) {
+      console.error('Stakeholder generation error:', err);
+      setError('Failed to generate stakeholder analysis. Please try again.');
+    } finally {
+      setIsGeneratingStakeholders(false);
     }
   };
 
@@ -5645,6 +5847,179 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </div>
                 </div>
               )}
+              
+              {/* Stakeholder Analysis Section */}
+              <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <div className="border-b border-gray-200 p-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-pink-600 rounded-md flex items-center justify-center">
+                      <Users className="h-3 w-3 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-semibold text-gray-900">Stakeholder Analysis</h3>
+                      <p className="text-xs text-gray-600">Identify and analyze all project stakeholders with AI-powered insights</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="p-3 space-y-3">
+                  <div className="text-sm text-gray-600">
+                    Generate comprehensive stakeholder analysis including roles, responsibilities, influence levels, and interest mapping for your project.
+                  </div>
+                  
+                  <Button
+                    onClick={generateStakeholders}
+                    disabled={isGeneratingStakeholders || !projectInput.trim()}
+                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg text-sm"
+                  >
+                    {isGeneratingStakeholders ? (
+                      <>
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                        Analyzing Stakeholders...
+                      </>
+                    ) : (
+                      <>
+                        <Users className="h-3 w-3 mr-2" />
+                        Generate Stakeholder Analysis
+                      </>
+                    )}
+                  </Button>
+
+                  {stakeholders.length > 0 && (
+                    <div className="mt-6 relative">
+                      {/* Modern glassmorphism container */}
+                      <div className="relative backdrop-blur-xl bg-gradient-to-br from-purple-50/80 via-pink-50/60 to-indigo-50/80 border border-purple-200/50 rounded-2xl p-6 shadow-xl">
+                        {/* Decorative background elements */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-purple-400/5 via-pink-400/5 to-indigo-400/5 rounded-2xl"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-300/10 to-transparent rounded-2xl"></div>
+                        <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-pink-300/10 to-transparent rounded-2xl"></div>
+                        
+                        {/* Header section */}
+                        <div className="relative flex items-center justify-between mb-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg flex items-center justify-center">
+                              <Users className="h-5 w-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-lg font-bold text-gray-900">Project Stakeholders</h4>
+                              <p className="text-sm text-gray-600">{stakeholders.length} stakeholders identified</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            <div className="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-lg border border-purple-200/50">
+                              <span className="text-xs font-medium text-purple-700">{stakeholders.filter(s => s.influence === 'high').length} High Influence</span>
+                            </div>
+                            <div className="px-3 py-1 bg-white/60 backdrop-blur-sm rounded-lg border border-pink-200/50">
+                              <span className="text-xs font-medium text-pink-700">{stakeholders.filter(s => s.interest === 'high').length} High Interest</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stakeholder Grid */}
+                        <div className="relative grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {stakeholders.map((stakeholder, index) => {
+                            const getInfluenceColor = (influence: string) => {
+                              switch (influence) {
+                                case 'high': return 'bg-red-100 text-red-800 border-red-200';
+                                case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+                                case 'low': return 'bg-green-100 text-green-800 border-green-200';
+                                default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                              }
+                            };
+
+                            const getInterestColor = (interest: string) => {
+                              switch (interest) {
+                                case 'high': return 'bg-blue-100 text-blue-800 border-blue-200';
+                                case 'medium': return 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                                case 'low': return 'bg-purple-100 text-purple-800 border-purple-200';
+                                default: return 'bg-gray-100 text-gray-800 border-gray-200';
+                              }
+                            };
+
+                            return (
+                              <div key={stakeholder.id} className="group relative">
+                                <div className="h-full bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm hover:shadow-lg transition-all duration-300 p-4">
+                                  {/* Stakeholder Header */}
+                                  <div className="flex items-start justify-between mb-3">
+                                    <div className="flex-1">
+                                      <h5 className="font-semibold text-gray-900 text-sm leading-tight">{stakeholder.name}</h5>
+                                      <p className="text-xs text-gray-600 mt-1">{stakeholder.role}</p>
+                                    </div>
+                                    <div className="ml-2">
+                                      <div className={`px-2 py-1 rounded-md text-xs font-medium border ${stakeholder.category === 'Primary' ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 
+                                        stakeholder.category === 'Internal' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                                        stakeholder.category === 'External' ? 'bg-orange-100 text-orange-800 border-orange-200' :
+                                        'bg-gray-100 text-gray-800 border-gray-200'}`}>
+                                        {stakeholder.category}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Description */}
+                                  <p className="text-xs text-gray-700 mb-3 leading-relaxed">
+                                    {stakeholder.description}
+                                  </p>
+
+                                  {/* Influence & Interest Tags */}
+                                  <div className="flex gap-2 mb-3">
+                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getInfluenceColor(stakeholder.influence)}`}>
+                                      {stakeholder.influence.charAt(0).toUpperCase() + stakeholder.influence.slice(1)} Influence
+                                    </div>
+                                    <div className={`px-2 py-1 rounded-md text-xs font-medium border ${getInterestColor(stakeholder.interest)}`}>
+                                      {stakeholder.interest.charAt(0).toUpperCase() + stakeholder.interest.slice(1)} Interest
+                                    </div>
+                                  </div>
+
+                                  {/* Responsibilities */}
+                                  <div>
+                                    <h6 className="text-xs font-medium text-gray-900 mb-2">Key Responsibilities:</h6>
+                                    <ul className="space-y-1">
+                                      {stakeholder.responsibilities.slice(0, 3).map((responsibility, respIndex) => (
+                                        <li key={respIndex} className="text-xs text-gray-600 flex items-start gap-1">
+                                          <span className="w-1 h-1 bg-purple-400 rounded-full mt-1.5 flex-shrink-0"></span>
+                                          <span className="leading-relaxed">{responsibility}</span>
+                                        </li>
+                                      ))}
+                                      {stakeholder.responsibilities.length > 3 && (
+                                        <li className="text-xs text-purple-600 font-medium">
+                                          +{stakeholder.responsibilities.length - 3} more
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Summary Statistics */}
+                        <div className="relative mt-6 pt-4 border-t border-white/50">
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-purple-600">{stakeholders.filter(s => s.category === 'Primary').length}</div>
+                              <div className="text-xs text-gray-600">Primary</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-blue-600">{stakeholders.filter(s => s.category === 'Internal').length}</div>
+                              <div className="text-xs text-gray-600">Internal</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-orange-600">{stakeholders.filter(s => s.category === 'External').length}</div>
+                              <div className="text-xs text-gray-600">External</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-lg font-bold text-gray-600">{stakeholders.filter(s => s.category === 'Secondary').length}</div>
+                              <div className="text-xs text-gray-600">Secondary</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
               
               {/* Flow Diagram Generation Section */}
               <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
