@@ -238,48 +238,6 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 4: Process Mapping */}
-          <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
-              getStepStatus("diagram") === "active"
-                ? "bg-blue-100 shadow-md"
-                : getStepStatus("diagram") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
-            }`}
-            onClick={() => handleStepClick("diagram")}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                getStepStatus("diagram") === "completed"
-                  ? "bg-green-500 text-white"
-                  : getStepStatus("diagram") === "active"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {getStepStatus("diagram") === "completed" ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : getStepStatus("diagram") === "active" ? (
-                <Users className="h-4 w-4" />
-              ) : (
-                "4"
-              )}
-            </div>
-            <span
-              className={`text-sm font-medium hidden sm:block ${
-                getStepStatus("diagram") === "active"
-                  ? "text-blue-700"
-                  : getStepStatus("diagram") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
-              }`}
-            > Process Mapping {" "}
-            </span>
-          </div>
-
-          <ArrowRight className="h-4 w-4 text-gray-300" />
-
           {/* Step 5: Wireframes */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
