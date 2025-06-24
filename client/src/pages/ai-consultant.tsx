@@ -485,6 +485,95 @@ ${conversation.map(msg => `
     return items;
   };
 
+  const initializeSpeechRecognition = async (): Promise<void> => {
+    try {
+      // Check if speech recognition is supported
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        console.warn('Speech recognition not supported in this browser');
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      
+      // Configure speech recognition for better reliability
+      recognition.continuous = false; // Single utterance mode
+      recognition.interimResults = false; // Only final results
+      recognition.lang = 'en-US';
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        console.log('Speech recognition started');
+        setIsListening(true);
+      };
+
+      recognition.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript.trim();
+        
+        if (transcript) {
+          console.log('User said:', transcript);
+          setIsListening(false);
+          
+          // Send the voice message to the AI
+          if (elevenLabsAgentRef.current && isConnected) {
+            elevenLabsAgentRef.current.sendTextMessage(transcript);
+          }
+          
+          // Also process through local agent for context
+          handleUserInputFromVoice(transcript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        
+        if (event.error === 'not-allowed') {
+          toast({
+            title: "Microphone access denied",
+            description: "Please allow microphone access to use voice input",
+            variant: "destructive"
+          });
+        } else if (event.error !== 'no-speech' && event.error !== 'aborted') {
+          console.warn('Speech recognition error:', event.error);
+        }
+      };
+
+      recognition.onend = () => {
+        console.log('Speech recognition ended');
+        setIsListening(false);
+      };
+
+      speechRecognitionRef.current = recognition;
+      
+      // Start listening after AI finishes speaking
+      setTimeout(() => {
+        if (speechRecognitionRef.current && isVoiceMode) {
+          console.log('Starting initial speech recognition');
+          speechRecognitionRef.current.start();
+        }
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Failed to initialize speech recognition:', error);
+    }
+  };
+
+  // Function to start listening manually
+  const startListening = () => {
+    if (speechRecognitionRef.current && isVoiceMode && !isListening) {
+      try {
+        console.log('Manual start listening');
+        speechRecognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        // Create new recognition instance if needed
+        initializeSpeechRecognition();
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <NavigationBar 
