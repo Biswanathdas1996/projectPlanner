@@ -29,6 +29,12 @@ import {
   createPDFExtractionClient,
   type PDFExtractionResult 
 } from "@/lib/pdf-extraction-client";
+import {
+  createWebBrandSearchAgent,
+  type BrandSearchResult,
+  type BrandAsset,
+  type SearchProgress
+} from "@/lib/web-brand-search-agent";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -86,6 +92,8 @@ export function BrandGuidelinesUpload({
   const [brandName, setBrandName] = useState("");
   const [isSearchingBrand, setIsSearchingBrand] = useState(false);
   const [brandSearchError, setBrandSearchError] = useState("");
+  const [brandSearchResults, setBrandSearchResults] = useState<BrandSearchResult | null>(null);
+  const [searchProgress, setSearchProgress] = useState<SearchProgress | null>(null);
   const { toast } = useToast();
 
   if (!visible) return null;
@@ -95,99 +103,155 @@ export function BrandGuidelinesUpload({
 
     setIsSearchingBrand(true);
     setBrandSearchError("");
+    setSearchProgress(null);
+    setBrandSearchResults(null);
 
     try {
-      console.log("🔍 Starting brand asset search for:", brandName);
+      console.log("🔍 Starting comprehensive brand asset search for:", brandName);
 
-      // Search for brand assets using web search
-      const brandAssets = await searchBrandAssets(brandName);
+      // Use the new web brand search agent
+      const searchAgent = createWebBrandSearchAgent();
       
-      // Create mock brand guidelines from search results
-      const mockBrandGuidelines = {
-        brand: brandName,
-        searchBased: true,
-        extractedAt: new Date().toISOString(),
-        assets: brandAssets,
-        colors: {
-          primary: ["#000000", "#FFFFFF"], // Default colors
-          secondary: [],
-          text: ["#333333", "#666666"],
-        },
-        fonts: [
-          { name: "Arial", type: "primary" },
-          { name: "Helvetica", type: "secondary" }
-        ],
-        logos: {
-          images: brandAssets.logos,
-          variations: brandAssets.logos.map((_, index) => `Logo variant ${index + 1}`)
-        },
-        brandValues: ["Quality", "Innovation", "Trust"],
-        designPrinciples: ["Simplicity", "Consistency", "Accessibility"],
-      };
-
-      setBrandGuidelines(mockBrandGuidelines);
-      onBrandGuidelinesExtracted?.(mockBrandGuidelines);
-
-      // Save to local storage
-      const stored = BrandGuidelinesStorage.save(
-        mockBrandGuidelines as any,
+      const searchResults = await searchAgent.searchBrandAssets(
         brandName,
-        `${brandName}_web_search.json`
+        (progress: SearchProgress) => {
+          setSearchProgress(progress);
+        }
       );
 
-      // Update stored guidelines list
+      setBrandSearchResults(searchResults);
+
+      // Create comprehensive brand guidelines from search results
+      const comprehensiveBrandGuidelines = {
+        brand_name: searchResults.brandName,
+        search_based: true,
+        extracted_at: searchResults.searchedAt,
+        official_website: searchResults.officialWebsite,
+        brand_description: searchResults.brandDescription,
+        
+        // Color palette from search
+        color_palette: {
+          primary: searchResults.colors.primary.reduce((acc, color, index) => {
+            acc[`primary_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
+            return acc;
+          }, {} as any),
+          secondary: searchResults.colors.secondary.reduce((acc, color, index) => {
+            acc[`secondary_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
+            return acc;
+          }, {} as any),
+          accent: searchResults.colors.accent.reduce((acc, color, index) => {
+            acc[`accent_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
+            return acc;
+          }, {} as any)
+        },
+
+        // Typography (inferred from brand analysis)
+        typography: [
+          { name: "Brand Primary Font", type: "primary", weight: "regular" },
+          { name: "Brand Secondary Font", type: "secondary", weight: "medium" }
+        ],
+
+        // Logo assets
+        logo_assets: {
+          primary_logos: searchResults.logos.map(logo => ({
+            title: logo.title,
+            url: logo.url,
+            format: logo.format,
+            dimensions: logo.dimensions,
+            quality: logo.quality
+          })),
+          icons: searchResults.icons.map(icon => ({
+            title: icon.title,
+            url: icon.url,
+            format: icon.format,
+            dimensions: icon.dimensions,
+            quality: icon.quality
+          })),
+          brand_images: searchResults.brandImages.map(image => ({
+            title: image.title,
+            url: image.url,
+            format: image.format,
+            dimensions: image.dimensions,
+            quality: image.quality
+          }))
+        },
+
+        // Guidelines derived from search
+        logo_guidelines: [
+          "Use high-resolution versions for print materials",
+          "Maintain minimum clear space around logo",
+          "Do not alter logo colors or proportions",
+          "Use official logo files only"
+        ],
+        
+        spacing_guidelines: [
+          "Maintain consistent spacing around brand elements",
+          "Follow grid-based layout systems",
+          "Ensure adequate white space for readability"
+        ],
+
+        other_guidelines: [
+          `Brand identity should reflect ${searchResults.brandDescription || 'company values'}`,
+          "Maintain consistency across all brand touchpoints",
+          "Use approved color combinations only",
+          "Follow accessibility guidelines for digital content"
+        ],
+
+        search_metadata: {
+          sources: searchResults.searchSources,
+          total_assets_found: searchResults.totalAssetsFound,
+          search_quality: searchResults.totalAssetsFound > 5 ? "high" : "medium"
+        }
+      };
+
+      setBrandGuidelines(comprehensiveBrandGuidelines);
+      onBrandGuidelinesExtracted?.(comprehensiveBrandGuidelines);
+
+      // Save to localStorage using proper storage
+      const stored = BrandGuidelinesStorage.save(
+        comprehensiveBrandGuidelines as any,
+        searchResults.brandName,
+        `web-search-${Date.now()}`
+      );
+
       setStoredGuidelines(BrandGuidelinesStorage.getAll());
+
+      console.log("💾 Saved comprehensive brand guidelines for", brandName, "to local storage");
 
       toast({
         title: "Brand Assets Found",
-        description: `Found ${brandAssets.logos.length} logos and ${brandAssets.images.length} images for ${brandName}`,
+        description: `Successfully found ${searchResults.totalAssetsFound} brand assets for ${brandName}`,
       });
 
+      setShowBrandModal(true);
     } catch (error) {
       console.error("Brand search failed:", error);
-      setBrandSearchError(`Failed to find brand assets for "${brandName}". Please try a different brand name.`);
+      setBrandSearchError("Failed to search for brand assets. Please try again.");
       
       toast({
-        title: "Brand Search Failed",
-        description: "Could not find brand assets. Please try uploading a PDF instead.",
+        title: "Search Failed",
+        description: "Could not find brand assets. Please try a different brand name.",
         variant: "destructive",
       });
     } finally {
       setIsSearchingBrand(false);
+      setSearchProgress(null);
     }
   };
 
-  const searchBrandAssets = async (brandName: string) => {
-    // Simulate web search for brand assets
-    // In a real implementation, this would call a web search API
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
-
-    // For demonstration, return mock data
-    // In production, this would search for actual brand assets
-    const mockAssets = {
-      logos: [
-        `https://logo.clearbit.com/${brandName.toLowerCase()}.com`,
-        `https://img.logo.dev/${brandName.toLowerCase()}.com?token=pk_X-1ZO13GSgeOdV1bXdTLJQ`,
-      ].filter(url => url), // Filter out empty URLs
-      images: [
-        `https://picsum.photos/200/200?random=${Math.random()}`,
-        `https://picsum.photos/300/200?random=${Math.random()}`,
-      ],
-      icons: [
-        `https://icon.horse/icon/${brandName.toLowerCase()}.com`,
-      ],
-    };
-
-    // Store assets in localStorage for later use
-    const storageKey = `brand_assets_${brandName.toLowerCase()}`;
-    localStorage.setItem(storageKey, JSON.stringify({
-      brandName,
-      assets: mockAssets,
-      searchedAt: new Date().toISOString(),
-    }));
-
-    return mockAssets;
+  // Helper function to convert hex to RGB
+  const hexToRgb = (hex: string): string => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (result) {
+      const r = parseInt(result[1], 16);
+      const g = parseInt(result[2], 16);
+      const b = parseInt(result[3], 16);
+      return `${r},${g},${b}`;
+    }
+    return "0,0,0";
   };
+
+
 
   const handleBrandGuidelineUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -584,9 +648,53 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               )}
 
               {isSearchingBrand && (
-                <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-md">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Searching for brand assets...
+                <div className="bg-blue-50 rounded-md p-3 border border-blue-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-blue-700">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {searchProgress?.step || "Searching for brand assets..."}
+                    </div>
+                    {searchProgress && (
+                      <span className="text-xs text-blue-600">
+                        {searchProgress.progress}%
+                      </span>
+                    )}
+                  </div>
+                  {searchProgress && (
+                    <>
+                      <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
+                        <div
+                          className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${searchProgress.progress}%` }}
+                        />
+                      </div>
+                      <div className="text-xs text-blue-700">
+                        {searchProgress.details}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {brandSearchResults && !isSearchingBrand && (
+                <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      Brand Assets Found
+                    </div>
+                    <span className="text-xs text-emerald-600">
+                      {brandSearchResults.totalAssetsFound} assets
+                    </span>
+                  </div>
+                  <div className="text-xs text-emerald-700 space-y-1">
+                    <div>Logos: {brandSearchResults.logos.length}</div>
+                    <div>Icons: {brandSearchResults.icons.length}</div>
+                    <div>Brand Images: {brandSearchResults.brandImages.length}</div>
+                    {brandSearchResults.officialWebsite && (
+                      <div>Website: {brandSearchResults.officialWebsite}</div>
+                    )}
+                  </div>
                 </div>
               )}
 
