@@ -140,7 +140,10 @@ The platform will use machine learning to analyze spending patterns, provide per
     if (savedSelectedFeatures) {
       try {
         const features = JSON.parse(savedSelectedFeatures);
-        setSelectedFeatures(new Set(features));
+        const featuresSet = new Set(features);
+        setSelectedFeatures(featuresSet);
+        // Ensure project description is updated with loaded features
+        updateProjectDescriptionWithFeatures(featuresSet);
       } catch (e) {
         console.warn('Failed to parse saved selected features');
       }
@@ -263,6 +266,43 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
     
     // Save to localStorage
     localStorage.setItem('market-research-selected-features', JSON.stringify([...newSelectedFeatures]));
+    
+    // Automatically update project description with selected features
+    updateProjectDescriptionWithFeatures(newSelectedFeatures);
+  };
+
+  const updateProjectDescriptionWithFeatures = (features: Set<string>) => {
+    // Get current project description
+    const currentProject = localStorage.getItem('bpmn-project-description') || projectInput;
+    
+    // Remove existing market research features section if it exists
+    const cleanedProject = currentProject.replace(/\n\n## Additional Features \(from Market Research\):[\s\S]*?(?=\n\n##|\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\.|$)/g, '');
+    
+    if (features.size === 0) {
+      // If no features selected, just save the cleaned project description
+      const finalProject = cleanedProject.replace(/\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\./g, '');
+      localStorage.setItem('bpmn-project-description', finalProject);
+      setProjectInput(finalProject);
+      return;
+    }
+    
+    // Convert selected features to readable format
+    const featuresList = [...features].map(featureKey => {
+      const [competitorName, feature] = featureKey.split('::');
+      return `- ${feature} (inspired by ${competitorName})`;
+    }).join('\n');
+    
+    // Create enhanced project description
+    const enhancedProject = `${cleanedProject}
+
+## Additional Features (from Market Research):
+${featuresList}
+
+These features have been identified from competitive analysis and can help differentiate the product in the market.`;
+    
+    // Update both localStorage and state
+    localStorage.setItem('bpmn-project-description', enhancedProject);
+    setProjectInput(enhancedProject);
   };
 
   const addSelectedFeaturesToProject = async () => {
@@ -271,32 +311,17 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
     setIsUpdatingProject(true);
     
     try {
-      // Get current project description
-      const currentProject = projectInput;
-      
-      // Convert selected features to readable format
-      const featuresList = [...selectedFeatures].map(featureKey => {
-        const [competitorName, feature] = featureKey.split('::');
-        return `- ${feature} (inspired by ${competitorName})`;
-      }).join('\n');
-      
-      // Create enhanced project description
-      const enhancedProject = `${currentProject}
-
-## Additional Features (from Market Research):
-${featuresList}
-
-These features have been identified from competitive analysis and can help differentiate the product in the market.`;
-      
-      // Update project description
-      handleProjectInputChange(enhancedProject);
-      
-      // Clear selected features after adding to project
+      // Features are already automatically added to project description
+      // This function now just clears the selection
       setSelectedFeatures(new Set());
       localStorage.removeItem('market-research-selected-features');
       
+      // Update project description to remove the features section since we're "finalizing" the addition
+      const currentProject = localStorage.getItem('bpmn-project-description') || projectInput;
+      updateProjectDescriptionWithFeatures(new Set());
+      
     } catch (error) {
-      console.error('Error updating project description:', error);
+      console.error('Error finalizing project features:', error);
     } finally {
       setIsUpdatingProject(false);
     }
@@ -929,12 +954,12 @@ These features have been identified from competitive analysis and can help diffe
                         {isUpdatingProject ? (
                           <>
                             <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                            Adding...
+                            Finalizing...
                           </>
                         ) : (
                           <>
-                            <Plus className="h-3 w-3 mr-2" />
-                            Add to Project
+                            <CheckCircle className="h-3 w-3 mr-2" />
+                            Finalize Selection
                           </>
                         )}
                       </Button>
