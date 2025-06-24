@@ -73,6 +73,262 @@ export class FigmaExporter {
     };
   }
 
+  static async exportToFigmaUsingHtmlToDesign(wireframes: WireframeForExport[]): Promise<void> {
+    const htmlToDesignAPI = 'https://htmlcsstoimage.com/demo_run';
+    const results: Array<{ name: string; url: string; html: string }> = [];
+    
+    for (const wireframe of wireframes) {
+      try {
+        // Prepare HTML for html.to.design conversion
+        const cleanHTML = this.prepareHTMLForFigma(wireframe.htmlCode, wireframe.pageName);
+        
+        // Create a data URL for the HTML content
+        const htmlBlob = new Blob([cleanHTML], { type: 'text/html' });
+        const htmlUrl = URL.createObjectURL(htmlBlob);
+        
+        results.push({
+          name: wireframe.pageName,
+          url: htmlUrl,
+          html: cleanHTML
+        });
+        
+        console.log(`Prepared ${wireframe.pageName} for Figma conversion`);
+      } catch (error) {
+        console.error(`Error preparing ${wireframe.pageName} for Figma:`, error);
+      }
+    }
+    
+    // Create instructions for using html.to.design
+    const instructions = this.generateFigmaInstructions(results);
+    
+    // Download the instructions and HTML files
+    this.downloadFigmaPackage(results, instructions);
+  }
+
+  private static prepareHTMLForFigma(htmlCode: string, pageName: string): string {
+    // Clean and optimize HTML for Figma conversion
+    const optimizedHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageName} - Figma Ready</title>
+    <style>
+        /* Optimize for Figma conversion */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #ffffff;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* Ensure consistent spacing for Figma */
+        .figma-frame {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        /* Optimize buttons for Figma components */
+        button, .btn {
+            border: none;
+            border-radius: 6px;
+            padding: 12px 24px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Optimize form elements */
+        input, textarea, select {
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Optimize typography */
+        h1, h2, h3, h4, h5, h6 {
+            margin: 0 0 16px 0;
+            line-height: 1.4;
+        }
+        
+        p {
+            margin: 0 0 16px 0;
+            line-height: 1.6;
+        }
+        
+        /* Grid and layout optimization */
+        .grid {
+            display: grid;
+            gap: 24px;
+        }
+        
+        .flex {
+            display: flex;
+            gap: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="figma-frame">
+        ${htmlCode.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')}
+    </div>
+</body>
+</html>`;
+    
+    return optimizedHTML;
+  }
+
+  private static generateFigmaInstructions(results: Array<{ name: string; url: string; html: string }>): string {
+    return `# 🎨 Figma Export Guide - AI Generated Wireframes
+
+## Quick Start: Convert HTML Wireframes to Figma Components
+
+### 📋 What You Downloaded:
+- ${results.length} optimized HTML wireframe files
+- This instruction guide (figma-import-instructions.md)
+- Complete wireframe package (JSON format)
+
+### 🚀 Step-by-Step Conversion Process:
+
+#### Step 1: Access html.to.design
+1. Visit **https://html.to.design**
+2. Create a free account or sign in
+3. This service converts HTML directly to editable Figma components
+
+#### Step 2: Convert Each Wireframe
+${results.map((result, index) => `
+**${index + 1}. Converting "${result.name}"**
+   - Open file: \`${result.name.toLowerCase().replace(/\s+/g, '-')}.html\`
+   - Select all content (Ctrl+A / Cmd+A)
+   - Copy the HTML code
+   - Paste into html.to.design converter
+   - Click "Convert to Figma"
+   - Download the generated .fig file
+`).join('')}
+
+#### Step 3: Import to Figma
+1. Open Figma desktop app or web version
+2. Create new file or open existing project
+3. Import each converted .fig file
+4. Organize wireframes into pages/sections
+
+### ✨ What You'll Get in Figma:
+- **Editable Components**: Buttons, forms, cards become Figma components
+- **Proper Typography**: Text styles are preserved and convertible
+- **Layout Structure**: Grids, flexbox layouts maintained
+- **Color Palette**: Extracted colors available as styles
+- **Interactive Elements**: Buttons and forms ready for prototyping
+
+### 🎯 Pro Tips for Best Results:
+
+**Before Converting:**
+- Each HTML file is optimized for Figma conversion
+- Scripts removed, styles cleaned for compatibility
+- Consistent spacing and typography applied
+
+**After Converting:**
+1. **Create Component Library**: Turn repeated elements into components
+2. **Set Up Auto-Layout**: Apply to containers for responsive behavior  
+3. **Define Color Styles**: Extract brand colors into Figma color styles
+4. **Typography System**: Convert text styles to Figma text styles
+5. **Organize Layers**: Group related elements and name layers clearly
+
+### 📊 Wireframe Inventory:
+${results.map((result, index) => `${index + 1}. **${result.name}** - Ready for conversion`).join('\n')}
+
+### 🔧 Troubleshooting:
+- **Complex layouts**: May need manual adjustment after conversion
+- **Custom fonts**: Add font files to Figma before importing
+- **Images**: Replace placeholder images with actual assets
+- **Animations**: Add Figma prototyping interactions after import
+
+### 🌟 Next Steps:
+1. Convert all wireframes using html.to.design
+2. Create a master Figma file with all screens
+3. Build component library from converted elements
+4. Add prototyping connections between screens
+5. Share with team for design iteration
+
+---
+**Generated**: ${new Date().toLocaleDateString()} | **Tool**: AI Wireframe Designer | **Total Files**: ${results.length}
+**Conversion Method**: html.to.design for maximum Figma compatibility`;
+  }
+
+  private static downloadFigmaPackage(
+    results: Array<{ name: string; url: string; html: string }>, 
+    instructions: string
+  ): void {
+    // Create a zip-like structure with all files
+    const packageData = {
+      instructions: instructions,
+      wireframes: results.map(result => ({
+        name: result.name,
+        filename: `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`,
+        content: result.html
+      })),
+      metadata: {
+        exportDate: new Date().toISOString(),
+        totalWireframes: results.length,
+        exportTool: 'AI Wireframe Designer',
+        figmaMethod: 'html.to.design'
+      }
+    };
+    
+    // Download the complete package as JSON
+    const dataStr = JSON.stringify(packageData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `figma-wireframes-package-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+    // Also download instructions separately
+    const instructionsBlob = new Blob([instructions], { type: 'text/markdown' });
+    const instructionsUrl = URL.createObjectURL(instructionsBlob);
+    const instructionsLink = document.createElement('a');
+    instructionsLink.href = instructionsUrl;
+    instructionsLink.download = 'figma-import-instructions.md';
+    document.body.appendChild(instructionsLink);
+    instructionsLink.click();
+    document.body.removeChild(instructionsLink);
+    URL.revokeObjectURL(instructionsUrl);
+    
+    // Download individual HTML files
+    results.forEach(result => {
+      const htmlBlob = new Blob([result.html], { type: 'text/html' });
+      const htmlUrl = URL.createObjectURL(htmlBlob);
+      const htmlLink = document.createElement('a');
+      htmlLink.href = htmlUrl;
+      htmlLink.download = `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+      document.body.appendChild(htmlLink);
+      htmlLink.click();
+      document.body.removeChild(htmlLink);
+      URL.revokeObjectURL(htmlUrl);
+      
+      // Clean up the object URL
+      URL.revokeObjectURL(result.url);
+    });
+  }
+
   private static extractStylesFromHTML(html: string): {
     colors: string[];
     fonts: string[];

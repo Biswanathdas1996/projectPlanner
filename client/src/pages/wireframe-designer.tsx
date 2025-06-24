@@ -5786,7 +5786,7 @@ ${selectedPageCode.jsCode}
                 </h2>
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => {
+                    onClick={async () => {
                       try {
                         const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
                           id: w.id,
@@ -5798,17 +5798,17 @@ ${selectedPageCode.jsCode}
                           createdAt: w.createdAt || new Date().toISOString(),
                         }));
                         
-                        FigmaExporter.downloadFigmaExport(wireframesForExport);
+                        await FigmaExporter.exportToFigmaUsingHtmlToDesign(wireframesForExport);
                         
                         toast({
-                          title: "Figma Export Complete",
-                          description: `Successfully exported ${wireframesForExport.length} wireframes to Figma format`,
+                          title: "Figma Export Package Ready",
+                          description: `Downloaded ${wireframesForExport.length} wireframes ready for html.to.design conversion`,
                         });
                       } catch (error) {
                         console.error("Figma export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to export wireframes to Figma format",
+                          description: "Failed to prepare wireframes for Figma export",
                           variant: "destructive",
                         });
                       }
