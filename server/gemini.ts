@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { Request, Response } from "express";
 
-const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
+const genAI = new GoogleGenerativeAI("AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg");
 
 export async function generateProjectPlan(req: Request, res: Response) {
   try {
@@ -12,7 +12,7 @@ export async function generateProjectPlan(req: Request, res: Response) {
       return res.status(400).json({ error: "Project description is required" });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const prompt = `
 You are a business process analyst. Create a detailed project plan for the following project description:
@@ -53,7 +53,7 @@ export async function generateBpmnJson(req: Request, res: Response) {
       return res.status(400).json({ error: "Project plan is required" });
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const prompt = `
 Convert the following project plan into a BPMN JSON structure. Create a workflow that represents the project phases and tasks as BPMN elements.

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini for client-side usage
-const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
+const genAI = new GoogleGenerativeAI("AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg");
 
 // Add error handling and logging for debugging
 const originalConsoleError = console.error;
@@ -25,7 +25,7 @@ export async function generateCustomizedBpmnFromStructuredData(structuredData: {
 }): Promise<string> {
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash-lite",
       generationConfig: {
         temperature: 0.2,
         topK: 40,
@@ -112,7 +112,7 @@ export async function generateFlowAnalysis(prompt: string): Promise<string> {
 
   try {
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash-lite",
       generationConfig: {
         temperature: 0.3,
         topK: 40,
@@ -147,7 +147,7 @@ export async function generateCustomSuggestions(
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-lite",
     generationConfig: {
       temperature: 0.8,
       topK: 40,
@@ -261,7 +261,7 @@ export async function generateProjectPlan(
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-lite",
     generationConfig: {
       temperature: 0.7,
       topK: 40,
@@ -740,7 +740,7 @@ export async function generateUserJourneyFlows(
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const prompt = `Generate comprehensive user journey flow diagrams for different personas based on this project plan: "${projectPlan}"
 
@@ -784,7 +784,7 @@ export async function generatePersonaBpmnFlow(
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const personaPrompts = {
     guest: {
@@ -917,7 +917,7 @@ export async function generateSitemapXml(projectPlan: string): Promise<string> {
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const prompt = `Generate a comprehensive XML sitemap based on this project plan: "${projectPlan}"
 
@@ -965,7 +965,7 @@ export async function extractStakeholdersFromProject(
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const prompt = `Analyze this project plan and extract all stakeholders/user personas and their potential workflow types: "${projectPlan}"
 
@@ -1058,7 +1058,7 @@ export async function generatePersonaBpmnFlowWithType(
     throw new Error("Project plan is required");
   }
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const enhancedProjectPlan = customPrompt
     ? `${projectPlan}\n\nAdditional Requirements: ${customPrompt}`
@@ -1213,7 +1213,7 @@ CRITICAL REQUIREMENTS for BPMN 2.0 XML:
 
   const { GoogleGenerativeAI } = await import("@google/generative-ai");
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
   const result = await model.generateContent(flowContent);
   const response = await result.response;
@@ -1242,7 +1242,7 @@ export async function generateBpmnXmlClient(
   }
 
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-lite",
     generationConfig: {
       temperature: 0.2,
       topK: 30,
@@ -1382,7 +1382,7 @@ export async function generateSwimlaneXml(
   }
 ): Promise<string> {
   const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-lite",
     generationConfig: {
       temperature: 0.7,
       topK: 40,

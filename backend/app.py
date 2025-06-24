@@ -9,9 +9,9 @@ import re
 app = Flask(__name__)
 CORS(app)
 
-GENAI_API_KEY = "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"  # Replace with your actual API key
+GENAI_API_KEY = "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"  # Replace with your actual API key
 genai.configure(api_key=GENAI_API_KEY)
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+model = genai.GenerativeModel("models/gemini-2.0-flash-lite")
 
 @app.route('/extract-guidelines', methods=['POST'])
 def extract_guidelines():

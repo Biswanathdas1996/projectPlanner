@@ -375,9 +375,11 @@ function FlowDiagramEditorInner({
     setIsGeneratingAI(true);
 
     try {
-      const apiKey = "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg";
+      const apiKey = "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg";
       const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash-lite",
+      });
 
       const selectedNode = selectedNodes[0];
       const currentFlowContext = {

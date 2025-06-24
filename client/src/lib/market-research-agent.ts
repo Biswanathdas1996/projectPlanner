@@ -109,9 +109,9 @@ export class MarketResearchAgent {
     // Use Gemini to generate market insights based on the project description
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+      "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const prompt = `
 Act as a senior market research analyst and provide comprehensive competitive intelligence for this project:
@@ -212,9 +212,9 @@ CRITICAL: Only include REAL company names that actually exist in the industry. D
     // Use Gemini to analyze and structure the search results
     const { GoogleGenerativeAI } = await import("@google/generative-ai");
     const genAI = new GoogleGenerativeAI(
-      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+      "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
     );
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-lite" });
 
     const analysisPrompt = `
 Based on the web search results below, analyze the market for the following project idea and provide a comprehensive market research report:

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize AI Agent for BPMN Generation
-const genAI = new GoogleGenerativeAI("AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg");
+const genAI = new GoogleGenerativeAI("AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg");
 
 export interface StructuredWorkflowData {
   processName: string;
@@ -30,7 +30,7 @@ export class AIBpmnAgent {
 
   constructor() {
     this.model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash-lite",
       generationConfig: {
         temperature: 0.1, // Low temperature for consistent, structured output
         topK: 40,

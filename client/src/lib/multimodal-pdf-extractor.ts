@@ -79,10 +79,10 @@ export class MultimodalPDFExtractor {
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(
-      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+      "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
     );
     this.model = this.genAI.getGenerativeModel({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.0-flash-lite",
       generationConfig: {
         temperature: 0.1,
         maxOutputTokens: 4096,

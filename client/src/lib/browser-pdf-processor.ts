@@ -50,9 +50,11 @@ export class BrowserPDFProcessor {
 
   constructor() {
     this.genAI = new GoogleGenerativeAI(
-      "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+      "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
     );
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    this.model = this.genAI.getGenerativeModel({
+      model: "gemini-2.0-flash-lite",
+    });
   }
 
   async processAndAnalyzePDF(file: File): Promise<ComprehensivePDFAnalysis> {

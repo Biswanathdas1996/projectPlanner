@@ -1114,9 +1114,11 @@ Return the complete enhanced project plan as HTML with all existing content plus
     try {
       // Use AI to analyze project and identify stakeholder names
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+        "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
       );
-      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = gemini.getGenerativeModel({
+        model: "gemini-2.0-flash-lite",
+      });
 
       const planContent = projectPlan
         ? getPlanContentForExternalUse(projectPlan)
@@ -1325,9 +1327,11 @@ Generate a detailed flow diagram that shows:
 
       // Use AI to analyze project plan and create project-specific processes
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+        "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
       );
-      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = gemini.getGenerativeModel({
+        model: "gemini-2.0-flash-lite",
+      });
 
       const planContent = projectPlan
         ? getPlanContentForExternalUse(projectPlan)
@@ -1630,9 +1634,11 @@ Generate a detailed flow diagram that shows:
 
     try {
       const gemini = new GoogleGenerativeAI(
-        "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg"
+        "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
       );
-      const model = gemini.getGenerativeModel({ model: "gemini-1.5-flash" });
+      const model = gemini.getGenerativeModel({
+        model: "gemini-2.0-flash-lite",
+      });
 
       // Find the target section
       const targetSection = enhancedSections.find((s) => s.id === sectionId);

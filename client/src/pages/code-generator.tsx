@@ -287,7 +287,7 @@ export default function CodeGenerator() {
   };
 
   const generateAIConsolidatedFlow = async (flows: ProjectFlow[]) => {
-    const API_KEY = "AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg";
+    const API_KEY = "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg";
 
     // Prepare flow data for AI analysis
     const flowSummaries = flows.map((flow) => ({
@@ -429,7 +429,7 @@ RESPONSE FORMAT - Return ONLY valid JSON:
 }`;
 
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`,
       {
         method: "POST",
         headers: {

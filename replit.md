@@ -248,7 +248,7 @@ Changelog:
   - Integrated master flow visualization directly in code generation workflow
   - Users can now visualize consolidated workflows before generating code
 - June 22, 2025. Enhanced AI-Generated Master Flow with Gemini AI integration
-  - Replaced manual flow consolidation with Gemini AI-powered analysis using API key AIzaSyBCf51fy9DXI3gZxmq58xgHYnQU-r9Bceg
+  - Replaced manual flow consolidation with Gemini AI-powered analysis using API key AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg
   - Implemented comprehensive localStorage workflow extraction capturing ALL flow-related data
   - Enhanced workflow detection to find flowDetails, flowDiagrams, bpmn-persona-flow-types, and bpmn-stakeholder-flows
   - Built generateAIConsolidatedFlow function with detailed prompt engineering for 25-35 granular nodes
