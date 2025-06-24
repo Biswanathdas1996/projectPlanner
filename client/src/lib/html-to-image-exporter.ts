@@ -30,11 +30,14 @@ export class HTMLToImageExporter {
             width: 100%;
             height: auto;
             min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            font-size: 14px;
-            line-height: 1.4;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
             background: #ffffff;
             overflow: visible;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
         }
         .wireframe-container {
             width: 100%;
@@ -44,11 +47,14 @@ export class HTMLToImageExporter {
             display: block;
             position: relative;
         }
-        /* Ensure all content is visible */
+        /* Ensure all content is visible and properly rendered */
         * {
             max-width: none !important;
             overflow: visible !important;
             position: static !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+            text-rendering: optimizeLegibility !important;
         }
         /* Force visibility for all elements */
         div, section, article, aside, nav, header, footer, main,
@@ -56,6 +62,12 @@ export class HTMLToImageExporter {
             display: block !important;
             visibility: visible !important;
             opacity: 1 !important;
+        }
+        /* Improve text rendering */
+        h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, label {
+            font-weight: normal !important;
+            font-style: normal !important;
+            text-decoration: none !important;
         }
     </style>
 </head>
@@ -75,8 +87,8 @@ export class HTMLToImageExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '1400px';
-    iframe.style.height = '1000px';
+    iframe.style.width = '1600px';
+    iframe.style.height = '1200px';
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
@@ -128,17 +140,28 @@ export class HTMLToImageExporter {
       
       console.log(`html-to-image capture dimensions for ${wireframe.pageName}: ${contentWidth}x${contentHeight}`);
       
-      // Use html-to-image to capture the complete element
+      // Use html-to-image to capture the complete element with improved settings
       const dataUrl = await toPng(container as HTMLElement, {
         width: contentWidth,
         height: contentHeight,
         backgroundColor: '#ffffff',
-        pixelRatio: 2, // High quality
+        pixelRatio: 3, // Higher quality for better text rendering
         canvasWidth: contentWidth,
         canvasHeight: contentHeight,
+        quality: 1.0,
         style: {
           transform: 'scale(1)',
           transformOrigin: 'top left',
+          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+          fontSize: '16px',
+          lineHeight: '1.5',
+          textRendering: 'optimizeLegibility',
+          WebkitFontSmoothing: 'antialiased',
+          MozOsxFontSmoothing: 'grayscale'
+        },
+        filter: (node) => {
+          // Ensure all nodes are captured
+          return true;
         }
       });
       
