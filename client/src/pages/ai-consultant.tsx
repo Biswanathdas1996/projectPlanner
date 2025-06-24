@@ -335,7 +335,10 @@ export default function AIConsultant() {
 
   const clearConversation = useCallback(() => {
     if (window.confirm("Are you sure you want to start a new consultation? This will clear all current progress.")) {
-      agentRef.current?.reset();
+      // Reset agent if it has a reset method
+      if (agentRef.current && typeof agentRef.current.reset === 'function') {
+        agentRef.current.reset();
+      }
       setConversation([]);
       setConversationHistory([]);
       setContext({});
@@ -439,275 +442,296 @@ export default function AIConsultant() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      <NavigationBar title="AI Tech Consultant" showBackButton />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
       
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Header */}
+      <div className="relative z-10 border-b border-gray-800/50 backdrop-blur-sm">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Brain className="h-4 w-4 text-white" />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-white">AI Tech Consultant</h1>
+                <p className="text-sm text-gray-400">Powered by Gemini AI</p>
+              </div>
+            </div>
+            <Button
+              onClick={clearConversation}
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white hover:bg-gray-800/50"
+            >
+              Clear Session
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative z-10 container mx-auto px-6 py-8 max-w-6xl">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface */}
-          <div className="lg:col-span-2">
-            <Card className="h-[600px] flex flex-col">
-              <CardHeader className="pb-4">
+          <div className="lg:col-span-3">
+            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+              {/* Chat Header */}
+              <div className="border-b border-gray-700/50 bg-gray-800/30 px-6 py-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center gap-2">
-                      <Brain className="h-5 w-5" />
-                      AI Tech Consultant
-                    </CardTitle>
-                    <CardDescription>
-                      Powered by Gemini AI - Get expert guidance for your tech projects
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    {!isVoiceMode ? (
-                      <Button
-                        onClick={startVoiceConversation}
-                        disabled={isProcessing || !isGeminiAvailable()}
-                        className="flex-1"
-                        variant={isGeminiAvailable() ? "default" : "outline"}
-                      >
-                        <Volume2 className="h-4 w-4 mr-2" />
-                        {isGeminiAvailable() ? 'Start Voice with Gemini' : 'Voice Unavailable'}
-                      </Button>
-                    ) : (
-                      <>
-                        <Button
-                          onClick={startListening}
-                          disabled={isProcessing || isListening}
-                          variant={isListening ? "destructive" : "default"}
-                          size="sm"
-                        >
-                          {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                        </Button>
-                        <Button
-                          onClick={stopVoiceConversation}
-                          variant="outline"
-                          size="sm"
-                        >
-                          <VolumeX className="h-4 w-4" />
-                        </Button>
-                      </>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-white font-medium">Active Session</span>
+                    {isVoiceMode && (
+                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                        Voice Mode
+                      </Badge>
                     )}
+                  </div>
+                  {!isVoiceMode ? (
                     <Button
-                      onClick={clearConversation}
-                      variant="outline"
-                      size="sm"
+                      onClick={startVoiceConversation}
+                      disabled={isProcessing || !isGeminiAvailable()}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0"
                     >
-                      Clear
+                      <Volume2 className="h-4 w-4 mr-2" />
+                      Enable Voice
+                    </Button>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={stopVoiceConversation}
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-400 hover:text-white hover:bg-gray-700/50"
+                      >
+                        <VolumeX className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[500px] max-h-[500px]">
+                {conversation.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                      <Brain className="h-8 w-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-white mb-2">Ready to Assist</h3>
+                    <p className="text-gray-400 max-w-md mx-auto">
+                      Describe your project idea and I'll help you create a comprehensive technology plan
+                    </p>
+                  </div>
+                ) : (
+                  conversation.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} group`}
+                    >
+                      <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
+                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                          message.role === "user" 
+                            ? "bg-gradient-to-br from-blue-500 to-purple-600" 
+                            : "bg-gradient-to-br from-emerald-500 to-teal-600"
+                        }`}>
+                          {message.role === "user" ? (
+                            <div className="w-3 h-3 bg-white rounded-full" />
+                          ) : (
+                            <Brain className="h-4 w-4 text-white" />
+                          )}
+                        </div>
+                        <div
+                          className={`px-4 py-3 rounded-2xl backdrop-blur-sm ${
+                            message.role === "user"
+                              ? "bg-blue-600/90 text-white rounded-br-md"
+                              : "bg-gray-800/60 text-gray-100 border border-gray-700/50 rounded-bl-md"
+                          }`}
+                        >
+                          <p className="text-sm leading-relaxed">{message.content}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                {isProcessing && (
+                  <div className="flex justify-start group">
+                    <div className="flex gap-3 max-w-[85%]">
+                      <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600">
+                        <Brain className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-gray-800/60 border border-gray-700/50 backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                          <span className="text-sm text-gray-300">Thinking...</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Input Area */}
+              <div className="border-t border-gray-700/50 bg-gray-800/30 p-6">
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Textarea
+                      placeholder="Describe your project idea or ask questions..."
+                      value={currentInput}
+                      onChange={(e) => setCurrentInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault();
+                          handleTextSubmit();
+                        }
+                      }}
+                      rows={2}
+                      disabled={isProcessing}
+                      className="bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl resize-none"
+                    />
+                  </div>
+                  
+                  {/* Floating Action Buttons */}
+                  <div className="flex gap-2">
+                    {isVoiceMode && (
+                      <Button
+                        onClick={startListening}
+                        disabled={isProcessing || isListening}
+                        size="lg"
+                        className={`w-12 h-12 rounded-full ${
+                          isListening 
+                            ? "bg-red-500 hover:bg-red-600 animate-pulse" 
+                            : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                        } border-0 shadow-lg`}
+                      >
+                        {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                      </Button>
+                    )}
+                    
+                    <Button
+                      onClick={handleTextSubmit}
+                      disabled={!currentInput.trim() || isProcessing}
+                      size="lg"
+                      className="w-12 h-12 rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 border-0 shadow-lg"
+                    >
+                      {isProcessing ? (
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-5 w-5" />
+                      )}
                     </Button>
                   </div>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="flex-1 flex flex-col">
-                {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-                  {conversation.length === 0 ? (
-                    <div className="text-center text-gray-500 py-8">
-                      <Brain className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p className="text-lg font-medium mb-2">Welcome to your AI Tech Consultant</p>
-                      <p className="text-sm">
-                        Start by describing your project idea, and I'll help you create a comprehensive plan.
-                      </p>
-                    </div>
-                  ) : (
-                    conversation.map((message) => (
-                      <div
-                        key={message.id}
-                        className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-                      >
-                        <div
-                          className={`max-w-[80%] p-3 rounded-lg ${
-                            message.role === "user"
-                              ? "bg-blue-500 text-white"
-                              : "bg-white text-gray-900 border"
-                          }`}
-                        >
-                          <p className="text-sm">{message.content}</p>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                  {isProcessing && (
-                    <div className="flex justify-start">
-                      <div className="bg-white border rounded-lg p-3">
-                        <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span className="text-sm text-gray-600">AI is thinking...</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Voice Conversation History */}
-                {conversationHistory.length > 0 && (
-                  <div className="mb-4 p-3 bg-blue-50 rounded-lg">
-                    <h4 className="font-medium text-sm mb-2">Voice Events:</h4>
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {conversationHistory.map((event, index) => {
-                        if (event.type === 'agent_message' || event.type === 'user_message') {
-                          return (
-                            <div key={`${event.sessionId}-${index}-${event.type}`} className="text-xs">
-                              <span className="font-medium">
-                                {event.type === 'user_message' ? 'You' : 'AI'}:
-                              </span>{' '}
-                              {event.message}
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
+          {/* Side Panel */}
+          <div className="space-y-4">
+            {/* Progress Card */}
+            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Target className="h-5 w-5 text-blue-400" />
+                <h3 className="text-lg font-semibold text-white">Progress</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-300">Stage: {currentStage}</span>
+                    <span className="text-blue-400">{Math.round(getStageProgress())}%</span>
+                  </div>
+                  <div className="w-full bg-gray-700/50 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${getStageProgress()}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {confidence > 0 && (
+                  <div>
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-300">Confidence</span>
+                      <span className="text-emerald-400">{Math.round(confidence * 100)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700/50 rounded-full h-2">
+                      <div 
+                        className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${confidence * 100}%` }}
+                      />
                     </div>
                   </div>
                 )}
 
-                {/* Input Area */}
-                <div className="space-y-3">
-                  <Textarea
-                    placeholder="Describe your project idea or ask questions..."
-                    value={currentInput}
-                    onChange={(e) => setCurrentInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        handleTextSubmit();
-                      }
-                    }}
-                    rows={3}
-                    disabled={isProcessing}
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={handleTextSubmit}
-                      disabled={!currentInput.trim() || isProcessing}
-                      className="flex-1"
-                    >
-                      {isProcessing ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <MessageCircle className="h-4 w-4 mr-2" />
-                      )}
-                      Send Message
-                    </Button>
-                    {isVoiceMode && (
-                      <Badge variant={isConnected ? "default" : "secondary"}>
-                        {isConnected ? "Voice Connected" : "Voice Disconnected"}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Side Panel */}
-          <div className="space-y-6">
-            {/* Progress Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Target className="h-5 w-5" />
-                  Consultation Progress
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
+                {getContextSummary().length > 0 && (
                   <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span>Stage: {currentStage}</span>
-                      <span>{Math.round(getStageProgress())}%</span>
+                    <p className="text-sm font-medium mb-3 text-white">
+                      Context Summary
+                    </p>
+                    <div className="space-y-2">
+                      {getContextSummary().map((item, index) => (
+                        <div
+                          key={index}
+                          className="text-xs text-gray-300 flex items-center gap-2"
+                        >
+                          <CheckCircle className="h-3 w-3 text-emerald-400 flex-shrink-0" />
+                          {item}
+                        </div>
+                      ))}
                     </div>
-                    <Progress value={getStageProgress()} className="h-2" />
                   </div>
-                  
-                  {confidence > 0 && (
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span>Confidence</span>
-                        <span>{Math.round(confidence * 100)}%</span>
-                      </div>
-                      <Progress value={confidence * 100} className="h-2" />
-                    </div>
-                  )}
-
-                  {getContextSummary().length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">
-                        Context Summary
-                      </p>
-                      <div className="space-y-1">
-                        {getContextSummary().map((item, index) => (
-                          <div
-                            key={index}
-                            className="text-xs text-gray-600 flex items-center gap-1"
-                          >
-                            <CheckCircle className="h-3 w-3 text-green-500" />
-                            {item}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                )}
+              </div>
+            </div>
 
             {/* Suggested Questions Card */}
             {nextQuestions.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Lightbulb className="h-5 w-5" />
-                    Suggested Questions
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {nextQuestions.map((question, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleQuestionClick(question)}
-                        className="w-full text-left p-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Lightbulb className="h-5 w-5 text-yellow-400" />
+                  <h3 className="text-lg font-semibold text-white">Suggestions</h3>
+                </div>
+                
+                <div className="space-y-2">
+                  {nextQuestions.map((question, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleQuestionClick(question)}
+                      className="w-full text-left p-3 text-sm bg-gray-800/50 border border-gray-600/50 rounded-xl hover:bg-gray-700/50 hover:border-gray-500/50 transition-all duration-200 text-gray-200"
+                    >
+                      {question}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             {/* Project Plan Card */}
             {projectPlan && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Project Plan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div>
-                      <h4 className="font-medium">{projectPlan.title}</h4>
-                      <p className="text-sm text-gray-600">{projectPlan.overview}</p>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={downloadProjectPlan}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                      >
-                        <Download className="h-4 w-4 mr-1" />
-                        Download
-                      </Button>
-                    </div>
+              <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileText className="h-5 w-5 text-green-400" />
+                  <h3 className="text-lg font-semibold text-white">Project Plan</h3>
+                </div>
+                
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="font-medium text-white">{projectPlan.title}</h4>
+                    <p className="text-sm text-gray-400 mt-1">{projectPlan.overview}</p>
                   </div>
-                </CardContent>
-              </Card>
+                  
+                  <Button
+                    onClick={downloadProjectPlan}
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Plan
+                  </Button>
+                </div>
+              </div>
             )}
           </div>
         </div>
