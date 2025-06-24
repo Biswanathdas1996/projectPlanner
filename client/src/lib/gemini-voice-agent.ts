@@ -208,12 +208,44 @@ Keep it conversational and under 150 words for voice interaction.`;
     }
   }
 
+  private cleanTextForSpeech(text: string): string {
+    return text
+      // Remove markdown formatting
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
+      .replace(/\*(.*?)\*/g, '$1') // Italic
+      .replace(/`(.*?)`/g, '$1') // Code
+      .replace(/#{1,6}\s*/g, '') // Headers
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
+      
+      // Clean up bullet points and lists
+      .replace(/^\s*[\*\-\+]\s*/gm, '') // Bullet points
+      .replace(/^\s*\d+\.\s*/gm, '') // Numbered lists
+      
+      // Remove special characters that cause speech issues
+      .replace(/[^\w\s.,!?;:()\-'"]/g, ' ') // Keep basic punctuation
+      .replace(/\s+/g, ' ') // Multiple spaces to single
+      .replace(/\.\s*\./g, '.') // Multiple periods
+      .replace(/([.!?])\1+/g, '$1') // Repeated punctuation
+      
+      // Clean up common abbreviations for better speech
+      .replace(/\be\.g\./g, 'for example')
+      .replace(/\bi\.e\./g, 'that is')
+      .replace(/\betc\./g, 'and so on')
+      .replace(/\$(\d+),?(\d+)/g, '$1 thousand dollars') // Currency formatting
+      .replace(/\$(\d+)/g, '$1 dollars')
+      
+      .trim();
+  }
+
   private speakMessage(message: string): void {
     try {
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
         
-        const utterance = new SpeechSynthesisUtterance(message);
+        // Clean the message for better speech synthesis
+        const cleanedMessage = this.cleanTextForSpeech(message);
+        
+        const utterance = new SpeechSynthesisUtterance(cleanedMessage);
         utterance.rate = 0.9;
         utterance.pitch = 1.0;
         utterance.volume = 0.8;
@@ -228,7 +260,7 @@ Keep it conversational and under 150 words for voice interaction.`;
           utterance.voice = preferredVoice;
         }
         
-        console.log('Speaking:', message.substring(0, 50) + '...');
+        console.log('Speaking:', cleanedMessage.substring(0, 50) + '...');
         
         utterance.onend = () => {
           console.log('Speech completed');
@@ -238,6 +270,10 @@ Keep it conversational and under 150 words for voice interaction.`;
               this.startListening();
             }
           }, 1000);
+        };
+        
+        utterance.onerror = (event) => {
+          console.error('Speech synthesis error:', event.error);
         };
         
         window.speechSynthesis.speak(utterance);
