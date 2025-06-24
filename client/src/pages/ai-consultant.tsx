@@ -60,9 +60,6 @@ export default function AIConsultant() {
 
   const agentRef = useRef<ConversationalAIAgent | null>(null);
   const geminiVoiceAgentRef = useRef<GeminiVoiceAgent | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const mediaStreamRef = useRef<MediaStream | null>(null);
-  const speechRecognitionRef = useRef<any>(null);
 
   // Initialize the AI agents
   useEffect(() => {
@@ -189,9 +186,9 @@ export default function AIConsultant() {
       speechRecognitionRef.current = null;
     }
 
-    if (elevenLabsAgentRef.current) {
-      elevenLabsAgentRef.current.endConversation();
-      elevenLabsAgentRef.current = null;
+    if (geminiVoiceAgentRef.current) {
+      geminiVoiceAgentRef.current.endConversation();
+      geminiVoiceAgentRef.current = null;
     }
 
     if (mediaStreamRef.current) {
@@ -441,9 +438,9 @@ export default function AIConsultant() {
   };
 
   const sendVoiceMessage = async (message: string) => {
-    if (elevenLabsAgentRef.current && isConnected) {
+    if (geminiVoiceAgentRef.current && isConnected) {
       try {
-        await elevenLabsAgentRef.current.sendTextMessage(message);
+        await geminiVoiceAgentRef.current.sendTextMessage(message);
       } catch (error) {
         console.error("Error sending voice message:", error);
         toast({
@@ -572,22 +569,7 @@ ${conversation
           console.log("User said:", transcript);
           setIsListening(false);
 
-          // Send the voice message to the AI
-          if (elevenLabsAgentRef.current && isConnected) {
-            elevenLabsAgentRef.current.sendTextMessage(transcript);
-          }
-
-          // Add user message to conversation history
-          setConversationHistory((prev) => [
-            ...prev,
-            {
-              type: "user_message",
-              message: transcript,
-              sessionId:
-                elevenLabsAgentRef.current?.getSessionId() || "voice-session",
-              timestamp: new Date(),
-            },
-          ]);
+          // Voice input is now handled by GeminiVoiceAgent automatically
 
           // Also process through local agent for context
           handleUserInputFromVoice(transcript);
@@ -627,7 +609,7 @@ ${conversation
 
   // Function to start listening manually
   const startListening = () => {
-    if (!isVoiceMode) {
+    if (!isVoiceMode || !geminiVoiceAgentRef.current) {
       toast({
         title: "Voice mode not active",
         description: "Please start a voice conversation first",
@@ -645,29 +627,20 @@ ${conversation
     }
 
     try {
-      if (!speechRecognitionRef.current) {
-        console.log("Recreating speech recognition");
-        initializeSpeechRecognition();
-        return;
-      }
-
-      console.log("Starting speech recognition manually");
-      speechRecognitionRef.current.start();
-
+      geminiVoiceAgentRef.current.startListening();
+      
       toast({
         title: "Listening...",
         description: "Speak now, I'm listening to your voice",
       });
+      
     } catch (error) {
-      console.error("Error starting speech recognition:", error);
+      console.error('Error starting speech recognition:', error);
       toast({
         title: "Microphone error",
         description: "Please allow microphone access and try again",
-        variant: "destructive",
+        variant: "destructive"
       });
-
-      // Recreate recognition instance
-      initializeSpeechRecognition();
     }
   };
 
