@@ -49,6 +49,7 @@ import {
   type BrandGuideline,
 } from "@/lib/brand-guideline-extractor";
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
+import { FigmaImportGuide } from "@/components/figma-import-guide";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
@@ -545,6 +546,8 @@ export default function WireframeDesigner() {
   const [selectedStoredGuideline, setSelectedStoredGuideline] =
     useState<string>("");
   const [isGeneratingUnifiedHTML, setIsGeneratingUnifiedHTML] = useState(false);
+  const [showFigmaGuide, setShowFigmaGuide] = useState(false);
+  const [lastExportedFileName, setLastExportedFileName] = useState<string>("");
   const [unifiedHTMLResult, setUnifiedHTMLResult] = useState<{
     html: string;
     css: string;
@@ -5798,12 +5801,18 @@ ${selectedPageCode.jsCode}
                           createdAt: w.createdAt || new Date().toISOString(),
                         }));
                         
-                        FigmaExporter.downloadFigmaExport(wireframesForExport);
+                        const { fileName } = FigmaExporter.downloadFigmaExport(wireframesForExport);
+                        setLastExportedFileName(fileName);
                         
                         toast({
                           title: "Figma Export Complete",
                           description: `Successfully exported ${wireframesForExport.length} wireframes to Figma format`,
                         });
+
+                        // Show import guide after export
+                        setTimeout(() => {
+                          setShowFigmaGuide(true);
+                        }, 500);
                       } catch (error) {
                         console.error("Figma export error:", error);
                         toast({
@@ -5854,6 +5863,15 @@ ${selectedPageCode.jsCode}
                   >
                     <Palette className="h-4 w-4" />
                     Export Tokens
+                  </Button>
+                  <Button
+                    onClick={() => setShowFigmaGuide(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                  >
+                    <HelpCircle className="h-4 w-4" />
+                    Import Guide
                   </Button>
                 </div>
               </div>
@@ -7357,6 +7375,13 @@ ${selectedPageCode.jsCode}
             </div>
           </div>
         )}
+
+        {/* Figma Import Guide Modal */}
+        <FigmaImportGuide
+          isOpen={showFigmaGuide}
+          onClose={() => setShowFigmaGuide(false)}
+          exportedFileName={lastExportedFileName}
+        />
       </div>
     </div>
   );

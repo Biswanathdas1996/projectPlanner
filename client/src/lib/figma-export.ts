@@ -110,7 +110,7 @@ export class FigmaExporter {
     };
   }
 
-  private static convertHTMLToFigmaNodes(html: string, pageName: string): FigmaNode[] {
+  private static convertHTMLToFigmaNodes(html: string, pageName: string, pageIndex: number): FigmaNode[] {
     const nodes: FigmaNode[] = [];
     let yOffset = 0;
     const styles = this.extractStylesFromHTML(html);
@@ -118,19 +118,37 @@ export class FigmaExporter {
     // Create header section
     if (html.includes('<h1') || html.includes('<h2') || html.includes('<h3')) {
       nodes.push({
+        id: `${pageIndex}:${nodes.length + 2}`,
         type: 'TEXT',
         name: `${pageName} - Header`,
-        x: 32,
-        y: yOffset,
-        width: 300,
-        height: 48,
+        blendMode: 'PASS_THROUGH',
+        absoluteBoundingBox: {
+          x: 32,
+          y: yOffset,
+          width: 300,
+          height: 48,
+        },
+        constraints: {
+          vertical: 'TOP',
+          horizontal: 'LEFT',
+        },
         characters: pageName,
-        fontSize: 32,
-        fontWeight: 'bold',
-        fontFamily: styles.fonts[0] || 'Inter',
-        textAlignHorizontal: 'LEFT',
-        fills: [{ type: 'SOLID', color: this.parseHexColor('#000000') }],
-      });
+        style: {
+          fontFamily: styles.fonts[0] || 'Inter',
+          fontPostScriptName: styles.fonts[0] || 'Inter-Bold',
+          fontWeight: 700,
+          fontSize: 32,
+          textAlignHorizontal: 'LEFT',
+          textAlignVertical: 'TOP',
+        },
+        fills: [{ 
+          blendMode: 'NORMAL',
+          type: 'SOLID', 
+          color: this.parseHexColor('#000000') 
+        }],
+        strokes: [],
+        strokeWeight: 0,
+      } as any);
       yOffset += 80;
     }
     
@@ -262,45 +280,185 @@ export class FigmaExporter {
   static exportToFigma(wireframes: WireframeForExport[]): {
     figmaData: any;
     fileName: string;
+    importGuide: string;
   } {
     const figmaDocument = {
-      name: 'Wireframe Export',
-      type: 'DOCUMENT',
-      children: wireframes.map((wireframe, index) => ({
-        name: wireframe.pageName,
-        type: 'CANVAS',
-        backgroundColor: this.parseHexColor('#ffffff'),
-        children: [
-          {
-            name: `${wireframe.pageName} Frame`,
-            type: 'FRAME',
-            x: 0,
-            y: 0,
-            width: 1200,
-            height: 800,
-            fills: [{ type: 'SOLID', color: this.parseHexColor('#ffffff') }],
-            children: this.convertHTMLToFigmaNodes(wireframe.htmlCode, wireframe.pageName),
-          },
-        ],
-        prototypeDevice: {
-          type: 'PRESET',
-          preset: 'DESKTOP',
-        },
-      })),
-      version: '1.0',
-      exportSettings: {
-        format: 'FIGMA',
-        includeFills: true,
-        includeStrokes: true,
+      document: {
+        id: '0:0',
+        name: 'Wireframe Export',
+        type: 'DOCUMENT',
+        children: wireframes.map((wireframe, index) => ({
+          id: `0:${index + 1}`,
+          name: wireframe.pageName,
+          type: 'CANVAS',
+          backgroundColor: this.parseHexColor('#f5f5f5'),
+          prototypeStartNodeID: null,
+          flowStartingPoints: [],
+          children: [
+            {
+              id: `${index + 1}:1`,
+              name: `${wireframe.pageName} - Desktop`,
+              type: 'FRAME',
+              blendMode: 'PASS_THROUGH',
+              absoluteBoundingBox: {
+                x: 0,
+                y: 0,
+                width: 1200,
+                height: 800,
+              },
+              absoluteRenderBounds: {
+                x: 0,
+                y: 0,
+                width: 1200,
+                height: 800,
+              },
+              constraints: {
+                vertical: 'TOP',
+                horizontal: 'LEFT',
+              },
+              fills: [{ 
+                blendMode: 'NORMAL',
+                type: 'SOLID', 
+                color: this.parseHexColor('#ffffff') 
+              }],
+              strokes: [],
+              strokeWeight: 1,
+              strokeAlign: 'INSIDE',
+              backgroundColor: this.parseHexColor('#ffffff'),
+              cornerRadius: 8,
+              effects: [{
+                type: 'DROP_SHADOW',
+                visible: true,
+                color: { r: 0, g: 0, b: 0, a: 0.1 },
+                blendMode: 'NORMAL',
+                offset: { x: 0, y: 4 },
+                radius: 8,
+                spread: 0,
+              }],
+              children: this.convertHTMLToFigmaNodes(wireframe.htmlCode, wireframe.pageName, index + 1),
+            },
+          ],
+        })),
       },
+      components: {},
+      componentSets: {},
+      schemaVersion: 0,
+      styles: this.generateFigmaStyles(wireframes),
+      lastModified: new Date().toISOString(),
+      thumbnailUrl: '',
+      version: '1.0.0',
+      role: 'owner',
+      editorType: 'figma',
+      linkAccess: 'inherit',
     };
 
-    const fileName = `wireframes-export-${new Date().toISOString().split('T')[0]}.figma.json`;
+    const importGuide = this.generateImportGuide();
+    const fileName = `wireframes-figma-${new Date().toISOString().split('T')[0]}.fig`;
     
     return {
       figmaData: figmaDocument,
       fileName,
+      importGuide,
     };
+  }
+
+  private static generateFigmaStyles(wireframes: WireframeForExport[]): any {
+    const styles: any = {};
+    const allColors = new Set<string>();
+    const allFonts = new Set<string>();
+    
+    wireframes.forEach(wireframe => {
+      const extracted = this.extractStylesFromHTML(wireframe.htmlCode);
+      extracted.colors.forEach(color => allColors.add(color));
+      extracted.fonts.forEach(font => allFonts.add(font));
+    });
+
+    // Generate color styles
+    Array.from(allColors).forEach((color, index) => {
+      styles[`color_${index}`] = {
+        key: `color_${index}`,
+        name: `Color/${color}`,
+        styleType: 'FILL',
+        fills: [{
+          blendMode: 'NORMAL',
+          type: 'SOLID',
+          color: this.parseHexColor(color),
+        }],
+      };
+    });
+
+    // Generate text styles
+    Array.from(allFonts).forEach((font, index) => {
+      styles[`text_${index}`] = {
+        key: `text_${index}`,
+        name: `Typography/${font}`,
+        styleType: 'TEXT',
+        fontSize: 16,
+        fontFamily: font,
+        fontWeight: 400,
+        lineHeight: { unit: 'PERCENT', value: 120 },
+        letterSpacing: { unit: 'PERCENT', value: 0 },
+      };
+    });
+
+    return styles;
+  }
+
+  private static generateImportGuide(): string {
+    return `
+🎨 FIGMA IMPORT GUIDE
+====================
+
+METHOD 1: Direct JSON Import (Recommended)
+------------------------------------------
+1. Open Figma in your browser (figma.com)
+2. Create a new file or open existing file
+3. Go to "File" → "Import"
+4. Select the downloaded .fig JSON file
+5. Figma will automatically create pages for each wireframe
+
+METHOD 2: Figma Plugin Import
+-----------------------------
+1. In Figma, go to "Plugins" → "Browse all plugins"
+2. Search for "JSON to Figma" or "Import JSON"
+3. Install a JSON import plugin
+4. Run the plugin and upload your JSON file
+5. Configure import settings as needed
+
+METHOD 3: Copy & Paste Approach
+--------------------------------
+1. Open the JSON file in a text editor
+2. Copy specific node structures
+3. Use Figma plugins like "JSON to Figma" to convert individual components
+4. Manually recreate layouts based on the JSON structure
+
+WHAT'S INCLUDED IN THE EXPORT:
+==============================
+✓ Page structure with proper canvas organization
+✓ Frame layouts for each wireframe
+✓ Text elements with font specifications
+✓ Rectangle components for UI elements
+✓ Color definitions extracted from your wireframes
+✓ Typography styles and font families
+✓ Layout positioning and dimensions
+✓ Design tokens for consistent styling
+
+TROUBLESHOOTING:
+================
+- If direct import fails, try Method 2 with plugins
+- Ensure your Figma account has sufficient permissions
+- Large files may need to be split into smaller chunks
+- Some styling may need manual adjustment after import
+
+DESIGN TOKENS FILE:
+==================
+Use the separate design tokens file to set up your design system:
+1. Import colors into your Figma color styles
+2. Set up typography styles using the font specifications
+3. Create component variants using the spacing definitions
+
+For best results, review and refine the imported elements to match your design standards.
+`;
   }
 
   static async exportToFigmaDesignTokens(wireframes: WireframeForExport[]): Promise<{
@@ -367,9 +525,10 @@ export class FigmaExporter {
     };
   }
 
-  static downloadFigmaExport(wireframes: WireframeForExport[]): void {
-    const { figmaData, fileName } = this.exportToFigma(wireframes);
+  static downloadFigmaExport(wireframes: WireframeForExport[]): { fileName: string } {
+    const { figmaData, fileName, importGuide } = this.exportToFigma(wireframes);
     
+    // Download the Figma file
     const dataStr = JSON.stringify(figmaData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -380,6 +539,19 @@ export class FigmaExporter {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+
+    // Download the import guide
+    const guideBlob = new Blob([importGuide], { type: 'text/plain' });
+    const guideUrl = URL.createObjectURL(guideBlob);
+    const guideLink = document.createElement('a');
+    guideLink.href = guideUrl;
+    guideLink.download = 'figma-import-guide.txt';
+    document.body.appendChild(guideLink);
+    guideLink.click();
+    document.body.removeChild(guideLink);
+    URL.revokeObjectURL(guideUrl);
+
+    return { fileName };
   }
 
   static async downloadDesignTokens(wireframes: WireframeForExport[]): Promise<void> {
