@@ -112,11 +112,13 @@ export default function AIConsultant() {
       if (!apiKey) {
         toast({ 
           title: "Voice features unavailable", 
-          description: "ElevenLabs API key not configured. Please check your environment settings.", 
+          description: "ElevenLabs API key not configured.", 
           variant: "destructive" 
         });
         return;
       }
+
+      console.log('Using ElevenLabs API key:', apiKey ? 'Available' : 'Missing');
 
       setIsProcessing(true);
       
