@@ -5874,68 +5874,7 @@ ${selectedPageCode.jsCode}
                     <Layers className="h-4 w-4" />
                     Exact Wireframe SVG
                   </Button>
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const wireframesForExport: WireframeExportData[] = generatedWireframes.map(w => ({
-                          id: w.id,
-                          pageName: w.pageName,
-                          htmlCode: w.htmlCode,
-                          cssCode: w.cssCode,
-                          jsCode: w.jsCode,
-                        }));
-                        
-                        console.log("Starting high-quality PNG export...", wireframesForExport);
-                        
-                        toast({
-                          title: "High-Quality PNG Export Started",
-                          description: `Converting ${wireframesForExport.length} wireframes to high-quality PNG files...`,
-                        });
-                        
-                        // Export individual wireframes as PNG
-                        for (let i = 0; i < wireframesForExport.length; i++) {
-                          const wireframe = wireframesForExport[i];
-                          console.log(`Converting wireframe ${i + 1}/${wireframesForExport.length}: ${wireframe.pageName}`);
-                          
-                          try {
-                            const pngDataUrl = await convertWireframeToPNG(wireframe, {
-                              quality: 1.0,
-                              width: 1200,
-                              height: 800,
-                              backgroundColor: '#ffffff',
-                              scale: 2
-                            });
-                            downloadWireframeAsPNG(wireframe, pngDataUrl);
-                            
-                            // Add delay between downloads
-                            if (i < wireframesForExport.length - 1) {
-                              await new Promise(resolve => setTimeout(resolve, 500));
-                            }
-                          } catch (error) {
-                            console.error(`Failed to export ${wireframe.pageName} as PNG:`, error);
-                          }
-                        }
-                        
-                        toast({
-                          title: "PNG Export Complete",
-                          description: `Successfully exported ${wireframesForExport.length} high-quality PNG files.`,
-                        });
-                      } catch (error) {
-                        console.error("PNG export error:", error);
-                        toast({
-                          title: "Export Failed", 
-                          description: "Failed to export wireframes as PNG",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-green-200 text-green-700 hover:text-green-800 hover:border-green-300"
-                  >
-                    <FileImage className="h-4 w-4" />
-                    High-Quality PNG
-                  </Button>
+                  
                   <Button
                     onClick={() => {
                       // Simple single-file download as backup
