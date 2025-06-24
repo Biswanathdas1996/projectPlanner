@@ -55,7 +55,7 @@ export default function AIConsultant() {
   const [nextQuestions, setNextQuestions] = useState<string[]>([]);
   const [confidence, setConfidence] = useState(0);
   const [conversationHistory, setConversationHistory] = useState<
-    ConversationEvent[]
+    VoiceConversationEvent[]
   >([]);
 
   const agentRef = useRef<ConversationalAIAgent | null>(null);
