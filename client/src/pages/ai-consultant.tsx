@@ -1,66 +1,91 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { NavigationBar } from '@/components/navigation-bar';
-import { Mic, MicOff, MessageCircle, FileText, Download, Loader2, Volume2, VolumeX, PlayCircle, StopCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Mic, 
+  MicOff, 
+  MessageCircle, 
+  FileText, 
+  Download, 
+  Loader2, 
+  Volume2, 
+  VolumeX, 
+  Brain,
+  Target,
+  Lightbulb,
+  CheckCircle,
+  ArrowRight,
+  Sparkles
+} from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
-
-interface ConversationMessage {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
-
-interface ProjectPlan {
-  title: string;
-  description: string;
-  phases: Array<{
-    name: string;
-    duration: string;
-    tasks: string[];
-  }>;
-  technologies: string[];
-  timeline: string;
-  budget: string;
-  risks: string[];
-}
+import { 
+  ConversationalAIAgent, 
+  createConversationalAIAgent,
+  type ConversationMessage,
+  type ProjectPlan,
+  type ConversationContext 
+} from '@/lib/conversational-ai-agent';
 
 export default function AIConsultant() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [conversation, setConversation] = useState<ConversationMessage[]>([]);
   const [currentInput, setCurrentInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [projectPlan, setProjectPlan] = useState<ProjectPlan | null>(null);
-  const [conversationStage, setConversationStage] = useState<'initial' | 'gathering' | 'analyzing' | 'planning' | 'complete'>('initial');
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [context, setContext] = useState<ConversationContext>({});
+  const [nextQuestions, setNextQuestions] = useState<string[]>([]);
+  const [confidence, setConfidence] = useState(0);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
-
+  const agentRef = useRef<ConversationalAIAgent | null>(null);
+  
+  // Initialize the AI agent
   useEffect(() => {
-    // Load conversation from localStorage
-    const savedConversation = localStorage.getItem('ai-consultant-conversation');
-    if (savedConversation) {
-      setConversation(JSON.parse(savedConversation));
+    try {
+      agentRef.current = createConversationalAIAgent();
+      
+      // Try to load existing conversation state
+      const savedState = localStorage.getItem('ai-consultant-state');
+      if (savedState && agentRef.current) {
+        agentRef.current.loadState(savedState);
+        setContext(agentRef.current.getContext());
+      }
+    } catch (error) {
+      console.error('Error initializing AI agent:', error);
+      toast({ 
+        title: "Initialization failed", 
+        description: "Please check your API configuration", 
+        variant: "destructive" 
+      });
     }
+  }, []);
+  
+  const conversation = agentRef.current?.getConversation() || [];
+  const currentStage = agentRef.current?.getCurrentStage() || 'discovery';
 
+  // Save conversation state whenever it changes
+  useEffect(() => {
+    if (agentRef.current) {
+      const state = agentRef.current.saveState();
+      localStorage.setItem('ai-consultant-state', state);
+    }
+  }, [conversation, context]);
+
+  // Load saved project plan
+  useEffect(() => {
     const savedProjectPlan = localStorage.getItem('ai-consultant-project-plan');
     if (savedProjectPlan) {
       setProjectPlan(JSON.parse(savedProjectPlan));
-      setConversationStage('complete');
     }
   }, []);
-
-  const saveConversation = (messages: ConversationMessage[]) => {
-    localStorage.setItem('ai-consultant-conversation', JSON.stringify(messages));
-    setConversation(messages);
-  };
 
   const startRecording = async () => {
     try {
@@ -144,69 +169,62 @@ export default function AIConsultant() {
   };
 
   const handleUserInput = async (input: string) => {
-    const userMessage: ConversationMessage = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
-
-    const updatedConversation = [...conversation, userMessage];
-    saveConversation(updatedConversation);
+    if (!agentRef.current) {
+      toast({ title: "Agent not initialized", description: "Please refresh the page", variant: "destructive" });
+      return;
+    }
 
     setIsProcessing(true);
 
     try {
-      // Generate AI response based on conversation stage
-      const aiResponse = await generateAIResponse(input, updatedConversation);
+      // Process message through the AI agent
+      const response = await agentRef.current.processMessage(input);
       
-      const assistantMessage: ConversationMessage = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: aiResponse.text,
-        timestamp: new Date(),
-      };
+      // Update local state
+      setContext(response.context);
+      setNextQuestions(response.nextQuestions);
+      setConfidence(response.confidence);
 
-      const finalConversation = [...updatedConversation, assistantMessage];
-      saveConversation(finalConversation);
+      // Generate speech from AI response if ElevenLabs is available
+      await generateSpeech(response.message);
 
-      // Generate speech from AI response
-      if (aiResponse.text) {
-        await generateSpeech(aiResponse.text);
-      }
-
-      // Update conversation stage
-      updateConversationStage(finalConversation);
-
-      // Generate project plan if conversation is complete
-      if (aiResponse.shouldGeneratePlan) {
-        await generateProjectPlan(finalConversation);
+      // Generate project plan if ready
+      if (response.shouldGeneratePlan) {
+        await handleGenerateProjectPlan();
       }
 
     } catch (error) {
-      console.error('Error generating response:', error);
-      toast({ title: "Response failed", description: "Please try again", variant: "destructive" });
+      console.error('Error processing message:', error);
+      toast({ 
+        title: "Processing failed", 
+        description: "Please check your API configuration and try again", 
+        variant: "destructive" 
+      });
     } finally {
       setIsProcessing(false);
     }
   };
 
-  const generateAIResponse = async (input: string, conversationHistory: ConversationMessage[]) => {
-    const response = await fetch('/api/elevenlabs/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: input,
-        conversation: conversationHistory,
-        stage: conversationStage,
-      }),
-    });
+  const handleGenerateProjectPlan = async () => {
+    if (!agentRef.current) return;
 
-    if (!response.ok) {
-      throw new Error('Failed to generate AI response');
+    try {
+      const plan = await agentRef.current.generateProjectPlan();
+      setProjectPlan(plan);
+      localStorage.setItem('ai-consultant-project-plan', JSON.stringify(plan));
+      
+      toast({ 
+        title: "Project plan generated!", 
+        description: "Your comprehensive plan is ready for download" 
+      });
+    } catch (error) {
+      console.error('Error generating project plan:', error);
+      toast({ 
+        title: "Plan generation failed", 
+        description: "Please try again", 
+        variant: "destructive" 
+      });
     }
-
-    return response.json();
   };
 
   const generateSpeech = async (text: string) => {
@@ -218,7 +236,9 @@ export default function AIConsultant() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate speech');
+        // Don't show error for speech generation - it's optional
+        console.log('Speech generation unavailable, continuing without audio');
+        return;
       }
 
       const audioBlob = await response.blob();
@@ -232,45 +252,26 @@ export default function AIConsultant() {
         setIsPlaying(true);
       }
     } catch (error) {
-      console.error('Error generating speech:', error);
+      console.log('Speech generation failed, continuing without audio');
     }
   };
 
-  const updateConversationStage = (messages: ConversationMessage[]) => {
-    const messageCount = messages.length;
-    
-    if (messageCount >= 10) {
-      setConversationStage('planning');
-    } else if (messageCount >= 6) {
-      setConversationStage('analyzing');
-    } else if (messageCount >= 2) {
-      setConversationStage('gathering');
+  const handleQuestionClick = useCallback((question: string) => {
+    setCurrentInput(question);
+  }, []);
+
+  const clearConversation = useCallback(() => {
+    if (agentRef.current) {
+      agentRef.current.loadState('{"conversation":[],"context":{},"currentStage":"discovery"}');
+      setContext({});
+      setNextQuestions([]);
+      setConfidence(0);
+      setProjectPlan(null);
+      localStorage.removeItem('ai-consultant-state');
+      localStorage.removeItem('ai-consultant-project-plan');
+      toast({ title: "Conversation cleared", description: "Starting fresh consultation" });
     }
-  };
-
-  const generateProjectPlan = async (conversationHistory: ConversationMessage[]) => {
-    try {
-      const response = await fetch('/api/elevenlabs/generate-plan', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ conversation: conversationHistory }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate project plan');
-      }
-
-      const plan = await response.json();
-      setProjectPlan(plan);
-      setConversationStage('complete');
-      localStorage.setItem('ai-consultant-project-plan', JSON.stringify(plan));
-      
-      toast({ title: "Project plan generated!", description: "Your comprehensive plan is ready for download" });
-    } catch (error) {
-      console.error('Error generating project plan:', error);
-      toast({ title: "Plan generation failed", description: "Please try again", variant: "destructive" });
-    }
-  };
+  }, []);
 
   const handleTextSubmit = () => {
     if (currentInput.trim()) {
@@ -334,20 +335,35 @@ ${conversation.map(msg => `
   };
 
   const getStageDescription = () => {
-    switch (conversationStage) {
-      case 'initial':
-        return 'Ready to discuss your tech problem';
-      case 'gathering':
-        return 'Gathering information about your requirements';
-      case 'analyzing':
-        return 'Analyzing your needs and constraints';
+    switch (currentStage) {
+      case 'discovery':
+        return 'Discovery - Understanding your needs';
+      case 'analysis':
+        return 'Analysis - Evaluating requirements';
+      case 'specification':
+        return 'Specification - Defining details';
       case 'planning':
-        return 'Developing your project plan';
+        return 'Planning - Creating roadmap';
       case 'complete':
-        return 'Project plan ready for download';
+        return 'Complete - Ready for implementation';
       default:
-        return 'AI Consultant';
+        return 'AI Tech Consultant';
     }
+  };
+
+  const getStageProgress = () => {
+    const stages = ['discovery', 'analysis', 'specification', 'planning', 'complete'];
+    const currentIndex = stages.indexOf(currentStage);
+    return ((currentIndex + 1) / stages.length) * 100;
+  };
+
+  const getContextSummary = () => {
+    const items = [];
+    if (context.projectType) items.push(`Type: ${context.projectType}`);
+    if (context.problemDomain) items.push(`Domain: ${context.problemDomain}`);
+    if (context.timeline) items.push(`Timeline: ${context.timeline}`);
+    if (context.budget) items.push(`Budget: ${context.budget}`);
+    return items;
   };
 
   return (
@@ -367,9 +383,20 @@ ${conversation.map(msg => `
           <p className="text-xl text-gray-600 mb-6">
             Discuss your tech problems with AI and get a comprehensive project plan
           </p>
-          <Badge variant="secondary" className="text-sm">
-            {getStageDescription()}
-          </Badge>
+          <div className="flex items-center justify-center gap-4 mb-4">
+            <Badge variant="secondary" className="text-sm">
+              {getStageDescription()}
+            </Badge>
+            <Badge variant="outline" className="text-sm">
+              {confidence}% confidence
+            </Badge>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="max-w-md mx-auto">
+            <Progress value={getStageProgress()} className="h-2" />
+            <p className="text-xs text-gray-500 mt-1">Consultation Progress</p>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -479,24 +506,37 @@ ${conversation.map(msg => `
                         }
                       }}
                     />
-                    <Button
-                      onClick={handleTextSubmit}
-                      disabled={!currentInput.trim() || isProcessing}
-                    >
-                      Send
-                    </Button>
+                    <div className="flex flex-col gap-2">
+                      <Button
+                        onClick={handleTextSubmit}
+                        disabled={!currentInput.trim() || isProcessing}
+                      >
+                        Send
+                      </Button>
+                      <Button
+                        onClick={clearConversation}
+                        variant="outline"
+                        size="sm"
+                        disabled={isProcessing}
+                      >
+                        Clear
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Project Plan Panel */}
+          {/* Context & Progress Panel */}
           <div className="space-y-6">
-            {/* Progress Card */}
+            {/* Context Summary Card */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Progress</CardTitle>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Brain className="h-5 w-5" />
+                  Context Understanding
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -504,21 +544,53 @@ ${conversation.map(msg => `
                     <span>Messages</span>
                     <span>{conversation.length}</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min((conversation.length / 10) * 100, 100)}%` }}
-                    />
+                  <div className="flex justify-between text-sm">
+                    <span>Confidence</span>
+                    <span>{confidence}%</span>
                   </div>
-                  <p className="text-xs text-gray-600">
-                    {conversation.length < 10 
-                      ? `${10 - conversation.length} more messages needed for plan generation`
-                      : 'Ready to generate project plan'
-                    }
-                  </p>
+                  <Progress value={confidence} className="h-2" />
+                  
+                  {getContextSummary().length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-sm font-medium mb-2">Understood so far:</p>
+                      <div className="space-y-1">
+                        {getContextSummary().map((item, index) => (
+                          <div key={index} className="text-xs text-gray-600 flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3 text-green-500" />
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Suggested Questions Card */}
+            {nextQuestions.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5" />
+                    Suggested Questions
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    {nextQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleQuestionClick(question)}
+                        className="w-full text-left p-3 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        {question}
+                      </button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Project Plan Card */}
             {projectPlan && (
@@ -571,14 +643,28 @@ ${conversation.map(msg => `
                     </div>
                   </div>
 
-                  <Button
-                    onClick={downloadProjectPlan}
-                    className="w-full"
-                    variant="default"
-                  >
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Full Plan
-                  </Button>
+                  <div className="space-y-2">
+                    <Button
+                      onClick={downloadProjectPlan}
+                      className="w-full"
+                      variant="default"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Full Plan
+                    </Button>
+                    
+                    {currentStage !== 'complete' && (
+                      <Button
+                        onClick={handleGenerateProjectPlan}
+                        className="w-full"
+                        variant="outline"
+                        disabled={confidence < 70}
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        Generate Plan Now
+                      </Button>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             )}
