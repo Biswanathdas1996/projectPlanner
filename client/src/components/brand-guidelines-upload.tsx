@@ -783,7 +783,6 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                 )}
               </Button>
             </div>
-          </div>
         </CardContent>
       </Card>
 
