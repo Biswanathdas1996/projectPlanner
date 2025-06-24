@@ -17,27 +17,28 @@ export class PNGZipExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '1200px';
-    iframe.style.height = '800px';
+    iframe.style.width = '1400px'; // Increased width for full capture
+    iframe.style.height = '1000px'; // Increased height for full capture
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
+    iframe.style.overflow = 'visible';
     
-    // Create optimized HTML for high-quality rendering
+    // Create optimized HTML for complete wireframe rendering
     const fullHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200, initial-scale=1.0">
+    <meta name="viewport" content="width=1400, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
-        body {
+        html, body {
             margin: 0;
-            padding: 0;
-            width: 1200px;
-            height: 800px;
-            overflow: hidden;
+            padding: 20px;
+            width: 1400px;
+            min-height: 1000px;
+            overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             font-size: 14px;
@@ -45,17 +46,32 @@ export class PNGZipExporter {
         }
         * {
             box-sizing: border-box;
-        }
-        /* Ensure high quality rendering */
-        * {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
+        /* Ensure all content is visible */
+        .wireframe-container {
+            width: 100%;
+            min-height: 100%;
+            padding: 20px;
+            overflow: visible;
+        }
+        /* Prevent any cutting of content */
+        img, svg, canvas {
+            max-width: 100%;
+            height: auto;
+        }
+        /* Ensure flexbox and grid layouts don't overflow */
+        .flex, .grid, [style*="display: flex"], [style*="display: grid"] {
+            flex-wrap: wrap;
+        }
     </style>
 </head>
 <body>
-    ${htmlCode}
+    <div class="wireframe-container">
+        ${htmlCode}
+    </div>
 </body>
 </html>`;
     
@@ -76,8 +92,8 @@ export class PNGZipExporter {
       const checkLoad = () => {
         const doc = iframe.contentDocument;
         if (doc && doc.readyState === 'complete') {
-          // Wait for styles and images to load
-          setTimeout(resolve, 1500);
+          // Wait longer for complete rendering and layout
+          setTimeout(resolve, 2500);
         } else {
           setTimeout(checkLoad, 100);
         }
@@ -104,25 +120,50 @@ export class PNGZipExporter {
           return;
         }
 
-        // Use html2canvas for high-quality capture
-        const canvas = await html2canvas(doc.body, {
-          width: 1200,
-          height: 800,
-          scale: 3, // High resolution (3x scale for crisp quality)
+        // Calculate actual content dimensions
+        const container = doc.querySelector('.wireframe-container') || doc.body;
+        const rect = container.getBoundingClientRect();
+        const actualWidth = Math.max(1400, Math.ceil(rect.width + 40)); // Add padding
+        const actualHeight = Math.max(1000, Math.ceil(rect.height + 40)); // Add padding
+
+        console.log(`Capturing wireframe at ${actualWidth}x${actualHeight} for ${wireframe.pageName}`);
+
+        // Use html2canvas for complete wireframe capture
+        const canvas = await html2canvas(container as Element, {
+          width: actualWidth,
+          height: actualHeight,
+          scale: 2, // Reduced scale but larger dimensions for complete capture
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           logging: false,
           removeContainer: true,
           imageTimeout: 30000,
+          scrollX: 0,
+          scrollY: 0,
+          x: 0,
+          y: 0,
+          foreignObjectRendering: true,
           onclone: (clonedDoc) => {
-            // Ensure all styles are applied in cloned document
+            // Ensure all styles are applied and content is visible
             const style = clonedDoc.createElement('style');
             style.textContent = `
               * { 
                 -webkit-font-smoothing: antialiased;
                 -moz-osx-font-smoothing: grayscale;
                 text-rendering: optimizeLegibility;
+                overflow: visible !important;
+              }
+              body, html {
+                overflow: visible !important;
+                height: auto !important;
+                min-height: ${actualHeight}px !important;
+                width: ${actualWidth}px !important;
+              }
+              .wireframe-container {
+                overflow: visible !important;
+                height: auto !important;
+                min-height: 100% !important;
               }
             `;
             clonedDoc.head.appendChild(style);

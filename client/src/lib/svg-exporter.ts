@@ -207,16 +207,27 @@ export class SVGExporter {
           return;
         }
 
-        // Use html2canvas to capture the exact visual representation
-        const canvas = await html2canvas(doc.body, {
-          width: 1200,
-          height: 800,
+        // Calculate actual content dimensions for complete capture
+        const container = doc.querySelector('.wireframe-container') || doc.body;
+        const rect = container.getBoundingClientRect();
+        const actualWidth = Math.max(1400, Math.ceil(rect.width + 40));
+        const actualHeight = Math.max(1000, Math.ceil(rect.height + 40));
+
+        // Use html2canvas to capture the complete wireframe
+        const canvas = await html2canvas(container as Element, {
+          width: actualWidth,
+          height: actualHeight,
           scale: 2, // High resolution
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
           logging: false,
-          removeContainer: true
+          removeContainer: true,
+          scrollX: 0,
+          scrollY: 0,
+          x: 0,
+          y: 0,
+          foreignObjectRendering: true
         });
 
         // Convert canvas to SVG with embedded image
@@ -239,37 +250,46 @@ export class SVGExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '1200px';
-    iframe.style.height = '800px';
+    iframe.style.width = '1400px';
+    iframe.style.height = '1000px';
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
+    iframe.style.overflow = 'visible';
     
-    // Create optimized HTML that matches the original wireframe exactly
+    // Create optimized HTML for complete wireframe capture
     const fullHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1200, initial-scale=1.0">
+    <meta name="viewport" content="width=1400, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
-        body {
+        html, body {
             margin: 0;
-            padding: 0;
-            width: 1200px;
-            height: 800px;
-            overflow: hidden;
+            padding: 20px;
+            width: 1400px;
+            min-height: 1000px;
+            overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         * {
             box-sizing: border-box;
         }
+        .wireframe-container {
+            width: 100%;
+            min-height: 100%;
+            padding: 20px;
+            overflow: visible;
+        }
     </style>
 </head>
 <body>
-    ${htmlCode}
+    <div class="wireframe-container">
+        ${htmlCode}
+    </div>
 </body>
 </html>`;
     
