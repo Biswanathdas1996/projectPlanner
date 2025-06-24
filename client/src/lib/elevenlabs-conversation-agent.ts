@@ -177,7 +177,7 @@ export class ElevenLabsConversationAgent {
         // Then speak the response after a brief delay
         setTimeout(() => {
           this.speakMessage(randomResponse);
-        }, 300);
+        }, 500);
       }, 1500 + Math.random() * 1000); // Simulate realistic response time
       
     } catch (error) {

@@ -520,6 +520,14 @@ ${conversation.map(msg => `
             elevenLabsAgentRef.current.sendTextMessage(transcript);
           }
           
+          // Add user message to conversation history
+          setConversationHistory(prev => [...prev, {
+            type: 'user_message',
+            message: transcript,
+            sessionId: elevenLabsAgentRef.current?.getSessionId() || 'voice-session',
+            timestamp: new Date(),
+          }]);
+          
           // Also process through local agent for context
           handleUserInputFromVoice(transcript);
         }
