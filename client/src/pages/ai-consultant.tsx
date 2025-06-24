@@ -111,9 +111,9 @@ export default function AIConsultant() {
       const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
       if (!apiKey) {
         toast({ 
-          title: "API key missing", 
-          description: "ElevenLabs API key is required for voice conversation", 
-          variant: "destructive" 
+          title: "Voice features unavailable", 
+          description: "ElevenLabs API key not configured. Using text mode instead.", 
+          variant: "default" 
         });
         return;
       }
@@ -491,6 +491,11 @@ ${conversation.map(msg => `
             <Badge variant="outline" className="text-sm">
               {confidence}% confidence
             </Badge>
+            {!import.meta.env.VITE_ELEVENLABS_API_KEY && (
+              <Badge variant="outline" className="text-sm text-orange-600 border-orange-300">
+                Text Mode Only
+              </Badge>
+            )}
           </div>
           
           {/* Progress Bar */}
@@ -559,8 +564,9 @@ ${conversation.map(msg => `
                     {!isVoiceMode ? (
                       <Button
                         onClick={startVoiceConversation}
-                        disabled={isProcessing}
+                        disabled={isProcessing || !import.meta.env.VITE_ELEVENLABS_API_KEY}
                         className="flex-1"
+                        variant={import.meta.env.VITE_ELEVENLABS_API_KEY ? "default" : "outline"}
                       >
                         {isProcessing ? (
                           <>
@@ -570,7 +576,7 @@ ${conversation.map(msg => `
                         ) : (
                           <>
                             <Mic className="h-4 w-4 mr-2" />
-                            Start Voice Conversation
+                            {import.meta.env.VITE_ELEVENLABS_API_KEY ? 'Start Voice Conversation' : 'Voice Unavailable'}
                           </>
                         )}
                       </Button>
