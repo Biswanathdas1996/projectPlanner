@@ -5793,41 +5793,6 @@ ${selectedPageCode.jsCode}
                   <Button
                     onClick={async () => {
                       try {
-                        const wireframesForExport: WireframeSVGExport[] = generatedWireframes.map(w => ({
-                          id: w.id,
-                          pageName: w.pageName,
-                          htmlCode: w.htmlCode,
-                          cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
-                        }));
-                        
-                        await SVGExporter.downloadAllWireframesAsSVG(wireframesForExport);
-                        
-                        toast({
-                          title: "SVG Export Complete",
-                          description: `Downloaded ${wireframesForExport.length} high-quality SVG wireframes`,
-                        });
-                      } catch (error) {
-                        console.error("SVG export error:", error);
-                        toast({
-                          title: "Export Failed",
-                          description: "Failed to export wireframes as SVG",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-green-200 text-green-700 hover:text-green-800 hover:border-green-300"
-                  >
-                    <Download className="h-4 w-4" />
-                    Export as SVG
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      try {
                         toast({
                           title: "Preparing Figma Export",
                           description: "Optimizing wireframes for html.to.design conversion...",

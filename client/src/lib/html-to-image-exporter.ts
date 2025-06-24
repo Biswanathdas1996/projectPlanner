@@ -1,5 +1,5 @@
-import { toPng } from 'html-to-image';
-import JSZip from 'jszip';
+import { toPng } from "html-to-image";
+import JSZip from "jszip";
 
 export interface WireframeHTMLToImageExport {
   id: string;
@@ -12,7 +12,10 @@ export interface WireframeHTMLToImageExport {
 }
 
 export class HTMLToImageExporter {
-  private static createFullPageHTML(htmlCode: string, pageName: string): string {
+  private static createFullPageHTML(
+    htmlCode: string,
+    pageName: string,
+  ): string {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -79,46 +82,55 @@ export class HTMLToImageExporter {
 </html>`;
   }
 
-  private static async convertWireframeToPNG(wireframe: WireframeHTMLToImageExport): Promise<Blob> {
-    console.log(`Converting ${wireframe.pageName} to PNG using html-to-image...`);
-    
+  private static async convertWireframeToPNG(
+    wireframe: WireframeHTMLToImageExport,
+  ): Promise<Blob> {
+    console.log(
+      `Converting ${wireframe.pageName} to PNG using html-to-image...`,
+    );
+
     // Create iframe for isolated rendering
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'absolute';
-    iframe.style.left = '-9999px';
-    iframe.style.top = '-9999px';
-    iframe.style.width = '1600px';
-    iframe.style.height = '1200px';
-    iframe.style.border = 'none';
-    iframe.style.visibility = 'hidden';
-    iframe.style.backgroundColor = '#ffffff';
-    
+    const iframe = document.createElement("iframe");
+    iframe.style.position = "absolute";
+    iframe.style.left = "-9999px";
+    iframe.style.top = "-9999px";
+    iframe.style.width = "1600px";
+    iframe.style.height = "1200px";
+    iframe.style.border = "none";
+    iframe.style.visibility = "hidden";
+    iframe.style.backgroundColor = "#ffffff";
+
     document.body.appendChild(iframe);
-    
+
     try {
       // Create complete HTML with wireframe content
-      const fullHTML = this.createFullPageHTML(wireframe.htmlCode, wireframe.pageName);
-      
+      const fullHTML = this.createFullPageHTML(
+        wireframe.htmlCode,
+        wireframe.pageName,
+      );
+
       // Set iframe content
-      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      const iframeDoc =
+        iframe.contentDocument || iframe.contentWindow?.document;
       if (!iframeDoc) {
-        throw new Error('Cannot access iframe document');
+        throw new Error("Cannot access iframe document");
       }
-      
+
       iframeDoc.open();
       iframeDoc.write(fullHTML);
       iframeDoc.close();
-      
+
       // Wait for content to load
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Get the container element
-      const container = iframeDoc.querySelector('#capture-container') || iframeDoc.body;
-      
+      const container =
+        iframeDoc.querySelector("#capture-container") || iframeDoc.body;
+
       if (!container) {
-        throw new Error('Cannot find container element');
+        throw new Error("Cannot find container element");
       }
-      
+
       // Get actual content dimensions
       const contentWidth = Math.max(
         container.scrollWidth,
@@ -126,55 +138,62 @@ export class HTMLToImageExporter {
         (container as HTMLElement).offsetWidth,
         iframeDoc.documentElement.scrollWidth,
         iframeDoc.body.scrollWidth,
-        1400
+        1400,
       );
-      
+
       const contentHeight = Math.max(
         container.scrollHeight,
         container.clientHeight,
         (container as HTMLElement).offsetHeight,
         iframeDoc.documentElement.scrollHeight,
         iframeDoc.body.scrollHeight,
-        1000
+        1000,
       );
-      
-      console.log(`html-to-image capture dimensions for ${wireframe.pageName}: ${contentWidth}x${contentHeight}`);
-      
+
+      console.log(
+        `html-to-image capture dimensions for ${wireframe.pageName}: ${contentWidth}x${contentHeight}`,
+      );
+
       // Use html-to-image to capture the complete element with improved settings
       const dataUrl = await toPng(container as HTMLElement, {
         width: contentWidth,
         height: contentHeight,
-        backgroundColor: '#ffffff',
+        backgroundColor: "#ffffff",
         pixelRatio: 3, // Higher quality for better text rendering
         canvasWidth: contentWidth,
         canvasHeight: contentHeight,
         quality: 1.0,
         style: {
-          transform: 'scale(1)',
-          transformOrigin: 'top left',
-          fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
-          fontSize: '16px',
-          lineHeight: '1.5',
-          textRendering: 'optimizeLegibility',
-          WebkitFontSmoothing: 'antialiased',
-          MozOsxFontSmoothing: 'grayscale'
+          transform: "scale(1)",
+          transformOrigin: "top left",
+          fontFamily:
+            '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif',
+          fontSize: "16px",
+          lineHeight: "1.5",
+          textRendering: "optimizeLegibility",
+          WebkitFontSmoothing: "antialiased",
+          MozOsxFontSmoothing: "grayscale",
         },
         filter: (node) => {
           // Ensure all nodes are captured
           return true;
-        }
+        },
       });
-      
+
       // Convert data URL to blob
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      
-      console.log(`Successfully converted ${wireframe.pageName} to PNG (${Math.round(blob.size / 1024)}KB)`);
-      
+
+      console.log(
+        `Successfully converted ${wireframe.pageName} to PNG (${Math.round(blob.size / 1024)}KB)`,
+      );
+
       return blob;
-      
     } catch (error) {
-      console.error(`Error converting ${wireframe.pageName} with html-to-image:`, error);
+      console.error(
+        `Error converting ${wireframe.pageName} with html-to-image:`,
+        error,
+      );
       throw error;
     } finally {
       // Clean up iframe
@@ -182,68 +201,78 @@ export class HTMLToImageExporter {
     }
   }
 
-  static async exportAllWireframesAsHTMLToImagePNG(wireframes: WireframeHTMLToImageExport[]): Promise<void> {
+  static async exportAllWireframesAsHTMLToImagePNG(
+    wireframes: WireframeHTMLToImageExport[],
+  ): Promise<void> {
     try {
-      console.log(`Starting html-to-image PNG export for ${wireframes.length} wireframes...`);
-      
+      console.log(
+        `Starting html-to-image PNG export for ${wireframes.length} wireframes...`,
+      );
+
       const zip = new JSZip();
       const folder = zip.folder("wireframes-html-to-image-png");
-      
+
       if (!folder) {
-        throw new Error('Failed to create ZIP folder');
+        throw new Error("Failed to create ZIP folder");
       }
-      
+
       // Process each wireframe
       for (let i = 0; i < wireframes.length; i++) {
         const wireframe = wireframes[i];
         try {
-          console.log(`Processing ${wireframe.pageName} (${i + 1}/${wireframes.length})...`);
-          
+          console.log(
+            `Processing ${wireframe.pageName} (${i + 1}/${wireframes.length})...`,
+          );
+
           const pngBlob = await this.convertWireframeToPNG(wireframe);
-          
+
           // Add PNG to ZIP
-          const filename = `${wireframe.pageName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}.png`;
+          const filename = `${wireframe.pageName
+            .toLowerCase()
+            .replace(/\s+/g, "-")
+            .replace(/[^a-z0-9-]/g, "")}.png`;
           folder.file(filename, pngBlob);
-          
+
           console.log(`Added ${filename} to ZIP archive`);
-          
         } catch (error) {
           console.error(`Failed to process ${wireframe.pageName}:`, error);
           // Continue with other wireframes even if one fails
         }
       }
-      
+
       // Add metadata file
       const metadata = {
-        exportType: 'html-to-image PNG Export',
+        exportType: "html-to-image PNG Export",
         totalWireframes: wireframes.length,
         exportDate: new Date().toISOString(),
-        captureMethod: 'html-to-image library with complete element capture',
-        description: 'High-quality PNG images of wireframes captured using html-to-image library'
+        captureMethod: "html-to-image library with complete element capture",
+        description:
+          "High-quality PNG images of wireframes captured using html-to-image library",
       };
-      
-      folder.file('export-info.json', JSON.stringify(metadata, null, 2));
-      
+
+      folder.file("export-info.json", JSON.stringify(metadata, null, 2));
+
       // Generate and download ZIP
-      console.log('Generating ZIP archive...');
-      const zipBlob = await zip.generateAsync({ 
-        type: 'blob',
-        compression: 'DEFLATE',
-        compressionOptions: { level: 6 }
+      console.log("Generating ZIP archive...");
+      const zipBlob = await zip.generateAsync({
+        type: "blob",
+        compression: "DEFLATE",
+        compressionOptions: { level: 6 },
       });
-      
+
       // Download the ZIP file
       const url = URL.createObjectURL(zipBlob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `wireframes-html-to-image-export-${new Date().toISOString().split('T')[0]}.zip`;
+      link.download = `wireframes-html-to-image-export-${new Date().toISOString().split("T")[0]}.zip`;
       link.click();
       URL.revokeObjectURL(url);
-      
-      console.log(`html-to-image PNG export completed: ${(zipBlob.size / (1024 * 1024)).toFixed(2)}MB`);
-      
+
+      console.log(
+        `html-to-image PNG export completed: ${(zipBlob.size / (1024 * 1024)).toFixed(2)}MB`,
+      );
     } catch (error) {
-      console.error('Error in html-to-image PNG export:', error);
+      console.error("Error in html-to-image PNG export:", error);
       throw error;
     }
   }
