@@ -36,7 +36,6 @@ import {
   type SearchProgress,
 } from "@/lib/web-brand-search-agent";
 import { JsonEditor } from "@/components/json-editor";
-import { BrandGuidelinesViewer } from "@/components/brand-guidelines-viewer";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -49,8 +48,6 @@ import {
   MessageSquare,
   Search,
   Settings,
-  ToggleLeft,
-  ToggleRight,
 } from "lucide-react";
 
 interface MultimodalAnalysisProgress {
@@ -102,7 +99,6 @@ export function BrandGuidelinesUpload({
   const [searchProgress, setSearchProgress] = useState<SearchProgress | null>(
     null
   );
-  const [useSpecializedViewer, setUseSpecializedViewer] = useState(true);
   const { toast } = useToast();
 
   if (!visible) return null;
@@ -788,64 +784,20 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
             </div>
 
             <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
-              {/* View Toggle */}
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-emerald-800 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  Brand Guidelines Data
-                </h3>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setUseSpecializedViewer(!useSpecializedViewer)}
-                  className="flex items-center gap-2"
-                >
-                  {useSpecializedViewer ? (
-                    <>
-                      <Code className="h-4 w-4" />
-                      Raw JSON
-                    </>
-                  ) : (
-                    <>
-                      <Settings className="h-4 w-4" />
-                      Structured View
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {/* Conditional Rendering */}
-              {useSpecializedViewer ? (
-                <BrandGuidelinesViewer
-                  data={brandGuidelines}
-                  onDataChange={(newData) => {
-                    setBrandGuidelines(newData);
-                    // Also update the stored guidelines if this came from storage
-                    if (newData && typeof newData === 'object' && newData.brand) {
-                      BrandGuidelinesStorage.updateExisting(newData);
-                    }
-                    // Keep legacy localStorage for backward compatibility
-                    localStorage.setItem("brand_guidelines", JSON.stringify(newData));
-                  }}
-                  className="mb-6"
-                />
-              ) : (
-                <JsonEditor
-                  data={brandGuidelines}
-                  onDataChange={(newData) => {
-                    setBrandGuidelines(newData);
-                    // Also update the stored guidelines if this came from storage
-                    if (newData && typeof newData === 'object' && newData.brand) {
-                      BrandGuidelinesStorage.updateExisting(newData);
-                    }
-                    // Keep legacy localStorage for backward compatibility
-                    localStorage.setItem("brand_guidelines", JSON.stringify(newData));
-                  }}
-                  storageKey="brand_guidelines"
-                  title="Brand Guidelines JSON"
-                  className="mb-6"
-                />
-              )}
+              {/* Dynamic Brand Guidelines JSON Editor */}
+              <JsonEditor
+                data={brandGuidelines}
+                onDataChange={(newData) => {
+                  setBrandGuidelines(newData);
+                  // Also update the stored guidelines if this came from storage
+                  if (newData && typeof newData === 'object' && newData.brand) {
+                    BrandGuidelinesStorage.updateExisting(newData);
+                  }
+                }}
+                storageKey="brand_guidelines"
+                title="Brand Guidelines Data"
+                className="mb-6"
+              />
             </div>
           </div>
         </div>
