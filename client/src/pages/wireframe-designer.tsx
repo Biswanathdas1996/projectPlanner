@@ -5791,41 +5791,7 @@ ${selectedPageCode.jsCode}
                 </h2>
                 <div className="flex gap-3">
                   
-                  <Button
-                    onClick={async () => {
-                      try {
-                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
-                          id: w.id,
-                          pageName: w.pageName,
-                          htmlCode: w.htmlCode,
-                          cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
-                        }));
-                        
-                        await FigmaExporter.downloadDesignTokens(wireframesForExport);
-                        
-                        toast({
-                          title: "Design Tokens Exported",
-                          description: `Successfully exported design tokens from ${wireframesForExport.length} wireframes`,
-                        });
-                      } catch (error) {
-                        console.error("Design tokens export error:", error);
-                        toast({
-                          title: "Export Failed", 
-                          description: "Failed to export design tokens",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-blue-200 text-blue-700 hover:text-blue-800 hover:border-blue-300"
-                  >
-                    <Palette className="h-4 w-4" />
-                    Export Tokens
-                  </Button>
+                  
                   <Button
                     onClick={async () => {
                       try {
