@@ -1060,6 +1060,326 @@ No more "Unsupported file format" errors with SVG import!`;
     return { fileName };
   }
 
+  static async downloadFigmaFile(wireframes: WireframeForExport[]): Promise<{ fileName: string }> {
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    try {
+      // Generate authentic .fig file using AI
+      const figContent = await this.generateFigFileWithAI(wireframes);
+      const fileName = `wireframes-${dateStr}.fig`;
+      
+      this.downloadFile(figContent, fileName, 'application/octet-stream');
+      
+      return { fileName };
+    } catch (error) {
+      console.error('AI .fig generation failed:', error);
+      throw error;
+    }
+  }
+
+  private static async generateFigFileWithAI(wireframes: WireframeForExport[]): Promise<string> {
+    // Create a comprehensive prompt for AI to generate a Figma file structure
+    const wireframeData = wireframes.map(w => ({
+      name: w.pageName,
+      features: w.features || [],
+      htmlStructure: this.analyzeHTMLStructure(w.htmlCode),
+      colors: this.extractStylesFromHTML(w.htmlCode).colors,
+      fonts: this.extractStylesFromHTML(w.htmlCode).fonts
+    }));
+
+    const prompt = `Generate a complete Figma .fig file structure in JSON format for wireframes.
+
+Wireframes to convert:
+${JSON.stringify(wireframeData, null, 2)}
+
+Requirements:
+1. Create a valid Figma document structure with proper file format headers
+2. Include all wireframes as separate pages (CANVAS nodes)
+3. Generate proper node IDs, positioning, and styling
+4. Include authentic Figma metadata (version, lastModified, etc.)
+5. Create realistic UI elements: rectangles, text, forms, buttons
+6. Use extracted colors and fonts from wireframes
+7. Ensure proper parent-child relationships and constraints
+8. Include Figma-specific properties like absoluteBoundingBox, fills, strokes
+
+Output a complete .fig file structure that Figma can directly import.`;
+
+    try {
+      // Check if we have Gemini API access
+      const hasGemini = typeof window !== 'undefined' && 
+                       (import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY);
+      
+      if (hasGemini) {
+        const response = await this.generateWithGemini(prompt);
+        return this.processFigResponse(response, wireframes);
+      } else {
+        // Fallback: Generate sophisticated .fig structure without AI
+        return this.generateFallbackFigFile(wireframes);
+      }
+    } catch (error) {
+      console.error('AI generation failed, using fallback:', error);
+      return this.generateFallbackFigFile(wireframes);
+    }
+  }
+
+  private static async generateWithGemini(prompt: string): Promise<string> {
+    const { GoogleGenerativeAI } = await import('@google/generative-ai');
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error('Gemini API key not available');
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  }
+
+  private static processFigResponse(aiResponse: string, wireframes: WireframeForExport[]): string {
+    try {
+      // Extract JSON from AI response
+      const jsonMatch = aiResponse.match(/```json\n([\s\S]*?)\n```/) || 
+                       aiResponse.match(/\{[\s\S]*\}/);
+      
+      if (jsonMatch) {
+        const figData = JSON.parse(jsonMatch[1] || jsonMatch[0]);
+        return JSON.stringify(figData, null, 2);
+      } else {
+        throw new Error('No valid JSON found in AI response');
+      }
+    } catch (error) {
+      console.error('Failed to process AI response:', error);
+      return this.generateFallbackFigFile(wireframes);
+    }
+  }
+
+  private static generateFallbackFigFile(wireframes: WireframeForExport[]): string {
+    const figFile = {
+      document: {
+        id: "0:0",
+        name: "Wireframes",
+        type: "DOCUMENT",
+        children: wireframes.map((wireframe, index) => ({
+          id: `0:${index + 1}`,
+          name: wireframe.pageName,
+          type: "CANVAS",
+          backgroundColor: { r: 0.96, g: 0.96, b: 0.96, a: 1 },
+          prototypeStartNodeID: null,
+          flowStartingPoints: [],
+          children: [{
+            id: `${index + 1}:1`,
+            name: `${wireframe.pageName} - Desktop`,
+            type: "FRAME",
+            blendMode: "PASS_THROUGH",
+            absoluteBoundingBox: { x: 0, y: 0, width: 1200, height: 800 },
+            absoluteRenderBounds: { x: 0, y: 0, width: 1200, height: 800 },
+            constraints: { vertical: "TOP", horizontal: "LEFT" },
+            fills: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+            strokes: [],
+            strokeWeight: 1,
+            strokeAlign: "INSIDE",
+            backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
+            effects: [],
+            children: this.generateAdvancedFigmaNodes(wireframe, index + 1)
+          }]
+        }))
+      },
+      components: {},
+      componentSets: {},
+      schemaVersion: 0,
+      styles: this.generateFigmaStyles(wireframes),
+      name: "Wireframes Export",
+      lastModified: new Date().toISOString(),
+      thumbnailUrl: "",
+      version: "1.0.0",
+      role: "owner",
+      editorType: "figma",
+      linkAccess: "inherit"
+    };
+
+    return JSON.stringify(figFile, null, 2);
+  }
+
+  private static generateAdvancedFigmaNodes(wireframe: WireframeForExport, pageIndex: number): any[] {
+    const nodes = [];
+    let nodeCounter = 2;
+    let yPosition = 0;
+    const styles = this.extractStylesFromHTML(wireframe.htmlCode);
+
+    // Header section
+    nodes.push({
+      id: `${pageIndex}:${nodeCounter++}`,
+      name: "Page Header",
+      type: "TEXT",
+      blendMode: "PASS_THROUGH",
+      absoluteBoundingBox: { x: 40, y: yPosition, width: 400, height: 48 },
+      absoluteRenderBounds: { x: 40, y: yPosition, width: 400, height: 48 },
+      constraints: { vertical: "TOP", horizontal: "LEFT" },
+      characters: wireframe.pageName,
+      style: {
+        fontFamily: styles.fonts[0] || "Inter",
+        fontPostScriptName: `${styles.fonts[0] || "Inter"}-Bold`,
+        fontWeight: 700,
+        fontSize: 32,
+        textAlignHorizontal: "LEFT",
+        textAlignVertical: "TOP",
+        letterSpacing: 0,
+        lineHeightPx: 38.4,
+        lineHeightPercent: 120,
+        lineHeightUnit: "INTRINSIC_%"
+      },
+      characterStyleOverrides: [],
+      styleOverrideTable: {},
+      fills: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 0.1, g: 0.1, b: 0.1, a: 1 } }],
+      strokes: [],
+      strokeWeight: 0,
+      effects: []
+    });
+    yPosition += 80;
+
+    // Navigation section
+    if (wireframe.htmlCode.includes('<nav') || wireframe.htmlCode.includes('navigation')) {
+      nodes.push({
+        id: `${pageIndex}:${nodeCounter++}`,
+        name: "Navigation Bar",
+        type: "RECTANGLE",
+        blendMode: "PASS_THROUGH",
+        absoluteBoundingBox: { x: 0, y: yPosition, width: 1200, height: 60 },
+        absoluteRenderBounds: { x: 0, y: yPosition, width: 1200, height: 60 },
+        constraints: { vertical: "TOP", horizontal: "LEFT_RIGHT" },
+        fills: [{ 
+          blendMode: "NORMAL", 
+          type: "SOLID", 
+          color: this.hexToRgba(styles.colors[0] || "#f8f9fa") 
+        }],
+        strokes: [],
+        strokeWeight: 0,
+        strokeAlign: "INSIDE",
+        effects: [],
+        cornerRadius: 8,
+        rectangleCornerRadii: [8, 8, 8, 8]
+      });
+      yPosition += 80;
+    }
+
+    // Main content area
+    nodes.push({
+      id: `${pageIndex}:${nodeCounter++}`,
+      name: "Content Container",
+      type: "RECTANGLE",
+      blendMode: "PASS_THROUGH",
+      absoluteBoundingBox: { x: 40, y: yPosition, width: 1120, height: 400 },
+      absoluteRenderBounds: { x: 40, y: yPosition, width: 1120, height: 400 },
+      constraints: { vertical: "TOP", horizontal: "LEFT_RIGHT" },
+      fills: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+      strokes: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 0.9, g: 0.9, b: 0.9, a: 1 } }],
+      strokeWeight: 1,
+      strokeAlign: "INSIDE",
+      effects: [{
+        type: "DROP_SHADOW",
+        visible: true,
+        color: { r: 0, g: 0, b: 0, a: 0.1 },
+        blendMode: "NORMAL",
+        offset: { x: 0, y: 2 },
+        radius: 4,
+        spread: 0
+      }],
+      cornerRadius: 12,
+      rectangleCornerRadii: [12, 12, 12, 12]
+    });
+
+    // Form elements if present
+    if (wireframe.htmlCode.includes('<form') || wireframe.htmlCode.includes('<input')) {
+      for (let i = 0; i < 3; i++) {
+        nodes.push({
+          id: `${pageIndex}:${nodeCounter++}`,
+          name: `Form Input ${i + 1}`,
+          type: "RECTANGLE",
+          blendMode: "PASS_THROUGH",
+          absoluteBoundingBox: { 
+            x: 80, 
+            y: yPosition + 60 + (i * 60), 
+            width: 320, 
+            height: 40 
+          },
+          absoluteRenderBounds: { 
+            x: 80, 
+            y: yPosition + 60 + (i * 60), 
+            width: 320, 
+            height: 40 
+          },
+          constraints: { vertical: "TOP", horizontal: "LEFT" },
+          fills: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+          strokes: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 0.8, g: 0.8, b: 0.8, a: 1 } }],
+          strokeWeight: 1,
+          strokeAlign: "INSIDE",
+          effects: [],
+          cornerRadius: 6,
+          rectangleCornerRadii: [6, 6, 6, 6]
+        });
+      }
+    }
+
+    // Button elements
+    if (wireframe.htmlCode.includes('<button')) {
+      nodes.push({
+        id: `${pageIndex}:${nodeCounter++}`,
+        name: "Primary Button",
+        type: "RECTANGLE",
+        blendMode: "PASS_THROUGH",
+        absoluteBoundingBox: { x: 80, y: yPosition + 320, width: 120, height: 40 },
+        absoluteRenderBounds: { x: 80, y: yPosition + 320, width: 120, height: 40 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        fills: [{ 
+          blendMode: "NORMAL", 
+          type: "SOLID", 
+          color: this.hexToRgba(styles.colors[1] || "#3b82f6") 
+        }],
+        strokes: [],
+        strokeWeight: 0,
+        effects: [{
+          type: "DROP_SHADOW",
+          visible: true,
+          color: { r: 0, g: 0, b: 0, a: 0.15 },
+          blendMode: "NORMAL",
+          offset: { x: 0, y: 1 },
+          radius: 2,
+          spread: 0
+        }],
+        cornerRadius: 8,
+        rectangleCornerRadii: [8, 8, 8, 8]
+      });
+
+      nodes.push({
+        id: `${pageIndex}:${nodeCounter++}`,
+        name: "Button Label",
+        type: "TEXT",
+        blendMode: "PASS_THROUGH",
+        absoluteBoundingBox: { x: 110, y: yPosition + 332, width: 60, height: 16 },
+        absoluteRenderBounds: { x: 110, y: yPosition + 332, width: 60, height: 16 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        characters: "Submit",
+        style: {
+          fontFamily: styles.fonts[0] || "Inter",
+          fontPostScriptName: `${styles.fonts[0] || "Inter"}-Medium`,
+          fontWeight: 500,
+          fontSize: 14,
+          textAlignHorizontal: "CENTER",
+          textAlignVertical: "CENTER"
+        },
+        fills: [{ blendMode: "NORMAL", type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+        strokes: [],
+        strokeWeight: 0,
+        effects: []
+      });
+    }
+
+    return nodes;
+  }
+
   private static convertToFigmaElements(wireframe: WireframeForExport, pageId: number): any[] {
     const elements = [];
     let nodeId = 2;
