@@ -35,6 +35,7 @@ import {
   type BrandAsset,
   type SearchProgress,
 } from "@/lib/web-brand-search-agent";
+import { JsonEditor } from "@/components/json-editor";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -46,6 +47,7 @@ import {
   X,
   MessageSquare,
   Search,
+  Settings,
 } from "lucide-react";
 
 interface MultimodalAnalysisProgress {
@@ -782,19 +784,20 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
             </div>
 
             <div className="p-4 overflow-auto h-[calc(90vh-120px)]">
-              {/* Brand Guidelines JSON Display */}
-              <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-blue-50 rounded-lg border border-emerald-200">
-                <h3 className="text-lg font-semibold text-emerald-800 mb-3 flex items-center gap-2">
-                  <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                  Extracted Brand Guidelines JSON
-                </h3>
-                <div className="bg-white rounded-lg border p-4 max-h-96 overflow-auto">
-                  <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                    {brandGuidelines ||
-                      JSON.stringify(brandGuidelines, null, 2)}
-                  </pre>
-                </div>
-              </div>
+              {/* Dynamic Brand Guidelines JSON Editor */}
+              <JsonEditor
+                data={brandGuidelines}
+                onDataChange={(newData) => {
+                  setBrandGuidelines(newData);
+                  // Also update the stored guidelines if this came from storage
+                  if (newData && typeof newData === 'object' && newData.brand) {
+                    BrandGuidelinesStorage.updateExisting(newData);
+                  }
+                }}
+                storageKey="brand_guidelines"
+                title="Brand Guidelines Data"
+                className="mb-6"
+              />
             </div>
           </div>
         </div>

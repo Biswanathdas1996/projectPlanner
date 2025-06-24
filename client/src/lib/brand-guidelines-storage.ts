@@ -107,6 +107,20 @@ export class BrandGuidelinesStorage {
     return null;
   }
 
+  static updateExisting(newBrandData: ExternalBrandJSON): boolean {
+    const guidelines = this.getAll();
+    const index = guidelines.findIndex(g => g.brandData.brand === newBrandData.brand);
+    
+    if (index !== -1) {
+      guidelines[index].brandData = newBrandData;
+      guidelines[index].extractedAt = new Date().toISOString();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(guidelines));
+      console.log(`🔄 Updated existing brand guideline data for: ${newBrandData.brand}`);
+      return true;
+    }
+    return false;
+  }
+
   // Helper methods for easy access to brand data
   static getBrandColors(guideline: StoredBrandGuideline): Array<{name: string, hex: string}> {
     const colors: Array<{name: string, hex: string}> = [];
