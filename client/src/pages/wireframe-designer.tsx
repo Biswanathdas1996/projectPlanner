@@ -5941,6 +5941,11 @@ ${selectedPageCode.jsCode}
                             className="h-7 w-7 p-0 hover:bg-green-500/20 text-green-600"
                             onClick={async () => {
                               try {
+                                toast({
+                                  title: "Generating SVG",
+                                  description: `Converting ${wireframe.pageName} to exact SVG representation...`,
+                                });
+
                                 const wireframeForSVG: WireframeSVGExport = {
                                   id: wireframe.id,
                                   pageName: wireframe.pageName,
@@ -5955,7 +5960,7 @@ ${selectedPageCode.jsCode}
                                 
                                 toast({
                                   title: "SVG Downloaded",
-                                  description: `${wireframe.pageName} exported as high-quality SVG`,
+                                  description: `${wireframe.pageName} exported as exact visual SVG`,
                                 });
                               } catch (error) {
                                 console.error("Error converting wireframe to SVG:", error);

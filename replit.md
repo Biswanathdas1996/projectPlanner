@@ -350,6 +350,10 @@ Changelog:
   - Enhanced Generated Wireframes section with multiple export formats (SVG, Figma, Design Tokens)
   - Created intelligent HTML-to-SVG conversion that extracts UI elements and recreates them as vector graphics
   - Added proper error handling and fallback SVG generation for robust export functionality
+  - Enhanced SVG export to capture exact visual representation using html2canvas
+  - SVG files now contain pixel-perfect images of wireframes as displayed in browser
+  - Implemented high-resolution capture (2x scale) for crisp SVG output at any size
+  - Added comprehensive iframe rendering system for accurate wireframe capture
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation

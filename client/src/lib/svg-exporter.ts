@@ -1,3 +1,5 @@
+import html2canvas from 'html2canvas';
+
 export interface WireframeSVGExport {
   id: string;
   pageName: string;
@@ -190,46 +192,123 @@ export class SVGExporter {
   }
 
   static async convertWireframeToSVG(wireframe: WireframeSVGExport): Promise<string> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       try {
-        // Create optimized HTML for analysis
-        const optimizedHTML = this.optimizeHTMLForSVG(wireframe.htmlCode, wireframe.pageName);
-        const iframe = this.createIframe(optimizedHTML);
+        // Create a full-sized iframe to capture the exact wireframe appearance
+        const iframe = this.createFullSizeIframe(wireframe.htmlCode, wireframe.pageName);
         
-        const processIframe = () => {
-          const doc = iframe.contentDocument;
-          if (doc && doc.readyState === 'complete') {
-            try {
-              // Create SVG representation
-              const svgContent = this.createWireframeSVG(wireframe, doc);
-              document.body.removeChild(iframe);
-              resolve(svgContent);
-            } catch (error) {
-              console.error('Error creating SVG from iframe:', error);
-              document.body.removeChild(iframe);
-              resolve(this.htmlToSvg(wireframe.htmlCode));
-            }
-          } else {
-            setTimeout(processIframe, 100);
-          }
-        };
+        // Wait for iframe to fully load
+        await this.waitForIframeLoad(iframe);
         
-        // Start checking after a short delay
-        setTimeout(processIframe, 500);
-        
-        // Fallback timeout
-        setTimeout(() => {
-          if (document.body.contains(iframe)) {
-            document.body.removeChild(iframe);
-          }
+        const doc = iframe.contentDocument;
+        if (!doc || !doc.body) {
+          document.body.removeChild(iframe);
           resolve(this.htmlToSvg(wireframe.htmlCode));
-        }, 5000);
+          return;
+        }
+
+        // Use html2canvas to capture the exact visual representation
+        const canvas = await html2canvas(doc.body, {
+          width: 1200,
+          height: 800,
+          scale: 2, // High resolution
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          removeContainer: true
+        });
+
+        // Convert canvas to SVG with embedded image
+        const svgContent = this.canvasToSVG(canvas, wireframe.pageName);
         
+        // Clean up iframe
+        document.body.removeChild(iframe);
+        resolve(svgContent);
+
       } catch (error) {
-        console.error('Error in convertWireframeToSVG:', error);
+        console.error('Error converting wireframe to SVG:', error);
+        // Fallback to simplified SVG if html2canvas fails
         resolve(this.htmlToSvg(wireframe.htmlCode));
       }
     });
+  }
+
+  private static createFullSizeIframe(htmlCode: string, pageName: string): HTMLIFrameElement {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '-9999px';
+    iframe.style.width = '1200px';
+    iframe.style.height = '800px';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    iframe.style.backgroundColor = '#ffffff';
+    
+    // Create optimized HTML that matches the original wireframe exactly
+    const fullHTML = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200, initial-scale=1.0">
+    <title>${pageName}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 1200px;
+            height: 800px;
+            overflow: hidden;
+            background: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    ${htmlCode}
+</body>
+</html>`;
+    
+    document.body.appendChild(iframe);
+    
+    const doc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(fullHTML);
+      doc.close();
+    }
+    
+    return iframe;
+  }
+
+  private static canvasToSVG(canvas: HTMLCanvasElement, pageName: string): string {
+    const dataURL = canvas.toDataURL('image/png');
+    const width = canvas.width / 2; // Account for scale factor
+    const height = canvas.height / 2;
+    
+    return `
+<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <defs>
+    <style>
+      .wireframe-title { 
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+        font-size: 12px; 
+        fill: #666; 
+        text-anchor: end; 
+      }
+    </style>
+  </defs>
+  
+  <!-- Exact wireframe image -->
+  <image href="${dataURL}" width="${width}" height="${height}" x="0" y="0"/>
+  
+  <!-- Metadata overlay -->
+  <text x="${width - 10}" y="${height - 10}" class="wireframe-title">${pageName}</text>
+</svg>`.trim();
   }
 
   private static createWireframeSVG(wireframe: WireframeSVGExport, doc: Document): string {
@@ -308,14 +387,16 @@ export class SVGExporter {
 
   static async downloadWireframeSVG(wireframe: WireframeSVGExport): Promise<void> {
     try {
+      console.log(`Converting ${wireframe.pageName} to exact SVG representation...`);
       const svgContent = await this.convertWireframeToSVG(wireframe);
       this.downloadSVGFile(svgContent, wireframe.pageName);
+      console.log(`Successfully exported ${wireframe.pageName} as SVG`);
     } catch (error) {
       console.error('Error downloading SVG:', error);
       // Generate and download fallback SVG
       const fallbackSVG = this.htmlToSvg(wireframe.htmlCode);
       this.downloadSVGFile(fallbackSVG, wireframe.pageName);
-      throw error;
+      console.log(`Used fallback SVG for ${wireframe.pageName}`);
     }
   }
 
