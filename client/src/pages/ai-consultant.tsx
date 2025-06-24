@@ -388,7 +388,7 @@ export default function AIConsultant() {
     }
   };
 
-  const startListening = () => {
+  const toggleListening = () => {
     if (!isVoiceMode || !geminiVoiceAgentRef.current) {
       toast({
         title: "Voice mode not active",
@@ -399,9 +399,14 @@ export default function AIConsultant() {
     }
 
     if (isListening) {
+      // Stop listening
+      if (geminiVoiceAgentRef.current.speechRecognition) {
+        geminiVoiceAgentRef.current.speechRecognition.stop();
+      }
+      setIsListening(false);
       toast({
-        title: "Already listening",
-        description: "Please speak now",
+        title: "Stopped listening",
+        description: "Click microphone to start again",
       });
       return;
     }
@@ -411,7 +416,7 @@ export default function AIConsultant() {
       
       toast({
         title: "Listening...",
-        description: "Speak now, I'm listening to your voice",
+        description: "Speak now, click again to stop",
       });
       
     } catch (error) {
@@ -608,8 +613,8 @@ export default function AIConsultant() {
                   <div className="flex gap-2">
                     {isVoiceMode && (
                       <Button
-                        onClick={startListening}
-                        disabled={isProcessing || isListening}
+                        onClick={toggleListening}
+                        disabled={isProcessing}
                         size="lg"
                         className={`w-12 h-12 rounded-full ${
                           isListening 

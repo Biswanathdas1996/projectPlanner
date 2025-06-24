@@ -22,6 +22,7 @@ export class GeminiVoiceAgent {
   private isListening: boolean = false;
   private eventHandler?: (event: VoiceConversationEvent) => void;
   private conversationHistory: Array<{role: string, content: string}> = [];
+  public speechRecognition: any = null;
 
   constructor(config: GeminiVoiceConfig) {
     this.config = config;
@@ -81,6 +82,7 @@ export class GeminiVoiceAgent {
       }
 
       this.speechRecognition = new SpeechRecognition();
+      // Make it accessible for manual control
       this.speechRecognition.continuous = false;
       this.speechRecognition.interimResults = false;
       this.speechRecognition.lang = 'en-US';
@@ -265,12 +267,7 @@ Be direct and conversational for voice interaction. Avoid long explanations.`;
         
         utterance.onend = () => {
           console.log('Speech completed');
-          // Auto-start listening after AI finishes speaking
-          setTimeout(() => {
-            if (this.isActive && !this.isListening) {
-              this.startListening();
-            }
-          }, 1000);
+          // Don't auto-start listening - let user control with button
         };
         
         utterance.onerror = (event) => {
