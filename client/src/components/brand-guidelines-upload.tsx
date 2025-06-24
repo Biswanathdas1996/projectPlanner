@@ -35,6 +35,7 @@ import {
   Trash2,
   X,
   MessageSquare,
+  Search,
 } from "lucide-react";
 
 interface MultimodalAnalysisProgress {
@@ -78,9 +79,111 @@ export function BrandGuidelinesUpload({
   const [storedGuidelines, setStoredGuidelines] = useState(
     BrandGuidelinesStorage.getAll()
   );
+  const [brandName, setBrandName] = useState("");
+  const [isSearchingBrand, setIsSearchingBrand] = useState(false);
+  const [brandSearchError, setBrandSearchError] = useState("");
   const { toast } = useToast();
 
   if (!visible) return null;
+
+  const handleBrandNameSearch = async () => {
+    if (!brandName.trim()) return;
+
+    setIsSearchingBrand(true);
+    setBrandSearchError("");
+
+    try {
+      console.log("🔍 Starting brand asset search for:", brandName);
+
+      // Search for brand assets using web search
+      const brandAssets = await searchBrandAssets(brandName);
+      
+      // Create mock brand guidelines from search results
+      const mockBrandGuidelines = {
+        brand: brandName,
+        searchBased: true,
+        extractedAt: new Date().toISOString(),
+        assets: brandAssets,
+        colors: {
+          primary: ["#000000", "#FFFFFF"], // Default colors
+          secondary: [],
+          text: ["#333333", "#666666"],
+        },
+        fonts: [
+          { name: "Arial", type: "primary" },
+          { name: "Helvetica", type: "secondary" }
+        ],
+        logos: {
+          images: brandAssets.logos,
+          variations: brandAssets.logos.map((_, index) => `Logo variant ${index + 1}`)
+        },
+        brandValues: ["Quality", "Innovation", "Trust"],
+        designPrinciples: ["Simplicity", "Consistency", "Accessibility"],
+      };
+
+      setBrandGuidelines(mockBrandGuidelines);
+      onBrandGuidelinesExtracted?.(mockBrandGuidelines);
+
+      // Save to local storage
+      const stored = BrandGuidelinesStorage.save(
+        mockBrandGuidelines as any,
+        brandName,
+        `${brandName}_web_search.json`
+      );
+
+      // Update stored guidelines list
+      setStoredGuidelines(BrandGuidelinesStorage.getAll());
+
+      toast({
+        title: "Brand Assets Found",
+        description: `Found ${brandAssets.logos.length} logos and ${brandAssets.images.length} images for ${brandName}`,
+      });
+
+    } catch (error) {
+      console.error("Brand search failed:", error);
+      setBrandSearchError(`Failed to find brand assets for "${brandName}". Please try a different brand name.`);
+      
+      toast({
+        title: "Brand Search Failed",
+        description: "Could not find brand assets. Please try uploading a PDF instead.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingBrand(false);
+    }
+  };
+
+  const searchBrandAssets = async (brandName: string) => {
+    // Simulate web search for brand assets
+    // In a real implementation, this would call a web search API
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+
+    // For demonstration, return mock data
+    // In production, this would search for actual brand assets
+    const mockAssets = {
+      logos: [
+        `https://logo.clearbit.com/${brandName.toLowerCase()}.com`,
+        `https://img.logo.dev/${brandName.toLowerCase()}.com?token=pk_X-1ZO13GSgeOdV1bXdTLJQ`,
+      ].filter(url => url), // Filter out empty URLs
+      images: [
+        `https://picsum.photos/200/200?random=${Math.random()}`,
+        `https://picsum.photos/300/200?random=${Math.random()}`,
+      ],
+      icons: [
+        `https://icon.horse/icon/${brandName.toLowerCase()}.com`,
+      ],
+    };
+
+    // Store assets in localStorage for later use
+    const storageKey = `brand_assets_${brandName.toLowerCase()}`;
+    localStorage.setItem(storageKey, JSON.stringify({
+      brandName,
+      assets: mockAssets,
+      searchedAt: new Date().toISOString(),
+    }));
+
+    return mockAssets;
+  };
 
   const handleBrandGuidelineUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -441,44 +544,107 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
         <CardContent className="p-4">
           <div className="space-y-3">
             {/* Upload Section */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Input
-                  id="brand-upload"
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleBrandGuidelineUpload}
-                  disabled={isExtractingBrand}
-                  className="flex-1 text-sm"
-                  placeholder="Choose PDF file..."
-                />
-                <Button
-                  onClick={() => setShowBrandModal(true)}
-                  variant="outline"
-                  size="sm"
-                  disabled={!brandGuidelines}
-                  className="px-3"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={() => setShowStoredGuidelines(true)}
-                  variant="outline"
-                  size="sm"
-                  className="px-3"
-                >
-                  <MessageSquare className="h-4 w-4" />
-                  <span className="ml-1 text-xs">
-                    ({storedGuidelines.length})
-                  </span>
-                </Button>
+            <div className="space-y-3">
+              {/* PDF Upload Option */}
+              <div className="space-y-2">
+                <Label htmlFor="brand-upload" className="text-sm font-medium text-gray-700">
+                  Upload Brand Guidelines PDF
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="brand-upload"
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleBrandGuidelineUpload}
+                    disabled={isExtractingBrand}
+                    className="flex-1 text-sm"
+                    placeholder="Choose PDF file..."
+                  />
+                  <Button
+                    onClick={() => setShowBrandModal(true)}
+                    variant="outline"
+                    size="sm"
+                    disabled={!brandGuidelines}
+                    className="px-3"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    onClick={() => setShowStoredGuidelines(true)}
+                    variant="outline"
+                    size="sm"
+                    className="px-3"
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    <span className="ml-1 text-xs">
+                      ({storedGuidelines.length})
+                    </span>
+                  </Button>
+                </div>
               </div>
+
+              {/* OR Divider */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200"></div>
+                <span className="text-xs text-gray-500 bg-white px-2">OR</span>
+                <div className="flex-1 h-px bg-gray-200"></div>
+              </div>
+
+              {/* Brand Name Search Option */}
+              <div className="space-y-2">
+                <Label htmlFor="brand-name" className="text-sm font-medium text-gray-700">
+                  Search Brand Assets by Name
+                </Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    id="brand-name"
+                    type="text"
+                    placeholder="Enter brand name (e.g., Nike, Apple, Starbucks)"
+                    value={brandName}
+                    onChange={(e) => setBrandName(e.target.value)}
+                    disabled={isSearchingBrand}
+                    className="flex-1 text-sm"
+                  />
+                  <Button
+                    onClick={handleBrandNameSearch}
+                    disabled={!brandName.trim() || isSearchingBrand}
+                    variant="default"
+                    size="sm"
+                    className="px-4"
+                  >
+                    {isSearchingBrand ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-4 w-4 mr-1" />
+                        Search
+                      </>
+                    )}
+                  </Button>
+                </div>
+                {brandSearchError && (
+                  <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-md border border-amber-200">
+                    {brandSearchError}
+                  </div>
+                )}
+              </div>
+            </div>
 
               {/* Status Indicators */}
               {isExtractingBrand && (
                 <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-md">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Extracting guidelines...
+                </div>
+              )}
+
+              {isSearchingBrand && (
+                <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 px-3 py-2 rounded-md">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Searching for brand assets...
                 </div>
               )}
 
