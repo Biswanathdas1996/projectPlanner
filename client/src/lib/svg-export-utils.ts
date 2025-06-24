@@ -103,23 +103,30 @@ export async function convertWireframeToSVG(
     iframeBody.style.height = '100%';
     iframeBody.style.overflow = 'hidden';
 
-    // Convert to SVG using html-to-image
-    const svgDataUrl = await toSvg(iframeBody, {
-      quality: defaultOptions.quality,
-      width: defaultOptions.width,
-      height: defaultOptions.height,
-      backgroundColor: defaultOptions.backgroundColor,
-      pixelRatio: defaultOptions.scale,
-      canvasWidth: defaultOptions.width * defaultOptions.scale,
-      canvasHeight: defaultOptions.height * defaultOptions.scale,
-      filter: (node) => {
-        // Filter out script tags and other non-visual elements
-        if (node.tagName === 'SCRIPT' || node.tagName === 'NOSCRIPT') {
-          return false;
+    // Convert to SVG using html-to-image with error handling
+    let svgDataUrl: string;
+    try {
+      svgDataUrl = await toSvg(iframeBody, {
+        quality: defaultOptions.quality,
+        width: defaultOptions.width,
+        height: defaultOptions.height,
+        backgroundColor: defaultOptions.backgroundColor,
+        pixelRatio: defaultOptions.scale,
+        canvasWidth: defaultOptions.width * defaultOptions.scale,
+        canvasHeight: defaultOptions.height * defaultOptions.scale,
+        filter: (node) => {
+          // Filter out script tags and other non-visual elements
+          if (node.tagName === 'SCRIPT' || node.tagName === 'NOSCRIPT') {
+            return false;
+          }
+          return true;
         }
-        return true;
-      }
-    });
+      });
+    } catch (conversionError) {
+      console.error('SVG conversion failed, attempting fallback:', conversionError);
+      document.body.removeChild(iframe);
+      throw new Error(`SVG conversion failed: ${conversionError.message}`);
+    }
 
     // Clean up
     document.body.removeChild(iframe);
