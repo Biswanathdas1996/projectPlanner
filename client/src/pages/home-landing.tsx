@@ -120,12 +120,13 @@ export default function HomeLanding() {
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 relative">
                   {[
                     { step: 1, label: "Idea", icon: Sparkles, color: "from-green-500 to-emerald-600", textColor: "text-green-400", href: "/start-over", description: "Spark creativity" },
-                    { step: 2, label: "Research", icon: BarChart3, color: "from-blue-500 to-blue-600", textColor: "text-blue-400", href: "/research", description: "Market insights" },
-                    { step: 3, label: "Planning", icon: FileText, color: "from-purple-500 to-purple-600", textColor: "text-purple-400", href: "/plan", description: "Smart strategy" },
-                    { step: 4, label: "Process", icon: Workflow, color: "from-orange-500 to-red-600", textColor: "text-orange-400", href: "/editor", description: "Flow design" },
-                    { step: 5, label: "Wireframes", icon: Layout, color: "from-teal-500 to-cyan-600", textColor: "text-teal-400", href: "/wireframes", description: "UI magic" },
-                    { step: 6, label: "Stories", icon: Users, color: "from-indigo-500 to-purple-600", textColor: "text-indigo-400", href: "/stories", description: "User journeys" },
-                    { step: 7, label: "Code", icon: Code2, color: "from-pink-500 to-rose-600", textColor: "text-pink-400", href: "/code", description: "Ship it!" }
+                    { step: 2, label: "AI Chat", icon: MonitorSpeaker, color: "from-cyan-500 to-blue-600", textColor: "text-cyan-400", href: "/ai-consultant", description: "Voice planning" },
+                    { step: 3, label: "Research", icon: BarChart3, color: "from-blue-500 to-blue-600", textColor: "text-blue-400", href: "/research", description: "Market insights" },
+                    { step: 4, label: "Planning", icon: FileText, color: "from-purple-500 to-purple-600", textColor: "text-purple-400", href: "/plan", description: "Smart strategy" },
+                    { step: 5, label: "Process", icon: Workflow, color: "from-orange-500 to-red-600", textColor: "text-orange-400", href: "/editor", description: "Flow design" },
+                    { step: 6, label: "Wireframes", icon: Layout, color: "from-teal-500 to-cyan-600", textColor: "text-teal-400", href: "/wireframes", description: "UI magic" },
+                    { step: 7, label: "Stories", icon: Users, color: "from-indigo-500 to-purple-600", textColor: "text-indigo-400", href: "/stories", description: "User journeys" },
+                    { step: 8, label: "Code", icon: Code2, color: "from-pink-500 to-rose-600", textColor: "text-pink-400", href: "/code", description: "Ship it!" }
                   ].map((item, index) => {
                     const IconComponent = item.icon;
                     return (
@@ -235,15 +236,43 @@ export default function HomeLanding() {
                 </div>
               </Link>
 
-              {/* Step 2: Research */}
+              {/* Step 2: AI Consultant */}
+              <Link href="/ai-consultant">
+                <div className="relative group cursor-pointer">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl p-6 border border-cyan-400/30 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20">
+                    <div className="w-14 h-14 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-cyan-500/25">
+                      <MonitorSpeaker className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
+                      2
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 text-white">AI Consultant</h3>
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      Voice-powered conversation to discuss your tech problems and get project plans.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-xs text-cyan-300">
+                        <MonitorSpeaker className="h-3 w-3 mr-2" />
+                        Voice Conversation
+                      </div>
+                      <div className="flex items-center text-xs text-cyan-300">
+                        <FileText className="h-3 w-3 mr-2" />
+                        Project Planning
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Step 3: Research */}
               <Link href="/research">
                 <div className="relative group cursor-pointer">
-                  <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-indigo-500/10 rounded-2xl p-6 border border-blue-400/30 hover:border-blue-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20">
-                    <div className="w-14 h-14 bg-gradient-to-r from-blue-400 via-cyan-500 to-indigo-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/25">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/10 via-indigo-500/10 to-purple-500/10 rounded-2xl p-6 border border-blue-400/30 hover:border-blue-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/20">
+                    <div className="w-14 h-14 bg-gradient-to-r from-blue-400 via-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-blue-500/25">
                       <BarChart3 className="h-7 w-7 text-white" />
                     </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      2
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
+                      3
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Research</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -263,7 +292,7 @@ export default function HomeLanding() {
                 </div>
               </Link>
 
-              {/* Step 3: Planning */}
+              {/* Step 4: Planning */}
               <Link href="/plan">
                 <div className="relative group cursor-pointer">
                   <div className="backdrop-blur-xl bg-gradient-to-br from-purple-500/10 via-violet-500/10 to-indigo-500/10 rounded-2xl p-6 border border-purple-400/30 hover:border-purple-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/20">
@@ -271,7 +300,7 @@ export default function HomeLanding() {
                       <FileText className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-purple-500 to-violet-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      3
+                      4
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Planning</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -291,7 +320,7 @@ export default function HomeLanding() {
                 </div>
               </Link>
 
-              {/* Step 4: Process Mapping */}
+              {/* Step 5: Process Mapping */}
               <Link href="/editor">
                 <div className="relative group cursor-pointer">
                   <div className="backdrop-blur-xl bg-gradient-to-br from-orange-500/10 via-red-500/10 to-pink-500/10 rounded-2xl p-6 border border-orange-400/30 hover:border-orange-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/20">

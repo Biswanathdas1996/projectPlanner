@@ -12,6 +12,7 @@ import MarketResearch from "@/pages/market-research";
 import WireframeDesigner from "@/pages/wireframe-designer";
 import HTMLEditor from "@/pages/html-editor";
 import { FlowWireframeMappingPage } from "@/pages/flow-wireframe-mapping";
+import AIConsultant from "@/pages/ai-consultant";
 
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
@@ -46,6 +47,9 @@ function Router() {
       <Route path="/flow-mapping" component={FlowWireframeMappingPage} />
       <Route path="/mapping" component={FlowWireframeMappingPage} />
       <Route path="/flows" component={FlowWireframeMappingPage} />
+      <Route path="/ai-consultant" component={AIConsultant} />
+      <Route path="/consultant" component={AIConsultant} />
+      <Route path="/chat" component={AIConsultant} />
       <Route component={NotFound} />
     </Switch>
   );
