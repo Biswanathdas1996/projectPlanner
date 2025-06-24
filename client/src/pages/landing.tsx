@@ -109,6 +109,9 @@ export default function Landing() {
     setError("");
 
     try {
+      // Clear all localStorage data before starting fresh
+      localStorage.clear();
+      
       // Generate suggestions first
       const generatedSuggestions =
         await generateCustomSuggestions(projectInput);

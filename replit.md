@@ -392,10 +392,11 @@ Changelog:
   - Implemented real-time competitor feature extraction during market research process
   - Enhanced AI prompts to generate 8-15 specific, authentic features per competitor
   - Added feature categorization: core functionality, integrations, security, user experience
-  - Created "Add to Project" functionality to integrate selected features into project description
+  - Created automatic feature integration into bpmn-project-description localStorage
   - Features are now based on actual product capabilities from real companies
   - Improved localStorage persistence for selected features across browser sessions
   - Enhanced competitive intelligence with detailed, actionable feature analysis
+  - Added localStorage.clear() to Generate Plan button for fresh project initialization
 ```
 
 ## User Preferences
