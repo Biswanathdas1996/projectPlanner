@@ -341,6 +341,118 @@ export default function AIConsultant() {
     linkElement.click();
   };
 
+  const summarizeAndCreatePlan = async () => {
+    if (conversation.length === 0) {
+      toast({
+        title: "No conversation to summarize",
+        description: "Start chatting first to generate a project plan",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsProcessing(true);
+
+    try {
+      const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg';
+      
+      if (!geminiApiKey) {
+        toast({
+          title: "Unable to generate plan",
+          description: "Gemini API key not available",
+          variant: "destructive",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      // Prepare conversation summary for Gemini
+      const conversationSummary = conversation
+        .map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n');
+
+      const prompt = `Based on this conversation with a user about their technology project, create a comprehensive project description and plan:
+
+${conversationSummary}
+
+Generate a detailed project plan in JSON format with the following structure:
+{
+  "projectTitle": "Brief descriptive title",
+  "problemStatement": "Clear problem being solved",
+  "targetAudience": "Who will use this",
+  "coreFeatures": ["feature1", "feature2", "feature3"],
+  "techStack": {
+    "frontend": "recommended frontend tech",
+    "backend": "recommended backend tech",
+    "database": "recommended database",
+    "deployment": "recommended deployment platform"
+  },
+  "timeline": "estimated development time",
+  "budget": "estimated budget range",
+  "risks": ["risk1", "risk2"],
+  "nextSteps": ["step1", "step2", "step3"]
+}
+
+Make it specific to the user's requirements discussed in the conversation.`;
+
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(geminiApiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+
+      // Extract JSON from response
+      let projectDescription;
+      try {
+        const jsonMatch = response.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          projectDescription = JSON.parse(jsonMatch[0]);
+        } else {
+          // Fallback if no JSON found
+          projectDescription = {
+            projectTitle: "Technology Project",
+            problemStatement: "Project discussed in conversation",
+            conversationSummary: conversationSummary,
+            generatedAt: new Date().toISOString()
+          };
+        }
+      } catch (parseError) {
+        console.error('Error parsing Gemini response:', parseError);
+        projectDescription = {
+          projectTitle: "Technology Project",
+          problemStatement: "Project discussed in conversation",
+          conversationSummary: conversationSummary,
+          rawResponse: response,
+          generatedAt: new Date().toISOString()
+        };
+      }
+
+      // Store in localStorage
+      localStorage.setItem('bpmn-project-description', JSON.stringify(projectDescription));
+
+      toast({
+        title: "Project plan generated!",
+        description: "Redirecting to start new planning process...",
+      });
+
+      // Redirect after short delay
+      setTimeout(() => {
+        window.location.href = '/start-over';
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error generating project plan:', error);
+      toast({
+        title: "Failed to generate plan",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+
+    setIsProcessing(false);
+  };
+
   const clearConversation = useCallback(() => {
     if (window.confirm("Are you sure you want to start a new consultation? This will clear all current progress.")) {
       // Reset agent if it has a reset method
@@ -478,14 +590,28 @@ export default function AIConsultant() {
                 <p className="text-sm text-gray-400">Powered by Gemini AI</p>
               </div>
             </div>
-            <Button
-              onClick={clearConversation}
-              variant="ghost"
-              size="sm"
-              className="text-gray-400 hover:text-white hover:bg-gray-800/50"
-            >
-              Clear Session
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={summarizeAndCreatePlan}
+                disabled={isProcessing || conversation.length === 0}
+                className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0"
+              >
+                {isProcessing ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4 mr-2" />
+                )}
+                Generate Plan & Continue
+              </Button>
+              <Button
+                onClick={clearConversation}
+                variant="ghost"
+                size="sm"
+                className="text-gray-400 hover:text-white hover:bg-gray-800/50"
+              >
+                Clear Session
+              </Button>
+            </div>
           </div>
         </div>
       </div>
