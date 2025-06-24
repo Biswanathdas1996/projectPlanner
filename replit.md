@@ -372,8 +372,8 @@ Changelog:
   - Comprehensive CSS overrides ensure complete content visibility with proper scaling
   - Fixed white page issue by optimizing capture dimensions (1500x1000-1500px) with centered content and minimal white space
   - Wireframe export now captures complete designs with all headers, content sections, and footers visible
-  - Added Puppeteer-based PNG export for guaranteed full-page wireframe capture using browser automation
-  - Puppeteer export uses fullPage screenshot with dynamic content sizing for perfect wireframe reproduction
+  - Added html-to-image library for reliable PNG export with complete wireframe capture
+  - html-to-image export uses precise element dimensions and high-quality rendering for perfect reproduction
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation

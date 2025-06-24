@@ -51,6 +51,7 @@ import {
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { SVGExporter, type WireframeSVGExport } from "@/lib/svg-exporter";
 import { PNGZipExporter, type WireframePNGExport } from "@/lib/png-zip-exporter";
+import { HTMLToImageExporter, type WireframeHTMLToImageExport } from "@/lib/html-to-image-exporter";
 
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -5913,10 +5914,10 @@ ${selectedPageCode.jsCode}
                       try {
                         toast({
                           title: "Generating PNG ZIP",
-                          description: "Converting wireframes to high-quality full-page PNG images...",
+                          description: "Converting wireframes to PNG using html-to-image library...",
                         });
 
-                        const wireframesForPNG: WireframePNGExport[] = generatedWireframes.map(w => ({
+                        const wireframesForPNG: WireframeHTMLToImageExport[] = generatedWireframes.map(w => ({
                           id: w.id,
                           pageName: w.pageName,
                           htmlCode: w.htmlCode,
@@ -5935,17 +5936,17 @@ ${selectedPageCode.jsCode}
                           return;
                         }
 
-                        await PNGZipExporter.exportAllWireframesAsPNGZip(wireframesForPNG);
+                        await HTMLToImageExporter.exportAllWireframesAsHTMLToImagePNG(wireframesForPNG);
                         
                         toast({
                           title: "PNG ZIP Export Complete",
-                          description: `Downloaded ${wireframesForPNG.length} wireframes as full-page PNG images with complete content`,
+                          description: `Downloaded ${wireframesForPNG.length} wireframes as complete PNG images using html-to-image`,
                         });
                       } catch (error) {
-                        console.error("Full PNG export error:", error);
+                        console.error("html-to-image PNG export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to export full-page wireframes. Please try again.",
+                          description: "Failed to export wireframes using html-to-image. Please try again.",
                           variant: "destructive",
                         });
                       }
