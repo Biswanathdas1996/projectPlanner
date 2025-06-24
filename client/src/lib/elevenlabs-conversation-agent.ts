@@ -188,59 +188,6 @@ export class ElevenLabsConversationAgent {
 
   private eventHandler?: (event: ConversationEvent) => void;
 
-  // Public method to speak messages
-  speakMessage(message: string): void {
-    try {
-      // Use Web Speech API for text-to-speech
-      if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
-        window.speechSynthesis.cancel();
-        
-        const utterance = new SpeechSynthesisUtterance(message);
-        
-        // Configure voice settings for a professional consultant
-        utterance.rate = 0.9; // Slightly slower for clarity
-        utterance.pitch = 1.0; // Normal pitch
-        utterance.volume = 0.8; // Good volume level
-        
-        // Try to use a professional-sounding voice
-        const voices = window.speechSynthesis.getVoices();
-        
-        // Prefer English voices with female or neutral tone for consultant
-        const preferredVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && 
-          (voice.name.includes('Female') || voice.name.includes('Karen') || voice.name.includes('Samantha'))
-        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-        
-        if (preferredVoice) {
-          utterance.voice = preferredVoice;
-        }
-        
-        console.log('Speaking message:', message.substring(0, 50) + '...');
-        
-        // Add event listeners
-        utterance.onstart = () => {
-          console.log('Speech started');
-        };
-        
-        utterance.onend = () => {
-          console.log('Speech completed');
-        };
-        
-        utterance.onerror = (event) => {
-          console.error('Speech error:', event.error);
-        };
-        
-        // Speak the message
-        window.speechSynthesis.speak(utterance);
-      } else {
-        console.warn('Speech synthesis not supported in this browser');
-      }
-    } catch (error) {
-      console.error('Error speaking message:', error);
-    }
-  }
-
   private speakMessage(message: string): void {
     try {
       // Use Web Speech API for text-to-speech
