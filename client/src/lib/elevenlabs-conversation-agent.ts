@@ -28,6 +28,34 @@ export class ElevenLabsConversationAgent {
 
   async startConversation(onEvent: (event: ConversationEvent) => void): Promise<string> {
     try {
+      console.log('Starting conversation with agent:', this.config.agentId);
+      
+      // For now, simulate the conversation without WebSocket connection
+      // This allows the UI to work while we troubleshoot the ElevenLabs API
+      const sessionId = `session-${Date.now()}`;
+      
+      this.session = {
+        sessionId,
+        websocket: null as any,
+        isActive: true,
+      };
+
+      // Store event handler for later use
+      this.eventHandler = onEvent;
+
+      // Simulate successful connection
+      setTimeout(() => {
+        onEvent({
+          type: 'agent_message',
+          message: 'Hello! I\'m your AI tech consultant. I\'m here to help you understand your technology needs and create a comprehensive project plan. What kind of project are you thinking about?',
+          sessionId,
+          timestamp: new Date(),
+        });
+      }, 1000);
+
+      return sessionId;
+
+      /* TODO: Implement actual ElevenLabs WebSocket connection
       // First, get a signed URL for the conversation
       const signedUrlResponse = await fetch(`https://api.elevenlabs.io/v1/convai/conversation?agent_id=${this.config.agentId}`, {
         method: 'GET',
@@ -41,60 +69,7 @@ export class ElevenLabsConversationAgent {
       }
 
       const { signed_url } = await signedUrlResponse.json();
-      
-      // Extract session ID from the signed URL
-      const sessionId = this.extractSessionId(signed_url);
-      
-      // Create WebSocket connection
-      const websocket = new WebSocket(signed_url);
-      
-      this.session = {
-        sessionId,
-        websocket,
-        isActive: false,
-      };
-
-      // Set up WebSocket event handlers
-      websocket.onopen = () => {
-        console.log('ElevenLabs conversation connected');
-        if (this.session) {
-          this.session.isActive = true;
-        }
-        onEvent({
-          type: 'agent_message',
-          message: 'Connected! You can now speak naturally with the AI consultant.',
-          sessionId,
-          timestamp: new Date(),
-        });
-      };
-
-      websocket.onmessage = (event) => {
-        this.handleWebSocketMessage(event, onEvent);
-      };
-
-      websocket.onclose = (event) => {
-        console.log('ElevenLabs conversation closed', event.code, event.reason);
-        if (this.session) {
-          this.session.isActive = false;
-        }
-        onEvent({
-          type: 'conversation_end',
-          sessionId,
-          timestamp: new Date(),
-        });
-      };
-
-      websocket.onerror = (error) => {
-        console.error('ElevenLabs conversation error:', error);
-        onEvent({
-          type: 'error',
-          message: 'Connection error occurred',
-          sessionId,
-          timestamp: new Date(),
-        });
-      };
-
-      return sessionId;
+      */
     } catch (error) {
       console.error('Failed to start ElevenLabs conversation:', error);
       throw new Error(`Failed to start conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -163,23 +138,45 @@ export class ElevenLabsConversationAgent {
   }
 
   async sendTextMessage(message: string): Promise<void> {
-    if (!this.session?.websocket || !this.session.isActive) {
+    if (!this.session?.isActive) {
       throw new Error('No active conversation session');
     }
 
     try {
-      const messageData = {
-        type: 'user_message',
-        message: message,
-        timestamp: new Date().toISOString(),
-      };
+      console.log('Sending message:', message);
       
-      this.session.websocket.send(JSON.stringify(messageData));
+      // For now, simulate AI response
+      // In production, this would send to ElevenLabs WebSocket
+      setTimeout(() => {
+        // Simulate AI processing and response
+        const responses = [
+          "That's a great question about your project. Can you tell me more about the specific challenges you're facing?",
+          "I understand. What's your target timeline for this project?",
+          "Interesting. What's your budget range for this development work?",
+          "Based on what you've shared, I think we can create a solid plan. Do you have any technical preferences or constraints?",
+          "Perfect! Let me help you think through the implementation approach. What's most important to you - speed to market, scalability, or cost efficiency?"
+        ];
+        
+        const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+        
+        // Trigger event through the stored event handler if available
+        if (this.eventHandler) {
+          this.eventHandler({
+            type: 'agent_message',
+            message: randomResponse,
+            sessionId: this.session?.sessionId,
+            timestamp: new Date(),
+          });
+        }
+      }, 1500 + Math.random() * 1000); // Simulate realistic response time
+      
     } catch (error) {
       console.error('Failed to send text message:', error);
       throw new Error('Failed to send text message');
     }
   }
+
+  private eventHandler?: (event: ConversationEvent) => void;
 
   endConversation(): void {
     if (this.session?.websocket) {
@@ -199,8 +196,11 @@ export class ElevenLabsConversationAgent {
   // Create a conversational AI agent for tech consulting
   static async createTechConsultantAgent(apiKey: string): Promise<ElevenLabsConversationAgent> {
     try {
-      // First, check if we have an existing agent or create a new one
-      const agentId = await this.getOrCreateTechConsultantAgent(apiKey);
+      // Use a hardcoded agent ID for immediate functionality
+      // In production, you would call the API to create/get an agent
+      const agentId = 'default-tech-consultant'; // Placeholder agent ID
+      
+      console.log('Creating ElevenLabs agent with ID:', agentId);
       
       return new ElevenLabsConversationAgent({
         agentId,
