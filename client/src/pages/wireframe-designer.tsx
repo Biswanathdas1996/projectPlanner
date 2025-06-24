@@ -48,6 +48,16 @@ import {
   createBrandGuidelineExtractor,
   type BrandGuideline,
 } from "@/lib/brand-guideline-extractor";
+import * as htmlToImage from 'html-to-image';
+import { toPng, toSvg, toJpeg } from 'html-to-image';
+import {
+  exportAllWireframesAsSVG,
+  convertWireframeToSVG,
+  convertWireframeToPNG,
+  downloadWireframeAsSVG,
+  downloadWireframeAsPNG,
+  type WireframeExportData
+} from '@/lib/svg-export-utils';
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { FigmaImportGuide } from "@/components/figma-import-guide";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
@@ -327,6 +337,7 @@ import {
   Save,
   Upload,
   FileText,
+  FileImage,
   Star,
   Heart,
   Share2,
@@ -5790,25 +5801,35 @@ ${selectedPageCode.jsCode}
                 </h2>
                 <div className="flex gap-3">
                   <Button
-                    onClick={() => {
+                    onClick={async () => {
                       try {
-                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                        const wireframesForExport: WireframeExportData[] = generatedWireframes.map(w => ({
                           id: w.id,
                           pageName: w.pageName,
                           htmlCode: w.htmlCode,
                           cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
+                          jsCode: w.jsCode,
                         }));
                         
-                        console.log("Starting wireframe export...", wireframesForExport);
-                        const { fileName } = FigmaExporter.downloadFigmaExport(wireframesForExport);
-                        setLastExportedFileName(fileName);
+                        console.log("Starting high-quality SVG export...", wireframesForExport);
                         
                         toast({
-                          title: "SVG Export Started",
-                          description: `Downloading ${wireframesForExport.length} SVG files. If downloads don't start automatically, new windows will open for manual download.`,
+                          title: "High-Quality SVG Export Started",
+                          description: `Converting ${wireframesForExport.length} wireframes to high-quality SVG files using HTML-to-SVG conversion...`,
+                        });
+                        
+                        // Use the new high-quality SVG export function
+                        await exportAllWireframesAsSVG(wireframesForExport, {
+                          quality: 1.0,
+                          width: 1200,
+                          height: 800,
+                          backgroundColor: '#ffffff',
+                          scale: 2 // Higher scale for better quality
+                        });
+                        
+                        toast({
+                          title: "SVG Export Complete",
+                          description: `Successfully exported ${wireframesForExport.length} high-quality SVG files with actual wireframe content.`,
                         });
 
                         // Show import guide after export
@@ -5829,42 +5850,69 @@ ${selectedPageCode.jsCode}
                     className="flex items-center gap-2 bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300"
                   >
                     <Layers className="h-4 w-4" />
-                    Export as SVG
+                    High-Quality SVG
                   </Button>
                   <Button
                     onClick={async () => {
                       try {
-                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                        const wireframesForExport: WireframeExportData[] = generatedWireframes.map(w => ({
                           id: w.id,
                           pageName: w.pageName,
                           htmlCode: w.htmlCode,
                           cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
+                          jsCode: w.jsCode,
                         }));
                         
-                        await FigmaExporter.downloadDesignTokens(wireframesForExport);
+                        console.log("Starting high-quality PNG export...", wireframesForExport);
                         
                         toast({
-                          title: "Design Tokens Exported",
-                          description: `Successfully exported design tokens from ${wireframesForExport.length} wireframes`,
+                          title: "High-Quality PNG Export Started",
+                          description: `Converting ${wireframesForExport.length} wireframes to high-quality PNG files...`,
+                        });
+                        
+                        // Export individual wireframes as PNG
+                        for (let i = 0; i < wireframesForExport.length; i++) {
+                          const wireframe = wireframesForExport[i];
+                          console.log(`Converting wireframe ${i + 1}/${wireframesForExport.length}: ${wireframe.pageName}`);
+                          
+                          try {
+                            const pngDataUrl = await convertWireframeToPNG(wireframe, {
+                              quality: 1.0,
+                              width: 1200,
+                              height: 800,
+                              backgroundColor: '#ffffff',
+                              scale: 2
+                            });
+                            downloadWireframeAsPNG(wireframe, pngDataUrl);
+                            
+                            // Add delay between downloads
+                            if (i < wireframesForExport.length - 1) {
+                              await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                          } catch (error) {
+                            console.error(`Failed to export ${wireframe.pageName} as PNG:`, error);
+                          }
+                        }
+                        
+                        toast({
+                          title: "PNG Export Complete",
+                          description: `Successfully exported ${wireframesForExport.length} high-quality PNG files.`,
                         });
                       } catch (error) {
-                        console.error("Design tokens export error:", error);
+                        console.error("PNG export error:", error);
                         toast({
                           title: "Export Failed", 
-                          description: "Failed to export design tokens",
+                          description: "Failed to export wireframes as PNG",
                           variant: "destructive",
                         });
                       }
                     }}
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-blue-200 text-blue-700 hover:text-blue-800 hover:border-blue-300"
+                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-green-200 text-green-700 hover:text-green-800 hover:border-green-300"
                   >
-                    <Palette className="h-4 w-4" />
-                    Export Tokens
+                    <FileImage className="h-4 w-4" />
+                    High-Quality PNG
                   </Button>
                   <Button
                     onClick={() => {
@@ -6084,48 +6132,136 @@ ${selectedPageCode.jsCode}
                         </div>
                       </div>
 
-                      <div className="mt-4 flex justify-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
-                          onClick={() => {
-                            const newWindow = window.open("", "_blank");
-                            if (newWindow) {
-                              newWindow.document.write(wireframe.htmlCode);
-                              newWindow.document.close();
-                            }
-                          }}
-                        >
-                          <Frame className="h-3 w-3 mr-1" />
-                          Preview
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
-                          onClick={() => {
-                            console.log(
-                              "Edit button clicked for wireframe:",
-                              wireframe
-                            );
-                            console.log("Wireframe ID:", wireframe.id);
-                            console.log(
-                              "Full wireframe object keys:",
-                              Object.keys(wireframe)
-                            );
-                            if (!wireframe.id) {
-                              console.error(
-                                "Wireframe ID is missing! Wireframe object:",
+                      <div className="mt-4 space-y-2">
+                        <div className="flex justify-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-8 text-xs font-medium border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 transition-all duration-200"
+                            onClick={() => {
+                              const newWindow = window.open("", "_blank");
+                              if (newWindow) {
+                                newWindow.document.write(wireframe.htmlCode);
+                                newWindow.document.close();
+                              }
+                            }}
+                          >
+                            <Frame className="h-3 w-3 mr-1" />
+                            Preview
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-8 text-xs font-medium border-emerald-200 text-emerald-600 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200"
+                            onClick={() => {
+                              console.log(
+                                "Edit button clicked for wireframe:",
                                 wireframe
                               );
-                            }
-                            window.location.href = `/html-editor?id=${wireframe.id}`;
-                          }}
-                        >
-                          <Edit3 className="h-3 w-3 mr-1" />
-                          Edit
-                        </Button>
+                              console.log("Wireframe ID:", wireframe.id);
+                              console.log(
+                                "Full wireframe object keys:",
+                                Object.keys(wireframe)
+                              );
+                              if (!wireframe.id) {
+                                console.error(
+                                  "Wireframe ID is missing! Wireframe object:",
+                                  wireframe
+                                );
+                              }
+                              window.location.href = `/html-editor?id=${wireframe.id}`;
+                            }}
+                          >
+                            <Edit3 className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        </div>
+                        
+                        {/* High-Quality Export Options */}
+                        <div className="flex justify-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-7 text-xs font-medium border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-all duration-200"
+                            onClick={async () => {
+                              try {
+                                const wireframeData: WireframeExportData = {
+                                  id: wireframe.id,
+                                  pageName: wireframe.pageName,
+                                  htmlCode: wireframe.htmlCode,
+                                  cssCode: wireframe.cssCode,
+                                  jsCode: wireframe.jsCode,
+                                };
+                                
+                                const svgContent = await convertWireframeToSVG(wireframeData, {
+                                  quality: 1.0,
+                                  width: 1200,
+                                  height: 800,
+                                  backgroundColor: '#ffffff',
+                                  scale: 2
+                                });
+                                
+                                downloadWireframeAsSVG(wireframeData, svgContent);
+                                
+                                toast({
+                                  title: "SVG Export Complete",
+                                  description: `${wireframe.pageName} exported as high-quality SVG`,
+                                });
+                              } catch (error) {
+                                console.error("SVG export error:", error);
+                                toast({
+                                  title: "Export Failed",
+                                  description: "Could not export wireframe as SVG",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <Layers className="h-2.5 w-2.5 mr-1" />
+                            SVG
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1 h-7 text-xs font-medium border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all duration-200"
+                            onClick={async () => {
+                              try {
+                                const wireframeData: WireframeExportData = {
+                                  id: wireframe.id,
+                                  pageName: wireframe.pageName,
+                                  htmlCode: wireframe.htmlCode,
+                                  cssCode: wireframe.cssCode,
+                                  jsCode: wireframe.jsCode,
+                                };
+                                
+                                const pngDataUrl = await convertWireframeToPNG(wireframeData, {
+                                  quality: 1.0,
+                                  width: 1200,
+                                  height: 800,
+                                  backgroundColor: '#ffffff',
+                                  scale: 2
+                                });
+                                
+                                downloadWireframeAsPNG(wireframeData, pngDataUrl);
+                                
+                                toast({
+                                  title: "PNG Export Complete",
+                                  description: `${wireframe.pageName} exported as high-quality PNG`,
+                                });
+                              } catch (error) {
+                                console.error("PNG export error:", error);
+                                toast({
+                                  title: "Export Failed",
+                                  description: "Could not export wireframe as PNG",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                          >
+                            <FileImage className="h-2.5 w-2.5 mr-1" />
+                            PNG
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
