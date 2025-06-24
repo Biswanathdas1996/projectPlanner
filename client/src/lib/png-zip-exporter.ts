@@ -35,7 +35,8 @@ export class PNGZipExporter {
     <style>
         html, body {
             margin: 0;
-            padding: 20px;
+            padding: 40px; /* Increased padding for headers */
+            padding-top: 60px; /* Extra top padding for header content */
             width: 1600px;
             min-width: 1600px;
             min-height: 1200px;
@@ -56,8 +57,10 @@ export class PNGZipExporter {
             width: 100%;
             min-width: 100%;
             min-height: 100%;
-            padding: 20px;
+            padding: 40px; /* Increased padding */
+            padding-top: 60px; /* Extra top padding for headers */
             overflow: visible;
+            position: relative;
         }
         /* Prevent any cutting of content and ensure full width */
         img, svg, canvas {
@@ -76,6 +79,25 @@ export class PNGZipExporter {
             overflow: visible !important;
             max-width: none !important;
             width: auto !important;
+        }
+        /* Ensure headers and navigation are fully visible */
+        header, nav, .header, .navbar, .navigation, [class*="header"], [class*="nav"] {
+            overflow: visible !important;
+            position: relative !important;
+            top: auto !important;
+            margin-top: 0 !important;
+            padding-top: 20px !important;
+        }
+        /* Prevent any absolute positioning from cutting content */
+        * {
+            position: relative !important;
+        }
+        *[style*="position: absolute"], *[style*="position: fixed"] {
+            position: relative !important;
+            top: auto !important;
+            left: auto !important;
+            right: auto !important;
+            bottom: auto !important;
         }
     </style>
 </head>

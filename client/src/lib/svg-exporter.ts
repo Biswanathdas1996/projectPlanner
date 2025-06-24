@@ -214,8 +214,8 @@ export class SVGExporter {
         const scrollWidth = Math.max(container.scrollWidth, doc.documentElement.scrollWidth, doc.body.scrollWidth);
         const scrollHeight = Math.max(container.scrollHeight, doc.documentElement.scrollHeight, doc.body.scrollHeight);
         
-        const actualWidth = Math.max(1600, scrollWidth + 100);
-        const actualHeight = Math.max(1200, scrollHeight + 100);
+        const actualWidth = Math.max(1600, scrollWidth + 200);
+        const actualHeight = Math.max(1200, scrollHeight + 200);
 
         // Use html2canvas to capture the complete wireframe
         const canvas = await html2canvas(container as Element, {
@@ -272,7 +272,8 @@ export class SVGExporter {
     <style>
         html, body {
             margin: 0;
-            padding: 20px;
+            padding: 40px;
+            padding-top: 60px;
             width: 1600px;
             min-width: 1600px;
             min-height: 1200px;
@@ -286,8 +287,10 @@ export class SVGExporter {
         .wireframe-container {
             width: 100%;
             min-height: 100%;
-            padding: 20px;
+            padding: 40px;
+            padding-top: 60px;
             overflow: visible;
+            position: relative;
         }
     </style>
 </head>

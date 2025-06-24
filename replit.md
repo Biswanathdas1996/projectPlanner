@@ -362,8 +362,10 @@ Changelog:
   - Implemented 3x scale rendering for crisp PNG output with JSZip compression
   - PNG export includes metadata file and sequential processing with progress feedback
   - Enhanced wireframe capture to ensure complete design rendering without content clipping
-  - Increased capture dimensions to 1400x1000 with dynamic content-aware sizing
+  - Increased capture dimensions to 1600x1200 with dynamic content-aware sizing and 200px padding
   - Added content overflow protection and extended rendering wait times for complete layouts
+  - Fixed header section cutting by adding extra top padding (60px) and preventing absolute positioning issues
+  - Enhanced CSS rules to force header/navigation visibility and prevent negative margins from hiding content
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation
