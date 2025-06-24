@@ -67,15 +67,13 @@ export default function AIConsultant() {
       }
       
       // Initialize AudioContext for voice features
-      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (typeof window !== 'undefined') {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
       
     } catch (error) {
       console.error('Error initializing AI agent:', error);
-      toast({ 
-        title: "Initialization failed", 
-        description: "Voice features may not work properly", 
-        variant: "destructive" 
-      });
+      // Don't show error toast, just log it - the system will work in fallback mode
     }
   }, []);
   

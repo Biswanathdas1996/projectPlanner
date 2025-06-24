@@ -60,11 +60,20 @@ export class ConversationalAIAgent {
   constructor() {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error('Gemini API key not found');
+      console.warn('Gemini API key not found, using fallback responses');
+      this.genAI = null as any;
+      this.model = null;
+      return;
     }
     
-    this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    try {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    } catch (error) {
+      console.error('Failed to initialize Gemini AI:', error);
+      this.genAI = null as any;
+      this.model = null;
+    }
   }
 
   async processMessage(userMessage: string): Promise<AgentResponse> {
@@ -103,6 +112,13 @@ export class ConversationalAIAgent {
   }
 
   private async analyzeMessage(message: string): Promise<void> {
+    if (!this.model) {
+      // Use rule-based analysis as fallback
+      const analysis = this.analyzeMessageFallback(message);
+      this.context = { ...this.context, ...analysis };
+      return;
+    }
+
     const analysisPrompt = `
 Analyze this user message and extract relevant information for a tech project consultation:
 
@@ -136,7 +152,56 @@ Return a JSON object with the extracted information.
       
     } catch (error) {
       console.error('Error analyzing message:', error);
+      // Fallback to rule-based analysis
+      const analysis = this.analyzeMessageFallback(message);
+      this.context = { ...this.context, ...analysis };
     }
+  }
+
+  private analyzeMessageFallback(message: string): Partial<ConversationContext> {
+    const context: Partial<ConversationContext> = {};
+    const lower = message.toLowerCase();
+    
+    // Extract project type
+    if (lower.includes('website') || lower.includes('web app') || lower.includes('web')) {
+      context.projectType = 'web application';
+    } else if (lower.includes('mobile app') || lower.includes('app')) {
+      context.projectType = 'mobile application';
+    } else if (lower.includes('desktop') || lower.includes('software')) {
+      context.projectType = 'desktop application';
+    }
+    
+    // Extract domain
+    if (lower.includes('ecommerce') || lower.includes('e-commerce') || lower.includes('shop') || lower.includes('store')) {
+      context.problemDomain = 'e-commerce';
+    } else if (lower.includes('healthcare') || lower.includes('medical') || lower.includes('health')) {
+      context.problemDomain = 'healthcare';
+    } else if (lower.includes('education') || lower.includes('learning') || lower.includes('school')) {
+      context.problemDomain = 'education';
+    }
+    
+    // Extract expertise level
+    if (lower.includes('beginner') || lower.includes('new to') || lower.includes('first time')) {
+      context.userExpertise = 'beginner';
+    } else if (lower.includes('experienced') || lower.includes('expert') || lower.includes('advanced')) {
+      context.userExpertise = 'expert';
+    } else {
+      context.userExpertise = 'intermediate';
+    }
+    
+    // Extract timeline
+    const timelineMatch = message.match(/(\d+)\s*(week|month|day)s?/i);
+    if (timelineMatch) {
+      context.timeline = timelineMatch[0];
+    }
+    
+    // Extract budget
+    const budgetMatch = message.match(/\$[\d,]+/);
+    if (budgetMatch) {
+      context.budget = budgetMatch[0];
+    }
+    
+    return context;
   }
 
   private parseAnalysisResponse(response: string): Partial<ConversationContext> {
@@ -164,6 +229,12 @@ Return a JSON object with the extracted information.
   }
 
   private async generateResponse(): Promise<AgentResponse> {
+    if (!this.model) {
+      // Use rule-based fallback response
+      this.updateStage();
+      return this.getFallbackResponse();
+    }
+
     const stagePrompts = {
       discovery: this.buildDiscoveryPrompt(),
       analysis: this.buildAnalysisPrompt(),
@@ -187,6 +258,7 @@ Return a JSON object with the extracted information.
       return agentResponse;
     } catch (error) {
       console.error('Error generating response:', error);
+      this.updateStage();
       return this.getFallbackResponse();
     }
   }
@@ -412,6 +484,10 @@ STAGE_COMPLETED: true
   }
 
   async generateProjectPlan(): Promise<ProjectPlan> {
+    if (!this.model) {
+      return this.createFallbackPlan();
+    }
+
     const planPrompt = `
 Based on our conversation, create a comprehensive project plan.
 
