@@ -353,6 +353,7 @@ import {
   Shield,
   Activity,
   RefreshCw,
+  HelpCircle,
 } from "lucide-react";
 
 interface WireframeData {
