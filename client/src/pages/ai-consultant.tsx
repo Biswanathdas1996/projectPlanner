@@ -130,8 +130,10 @@ export default function AIConsultant() {
       // Start conversation
       await elevenLabsAgentRef.current.startConversation(handleConversationEvent);
       
-      // Initialize speech recognition
-      await initializeSpeechRecognition();
+      // Initialize speech recognition (non-blocking)
+      initializeSpeechRecognition().catch(error => {
+        console.error('Speech recognition initialization failed:', error);
+      });
       
       setIsVoiceMode(true);
       setIsConnected(true);
