@@ -138,14 +138,28 @@ Research and identify 8-12 actual companies in the relevant industry. Only inclu
 - Market position and competitive strengths
 - Areas where they face challenges
 
+CRITICAL FEATURE REQUIREMENTS:
+For each competitor, provide 8-15 SPECIFIC, REAL features that their actual product offers. Research their actual product capabilities and include:
+- Core functionality features (e.g., "Real-time collaboration", "End-to-end encryption", "API integrations")
+- Platform-specific features (e.g., "Mobile app with offline sync", "Web-based dashboard", "Desktop application")
+- Advanced capabilities (e.g., "AI-powered analytics", "Custom workflow automation", "Multi-language support")
+- Integration features (e.g., "Slack integration", "Google Workspace sync", "Salesforce connector")
+- Security features (e.g., "SSO authentication", "GDPR compliance", "Data encryption")
+- User experience features (e.g., "Drag-and-drop interface", "One-click deployment", "Customizable themes")
+
+Example of detailed features for a real product:
+Slack: ["Real-time messaging", "File sharing", "Voice and video calls", "Screen sharing", "Channel organization", "Direct messages", "App integrations", "Custom emoji", "Message threading", "Search functionality", "Mobile apps", "Desktop apps", "Guest access", "Workflow builder", "Audio and video clips"]
+
 MANDATORY: Every company name must be a real, operating business. Research companies like:
 - Enterprise software: Salesforce, ServiceNow, Workday, Oracle
 - Communication tools: Zoom, Slack, Microsoft Teams, Discord
 - Productivity software: Atlassian, Notion, Asana, Monday.com
 - E-commerce platforms: Shopify, WooCommerce, BigCommerce
 - Developer tools: GitHub, GitLab, Stripe, Twilio
+- Finance tools: Mint, QuickBooks, FreshBooks, Xero
+- Design tools: Figma, Adobe Creative Suite, Canva, Sketch
 
-Base all financial figures on actual public data or credible industry estimates for these real companies.
+Base all financial figures and features on actual public data or credible industry knowledge for these real companies.
 
 === MARKET SIZE AND TRENDS ===
 - Total addressable market (TAM) size and projections
@@ -234,7 +248,20 @@ Please analyze the search results and provide a detailed JSON response with the 
       "description": "Real company description",
       "website": "Actual website URL",
       "marketPosition": "Market Leader/Rising Challenger/Niche Player/Enterprise Specialist",
-      "keyFeatures": ["Actual product features"],
+      "keyFeatures": [
+        "Feature 1 - specific real functionality",
+        "Feature 2 - actual product capability", 
+        "Feature 3 - real integration or tool",
+        "Feature 4 - authentic user experience element",
+        "Feature 5 - genuine security or compliance feature",
+        "Feature 6 - actual platform or device support",
+        "Feature 7 - real automation or AI capability",
+        "Feature 8 - specific customization option",
+        "Feature 9 - actual collaboration feature",
+        "Feature 10 - real reporting or analytics",
+        "Feature 11 - genuine scalability feature",
+        "Feature 12 - actual API or integration capability"
+      ],
       "pricing": "Real pricing information",
       "targetAudience": "Actual target market",
       "strengths": ["Real competitive advantages"],
@@ -273,7 +300,14 @@ CRITICAL REQUIREMENTS:
   - headquarters: Use "City, Country" format like "San Francisco, USA"
 - Base these on real company data and industry knowledge
 - If exact data unavailable, provide realistic industry-standard estimates
-- Generate 15-20 competitors minimum
+- Generate 8-15 competitors minimum
+
+FEATURE REQUIREMENTS:
+- For each competitor, provide 8-15 REAL, SPECIFIC features from their actual product
+- Research actual product capabilities, not generic descriptions
+- Include features like: "Real-time collaboration", "API integrations", "Mobile app", "SSO authentication", "Custom workflows", "Analytics dashboard", "Third-party integrations", "Multi-language support", "Data export/import", "Role-based permissions", "Automated notifications", "Custom branding"
+- Avoid vague terms like "good interface" or "user-friendly" - use specific feature names
+- Base features on actual product documentation and capabilities
 
 CRITICAL REQUIREMENTS:
 - Only include real companies that actually exist - NO placeholder names whatsoever
@@ -281,6 +315,7 @@ CRITICAL REQUIREMENTS:
 - Do NOT include names like "Company A", "TechCorp", "[Company Name]", "Startup X", etc.
 - If you cannot identify enough real competitors, include fewer companies rather than fake ones
 - All financial data must be authentic or industry-standard estimates for real companies
+- All features must be based on actual product capabilities
 - Focus on well-known companies in the relevant industry
 - Respond only with valid JSON, no additional text
 `;

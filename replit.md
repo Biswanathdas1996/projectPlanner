@@ -387,6 +387,15 @@ Changelog:
   - Fixed localStorage persistence issue: Editor now loads saved changes on reload instead of reverting to original
   - Enhanced Reset functionality to restore to last saved version instead of original flowData
   - Added console logging for debugging localStorage load operations
+- June 24, 2025. Enhanced Market Research with Real-time Competitor Features
+  - Added checkbox functionality to Similar Products & Solutions section for feature selection
+  - Implemented real-time competitor feature extraction during market research process
+  - Enhanced AI prompts to generate 8-15 specific, authentic features per competitor
+  - Added feature categorization: core functionality, integrations, security, user experience
+  - Created "Add to Project" functionality to integrate selected features into project description
+  - Features are now based on actual product capabilities from real companies
+  - Improved localStorage persistence for selected features across browser sessions
+  - Enhanced competitive intelligence with detailed, actionable feature analysis
 ```
 
 ## User Preferences
