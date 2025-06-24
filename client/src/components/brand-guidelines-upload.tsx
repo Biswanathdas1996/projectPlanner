@@ -25,15 +25,15 @@ import {
   type ExternalBrandJSON,
 } from "@/lib/brand-guidelines-storage";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { 
+import {
   createPDFExtractionClient,
-  type PDFExtractionResult 
+  type PDFExtractionResult,
 } from "@/lib/pdf-extraction-client";
 import {
   createWebBrandSearchAgent,
   type BrandSearchResult,
   type BrandAsset,
-  type SearchProgress
+  type SearchProgress,
 } from "@/lib/web-brand-search-agent";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -92,8 +92,11 @@ export function BrandGuidelinesUpload({
   const [brandName, setBrandName] = useState("");
   const [isSearchingBrand, setIsSearchingBrand] = useState(false);
   const [brandSearchError, setBrandSearchError] = useState("");
-  const [brandSearchResults, setBrandSearchResults] = useState<BrandSearchResult | null>(null);
-  const [searchProgress, setSearchProgress] = useState<SearchProgress | null>(null);
+  const [brandSearchResults, setBrandSearchResults] =
+    useState<BrandSearchResult | null>(null);
+  const [searchProgress, setSearchProgress] = useState<SearchProgress | null>(
+    null
+  );
   const { toast } = useToast();
 
   if (!visible) return null;
@@ -107,130 +110,64 @@ export function BrandGuidelinesUpload({
     setBrandSearchResults(null);
 
     try {
-      console.log("🔍 Starting comprehensive brand asset search for:", brandName);
+      console.log(
+        "🔍 Starting comprehensive brand asset search for:",
+        brandName
+      );
 
       // Use the new web brand search agent
       const searchAgent = createWebBrandSearchAgent();
-      
-      const searchResults = await searchAgent.searchBrandAssets(
+
+      let searchResults = await searchAgent.searchBrandAssets(
         brandName,
         (progress: SearchProgress) => {
           setSearchProgress(progress);
         }
       );
 
+      console.log("=============searchResults======>>>>>>>>>>>", searchResults);
       setBrandSearchResults(searchResults);
 
       // Create comprehensive brand guidelines from search results
-      const comprehensiveBrandGuidelines = {
-        brand_name: searchResults.brandName,
-        search_based: true,
-        extracted_at: searchResults.searchedAt,
-        official_website: searchResults.officialWebsite,
-        brand_description: searchResults.brandDescription,
-        
-        // Color palette from search
-        color_palette: {
-          primary: searchResults.colors.primary.reduce((acc, color, index) => {
-            acc[`primary_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
-            return acc;
-          }, {} as any),
-          secondary: searchResults.colors.secondary.reduce((acc, color, index) => {
-            acc[`secondary_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
-            return acc;
-          }, {} as any),
-          accent: searchResults.colors.accent.reduce((acc, color, index) => {
-            acc[`accent_${index + 1}`] = { HEX: color, RGB: this.hexToRgb(color) };
-            return acc;
-          }, {} as any)
-        },
-
-        // Typography (inferred from brand analysis)
-        typography: [
-          { name: "Brand Primary Font", type: "primary", weight: "regular" },
-          { name: "Brand Secondary Font", type: "secondary", weight: "medium" }
-        ],
-
-        // Logo assets
-        logo_assets: {
-          primary_logos: searchResults.logos.map(logo => ({
-            title: logo.title,
-            url: logo.url,
-            format: logo.format,
-            dimensions: logo.dimensions,
-            quality: logo.quality
-          })),
-          icons: searchResults.icons.map(icon => ({
-            title: icon.title,
-            url: icon.url,
-            format: icon.format,
-            dimensions: icon.dimensions,
-            quality: icon.quality
-          })),
-          brand_images: searchResults.brandImages.map(image => ({
-            title: image.title,
-            url: image.url,
-            format: image.format,
-            dimensions: image.dimensions,
-            quality: image.quality
-          }))
-        },
-
-        // Guidelines derived from search
-        logo_guidelines: [
-          "Use high-resolution versions for print materials",
-          "Maintain minimum clear space around logo",
-          "Do not alter logo colors or proportions",
-          "Use official logo files only"
-        ],
-        
-        spacing_guidelines: [
-          "Maintain consistent spacing around brand elements",
-          "Follow grid-based layout systems",
-          "Ensure adequate white space for readability"
-        ],
-
-        other_guidelines: [
-          `Brand identity should reflect ${searchResults.brandDescription || 'company values'}`,
-          "Maintain consistency across all brand touchpoints",
-          "Use approved color combinations only",
-          "Follow accessibility guidelines for digital content"
-        ],
-
-        search_metadata: {
-          sources: searchResults.searchSources,
-          total_assets_found: searchResults.totalAssetsFound,
-          search_quality: searchResults.totalAssetsFound > 5 ? "high" : "medium"
-        }
-      };
-
-      setBrandGuidelines(comprehensiveBrandGuidelines);
-      onBrandGuidelinesExtracted?.(comprehensiveBrandGuidelines);
+      if (searchResults.startsWith("```json")) {
+        searchResults = searchResults
+          .replace(/^```json\s*/, "")
+          .replace(/```\s*$/, "");
+      }
+      setBrandGuidelines(searchResults);
+      onBrandGuidelinesExtracted?.(searchResults);
 
       // Save to localStorage using proper storage
       const stored = BrandGuidelinesStorage.save(
-        comprehensiveBrandGuidelines as any,
-        searchResults.brandName,
+        searchResults as any,
+        brandName,
         `web-search-${Date.now()}`
       );
 
       setStoredGuidelines(BrandGuidelinesStorage.getAll());
 
-      console.log("💾 Saved comprehensive brand guidelines for", brandName, "to local storage");
+      console.log(
+        "💾 Saved comprehensive brand guidelines for",
+        brandName,
+        "to local storage"
+      );
 
       toast({
         title: "Brand Assets Found",
-        description: `Successfully found ${searchResults.totalAssetsFound} brand assets for ${brandName}`,
+        description: `Successfully found  brand assets for ${brandName}`,
       });
 
       setShowBrandModal(true);
     } catch (error) {
       console.error("Brand search failed:", error);
-      setBrandSearchError("Failed to search for brand assets. Please try again.");
-      
+      setBrandSearchError(
+        "Failed to search for brand assets. Please try again."
+      );
+
       toast({
         title: "Search Failed",
-        description: "Could not find brand assets. Please try a different brand name.",
+        description:
+          "Could not find brand assets. Please try a different brand name.",
         variant: "destructive",
       });
     } finally {
@@ -250,8 +187,6 @@ export function BrandGuidelinesUpload({
     }
     return "0,0,0";
   };
-
-
 
   const handleBrandGuidelineUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -275,10 +210,10 @@ export function BrandGuidelinesUpload({
 
     try {
       console.log("🚀 Starting PDF extraction for:", file.name);
-      
+
       // Use the new PDF extraction client
       const extractionClient = createPDFExtractionClient();
-      
+
       const extractedData = await extractionClient.extractBrandGuidelines(
         file,
         (step: string, progress: number) => {
@@ -315,9 +250,12 @@ export function BrandGuidelinesUpload({
     } catch (error) {
       console.error("Brand guideline extraction failed:", error);
 
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
-      
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      setBrandExtractionError(
+        `Failed to extract brand guidelines: ${errorMessage}`
+      );
+
       toast({
         title: "Extraction Failed",
         description: "Could not extract brand guidelines from the PDF file.",
@@ -389,6 +327,9 @@ ${JSON.stringify(
 BRAND GUIDELINES:
 ${JSON.stringify(brandGuidelines, null, 2)}
 
+Brand Logo: 
+https://logo.clearbit.com/${brandGuidelines?.brand_url}
+
 REQUIREMENTS:
 1. Create a complete HTML document with embedded CSS and JavaScript
 2. Use the brand colors, fonts, styling and layouts from the guidelines
@@ -404,6 +345,7 @@ REQUIREMENTS:
 12. Use interactive UI elements with proper contrast
 13. Ensure proper spacing between elements
 14. Test all color combinations for readability before applying
+15. If available, use Image of brand Logo, add some images in the body to make it more brand view   
 
 
 RESPONSE FORMAT:
@@ -538,6 +480,8 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
     });
   };
 
+  console.log("==============brandGuidelines=========>", brandGuidelines);
+
   return (
     <div className="space-y-4">
       <Card className="border-dashed border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-blue-50">
@@ -553,7 +497,10 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
             <div className="space-y-3">
               {/* PDF Upload Option */}
               <div className="space-y-2">
-                <Label htmlFor="brand-upload" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="brand-upload"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Upload Brand Guidelines PDF
                 </Label>
                 <div className="flex items-center gap-2">
@@ -598,7 +545,10 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
 
               {/* Brand Name Search Option */}
               <div className="space-y-2">
-                <Label htmlFor="brand-name" className="text-sm font-medium text-gray-700">
+                <Label
+                  htmlFor="brand-name"
+                  className="text-sm font-medium text-gray-700"
+                >
                   Search Brand Assets by Name
                 </Label>
                 <div className="flex items-center gap-2">
@@ -639,200 +589,177 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
               </div>
             </div>
 
-              {/* Status Indicators */}
-              {isExtractingBrand && (
-                <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-md">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Extracting guidelines...
-                </div>
-              )}
+            {/* Status Indicators */}
+            {isExtractingBrand && (
+              <div className="flex items-center gap-2 text-sm text-purple-600 bg-purple-50 px-3 py-2 rounded-md">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Extracting guidelines...
+              </div>
+            )}
 
-              {isSearchingBrand && (
-                <div className="bg-blue-50 rounded-md p-3 border border-blue-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-blue-700">
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      {searchProgress?.step || "Searching for brand assets..."}
-                    </div>
-                    {searchProgress && (
-                      <span className="text-xs text-blue-600">
-                        {searchProgress.progress}%
-                      </span>
-                    )}
+            {isSearchingBrand && (
+              <div className="bg-blue-50 rounded-md p-3 border border-blue-200">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-sm font-medium text-blue-700">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {searchProgress?.step || "Searching for brand assets..."}
                   </div>
                   {searchProgress && (
-                    <>
-                      <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
-                        <div
-                          className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${searchProgress.progress}%` }}
-                        />
-                      </div>
-                      <div className="text-xs text-blue-700">
-                        {searchProgress.details}
-                      </div>
-                    </>
+                    <span className="text-xs text-blue-600">
+                      {searchProgress.progress}%
+                    </span>
                   )}
                 </div>
-              )}
-
-              {brandSearchResults && !isSearchingBrand && (
-                <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      Brand Assets Found
-                    </div>
-                    <span className="text-xs text-emerald-600">
-                      {brandSearchResults.totalAssetsFound} assets
-                    </span>
-                  </div>
-                  <div className="text-xs text-emerald-700 space-y-1">
-                    <div>Logos: {brandSearchResults.logos.length}</div>
-                    <div>Icons: {brandSearchResults.icons.length}</div>
-                    <div>Brand Images: {brandSearchResults.brandImages.length}</div>
-                    {brandSearchResults.officialWebsite && (
-                      <div>Website: {brandSearchResults.officialWebsite}</div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {isPerformingMultimodalAnalysis &&
-                multimodalAnalysisProgress.total > 0 && (
-                  <div className="bg-indigo-50 rounded-md p-3 border border-indigo-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
-                        <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                        Processing PDF
-                      </div>
-                      <span className="text-xs text-indigo-600">
-                        {Math.round(
-                          (multimodalAnalysisProgress.current /
-                            multimodalAnalysisProgress.total) *
-                            100
-                        )}
-                        %
-                      </span>
-                    </div>
-                    <div className="w-full bg-indigo-200 rounded-full h-2">
+                {searchProgress && (
+                  <>
+                    <div className="w-full bg-blue-200 rounded-full h-2 mb-2">
                       <div
-                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${
-                            (multimodalAnalysisProgress.current /
-                              multimodalAnalysisProgress.total) *
-                            100
-                          }%`,
-                        }}
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${searchProgress.progress}%` }}
                       />
                     </div>
-                  </div>
-                )}
-
-              {brandGuidelines && (
-                <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
-                      Brand Guidelines Ready
+                    <div className="text-xs text-blue-700">
+                      {searchProgress.details}
                     </div>
-                    <Button
-                      onClick={() => setShowBrandModal(true)}
-                      variant="ghost"
-                      size="sm"
-                      className="text-emerald-600 hover:text-emerald-700 p-1"
-                    >
-                      <Eye className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
+            )}
 
-              {brandExtractionError && (
-                <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-200">
-                  {brandExtractionError}
-                </div>
-              )}
-            </div>
-
-            {/* Wireframe Generation Progress */}
-            {isGeneratingWireframes && wireframeProgress.total > 0 && (
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-3 border border-blue-200">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-800">
-                    <Sparkles className="h-4 w-4" />
-                    Generating Wireframes
-                  </div>
-                  <span className="text-xs text-blue-600">
-                    {wireframeProgress.current}/{wireframeProgress.total}
-                  </span>
-                </div>
-                <Progress
-                  value={
-                    (wireframeProgress.current / wireframeProgress.total) * 100
-                  }
-                  className="w-full mb-2 h-2"
-                />
-                <div className="text-xs text-blue-700">
-                  {wireframeProgress.current < wireframeProgress.total ? (
-                    <span>
-                      Processing:{" "}
-                      <strong>{wireframeProgress.currentPage}</strong>
+            {isPerformingMultimodalAnalysis &&
+              multimodalAnalysisProgress.total > 0 && (
+                <div className="bg-indigo-50 rounded-md p-3 border border-indigo-200">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2 text-sm font-medium text-indigo-700">
+                      <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
+                      Processing PDF
+                    </div>
+                    <span className="text-xs text-indigo-600">
+                      {Math.round(
+                        (multimodalAnalysisProgress.current /
+                          multimodalAnalysisProgress.total) *
+                          100
+                      )}
+                      %
                     </span>
-                  ) : (
-                    <span className="font-medium">Finalizing...</span>
-                  )}
+                  </div>
+                  <div className="w-full bg-indigo-200 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${
+                          (multimodalAnalysisProgress.current /
+                            multimodalAnalysisProgress.total) *
+                          100
+                        }%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+
+            {brandGuidelines && (
+              <div className="bg-emerald-50 rounded-md p-3 border border-emerald-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                    Brand Guidelines Ready
+                  </div>
+                  <Button
+                    onClick={() => setShowBrandModal(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-emerald-600 hover:text-emerald-700 p-1"
+                  >
+                    <Eye className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
             )}
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
-              <Button
-                onClick={generateBrandAwareWireframes}
-                disabled={
-                  !brandGuidelines ||
-                  isGeneratingWireframes ||
-                  !pageContentCards ||
-                  pageContentCards.length === 0
+            {brandExtractionError && (
+              <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-md border border-red-200">
+                {brandExtractionError}
+              </div>
+            )}
+          </div>
+
+          {/* Wireframe Generation Progress */}
+          {isGeneratingWireframes && wireframeProgress.total > 0 && (
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-3 border border-blue-200">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-blue-800">
+                  <Sparkles className="h-4 w-4" />
+                  Generating Wireframes
+                </div>
+                <span className="text-xs text-blue-600">
+                  {wireframeProgress.current}/{wireframeProgress.total}
+                </span>
+              </div>
+              <Progress
+                value={
+                  (wireframeProgress.current / wireframeProgress.total) * 100
                 }
-                variant="default"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                {isGeneratingWireframes ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
+                className="w-full mb-2 h-2"
+              />
+              <div className="text-xs text-blue-700">
+                {wireframeProgress.current < wireframeProgress.total ? (
+                  <span>
+                    Processing: <strong>{wireframeProgress.currentPage}</strong>
+                  </span>
                 ) : (
-                  <>
-                    <Sparkles className="h-4 w-4" />
-                    Generate Brand Wireframes
-                  </>
+                  <span className="font-medium">Finalizing...</span>
                 )}
-              </Button>
-              <Button
-                onClick={generateUnifiedHTML}
-                disabled={!brandGuidelines || isGeneratingUnifiedHTML}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                {isGeneratingUnifiedHTML ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Code className="h-4 w-4" />
-                    Section Wireframes
-                  </>
-                )}
-              </Button>
+              </div>
             </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+            <Button
+              onClick={generateBrandAwareWireframes}
+              // disabled={
+              //   !brandGuidelines ||
+              //   isGeneratingWireframes ||
+              //   !pageContentCards ||
+              //   pageContentCards.length === 0
+              // }
+              variant="default"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              {isGeneratingWireframes ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4" />
+                  Generate Brand Wireframes
+                </>
+              )}
+            </Button>
+            <Button
+              onClick={generateUnifiedHTML}
+              disabled={!brandGuidelines || isGeneratingUnifiedHTML}
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2"
+            >
+              {isGeneratingUnifiedHTML ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Code className="h-4 w-4" />
+                  Section Wireframes
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -863,7 +790,8 @@ Return only the complete HTML code with embedded CSS in <style> tags and JavaScr
                 </h3>
                 <div className="bg-white rounded-lg border p-4 max-h-96 overflow-auto">
                   <pre className="text-sm text-gray-800 whitespace-pre-wrap font-mono">
-                    {JSON.stringify(brandGuidelines, null, 2)}
+                    {brandGuidelines ||
+                      JSON.stringify(brandGuidelines, null, 2)}
                   </pre>
                 </div>
               </div>
