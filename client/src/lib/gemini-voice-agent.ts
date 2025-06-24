@@ -35,9 +35,9 @@ export class GeminiVoiceAgent {
       4. Help create comprehensive project plans
       5. Guide users through technical decisions
       
-      IMPORTANT: Keep responses SHORT and conversational for voice interaction - maximum 50-70 words.
-      Be direct and to the point. Ask ONE specific follow-up question to keep conversation flowing.
-      Avoid long explanations - focus on key points only.`
+      IMPORTANT: Provide clear, satisfying responses that draw attention - be comprehensive but concise (80-120 words).
+      Give actionable insights and practical advice. Ask ONE thoughtful follow-up question.
+      Make responses engaging and valuable for decision-making.`
     });
     this.sessionId = `gemini-session-${Date.now()}`;
   }
@@ -160,12 +160,13 @@ export class GeminiVoiceAgent {
 
 ${conversationContext}
 
-As an expert tech consultant, provide a SHORT response (maximum 50-70 words) that:
-1. Briefly acknowledges what the user said
-2. Gives one key insight or advice
-3. Asks ONE specific follow-up question
+As an expert tech consultant, provide a comprehensive response (80-120 words) that:
+1. Acknowledges what the user said with context
+2. Provides valuable insights and practical advice
+3. Offers specific recommendations or considerations
+4. Asks ONE thoughtful follow-up question
 
-Be direct and conversational for voice interaction. Avoid long explanations.`;
+Make it engaging, clear, and actionable for decision-making. Be the expert they need.`;
 
       const result = await this.model.generateContent(prompt);
       const response = result.response.text();
