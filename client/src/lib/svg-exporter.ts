@@ -210,25 +210,21 @@ export class SVGExporter {
         // Get container and measure complete dimensions
         const container = doc.querySelector('#capture-container') || doc.querySelector('.wireframe-container') || doc.body;
         
-        // Force layout and get all measurements
-        const maxWidth = Math.max(
-          container.scrollWidth,
-          doc.documentElement.scrollWidth,
-          doc.body.scrollWidth,
+        // Get reasonable content dimensions
+        const contentWidth = Math.max(
+          container.clientWidth,
           (container as HTMLElement).offsetWidth,
-          2000
+          1400
         );
         
-        const maxHeight = Math.max(
-          container.scrollHeight,
-          doc.documentElement.scrollHeight,
-          doc.body.scrollHeight,
+        const contentHeight = Math.max(
+          container.clientHeight,
           (container as HTMLElement).offsetHeight,
-          1500
+          900
         );
         
-        const actualWidth = maxWidth + 400;
-        const actualHeight = maxHeight + 400;
+        const actualWidth = Math.min(contentWidth + 100, 1600);
+        const actualHeight = contentHeight + 100;
 
         // Use html2canvas with maximum capture settings
         const canvas = await html2canvas(container as Element, {
@@ -287,11 +283,10 @@ export class SVGExporter {
     <style>
         html, body {
             margin: 0;
-            padding: 100px;
-            width: auto;
-            min-width: 2000px;
+            padding: 50px;
+            width: 1400px;
             height: auto;
-            min-height: 1500px;
+            min-height: 1000px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -304,13 +299,14 @@ export class SVGExporter {
             overflow: visible !important;
         }
         .wireframe-container {
-            width: auto;
-            min-width: 100%;
+            width: 100%;
+            max-width: 1300px;
             height: auto;
-            min-height: 100%;
-            padding: 100px;
+            min-height: 900px;
+            padding: 20px;
             overflow: visible;
-            position: static;
+            position: relative;
+            margin: 0 auto;
         }
     </style>
 </head>

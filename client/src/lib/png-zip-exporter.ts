@@ -35,11 +35,10 @@ export class PNGZipExporter {
     <style>
         html, body {
             margin: 0;
-            padding: 100px; /* Maximum padding on all sides */
-            width: auto;
-            min-width: 2000px;
+            padding: 50px; /* Reasonable padding */
+            width: 1400px; /* Fixed width for consistent layout */
             height: auto;
-            min-height: 1500px;
+            min-height: 1000px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -59,16 +58,17 @@ export class PNGZipExporter {
             max-height: none !important;
             overflow: visible !important;
         }
-        /* Container with maximum space */
+        /* Container with proper sizing */
         .wireframe-container {
-            width: auto;
-            min-width: 100%;
+            width: 100%;
+            max-width: 1300px; /* Reasonable max width */
             height: auto;
-            min-height: 100%;
-            padding: 100px; /* Maximum padding */
+            min-height: 900px;
+            padding: 20px; /* Normal padding */
             overflow: visible;
-            position: static;
+            position: relative;
             display: block;
+            margin: 0 auto; /* Center the content */
         }
         /* Ensure no element is ever cut off */
         div, section, article, aside, nav, header, footer, main, 
@@ -202,32 +202,22 @@ export class PNGZipExporter {
           containerOffset: { width: (container as HTMLElement).offsetWidth, height: (container as HTMLElement).offsetHeight }
         };
         
-        // Use the maximum of all measurements plus generous padding
-        const maxWidth = Math.max(
-          measurements.containerScroll.width,
-          measurements.documentScroll.width,
-          measurements.bodyScroll.width,
+        // Use reasonable dimensions that capture content without excessive white space
+        const contentWidth = Math.max(
           measurements.containerClient.width,
-          measurements.documentClient.width,
-          measurements.bodyClient.width,
           measurements.containerOffset.width,
-          2000 // Minimum width
+          1400 // Standard wireframe width
         );
         
-        const maxHeight = Math.max(
-          measurements.containerScroll.height,
-          measurements.documentScroll.height,
-          measurements.bodyScroll.height,
+        const contentHeight = Math.max(
           measurements.containerClient.height,
-          measurements.documentClient.height,
-          measurements.bodyClient.height,
           measurements.containerOffset.height,
-          1500 // Minimum height
+          900 // Minimum height for content
         );
         
-        // Add substantial padding to ensure nothing is ever cut off
-        const actualWidth = maxWidth + 400; // 400px padding on all sides
-        const actualHeight = maxHeight + 400; // 400px padding on all sides
+        // Add reasonable padding to ensure complete capture
+        const actualWidth = Math.min(contentWidth + 100, 1600); // Cap max width
+        const actualHeight = contentHeight + 100; // Add padding for height
 
         console.log(`Complete wireframe measurements for ${wireframe.pageName}:`, measurements);
         console.log(`Final capture dimensions: ${actualWidth}x${actualHeight}`);
@@ -271,23 +261,22 @@ export class PNGZipExporter {
                 overflow: visible !important;
                 height: auto !important;
                 min-height: ${actualHeight}px !important;
-                width: auto !important;
-                min-width: ${actualWidth}px !important;
-                max-width: none !important;
-                max-height: none !important;
+                width: ${actualWidth}px !important;
+                max-width: ${actualWidth}px !important;
                 margin: 0 !important;
-                padding: 200px !important;
+                padding: 50px !important;
+                background: #ffffff !important;
               }
               #capture-container, .wireframe-container {
                 overflow: visible !important;
                 height: auto !important;
-                min-height: 100% !important;
-                width: auto !important;
-                min-width: 100% !important;
-                max-width: none !important;
-                max-height: none !important;
-                padding: 200px !important;
-                position: static !important;
+                min-height: 90% !important;
+                width: 90% !important;
+                max-width: 1300px !important;
+                padding: 20px !important;
+                position: relative !important;
+                margin: 0 auto !important;
+                background: transparent !important;
               }
               /* Force all elements to be visible */
               div, section, article, aside, nav, header, footer, main,
