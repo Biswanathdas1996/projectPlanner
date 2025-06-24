@@ -18,11 +18,10 @@ export class GeminiVoiceAgent {
   private model: any;
   private sessionId: string;
   private isActive: boolean = false;
-  private speechRecognition: any = null;
+  public speechRecognition: any = null;
   private isListening: boolean = false;
   private eventHandler?: (event: VoiceConversationEvent) => void;
   private conversationHistory: Array<{role: string, content: string}> = [];
-  public speechRecognition: any = null;
 
   constructor(config: GeminiVoiceConfig) {
     this.config = config;
@@ -90,6 +89,13 @@ export class GeminiVoiceAgent {
       this.speechRecognition.onstart = () => {
         this.isListening = true;
         console.log('Speech recognition started');
+        // Notify UI about listening state change
+        this.eventHandler?.({
+          type: 'agent_message',
+          message: '',
+          sessionId: this.sessionId,
+          timestamp: new Date(),
+        });
       };
 
       this.speechRecognition.onresult = async (event: any) => {
@@ -206,8 +212,24 @@ Be direct and conversational for voice interaction. Avoid long explanations.`;
 
     try {
       this.speechRecognition.start();
+      this.isListening = true;
     } catch (error) {
       console.error('Error starting speech recognition:', error);
+      this.isListening = false;
+    }
+  }
+
+  stopListening(): void {
+    if (!this.speechRecognition || !this.isListening) {
+      return;
+    }
+
+    try {
+      this.speechRecognition.stop();
+      this.isListening = false;
+    } catch (error) {
+      console.error('Error stopping speech recognition:', error);
+      this.isListening = false;
     }
   }
 

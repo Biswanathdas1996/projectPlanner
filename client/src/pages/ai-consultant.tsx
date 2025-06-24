@@ -400,19 +400,23 @@ export default function AIConsultant() {
 
     if (isListening) {
       // Stop listening
-      if (geminiVoiceAgentRef.current.speechRecognition) {
-        geminiVoiceAgentRef.current.speechRecognition.stop();
+      try {
+        geminiVoiceAgentRef.current.stopListening();
+        setIsListening(false);
+        toast({
+          title: "Stopped listening",
+          description: "Click microphone to start again",
+        });
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+        setIsListening(false);
       }
-      setIsListening(false);
-      toast({
-        title: "Stopped listening",
-        description: "Click microphone to start again",
-      });
       return;
     }
 
     try {
       geminiVoiceAgentRef.current.startListening();
+      setIsListening(true);
       
       toast({
         title: "Listening...",
@@ -421,6 +425,7 @@ export default function AIConsultant() {
       
     } catch (error) {
       console.error('Error starting speech recognition:', error);
+      setIsListening(false);
       toast({
         title: "Microphone error",
         description: "Please allow microphone access and try again",
