@@ -152,6 +152,11 @@ export default function AIConsultant() {
   };
 
   const stopVoiceConversation = () => {
+    // Stop any ongoing speech
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    
     if (elevenLabsAgentRef.current) {
       elevenLabsAgentRef.current.endConversation();
       elevenLabsAgentRef.current = null;
@@ -587,8 +592,9 @@ ${conversation.map(msg => `
                         <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                           <span className="text-sm text-green-700">
-                            {isConnected ? 'Voice conversation active' : 'Connecting...'}
+                            {isConnected ? 'Voice conversation active - AI speaking' : 'Connecting...'}
                           </span>
+                          <Volume2 className="h-4 w-4 text-green-600" />
                         </div>
                         <Button
                           onClick={stopVoiceConversation}
