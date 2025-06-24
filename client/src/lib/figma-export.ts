@@ -723,48 +723,67 @@ No more "Unsupported file format" errors with SVG import!`;
     try {
       console.log(`Attempting download: ${fileName} (${content.length} chars)`);
       
-      // Force download using data URL method for better compatibility
-      const dataUrl = `data:${mimeType};charset=utf-8,${encodeURIComponent(content)}`;
+      // Method 1: Blob with URL.createObjectURL (most reliable)
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      
       const link = document.createElement('a');
-      link.href = dataUrl;
+      link.href = url;
       link.download = fileName;
       link.style.display = 'none';
       
+      // Add to DOM temporarily
       document.body.appendChild(link);
       
-      // Force click event
-      const event = new MouseEvent('click', {
+      // Trigger download with user interaction simulation
+      const clickEvent = new MouseEvent('click', {
         view: window,
         bubbles: true,
-        cancelable: false
+        cancelable: true
       });
-      link.dispatchEvent(event);
       
-      // Clean up
+      // Force the download
+      link.dispatchEvent(clickEvent);
+      
+      // Alternative trigger method
+      setTimeout(() => {
+        link.click();
+      }, 10);
+      
+      // Clean up after delay
       setTimeout(() => {
         if (document.body.contains(link)) {
           document.body.removeChild(link);
         }
-      }, 200);
-      
-      console.log(`Download initiated: ${fileName}`);
-    } catch (error) {
-      console.error(`Download failed for ${fileName}:`, error);
-      
-      // Fallback: try blob method
-      try {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
         URL.revokeObjectURL(url);
-        console.log(`Fallback download successful: ${fileName}`);
+      }, 1000);
+      
+      console.log(`Download triggered: ${fileName}`);
+      
+    } catch (error) {
+      console.error(`Primary download failed for ${fileName}:`, error);
+      
+      // Fallback: Open in new window for manual save
+      try {
+        const dataUrl = `data:${mimeType};charset=utf-8,${encodeURIComponent(content)}`;
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head><title>${fileName}</title></head>
+              <body>
+                <h3>Right-click and "Save As" to download: ${fileName}</h3>
+                <a href="${dataUrl}" download="${fileName}">Download ${fileName}</a>
+                <hr>
+                <pre style="white-space: pre-wrap; font-family: monospace;">${content.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</pre>
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        }
+        console.log(`Fallback window opened for: ${fileName}`);
       } catch (fallbackError) {
-        console.error(`Both download methods failed for ${fileName}:`, fallbackError);
+        console.error(`All download methods failed for ${fileName}:`, fallbackError);
       }
     }
   }

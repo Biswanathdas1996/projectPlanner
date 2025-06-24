@@ -5808,7 +5808,7 @@ ${selectedPageCode.jsCode}
                         
                         toast({
                           title: "SVG Export Started",
-                          description: `Downloading ${wireframesForExport.length} SVG files + HTML preview. Check your downloads folder.`,
+                          description: `Downloading ${wireframesForExport.length} SVG files. If downloads don't start automatically, new windows will open for manual download.`,
                         });
 
                         // Show import guide after export
@@ -5865,6 +5865,67 @@ ${selectedPageCode.jsCode}
                   >
                     <Palette className="h-4 w-4" />
                     Export Tokens
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      // Simple single-file download as backup
+                      const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                        id: w.id,
+                        pageName: w.pageName,
+                        htmlCode: w.htmlCode,
+                        cssCode: w.cssCode,
+                        userType: w.userType || 'User',
+                        features: w.features || [],
+                        createdAt: w.createdAt || new Date().toISOString(),
+                      }));
+                      
+                      // Create combined SVG with all wireframes
+                      let combinedSVG = `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="2400" height="${wireframesForExport.length * 900}" xmlns="http://www.w3.org/2000/svg">
+  <rect width="2400" height="${wireframesForExport.length * 900}" fill="#f8f9fa"/>`;
+
+                      wireframesForExport.forEach((wireframe, index) => {
+                        const yOffset = index * 900;
+                        combinedSVG += `
+  <g transform="translate(0, ${yOffset})">
+    <rect x="0" y="0" width="1200" height="800" fill="#ffffff" stroke="#e0e0e0" stroke-width="2"/>
+    <text x="600" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#333" text-anchor="middle">
+      ${wireframe.pageName}
+    </text>
+    <rect x="50" y="60" width="1100" height="700" fill="#f8f9fa" stroke="#ddd" rx="8"/>
+    <text x="100" y="100" font-family="Arial, sans-serif" font-size="14" fill="#666">
+      Wireframe: ${wireframe.pageName}
+    </text>
+    <text x="100" y="130" font-family="Arial, sans-serif" font-size="12" fill="#888">
+      Features: ${wireframe.features?.join(', ') || 'Standard layout'}
+    </text>
+  </g>`;
+                      });
+                      
+                      combinedSVG += `</svg>`;
+                      
+                      // Force download
+                      const blob = new Blob([combinedSVG], { type: 'image/svg+xml' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `all-wireframes-${new Date().toISOString().split('T')[0]}.svg`;
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(url);
+                      
+                      toast({
+                        title: "Single SVG Downloaded",
+                        description: "All wireframes combined in one SVG file for easy Figma import",
+                      });
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                  >
+                    <Download className="h-4 w-4" />
+                    Single SVG
                   </Button>
                   <Button
                     onClick={() => setShowFigmaGuide(true)}
