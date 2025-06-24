@@ -5806,8 +5806,8 @@ ${selectedPageCode.jsCode}
                         setLastExportedFileName(fileName);
                         
                         toast({
-                          title: "Multi-Format Export Complete",
-                          description: `Successfully exported ${wireframesForExport.length} wireframes in 4 different formats for maximum compatibility`,
+                          title: "Wireframe Export Complete",
+                          description: `Exported ${wireframesForExport.length} wireframes as SVG files (native Figma support) + HTML preview + FigJam format`,
                         });
 
                         // Show import guide after export
@@ -5828,7 +5828,7 @@ ${selectedPageCode.jsCode}
                     className="flex items-center gap-2 bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300"
                   >
                     <Layers className="h-4 w-4" />
-                    Export to Figma
+                    Export as SVG
                   </Button>
                   <Button
                     onClick={async () => {

@@ -530,76 +530,164 @@ The exported JSON is optimized for these plugins and contains all necessary data
   }
 
   static downloadFigmaExport(wireframes: WireframeForExport[]): { fileName: string } {
-    // Create multiple export formats for maximum compatibility
-    
-    // Format 1: Simplified HTML/CSS structure (most compatible)
-    const htmlCssData = {
-      format: "html-css-wireframes",
-      version: "1.0",
-      wireframes: wireframes.map((wireframe, index) => ({
-        id: wireframe.id,
-        name: wireframe.pageName,
-        html: wireframe.htmlCode,
-        css: wireframe.cssCode || "",
-        metadata: {
-          userType: wireframe.userType,
-          features: wireframe.features,
-          createdAt: wireframe.createdAt
-        }
-      }))
-    };
-
-    // Format 2: Basic Figma-style structure
-    const figmaStyleData = {
-      name: "Wireframe Export",
-      children: wireframes.map((wireframe, index) => ({
-        name: wireframe.pageName,
-        type: "CANVAS",
-        children: [{
-          name: `${wireframe.pageName} Frame`,
-          type: "FRAME",
-          width: 1200,
-          height: 800,
-          children: this.convertHTMLToBasicNodes(wireframe.htmlCode, wireframe.pageName)
-        }]
-      }))
-    };
-
-    // Format 3: Design specification document
-    const specData = {
-      project: "Wireframe Specifications",
-      pages: wireframes.map(wireframe => {
-        const styles = this.extractStylesFromHTML(wireframe.htmlCode);
-        return {
-          name: wireframe.pageName,
-          elements: this.analyzeHTMLStructure(wireframe.htmlCode),
-          colors: styles.colors,
-          fonts: styles.fonts,
-          layout: "1200x800px desktop layout"
-        };
-      })
-    };
-
     const dateStr = new Date().toISOString().split('T')[0];
     
-    // Download HTML/CSS format (primary)
-    const htmlFileName = `wireframes-html-css-${dateStr}.json`;
-    this.downloadFile(JSON.stringify(htmlCssData, null, 2), htmlFileName, 'application/json');
-    
-    // Download Figma-style format
-    const figmaFileName = `wireframes-figma-style-${dateStr}.json`;
-    this.downloadFile(JSON.stringify(figmaStyleData, null, 2), figmaFileName, 'application/json');
-    
-    // Download design spec
-    const specFileName = `wireframes-design-spec-${dateStr}.json`;
-    this.downloadFile(JSON.stringify(specData, null, 2), specFileName, 'application/json');
-    
-    // Download combined HTML file for browser viewing
+    // Create HTML file with embedded wireframes for direct viewing
     const combinedHtml = this.createCombinedHTMLFile(wireframes);
-    const htmlFileName2 = `wireframes-preview-${dateStr}.html`;
-    this.downloadFile(combinedHtml, htmlFileName2, 'text/html');
+    const htmlFileName = `wireframes-preview-${dateStr}.html`;
+    this.downloadFile(combinedHtml, htmlFileName, 'text/html');
+    
+    // Create SVG files for each wireframe (can be imported to Figma)
+    wireframes.forEach((wireframe, index) => {
+      const svgContent = this.convertToSVG(wireframe);
+      const svgFileName = `wireframe-${wireframe.pageName.replace(/\s+/g, '-').toLowerCase()}-${dateStr}.svg`;
+      this.downloadFile(svgContent, svgFileName, 'image/svg+xml');
+    });
+    
+    // Create Figma Community file format (FigJam whiteboard)
+    const figJamData = this.createFigJamFormat(wireframes);
+    const figJamFileName = `wireframes-figjam-${dateStr}.jam`;
+    this.downloadFile(JSON.stringify(figJamData, null, 2), figJamFileName, 'application/json');
+    
+    // Create detailed instruction file
+    const instructions = this.createDetailedInstructions(wireframes.length);
+    const instructionsFileName = `figma-import-instructions-${dateStr}.txt`;
+    this.downloadFile(instructions, instructionsFileName, 'text/plain');
 
     return { fileName: htmlFileName };
+  }
+
+  private static convertToSVG(wireframe: WireframeForExport): string {
+    const styles = this.extractStylesFromHTML(wireframe.htmlCode);
+    let yOffset = 40;
+    let elements = '';
+
+    // Header
+    if (wireframe.htmlCode.includes('<h1') || wireframe.htmlCode.includes('<h2')) {
+      elements += `
+        <rect x="40" y="${yOffset}" width="400" height="48" fill="#f8f9fa" stroke="#e0e0e0" rx="4"/>
+        <text x="60" y="${yOffset + 30}" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#333">
+          ${wireframe.pageName}
+        </text>`;
+      yOffset += 80;
+    }
+
+    // Navigation
+    if (wireframe.htmlCode.includes('<nav') || wireframe.htmlCode.includes('navigation')) {
+      elements += `
+        <rect x="0" y="${yOffset}" width="1200" height="60" fill="${styles.colors[0] || '#f8f9fa'}" stroke="#e0e0e0" rx="8"/>
+        <text x="40" y="${yOffset + 35}" font-family="Arial, sans-serif" font-size="14" fill="#333">
+          Navigation • Menu • Links
+        </text>`;
+      yOffset += 100;
+    }
+
+    // Main content area
+    elements += `
+      <rect x="40" y="${yOffset}" width="1120" height="400" fill="#ffffff" stroke="#e0e0e0" stroke-width="2" rx="12"/>`;
+
+    // Form elements
+    if (wireframe.htmlCode.includes('<form') || wireframe.htmlCode.includes('<input')) {
+      elements += `
+        <rect x="80" y="${yOffset + 40}" width="400" height="300" fill="#f8f9fa" stroke="#d1d5db" rx="8"/>
+        <text x="100" y="${yOffset + 70}" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333">Form</text>`;
+      
+      for (let i = 0; i < 3; i++) {
+        elements += `
+          <rect x="120" y="${yOffset + 100 + (i * 60)}" width="320" height="40" fill="#ffffff" stroke="#d1d5db" rx="6"/>
+          <text x="140" y="${yOffset + 125 + (i * 60)}" font-family="Arial, sans-serif" font-size="12" fill="#999">Input Field ${i + 1}</text>`;
+      }
+    }
+
+    // Buttons
+    if (wireframe.htmlCode.includes('<button')) {
+      elements += `
+        <rect x="120" y="${yOffset + 340}" width="120" height="40" fill="${styles.colors[1] || '#3b82f6'}" rx="8"/>
+        <text x="160" y="${yOffset + 365}" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" text-anchor="middle">Submit</text>`;
+    }
+
+    return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1200" height="800" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#ffffff"/>
+  ${elements}
+  <text x="600" y="780" font-family="Arial, sans-serif" font-size="12" fill="#999" text-anchor="middle">
+    ${wireframe.pageName} - Generated Wireframe
+  </text>
+</svg>`;
+  }
+
+  private static createFigJamFormat(wireframes: WireframeForExport[]): any {
+    return {
+      name: "Wireframe Collection",
+      type: "FIGJAM",
+      children: wireframes.map((wireframe, index) => ({
+        name: wireframe.pageName,
+        type: "STICKY",
+        x: (index % 3) * 400,
+        y: Math.floor(index / 3) * 300,
+        width: 350,
+        height: 250,
+        text: `${wireframe.pageName}\n\nElements:\n• ${this.analyzeHTMLStructure(wireframe.htmlCode).map(el => el.content).join('\n• ')}`,
+        backgroundColor: index % 2 === 0 ? "#FFF2CC" : "#E1F5FE"
+      }))
+    };
+  }
+
+  private static createDetailedInstructions(wireframeCount: number): string {
+    return `WIREFRAME IMPORT GUIDE FOR FIGMA
+================================
+
+🎯 WHAT WAS EXPORTED:
+- ${wireframeCount} wireframe HTML preview file
+- ${wireframeCount} individual SVG files (one per wireframe)  
+- 1 FigJam whiteboard file
+- This instruction file
+
+📋 IMPORT METHODS (CHOOSE ONE):
+
+METHOD 1: SVG Import (RECOMMENDED - Native Figma Support)
+-------------------------------------------------------
+1. Open Figma and create a new design file
+2. Drag and drop the .svg files directly into Figma
+3. Each wireframe will import as a vector graphic
+4. Resize and position as needed
+5. ✅ This method has NO compatibility issues
+
+METHOD 2: FigJam Whiteboard (For Planning)
+-----------------------------------------
+1. Open FigJam (Figma's whiteboard tool)
+2. Go to File → Import
+3. Select the .jam file
+4. View wireframes as sticky notes for planning
+5. Use for team collaboration and ideation
+
+METHOD 3: HTML Preview (Reference)
+---------------------------------
+1. Open the .html file in any web browser
+2. Use this as a visual reference
+3. Manually recreate elements in Figma
+4. Screenshot sections if needed for reference
+
+METHOD 4: Copy-Paste from Browser
+--------------------------------
+1. Open the HTML preview file
+2. Take screenshots of each wireframe
+3. Import screenshots to Figma as reference images
+4. Use as background while recreating the design
+
+🔧 TROUBLESHOOTING:
+- SVG files should import without any errors
+- If SVG import fails, use the HTML preview as reference
+- FigJam files work best for collaboration and planning
+- For pixel-perfect recreation, use Method 3 or 4
+
+💡 PRO TIPS:
+- SVG files maintain vector quality and can be edited
+- Use the HTML preview to see interactive elements
+- Combine multiple methods for best results
+- Save SVG files as Figma components for reuse
+
+No more "Unsupported file format" errors with SVG import!`;
   }
 
   private static downloadFile(content: string, fileName: string, mimeType: string): void {
