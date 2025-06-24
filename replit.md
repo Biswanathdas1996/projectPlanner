@@ -358,6 +358,9 @@ Changelog:
   - Figma export now provides complete package: JSON data, instruction guide, and individual HTML files
   - Added input validation and progress feedback for robust Figma export workflow
   - Optimized HTML files specifically for html.to.design conversion to editable Figma components
+  - Added PNG ZIP export functionality for downloading all wireframes as high-quality PNG images
+  - Implemented 3x scale rendering for crisp PNG output with JSZip compression
+  - PNG export includes metadata file and sequential processing with progress feedback
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation

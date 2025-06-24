@@ -50,6 +50,7 @@ import {
 } from "@/lib/brand-guideline-extractor";
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { SVGExporter, type WireframeSVGExport } from "@/lib/svg-exporter";
+import { PNGZipExporter, type WireframePNGExport } from "@/lib/png-zip-exporter";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
@@ -353,6 +354,7 @@ import {
   Shield,
   Activity,
   RefreshCw,
+  Archive,
 } from "lucide-react";
 
 interface WireframeData {
@@ -5904,6 +5906,55 @@ ${selectedPageCode.jsCode}
                   >
                     <Palette className="h-4 w-4" />
                     Export Tokens
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        toast({
+                          title: "Generating PNG ZIP",
+                          description: "Converting wireframes to high-quality PNG images...",
+                        });
+
+                        const wireframesForPNG: WireframePNGExport[] = generatedWireframes.map(w => ({
+                          id: w.id,
+                          pageName: w.pageName,
+                          htmlCode: w.htmlCode,
+                          cssCode: w.cssCode,
+                          userType: w.userType || 'User',
+                          features: w.features || [],
+                          createdAt: w.createdAt || new Date().toISOString(),
+                        }));
+                        
+                        if (wireframesForPNG.length === 0) {
+                          toast({
+                            title: "No Wireframes Found",
+                            description: "Please generate wireframes first before exporting as PNG ZIP",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
+                        await PNGZipExporter.exportAllWireframesAsPNGZip(wireframesForPNG);
+                        
+                        toast({
+                          title: "PNG ZIP Export Complete",
+                          description: `Downloaded ${wireframesForPNG.length} wireframes as high-quality PNG images in ZIP archive`,
+                        });
+                      } catch (error) {
+                        console.error("PNG ZIP export error:", error);
+                        toast({
+                          title: "Export Failed",
+                          description: "Failed to export wireframes as PNG ZIP. Check console for details.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-orange-200 text-orange-700 hover:text-orange-800 hover:border-orange-300"
+                  >
+                    <Archive className="h-4 w-4" />
+                    Export PNG ZIP
                   </Button>
                 </div>
               </div>
