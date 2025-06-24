@@ -29,6 +29,7 @@ import {
   playAudioFromBuffer,
   getUserAudioStream 
 } from '@/lib/elevenlabs-conversation-agent';
+import { getElevenLabsApiKey, isElevenLabsAvailable } from '@/lib/api-config';
 import { 
   ConversationalAIAgent, 
   createConversationalAIAgent,
@@ -106,12 +107,13 @@ export default function AIConsultant() {
 
   const startVoiceConversation = async () => {
     try {
-      const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+      const apiKey = getElevenLabsApiKey();
+      
       if (!apiKey) {
         toast({ 
           title: "Voice features unavailable", 
-          description: "ElevenLabs API key not configured. Using text mode instead.", 
-          variant: "default" 
+          description: "ElevenLabs API key not configured. Please check your environment settings.", 
+          variant: "destructive" 
         });
         return;
       }
@@ -489,7 +491,7 @@ ${conversation.map(msg => `
             <Badge variant="outline" className="text-sm">
               {confidence}% confidence
             </Badge>
-            {!import.meta.env.VITE_ELEVENLABS_API_KEY && (
+            {!isElevenLabsAvailable() && (
               <Badge variant="outline" className="text-sm text-orange-600 border-orange-300">
                 Text Mode Only
               </Badge>
@@ -562,9 +564,9 @@ ${conversation.map(msg => `
                     {!isVoiceMode ? (
                       <Button
                         onClick={startVoiceConversation}
-                        disabled={isProcessing || !import.meta.env.VITE_ELEVENLABS_API_KEY}
+                        disabled={isProcessing || !isElevenLabsAvailable()}
                         className="flex-1"
-                        variant={import.meta.env.VITE_ELEVENLABS_API_KEY ? "default" : "outline"}
+                        variant={isElevenLabsAvailable() ? "default" : "outline"}
                       >
                         {isProcessing ? (
                           <>
@@ -574,7 +576,7 @@ ${conversation.map(msg => `
                         ) : (
                           <>
                             <Mic className="h-4 w-4 mr-2" />
-                            {import.meta.env.VITE_ELEVENLABS_API_KEY ? 'Start Voice Conversation' : 'Voice Unavailable'}
+                            {isElevenLabsAvailable() ? 'Start Voice Conversation' : 'Voice Unavailable - Missing API Key'}
                           </>
                         )}
                       </Button>
