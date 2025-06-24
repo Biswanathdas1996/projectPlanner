@@ -5928,6 +5928,41 @@ ${selectedPageCode.jsCode}
                     Single SVG
                   </Button>
                   <Button
+                    onClick={() => {
+                      try {
+                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                          id: w.id,
+                          pageName: w.pageName,
+                          htmlCode: w.htmlCode,
+                          cssCode: w.cssCode,
+                          userType: w.userType || 'User',
+                          features: w.features || [],
+                          createdAt: w.createdAt || new Date().toISOString(),
+                        }));
+                        
+                        const { fileName } = FigmaExporter.downloadFigmaJSON(wireframesForExport);
+                        
+                        toast({
+                          title: "Figma JSON Downloaded",
+                          description: "Compatible with 'JSON to Figma' plugin. Import this file using the plugin in Figma.",
+                        });
+                      } catch (error) {
+                        console.error("Figma JSON export error:", error);
+                        toast({
+                          title: "Export Failed",
+                          description: "Failed to export Figma JSON format",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                  >
+                    <FileText className="h-4 w-4" />
+                    Figma JSON
+                  </Button>
+                  <Button
                     onClick={() => setShowFigmaGuide(true)}
                     variant="ghost"
                     size="sm"

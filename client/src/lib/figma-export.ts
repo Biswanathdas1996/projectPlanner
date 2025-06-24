@@ -1028,6 +1028,183 @@ No more "Unsupported file format" errors with SVG import!`;
     return elements;
   }
 
+  static downloadFigmaJSON(wireframes: WireframeForExport[]): { fileName: string } {
+    const dateStr = new Date().toISOString().split('T')[0];
+    
+    // Create JSON structure compatible with "JSON to Figma" plugin
+    const figmaJSON = {
+      name: "Wireframe Import",
+      type: "DOCUMENT", 
+      children: wireframes.map((wireframe, pageIndex) => ({
+        id: `${pageIndex + 1}:0`,
+        name: wireframe.pageName,
+        type: "CANVAS",
+        backgroundColor: { r: 0.97, g: 0.97, b: 0.97, a: 1 },
+        children: [{
+          id: `${pageIndex + 1}:1`,
+          name: `${wireframe.pageName} Frame`,
+          type: "FRAME",
+          backgroundColor: { r: 1, g: 1, b: 1, a: 1 },
+          absoluteBoundingBox: { x: 0, y: 0, width: 1200, height: 800 },
+          constraints: { vertical: "TOP", horizontal: "LEFT" },
+          children: this.convertToFigmaElements(wireframe, pageIndex + 1)
+        }]
+      }))
+    };
+
+    const fileName = `figma-import-${dateStr}.json`;
+    const jsonStr = JSON.stringify(figmaJSON, null, 2);
+    
+    this.downloadFile(jsonStr, fileName, 'application/json');
+    
+    return { fileName };
+  }
+
+  private static convertToFigmaElements(wireframe: WireframeForExport, pageId: number): any[] {
+    const elements = [];
+    let nodeId = 2;
+    let yOffset = 40;
+    const styles = this.extractStylesFromHTML(wireframe.htmlCode);
+
+    // Page title
+    elements.push({
+      id: `${pageId}:${nodeId++}`,
+      name: "Page Title",
+      type: "TEXT",
+      characters: wireframe.pageName,
+      absoluteBoundingBox: { x: 40, y: yOffset, width: 400, height: 48 },
+      constraints: { vertical: "TOP", horizontal: "LEFT" },
+      style: {
+        fontFamily: styles.fonts[0] || "Inter",
+        fontWeight: 700,
+        fontSize: 32,
+        textAlignHorizontal: "LEFT",
+        textAlignVertical: "TOP"
+      },
+      fills: [{ type: "SOLID", color: { r: 0.2, g: 0.2, b: 0.2, a: 1 } }]
+    });
+    yOffset += 80;
+
+    // Navigation bar
+    if (wireframe.htmlCode.includes('<nav') || wireframe.htmlCode.includes('navigation')) {
+      elements.push({
+        id: `${pageId}:${nodeId++}`,
+        name: "Navigation",
+        type: "RECTANGLE",
+        absoluteBoundingBox: { x: 0, y: yOffset, width: 1200, height: 60 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        fills: [{ type: "SOLID", color: this.hexToRgba(styles.colors[0] || "#f8f9fa") }],
+        cornerRadius: 8
+      });
+
+      elements.push({
+        id: `${pageId}:${nodeId++}`,
+        name: "Nav Items",
+        type: "TEXT",
+        characters: "Navigation • Menu • Links",
+        absoluteBoundingBox: { x: 40, y: yOffset + 20, width: 300, height: 20 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        style: {
+          fontFamily: styles.fonts[0] || "Inter",
+          fontWeight: 400,
+          fontSize: 14
+        },
+        fills: [{ type: "SOLID", color: { r: 0.2, g: 0.2, b: 0.2, a: 1 } }]
+      });
+      yOffset += 100;
+    }
+
+    // Main content area
+    elements.push({
+      id: `${pageId}:${nodeId++}`,
+      name: "Content Area",
+      type: "RECTANGLE",
+      absoluteBoundingBox: { x: 40, y: yOffset, width: 1120, height: 400 },
+      constraints: { vertical: "TOP", horizontal: "LEFT" },
+      fills: [{ type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+      strokes: [{ type: "SOLID", color: { r: 0.88, g: 0.88, b: 0.88, a: 1 } }],
+      strokeWeight: 1,
+      cornerRadius: 12
+    });
+
+    // Form elements
+    if (wireframe.htmlCode.includes('<form') || wireframe.htmlCode.includes('<input')) {
+      elements.push({
+        id: `${pageId}:${nodeId++}`,
+        name: "Form Container",
+        type: "RECTANGLE",
+        absoluteBoundingBox: { x: 80, y: yOffset + 40, width: 400, height: 300 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        fills: [{ type: "SOLID", color: { r: 0.97, g: 0.97, b: 0.98, a: 1 } }],
+        cornerRadius: 8
+      });
+
+      // Input fields
+      for (let i = 0; i < 3; i++) {
+        elements.push({
+          id: `${pageId}:${nodeId++}`,
+          name: `Input Field ${i + 1}`,
+          type: "RECTANGLE",
+          absoluteBoundingBox: { 
+            x: 120, 
+            y: yOffset + 100 + (i * 60), 
+            width: 320, 
+            height: 40 
+          },
+          constraints: { vertical: "TOP", horizontal: "LEFT" },
+          fills: [{ type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }],
+          strokes: [{ type: "SOLID", color: { r: 0.82, g: 0.84, b: 0.86, a: 1 } }],
+          strokeWeight: 1,
+          cornerRadius: 6
+        });
+      }
+    }
+
+    // Submit button
+    if (wireframe.htmlCode.includes('<button')) {
+      elements.push({
+        id: `${pageId}:${nodeId++}`,
+        name: "Submit Button",
+        type: "RECTANGLE",
+        absoluteBoundingBox: { x: 120, y: yOffset + 340, width: 120, height: 40 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        fills: [{ type: "SOLID", color: this.hexToRgba(styles.colors[1] || "#3b82f6") }],
+        cornerRadius: 8
+      });
+
+      elements.push({
+        id: `${pageId}:${nodeId++}`,
+        name: "Button Text",
+        type: "TEXT",
+        characters: "Submit",
+        absoluteBoundingBox: { x: 150, y: yOffset + 352, width: 60, height: 16 },
+        constraints: { vertical: "TOP", horizontal: "LEFT" },
+        style: {
+          fontFamily: styles.fonts[0] || "Inter",
+          fontWeight: 500,
+          fontSize: 14,
+          textAlignHorizontal: "CENTER"
+        },
+        fills: [{ type: "SOLID", color: { r: 1, g: 1, b: 1, a: 1 } }]
+      });
+    }
+
+    return elements;
+  }
+
+  private static hexToRgba(hex: string): { r: number; g: number; b: number; a: number } {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) {
+      return { r: 0.97, g: 0.97, b: 0.97, a: 1 };
+    }
+    return {
+      r: parseInt(result[1], 16) / 255,
+      g: parseInt(result[2], 16) / 255,
+      b: parseInt(result[3], 16) / 255,
+      a: 1
+    };
+  }
+
   static async downloadDesignTokens(wireframes: WireframeForExport[]): Promise<void> {
     const { tokens, fileName } = await this.exportToFigmaDesignTokens(wireframes);
     
