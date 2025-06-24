@@ -547,13 +547,8 @@ ${conversation.map(msg => `
 
       speechRecognitionRef.current = recognition;
       
-      // Start listening after AI finishes speaking
-      setTimeout(() => {
-        if (speechRecognitionRef.current && isVoiceMode) {
-          console.log('Starting initial speech recognition');
-          speechRecognitionRef.current.start();
-        }
-      }, 3000);
+      // Don't auto-start, let user click the microphone button
+      console.log('Speech recognition initialized, ready for manual activation');
       
     } catch (error) {
       console.error('Failed to initialize speech recognition:', error);
@@ -562,15 +557,48 @@ ${conversation.map(msg => `
 
   // Function to start listening manually
   const startListening = () => {
-    if (speechRecognitionRef.current && isVoiceMode && !isListening) {
-      try {
-        console.log('Manual start listening');
-        speechRecognitionRef.current.start();
-      } catch (error) {
-        console.error('Error starting speech recognition:', error);
-        // Create new recognition instance if needed
+    if (!isVoiceMode) {
+      toast({
+        title: "Voice mode not active",
+        description: "Please start a voice conversation first",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (isListening) {
+      toast({
+        title: "Already listening",
+        description: "Please speak now",
+      });
+      return;
+    }
+
+    try {
+      if (!speechRecognitionRef.current) {
+        console.log('Recreating speech recognition');
         initializeSpeechRecognition();
+        return;
       }
+
+      console.log('Starting speech recognition manually');
+      speechRecognitionRef.current.start();
+      
+      toast({
+        title: "Listening...",
+        description: "Speak now, I'm listening to your voice",
+      });
+      
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      toast({
+        title: "Microphone error",
+        description: "Please allow microphone access and try again",
+        variant: "destructive"
+      });
+      
+      // Recreate recognition instance
+      initializeSpeechRecognition();
     }
   };
 
@@ -912,8 +940,14 @@ ${conversation.map(msg => `
             </>
           ) : (
             <>
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium">Voice Mode Active</span>
+              <button
+                onClick={startListening}
+                className="flex items-center gap-2 hover:bg-green-600 px-2 py-1 rounded transition-colors"
+                title="Click to speak"
+              >
+                <Mic className="w-4 h-4" />
+                <span className="text-sm font-medium">Click to Speak</span>
+              </button>
             </>
           )}
         </div>
