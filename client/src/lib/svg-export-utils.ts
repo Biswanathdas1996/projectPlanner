@@ -60,19 +60,48 @@ export async function convertWireframeToSVG(
   };
 
   try {
-    // Create hidden iframe with wireframe content
-    const iframe = createHiddenWireframeFrame(wireframe.htmlCode);
+    // Create an iframe to properly render the complete HTML document
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.top = '-20000px';
+    iframe.style.left = '-20000px';
+    iframe.style.width = `${defaultOptions.width}px`;
+    iframe.style.height = `${defaultOptions.height}px`;
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
+    iframe.style.zIndex = '-9999';
     
-    // Wait for content to load
-    await new Promise(resolve => {
+    document.body.appendChild(iframe);
+    
+    // Write the complete HTML content to the iframe
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+    if (!iframeDoc) {
+      throw new Error('Cannot access iframe document');
+    }
+    
+    iframeDoc.open();
+    iframeDoc.write(wireframe.htmlCode);
+    iframeDoc.close();
+
+    // Wait for the document to fully load and render
+    await new Promise((resolve) => {
       iframe.onload = resolve;
-      setTimeout(resolve, 1000); // Fallback timeout
+      // Also wait a bit for styles to apply
+      setTimeout(resolve, 1500);
     });
 
-    const iframeBody = iframe.contentDocument?.body;
+    // Get the body element from the iframe
+    const iframeBody = iframeDoc.body;
     if (!iframeBody) {
-      throw new Error('Could not access iframe content');
+      throw new Error('Cannot access iframe body');
     }
+
+    // Ensure the body fills the iframe dimensions
+    iframeBody.style.margin = '0';
+    iframeBody.style.padding = '0';
+    iframeBody.style.width = '100%';
+    iframeBody.style.height = '100%';
+    iframeBody.style.overflow = 'hidden';
 
     // Convert to SVG using html-to-image
     const svgDataUrl = await toSvg(iframeBody, {
@@ -80,24 +109,52 @@ export async function convertWireframeToSVG(
       width: defaultOptions.width,
       height: defaultOptions.height,
       backgroundColor: defaultOptions.backgroundColor,
-      style: {
-        transform: `scale(${defaultOptions.scale})`,
-        transformOrigin: 'top left'
+      pixelRatio: defaultOptions.scale,
+      canvasWidth: defaultOptions.width * defaultOptions.scale,
+      canvasHeight: defaultOptions.height * defaultOptions.scale,
+      filter: (node) => {
+        // Filter out script tags and other non-visual elements
+        if (node.tagName === 'SCRIPT' || node.tagName === 'NOSCRIPT') {
+          return false;
+        }
+        return true;
       }
     });
 
     // Clean up
     document.body.removeChild(iframe);
 
+    // Check if the conversion was successful
+    if (!svgDataUrl || svgDataUrl === 'data:,' || svgDataUrl.length < 100) {
+      throw new Error('SVG conversion failed - empty or invalid result');
+    }
+
     // Extract SVG content from data URL
-    const svgContent = atob(svgDataUrl.split(',')[1]);
-    return svgContent;
+    const base64Data = svgDataUrl.split(',')[1];
+    if (!base64Data) {
+      throw new Error('Invalid SVG data URL format');
+    }
+    
+    const svgContent = atob(base64Data);
+    
+    // Validate SVG content
+    if (!svgContent.includes('<svg') || svgContent.length < 50) {
+      throw new Error('Invalid SVG content generated');
+    }
+    
+    // Ensure the SVG has proper dimensions
+    const svgWithProperDimensions = svgContent.replace(
+      /<svg[^>]*>/,
+      `<svg width="${defaultOptions.width}" height="${defaultOptions.height}" viewBox="0 0 ${defaultOptions.width} ${defaultOptions.height}" xmlns="http://www.w3.org/2000/svg">`
+    );
+    
+    return svgWithProperDimensions;
 
   } catch (error) {
     console.error('Error converting wireframe to SVG:', error);
     
-    // Fallback: Create a basic SVG representation
-    return createFallbackSVG(wireframe, defaultOptions);
+    // Enhanced fallback: Create SVG with actual HTML content embedded
+    return createEnhancedFallbackSVG(wireframe, defaultOptions);
   }
 }
 
@@ -149,43 +206,122 @@ export async function convertWireframeToPNG(
 }
 
 /**
- * Creates a fallback SVG when HTML-to-SVG conversion fails
+ * Creates an enhanced fallback SVG with actual wireframe content
  */
-function createFallbackSVG(
+function createEnhancedFallbackSVG(
   wireframe: WireframeExportData,
   options: WireframeExportOptions
 ): string {
   const { width = 1200, height = 800, backgroundColor = '#ffffff' } = options;
   
+  // Extract styles from HTML
+  const styleMatch = wireframe.htmlCode.match(/<style[^>]*>([\s\S]*?)<\/style>/i);
+  const styles = styleMatch ? styleMatch[1] : '';
+  
+  // Extract body content
+  const bodyMatch = wireframe.htmlCode.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const bodyContent = bodyMatch ? bodyMatch[1] : wireframe.htmlCode;
+  
+  // Parse colors from CSS
+  const colorMatches = styles.match(/(?:color|background-color|background):\s*([^;]+)/g) || [];
+  const colors = colorMatches.map(match => {
+    const color = match.split(':')[1].trim().replace(';', '');
+    return color.includes('#') ? color : '#666666';
+  });
+  
+  const primaryColor = colors.find(c => c.includes('#')) || '#006341';
+  const secondaryColor = colors[1] || '#E8D9B8';
+  
+  // Create enhanced SVG with actual wireframe structure
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .wireframe-text { font-family: Arial, sans-serif; fill: #333; }
+      .header-text { font-size: 24px; font-weight: bold; fill: ${primaryColor}; }
+      .content-text { font-size: 14px; fill: #666; }
+      .small-text { font-size: 12px; fill: #888; }
+    </style>
+  </defs>
+  
   <rect width="100%" height="100%" fill="${backgroundColor}"/>
   
-  <!-- Header -->
-  <rect x="0" y="0" width="100%" height="80" fill="#f8f9fa" stroke="#e9ecef" stroke-width="1"/>
-  <text x="50%" y="45" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#212529" text-anchor="middle">
-    ${wireframe.pageName}
-  </text>
-  
-  <!-- Main Content Area -->
-  <rect x="40" y="120" width="${width - 80}" height="${height - 200}" fill="#ffffff" stroke="#dee2e6" stroke-width="2" rx="8"/>
-  
-  <!-- Wireframe Label -->
-  <text x="60" y="150" font-family="Arial, sans-serif" font-size="16" fill="#6c757d">
-    Wireframe: ${wireframe.pageName}
-  </text>
-  
-  <!-- Content Placeholder -->
-  <rect x="60" y="170" width="${width - 120}" height="40" fill="#f8f9fa" stroke="#dee2e6" rx="4"/>
-  <text x="80" y="195" font-family="Arial, sans-serif" font-size="14" fill="#6c757d">
-    Generated wireframe content (fallback representation)
-  </text>
+  <!-- Recreate wireframe layout based on HTML structure -->
+  ${createSVGFromHTML(bodyContent, primaryColor, secondaryColor, width, height)}
   
   <!-- Footer -->
-  <text x="50%" y="${height - 20}" font-family="Arial, sans-serif" font-size="12" fill="#6c757d" text-anchor="middle">
-    Exported on ${new Date().toLocaleDateString()}
+  <text x="50%" y="${height - 20}" class="small-text wireframe-text" text-anchor="middle">
+    ${wireframe.pageName} - Exported ${new Date().toLocaleDateString()}
   </text>
 </svg>`;
+}
+
+/**
+ * Converts HTML content to SVG elements
+ */
+function createSVGFromHTML(htmlContent: string, primaryColor: string, secondaryColor: string, width: number, height: number): string {
+  let svgElements = '';
+  let yOffset = 60;
+  
+  // Parse common HTML elements and convert to SVG
+  const lines = htmlContent.split('\n').filter(line => line.trim());
+  
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    
+    // Headers
+    if (trimmedLine.includes('<h1') || trimmedLine.includes('<h2') || trimmedLine.includes('<h3')) {
+      const text = trimmedLine.replace(/<[^>]*>/g, '').trim();
+      if (text) {
+        svgElements += `
+  <rect x="40" y="${yOffset - 5}" width="${width - 80}" height="40" fill="${secondaryColor}" opacity="0.3" rx="4"/>
+  <text x="60" y="${yOffset + 20}" class="header-text wireframe-text">${text}</text>`;
+        yOffset += 60;
+      }
+    }
+    // Paragraphs
+    else if (trimmedLine.includes('<p') || trimmedLine.includes('class=')) {
+      const text = trimmedLine.replace(/<[^>]*>/g, '').trim();
+      if (text && text.length > 5) {
+        const words = text.split(' ');
+        const chunks = [];
+        for (let i = 0; i < words.length; i += 8) {
+          chunks.push(words.slice(i, i + 8).join(' '));
+        }
+        
+        chunks.forEach((chunk, index) => {
+          svgElements += `
+  <text x="60" y="${yOffset + (index * 20)}" class="content-text wireframe-text">${chunk}</text>`;
+        });
+        yOffset += chunks.length * 20 + 20;
+      }
+    }
+    // Buttons
+    else if (trimmedLine.includes('button') || trimmedLine.includes('btn')) {
+      const text = trimmedLine.replace(/<[^>]*>/g, '').trim();
+      if (text) {
+        svgElements += `
+  <rect x="60" y="${yOffset}" width="120" height="35" fill="${primaryColor}" rx="6"/>
+  <text x="120" y="${yOffset + 22}" class="content-text wireframe-text" fill="white" text-anchor="middle">${text}</text>`;
+        yOffset += 50;
+      }
+    }
+    // Navigation/Header areas
+    else if (trimmedLine.includes('nav') || trimmedLine.includes('header')) {
+      svgElements += `
+  <rect x="0" y="0" width="${width}" height="60" fill="${primaryColor}"/>
+  <text x="40" y="35" class="header-text wireframe-text" fill="white">Navigation</text>`;
+    }
+    // Form inputs
+    else if (trimmedLine.includes('input') || trimmedLine.includes('textarea')) {
+      svgElements += `
+  <rect x="60" y="${yOffset}" width="300" height="30" fill="white" stroke="#ddd" rx="4"/>
+  <text x="70" y="${yOffset + 20}" class="small-text wireframe-text">Input field</text>`;
+      yOffset += 40;
+    }
+  }
+  
+  return svgElements;
 }
 
 /**

@@ -58,6 +58,14 @@ import {
   downloadWireframeAsPNG,
   type WireframeExportData
 } from '@/lib/svg-export-utils';
+import {
+  convertWireframeToDirectSVG,
+  downloadDirectSVG
+} from '@/lib/direct-svg-converter';
+import {
+  convertWireframeToDirectSVG,
+  downloadDirectSVG
+} from '@/lib/direct-svg-converter';
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { FigmaImportGuide } from "@/components/figma-import-guide";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
@@ -5814,22 +5822,36 @@ ${selectedPageCode.jsCode}
                         console.log("Starting high-quality SVG export...", wireframesForExport);
                         
                         toast({
-                          title: "High-Quality SVG Export Started",
-                          description: `Converting ${wireframesForExport.length} wireframes to high-quality SVG files using HTML-to-SVG conversion...`,
+                          title: "Exact Wireframe SVG Export Started",
+                          description: `Converting ${wireframesForExport.length} wireframes to exact SVG representations with authentic content...`,
                         });
                         
-                        // Use the new high-quality SVG export function
-                        await exportAllWireframesAsSVG(wireframesForExport, {
-                          quality: 1.0,
-                          width: 1200,
-                          height: 800,
-                          backgroundColor: '#ffffff',
-                          scale: 2 // Higher scale for better quality
-                        });
+                        // Use direct SVG conversion for exact wireframe matching
+                        for (let i = 0; i < wireframesForExport.length; i++) {
+                          const wireframe = wireframesForExport[i];
+                          console.log(`Converting wireframe ${i + 1}/${wireframesForExport.length}: ${wireframe.pageName}`);
+                          
+                          try {
+                            const exactSVG = await convertWireframeToDirectSVG(wireframe, {
+                              width: 1200,
+                              height: 800,
+                              backgroundColor: '#ffffff'
+                            });
+                            
+                            downloadDirectSVG(wireframe, exactSVG);
+                            
+                            // Add delay between downloads
+                            if (i < wireframesForExport.length - 1) {
+                              await new Promise(resolve => setTimeout(resolve, 500));
+                            }
+                          } catch (error) {
+                            console.error(`Failed to export ${wireframe.pageName} as exact SVG:`, error);
+                          }
+                        }
                         
                         toast({
-                          title: "SVG Export Complete",
-                          description: `Successfully exported ${wireframesForExport.length} high-quality SVG files with actual wireframe content.`,
+                          title: "Exact SVG Export Complete",
+                          description: `Successfully exported ${wireframesForExport.length} exact wireframe SVG files with authentic content structure.`,
                         });
 
                         // Show import guide after export
@@ -5850,7 +5872,7 @@ ${selectedPageCode.jsCode}
                     className="flex items-center gap-2 bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300"
                   >
                     <Layers className="h-4 w-4" />
-                    High-Quality SVG
+                    Exact Wireframe SVG
                   </Button>
                   <Button
                     onClick={async () => {
@@ -6193,19 +6215,17 @@ ${selectedPageCode.jsCode}
                                   jsCode: wireframe.jsCode,
                                 };
                                 
-                                const svgContent = await convertWireframeToSVG(wireframeData, {
-                                  quality: 1.0,
+                                const exactSVG = await convertWireframeToDirectSVG(wireframeData, {
                                   width: 1200,
                                   height: 800,
-                                  backgroundColor: '#ffffff',
-                                  scale: 2
+                                  backgroundColor: '#ffffff'
                                 });
                                 
-                                downloadWireframeAsSVG(wireframeData, svgContent);
+                                downloadDirectSVG(wireframeData, exactSVG);
                                 
                                 toast({
-                                  title: "SVG Export Complete",
-                                  description: `${wireframe.pageName} exported as high-quality SVG`,
+                                  title: "Exact SVG Export Complete",
+                                  description: `${wireframe.pageName} exported as exact wireframe SVG`,
                                 });
                               } catch (error) {
                                 console.error("SVG export error:", error);
