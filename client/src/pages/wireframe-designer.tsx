@@ -65,13 +65,17 @@ export default function WireframeDesigner() {
       const savedWireframes = localStorage.getItem('generated_wireframes');
 
       if (savedRequirements) {
-        setRequirements(JSON.parse(savedRequirements));
+        const parsed = JSON.parse(savedRequirements);
+        setRequirements(Array.isArray(parsed) ? parsed : []);
       }
       if (savedWireframes) {
-        setGeneratedWireframes(JSON.parse(savedWireframes));
+        const parsed = JSON.parse(savedWireframes);
+        setGeneratedWireframes(Array.isArray(parsed) ? parsed : []);
       }
     } catch (error) {
       console.error('Error loading saved data:', error);
+      setRequirements([]);
+      setGeneratedWireframes([]);
     }
   }, []);
 
