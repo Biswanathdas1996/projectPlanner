@@ -607,7 +607,7 @@ export default function WireframeDesigner() {
     // Load the most recent brand guidelines if available
     const latest = BrandGuidelinesStorage.getLatest();
     if (latest && !brandGuidelines) {
-      setBrandGuidelines(latest);
+      setBrandGuidelines(latest as any);
     }
 
     const savedWireframes = storage.getItem("wireframe_designs");
@@ -820,10 +820,6 @@ export default function WireframeDesigner() {
     setError("");
 
     try {
-      const stakeholderFlows = storage.getItem("stakeholder_flows") || [];
-      const flowTypes = storage.getItem("flow_types") || {};
-      const projectDescription = storage.getItem("project_description") || "";
-
       const analysisAgent = createWireframeAnalysisAgent();
       const result = await analysisAgent.analyzeStakeholderFlows();
 
@@ -2107,7 +2103,7 @@ export default function WireframeDesigner() {
 
       // Save to local storage with proper metadata
       const storedGuideline = BrandGuidelinesStorage.save(
-        brandGuidelines,
+        brandGuidelines as any,
         guidelineName,
         file.name
       );
@@ -2193,7 +2189,7 @@ export default function WireframeDesigner() {
 
     const selectedGuideline = BrandGuidelinesStorage.getById(guidelineId);
     if (selectedGuideline) {
-      setBrandGuidelines(selectedGuideline);
+      setBrandGuidelines(selectedGuideline as any);
       setSelectedStoredGuideline(guidelineId);
 
       toast({
@@ -3431,34 +3427,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     </>
                   )}
                 </Button>
-
-                {analysisResult && (
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant="outline"
-                      className="bg-green-50 text-green-700"
-                    >
-                      {analysisResult.totalPages} pages analyzed
-                    </Badge>
-                    <Button
-                      onClick={generateWireframes}
-                      disabled={isGenerating}
-                      className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Generating...
-                        </>
-                      ) : (
-                        <>
-                          <Grid className="h-4 w-4 mr-2" />
-                          Generate Wireframes
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                )}
               </div>
 
               {analysisResult && (

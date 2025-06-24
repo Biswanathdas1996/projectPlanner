@@ -257,7 +257,7 @@ export function BrandGuidelinesUpload({
         console.log(`Generating wireframe for: ${page.pageName}`);
 
         // Combine page content with brand guidelines
-        const combinedPrompt = `You are a senior web developer creating a brand-consistent wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
+        const combinedPrompt = `You are a senior web HTML 5 developer creating a brand-consistent and fully brand complaint  wireframe. Generate a complete HTML page with embedded CSS and JavaScript.
 
 PAGE CONTENT:
 ${JSON.stringify(
@@ -284,7 +284,7 @@ REQUIREMENTS:
 1. Create a complete HTML document with embedded CSS and JavaScript
 2. Use the brand colors, fonts, styling and layouts from the guidelines
 3. Implement all page elements (headers, footers, buttons, forms, lists, cards, navigation)
-4. Make it responsive and modern
+4. Make it responsive and modern with various HTML 5 components like cards, slides, icons
 5. Follow the brand's visual identity strictly
 6. Use semantic HTML5 elements
 7. CRITICAL ACCESSIBILITY: Ensure proper color contrast ratios (minimum 4.5:1 for normal text, 3:1 for large text)
