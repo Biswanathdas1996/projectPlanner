@@ -56,6 +56,7 @@ export default function AIConsultant() {
 
   const agentRef = useRef<ConversationalAIAgent | null>(null);
   const geminiVoiceAgentRef = useRef<GeminiVoiceAgent | null>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Initialize conversational AI agent
   useEffect(() => {
@@ -103,6 +104,13 @@ export default function AIConsultant() {
       setProjectPlan(JSON.parse(savedProjectPlan));
     }
   }, []);
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [conversation, isProcessing]);
 
   const startVoiceConversation = async () => {
     try {
@@ -514,7 +522,10 @@ export default function AIConsultant() {
               </div>
               
               {/* Chat Messages */}
-              <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[500px] max-h-[500px]">
+              <div 
+                ref={chatContainerRef}
+                className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[500px] max-h-[500px] scroll-smooth"
+              >
                 {conversation.length === 0 ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
