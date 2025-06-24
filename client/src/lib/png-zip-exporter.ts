@@ -17,8 +17,8 @@ export class PNGZipExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '2500px'; // Maximum width to accommodate all content
-    iframe.style.height = '2000px'; // Maximum height to accommodate all content
+    iframe.style.width = '3000px'; // Maximum width to accommodate all content
+    iframe.style.height = '2500px'; // Maximum height to accommodate all content
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
@@ -30,16 +30,16 @@ export class PNGZipExporter {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=2500, initial-scale=1.0">
+    <meta name="viewport" content="width=3000, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
         html, body {
             margin: 0;
             padding: 100px; /* Maximum padding for complete capture */
             width: auto; /* Auto width to accommodate all content */
-            min-width: 2000px; /* Minimum width for full content */
+            min-width: 2500px; /* Minimum width for full content */
             height: auto;
-            min-height: 1500px;
+            min-height: 2000px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -226,9 +226,9 @@ export class PNGZipExporter {
           900 // Minimum height for content
         );
         
-        // Add substantial padding to guarantee complete capture
-        const actualWidth = contentWidth + 200; // No cap, add generous padding
-        const actualHeight = contentHeight + 200; // Add generous padding for height
+        // Force maximum dimensions to capture everything
+        const actualWidth = Math.max(contentWidth + 400, 2000); // Minimum 2000px width
+        const actualHeight = Math.max(contentHeight + 400, 1500); // Minimum 1500px height
 
         console.log(`Complete wireframe measurements for ${wireframe.pageName}:`, measurements);
         console.log(`Final capture dimensions: ${actualWidth}x${actualHeight}`);
@@ -237,7 +237,7 @@ export class PNGZipExporter {
         const canvas = await html2canvas(container as Element, {
           width: actualWidth,
           height: actualHeight,
-          scale: 2, // High quality
+          scale: 3, // Maximum quality
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',

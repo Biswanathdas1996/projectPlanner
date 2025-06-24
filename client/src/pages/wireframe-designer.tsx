@@ -51,6 +51,7 @@ import {
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { SVGExporter, type WireframeSVGExport } from "@/lib/svg-exporter";
 import { PNGZipExporter, type WireframePNGExport } from "@/lib/png-zip-exporter";
+
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
@@ -5912,7 +5913,7 @@ ${selectedPageCode.jsCode}
                       try {
                         toast({
                           title: "Generating PNG ZIP",
-                          description: "Converting wireframes to high-quality PNG images...",
+                          description: "Converting wireframes to high-quality full-page PNG images...",
                         });
 
                         const wireframesForPNG: WireframePNGExport[] = generatedWireframes.map(w => ({
@@ -5938,13 +5939,13 @@ ${selectedPageCode.jsCode}
                         
                         toast({
                           title: "PNG ZIP Export Complete",
-                          description: `Downloaded ${wireframesForPNG.length} wireframes as high-quality PNG images in ZIP archive`,
+                          description: `Downloaded ${wireframesForPNG.length} wireframes as full-page PNG images with complete content`,
                         });
                       } catch (error) {
-                        console.error("PNG ZIP export error:", error);
+                        console.error("Full PNG export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to export wireframes as PNG ZIP. Check console for details.",
+                          description: "Failed to export full-page wireframes. Please try again.",
                           variant: "destructive",
                         });
                       }
@@ -5954,7 +5955,7 @@ ${selectedPageCode.jsCode}
                     className="flex items-center gap-2 bg-white/80 hover:bg-white border-orange-200 text-orange-700 hover:text-orange-800 hover:border-orange-300"
                   >
                     <Archive className="h-4 w-4" />
-                    Export PNG ZIP
+                    Export Full PNG
                   </Button>
                 </div>
               </div>
