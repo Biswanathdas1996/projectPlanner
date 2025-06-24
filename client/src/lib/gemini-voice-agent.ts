@@ -35,9 +35,13 @@ export class GeminiVoiceAgent {
       4. Help create comprehensive project plans
       5. Guide users through technical decisions
       
-      IMPORTANT: Provide clear, satisfying responses that draw attention - be comprehensive but concise (80-120 words).
-      Give actionable insights and practical advice. Ask ONE thoughtful follow-up question.
-      Make responses engaging and valuable for decision-making.`
+      IMPORTANT: Vary your response length naturally based on context:
+      - SMALL (20-40 words): For simple acknowledgments, quick clarifications, or brief follow-ups
+      - MEDIUM (50-80 words): For standard advice, recommendations, or explanations
+      - LARGE (90-130 words): For complex topics, detailed guidance, or comprehensive explanations
+      
+      Choose the appropriate length based on the complexity of the user's input and what they need.
+      Always include ONE relevant follow-up question. Be engaging and valuable.`
     });
     this.sessionId = `gemini-session-${Date.now()}`;
   }
@@ -156,17 +160,42 @@ export class GeminiVoiceAgent {
         .map(msg => `${msg.role}: ${msg.content}`)
         .join('\n');
 
+      // Determine response complexity based on user input and conversation context
+      const determineResponseLength = (userMessage: string, conversationLength: number) => {
+        const messageLength = userMessage.length;
+        const isSimpleResponse = messageLength < 30 || 
+          userMessage.toLowerCase().includes('yes') || 
+          userMessage.toLowerCase().includes('no') ||
+          userMessage.toLowerCase().includes('okay') ||
+          userMessage.toLowerCase().includes('sure');
+        
+        const isComplexTopic = userMessage.toLowerCase().includes('explain') ||
+          userMessage.toLowerCase().includes('detail') ||
+          userMessage.toLowerCase().includes('how') ||
+          userMessage.toLowerCase().includes('architecture') ||
+          userMessage.toLowerCase().includes('plan') ||
+          conversationLength > 8;
+
+        if (isSimpleResponse) return 'SMALL (20-40 words)';
+        if (isComplexTopic) return 'LARGE (90-130 words)';
+        return 'MEDIUM (50-80 words)';
+      };
+
+      const responseLength = determineResponseLength(userMessage, this.conversationHistory.length);
+
       const prompt = `Based on this conversation about a technology project:
 
 ${conversationContext}
 
-As an expert tech consultant, provide a comprehensive response (80-120 words) that:
-1. Acknowledges what the user said with context
-2. Provides valuable insights and practical advice
-3. Offers specific recommendations or considerations
+Latest user message: "${userMessage}"
+
+As an expert tech consultant, provide a ${responseLength} response that:
+1. Acknowledges what the user said appropriately
+2. Provides valuable insights matching the complexity needed
+3. Offers relevant recommendations or considerations
 4. Asks ONE thoughtful follow-up question
 
-Make it engaging, clear, and actionable for decision-making. Be the expert they need.`;
+Match your response length to the context - be concise for simple inputs, detailed for complex topics.`;
 
       const result = await this.model.generateContent(prompt);
       const response = result.response.text();
