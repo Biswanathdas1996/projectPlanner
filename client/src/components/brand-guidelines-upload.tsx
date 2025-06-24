@@ -25,6 +25,10 @@ import {
   type ExternalBrandJSON,
 } from "@/lib/brand-guidelines-storage";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { 
+  createPDFExtractionClient,
+  type PDFExtractionResult 
+} from "@/lib/pdf-extraction-client";
 import { useToast } from "@/hooks/use-toast";
 import {
   Palette,
@@ -201,73 +205,37 @@ export function BrandGuidelinesUpload({
     setIsPerformingMultimodalAnalysis(true);
     setMultimodalAnalysisProgress({
       current: 0,
-      total: 0,
-      currentStep: "Initializing multimodal analysis...",
+      total: 100,
+      currentStep: "Initializing PDF extraction...",
     });
 
     try {
-      console.log("🚀 Starting external API PDF extraction for:", file.name);
-      setMultimodalAnalysisProgress({
-        current: 20,
-        total: 100,
-        currentStep: "Uploading PDF to extraction service...",
-      });
-
-      // Use FormData to send file to external API
-      const formData = new FormData();
-      formData.append("file", file, file.name);
-
-      const requestOptions = {
-        method: "POST",
-        body: formData,
-        redirect: "follow" as RequestRedirect,
-      };
-
-      setMultimodalAnalysisProgress({
-        current: 40,
-        total: 100,
-        currentStep: "Processing PDF with external service...",
-      });
-
-      const response = await fetch(
-        "http://127.0.0.1:5001/extract-guidelines",
-        requestOptions
+      console.log("🚀 Starting PDF extraction for:", file.name);
+      
+      // Use the new PDF extraction client
+      const extractionClient = createPDFExtractionClient();
+      
+      const extractedData = await extractionClient.extractBrandGuidelines(
+        file,
+        (step: string, progress: number) => {
+          setMultimodalAnalysisProgress({
+            current: progress,
+            total: 100,
+            currentStep: step,
+          });
+        }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("External API error response:", errorText);
-        throw new Error(
-          `External API failed with status: ${response.status} - ${errorText}`
-        );
-      }
+      console.log("✅ PDF extraction completed:", extractedData);
 
-      const result = await response.text();
-      console.log("External API response:", result);
-
-      setMultimodalAnalysisProgress({
-        current: 70,
-        total: 100,
-        currentStep: "Processing extracted guidelines...",
-      });
-
-      // Parse the response - expecting JSON format
-      let extractedData;
-      try {
-        extractedData = JSON.parse(result);
-      } catch (parseError) {
-        console.error("Failed to parse API response:", parseError);
-        throw new Error("Invalid response format from extraction service");
-      }
-
-      // Store the raw JSON response
+      // Store the extracted data
       setBrandGuidelines(extractedData);
-      setFinalBrandReport(null); // Clear previous report since we're using external API
+      setFinalBrandReport(null); // Clear previous report
 
       // Save to local storage
       const stored = BrandGuidelinesStorage.save(
         extractedData as ExternalBrandJSON,
-        extractedData.brand || "Brand Guidelines",
+        extractedData.brand_name || "Brand Guidelines",
         file.name
       );
 
@@ -276,12 +244,6 @@ export function BrandGuidelinesUpload({
 
       onBrandGuidelinesExtracted?.(extractedData);
 
-      setMultimodalAnalysisProgress({
-        current: 100,
-        total: 100,
-        currentStep: "Completed!",
-      });
-
       toast({
         title: "Brand Guidelines Extracted",
         description: `Successfully extracted guidelines from ${file.name}`,
@@ -289,38 +251,18 @@ export function BrandGuidelinesUpload({
     } catch (error) {
       console.error("Brand guideline extraction failed:", error);
 
-      let errorMessage = "Unknown error occurred";
-      let userMessage = "Could not extract brand guidelines from the PDF file.";
-
-      if (
-        error instanceof TypeError &&
-        error.message.includes("Failed to fetch")
-      ) {
-        errorMessage = "Connection failed - extraction service unavailable";
-        userMessage =
-          "Cannot connect to the brand extraction service. Please ensure the external API service is running on http://127.0.0.1:5001";
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-        if (
-          error.message.includes("NetworkError") ||
-          error.message.includes("ECONNREFUSED")
-        ) {
-          userMessage =
-            "Network connection failed. Please verify the extraction service is accessible.";
-        }
-      }
-
-      setBrandExtractionError(
-        `Failed to extract brand guidelines: ${errorMessage}`
-      );
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      setBrandExtractionError(`Failed to extract brand guidelines: ${errorMessage}`);
+      
       toast({
-        title: "Extraction Service Unavailable",
-        description: userMessage,
+        title: "Extraction Failed",
+        description: "Could not extract brand guidelines from the PDF file.",
         variant: "destructive",
       });
     } finally {
       setIsExtractingBrand(false);
       setIsPerformingMultimodalAnalysis(false);
+      setMultimodalAnalysisProgress({ current: 0, total: 0, currentStep: "" });
     }
   };
 

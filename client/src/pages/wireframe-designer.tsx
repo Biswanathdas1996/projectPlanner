@@ -50,6 +50,10 @@ import {
 } from "@/lib/brand-guideline-extractor";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { 
+  createPDFExtractionClient,
+  type PDFExtractionResult 
+} from "@/lib/pdf-extraction-client";
 
 // External API Brand Data Interface
 interface ExternalBrandData {
