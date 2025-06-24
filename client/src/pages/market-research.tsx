@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import {
@@ -42,6 +43,7 @@ import {
   Eye,
   Download,
   Copy,
+  Plus,
 } from "lucide-react";
 
 // Country list for market research
@@ -70,6 +72,10 @@ export default function MarketResearch() {
   const [currentPage, setCurrentPage] = useState(1);
   const competitorsPerPage = 6;
 
+  // State for selected features
+  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(new Set());
+  const [isUpdatingProject, setIsUpdatingProject] = useState(false);
+
   // Helper function to convert market cap string to number for sorting
   const parseMarketCap = (marketCap: string): number => {
     if (!marketCap) return 0;
@@ -95,6 +101,7 @@ export default function MarketResearch() {
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem('bpmn-project-description') || getProjectDescription();
     const savedResearchData = getMarketResearchData();
+    const savedSelectedFeatures = localStorage.getItem('market-research-selected-features');
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
@@ -128,6 +135,15 @@ The platform will use machine learning to analyze spending patterns, provide per
       setCurrentStep("results");
     } else {
       setCurrentStep("input");
+    }
+
+    if (savedSelectedFeatures) {
+      try {
+        const features = JSON.parse(savedSelectedFeatures);
+        setSelectedFeatures(new Set(features));
+      } catch (e) {
+        console.warn('Failed to parse saved selected features');
+      }
     }
   }, []);
 
@@ -234,6 +250,56 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
     `.trim();
 
     navigator.clipboard.writeText(formattedData);
+  };
+
+  const handleFeatureToggle = (featureKey: string, checked: boolean) => {
+    const newSelectedFeatures = new Set(selectedFeatures);
+    if (checked) {
+      newSelectedFeatures.add(featureKey);
+    } else {
+      newSelectedFeatures.delete(featureKey);
+    }
+    setSelectedFeatures(newSelectedFeatures);
+    
+    // Save to localStorage
+    localStorage.setItem('market-research-selected-features', JSON.stringify([...newSelectedFeatures]));
+  };
+
+  const addSelectedFeaturesToProject = async () => {
+    if (selectedFeatures.size === 0) return;
+    
+    setIsUpdatingProject(true);
+    
+    try {
+      // Get current project description
+      const currentProject = projectInput;
+      
+      // Convert selected features to readable format
+      const featuresList = [...selectedFeatures].map(featureKey => {
+        const [competitorName, feature] = featureKey.split('::');
+        return `- ${feature} (inspired by ${competitorName})`;
+      }).join('\n');
+      
+      // Create enhanced project description
+      const enhancedProject = `${currentProject}
+
+## Additional Features (from Market Research):
+${featuresList}
+
+These features have been identified from competitive analysis and can help differentiate the product in the market.`;
+      
+      // Update project description
+      handleProjectInputChange(enhancedProject);
+      
+      // Clear selected features after adding to project
+      setSelectedFeatures(new Set());
+      localStorage.removeItem('market-research-selected-features');
+      
+    } catch (error) {
+      console.error('Error updating project description:', error);
+    } finally {
+      setIsUpdatingProject(false);
+    }
   };
 
   return (
@@ -798,6 +864,39 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                             </span>
                           </div>
                         )}
+
+                        {/* Features Section */}
+                        {competitor.keyFeatures && competitor.keyFeatures.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-gray-100">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-3 w-3 text-blue-600" />
+                              <span className="text-xs font-medium text-gray-700">Features</span>
+                            </div>
+                            <div className="space-y-1.5">
+                              {competitor.keyFeatures.map((feature, featureIndex) => {
+                                const featureKey = `${competitor.productName || competitor.name}::${feature}`;
+                                const isSelected = selectedFeatures.has(featureKey);
+                                
+                                return (
+                                  <div key={featureIndex} className="flex items-start gap-2">
+                                    <Checkbox
+                                      id={`feature-${index}-${featureIndex}`}
+                                      checked={isSelected}
+                                      onCheckedChange={(checked) => handleFeatureToggle(featureKey, checked as boolean)}
+                                      className="mt-0.5 h-3 w-3"
+                                    />
+                                    <label
+                                      htmlFor={`feature-${index}-${featureIndex}`}
+                                      className="text-xs text-gray-600 leading-relaxed cursor-pointer hover:text-gray-800 transition-colors"
+                                    >
+                                      {feature}
+                                    </label>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -808,6 +907,49 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
                     <Globe className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                     <p>No similar products found in the current research.</p>
                     <p className="text-sm">Try generating enhanced data for more results.</p>
+                  </div>
+                )}
+
+                {/* Selected Features Summary */}
+                {selectedFeatures.size > 0 && (
+                  <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-800">
+                          Selected Features ({selectedFeatures.size})
+                        </span>
+                      </div>
+                      <Button
+                        onClick={addSelectedFeaturesToProject}
+                        disabled={isUpdatingProject}
+                        size="sm"
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        {isUpdatingProject ? (
+                          <>
+                            <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                            Adding...
+                          </>
+                        ) : (
+                          <>
+                            <Plus className="h-3 w-3 mr-2" />
+                            Add to Project
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    <div className="space-y-1">
+                      {[...selectedFeatures].map((featureKey, index) => {
+                        const [competitorName, feature] = featureKey.split('::');
+                        return (
+                          <div key={index} className="text-xs text-blue-700 flex items-center gap-2">
+                            <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
+                            <span><strong>{feature}</strong> from {competitorName}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </CardContent>
