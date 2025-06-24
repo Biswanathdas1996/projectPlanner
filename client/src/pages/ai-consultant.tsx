@@ -606,7 +606,13 @@ ${conversation.map(msg => `
                           {isListening ? (
                             <Mic className="h-4 w-4 text-green-600 animate-pulse" />
                           ) : (
-                            <Volume2 className="h-4 w-4 text-green-600" />
+                            <button
+                              onClick={startListening}
+                              className="text-green-600 hover:text-green-700"
+                              title="Click to start listening"
+                            >
+                              <Mic className="h-4 w-4" />
+                            </button>
                           )}
                         </div>
                         <Button

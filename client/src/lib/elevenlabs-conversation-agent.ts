@@ -164,10 +164,7 @@ export class ElevenLabsConversationAgent {
         
         const randomResponse = responses[Math.floor(Math.random() * responses.length)];
         
-        // Speak the response
-        this.speakMessage(randomResponse);
-        
-        // Trigger event through the stored event handler if available
+        // Trigger event first
         if (this.eventHandler) {
           this.eventHandler({
             type: 'agent_message',
@@ -176,6 +173,11 @@ export class ElevenLabsConversationAgent {
             timestamp: new Date(),
           });
         }
+        
+        // Then speak the response after a brief delay
+        setTimeout(() => {
+          this.speakMessage(randomResponse);
+        }, 300);
       }, 1500 + Math.random() * 1000); // Simulate realistic response time
       
     } catch (error) {
