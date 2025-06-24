@@ -281,47 +281,6 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 6: User Stories */}
-          <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
-              getStepStatus("stories") === "active"
-                ? "bg-blue-100 shadow-md"
-                : getStepStatus("stories") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
-            }`}
-            onClick={() => handleStepClick("stories")}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                getStepStatus("stories") === "completed"
-                  ? "bg-green-500 text-white"
-                  : getStepStatus("stories") === "active"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {getStepStatus("stories") === "completed" ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : getStepStatus("stories") === "active" ? (
-                <BookOpen className="h-4 w-4" />
-              ) : (
-                "6"
-              )}
-            </div>
-            <span
-              className={`text-sm font-medium hidden sm:block ${
-                getStepStatus("stories") === "active"
-                  ? "text-blue-700"
-                  : getStepStatus("stories") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
-              }`}
-            >Stories</span>
-          </div>
-
-          <ArrowRight className="h-4 w-4 text-gray-300" />
-
           {/* Step 6: Code */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
@@ -347,7 +306,7 @@ export function WorkflowProgress({
               ) : getStepStatus("code") === "active" ? (
                 <Code className="h-4 w-4" />
               ) : (
-                "7"
+                "6"
               )}
             </div>
             <span
