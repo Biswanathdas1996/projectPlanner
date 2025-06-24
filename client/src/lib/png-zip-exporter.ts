@@ -30,14 +30,15 @@ export class PNGZipExporter {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1400, initial-scale=1.0">
+    <meta name="viewport" content="width=1600, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
         html, body {
             margin: 0;
             padding: 20px;
-            width: 1400px;
-            min-height: 1000px;
+            width: 1600px;
+            min-width: 1600px;
+            min-height: 1200px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -50,21 +51,31 @@ export class PNGZipExporter {
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
         }
-        /* Ensure all content is visible */
+        /* Ensure all content is visible and properly sized */
         .wireframe-container {
             width: 100%;
+            min-width: 100%;
             min-height: 100%;
             padding: 20px;
             overflow: visible;
         }
-        /* Prevent any cutting of content */
+        /* Prevent any cutting of content and ensure full width */
         img, svg, canvas {
-            max-width: 100%;
+            max-width: none;
             height: auto;
         }
-        /* Ensure flexbox and grid layouts don't overflow */
+        /* Ensure flexbox and grid layouts show all content */
         .flex, .grid, [style*="display: flex"], [style*="display: grid"] {
             flex-wrap: wrap;
+            overflow: visible;
+            width: auto;
+            min-width: max-content;
+        }
+        /* Prevent sidebar and content cutting */
+        aside, .sidebar, .side-panel, [class*="sidebar"], [class*="side"] {
+            overflow: visible !important;
+            max-width: none !important;
+            width: auto !important;
         }
     </style>
 </head>
