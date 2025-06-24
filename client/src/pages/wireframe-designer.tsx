@@ -5790,55 +5790,7 @@ ${selectedPageCode.jsCode}
                   Generated Wireframes ({generatedWireframes.length})
                 </h2>
                 <div className="flex gap-3">
-                  <Button
-                    onClick={async () => {
-                      try {
-                        toast({
-                          title: "Preparing Figma Export",
-                          description: "Optimizing wireframes for html.to.design conversion...",
-                        });
-
-                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
-                          id: w.id,
-                          pageName: w.pageName,
-                          htmlCode: w.htmlCode,
-                          cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
-                        }));
-                        
-                        if (wireframesForExport.length === 0) {
-                          toast({
-                            title: "No Wireframes Found",
-                            description: "Please generate wireframes first before exporting to Figma",
-                            variant: "destructive",
-                          });
-                          return;
-                        }
-
-                        await FigmaExporter.exportToFigmaUsingHtmlToDesign(wireframesForExport);
-                        
-                        toast({
-                          title: "Figma Export Complete",
-                          description: `Downloaded ${wireframesForExport.length} files: package JSON, instructions guide, and individual HTML files ready for html.to.design`,
-                        });
-                      } catch (error) {
-                        console.error("Figma export error:", error);
-                        toast({
-                          title: "Export Failed",
-                          description: "Failed to prepare wireframes for Figma export. Check console for details.",
-                          variant: "destructive",
-                        });
-                      }
-                    }}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300"
-                  >
-                    <Layers className="h-4 w-4" />
-                    Export to Figma
-                  </Button>
+                  
                   <Button
                     onClick={async () => {
                       try {
