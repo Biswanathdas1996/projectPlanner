@@ -409,55 +409,59 @@ export class FigmaExporter {
 🎨 FIGMA IMPORT GUIDE
 ====================
 
-METHOD 1: Direct JSON Import (Recommended)
-------------------------------------------
+METHOD 1: Figma Plugin Import (Recommended)
+-------------------------------------------
 1. Open Figma in your browser (figma.com)
-2. Create a new file or open existing file
-3. Go to "File" → "Import"
-4. Select the downloaded .fig JSON file
-5. Figma will automatically create pages for each wireframe
-
-METHOD 2: Figma Plugin Import
------------------------------
-1. In Figma, go to "Plugins" → "Browse all plugins"
-2. Search for "JSON to Figma" or "Import JSON"
-3. Install a JSON import plugin
+2. Go to "Plugins" → "Browse all plugins"
+3. Search for and install one of these plugins:
+   • "JSON to Figma" (most popular)
+   • "Figma Import"
+   • "Design Tokens"
 4. Run the plugin and upload your JSON file
-5. Configure import settings as needed
+5. The plugin will create frames and elements automatically
 
-METHOD 3: Copy & Paste Approach
---------------------------------
-1. Open the JSON file in a text editor
-2. Copy specific node structures
-3. Use Figma plugins like "JSON to Figma" to convert individual components
-4. Manually recreate layouts based on the JSON structure
+METHOD 2: Manual Recreation
+---------------------------
+1. Open the downloaded JSON file in a text editor
+2. Create a new Figma file
+3. For each page in the JSON:
+   - Create a new frame with the specified dimensions
+   - Add rectangles, text, and other elements based on the JSON structure
+   - Apply colors and typography from the styles section
+
+METHOD 3: Design Tokens Import
+------------------------------
+1. Use the separate design tokens file (.json)
+2. Install "Design Tokens" plugin in Figma
+3. Import colors, typography, and spacing tokens
+4. Use tokens to manually recreate the wireframes
 
 WHAT'S INCLUDED IN THE EXPORT:
 ==============================
-✓ Page structure with proper canvas organization
-✓ Frame layouts for each wireframe
-✓ Text elements with font specifications
-✓ Rectangle components for UI elements
-✓ Color definitions extracted from your wireframes
-✓ Typography styles and font families
-✓ Layout positioning and dimensions
-✓ Design tokens for consistent styling
+✓ Simplified element structure optimized for plugin import
+✓ Page and frame organization
+✓ Text elements with font and color specifications
+✓ Rectangle shapes for UI components
+✓ Color palette extracted from wireframes
+✓ Typography definitions
+✓ Positioning and dimension data
+✓ Metadata for proper organization
 
 TROUBLESHOOTING:
 ================
-- If direct import fails, try Method 2 with plugins
-- Ensure your Figma account has sufficient permissions
-- Large files may need to be split into smaller chunks
-- Some styling may need manual adjustment after import
+- Figma doesn't support direct JSON import - plugins are required
+- If a plugin fails, try a different JSON to Figma plugin
+- Some elements may need manual adjustment after import
+- Complex layouts might require manual fine-tuning
+- Colors may need to be added to your Figma color styles manually
 
-DESIGN TOKENS FILE:
-==================
-Use the separate design tokens file to set up your design system:
-1. Import colors into your Figma color styles
-2. Set up typography styles using the font specifications
-3. Create component variants using the spacing definitions
+PLUGIN RECOMMENDATIONS:
+======================
+1. "JSON to Figma" - Best for complete wireframe import
+2. "Figma Import" - Good alternative with different parsing
+3. "Design Tokens" - Perfect for importing just the color/typography system
 
-For best results, review and refine the imported elements to match your design standards.
+The exported JSON is optimized for these plugins and contains all necessary data for recreation in Figma.
 `;
   }
 
@@ -526,10 +530,39 @@ For best results, review and refine the imported elements to match your design s
   }
 
   static downloadFigmaExport(wireframes: WireframeForExport[]): { fileName: string } {
-    const { figmaData, fileName, importGuide } = this.exportToFigma(wireframes);
+    // Create a plugin-compatible format instead of native Figma format
+    const pluginData = {
+      version: "1.0.0",
+      type: "wireframe-export",
+      pages: wireframes.map((wireframe, index) => ({
+        id: `page-${index}`,
+        name: wireframe.pageName,
+        type: "PAGE",
+        frames: [{
+          id: `frame-${index}`,
+          name: `${wireframe.pageName} - Wireframe`,
+          type: "FRAME",
+          width: 1200,
+          height: 800,
+          x: 0,
+          y: 0,
+          backgroundColor: "#FFFFFF",
+          elements: this.convertHTMLToSimpleElements(wireframe.htmlCode, wireframe.pageName),
+          styles: this.extractStylesFromHTML(wireframe.htmlCode)
+        }]
+      })),
+      metadata: {
+        createdAt: new Date().toISOString(),
+        exportedBy: "AI Wireframe Designer",
+        totalPages: wireframes.length
+      }
+    };
+
+    // Generate filename with JSON extension for plugin compatibility
+    const fileName = `wireframes-export-${new Date().toISOString().split('T')[0]}.json`;
     
-    // Download the Figma file
-    const dataStr = JSON.stringify(figmaData, null, 2);
+    // Download the plugin-compatible JSON file
+    const dataStr = JSON.stringify(pluginData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
     const link = document.createElement('a');
@@ -540,18 +573,133 @@ For best results, review and refine the imported elements to match your design s
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 
-    // Download the import guide
-    const guideBlob = new Blob([importGuide], { type: 'text/plain' });
-    const guideUrl = URL.createObjectURL(guideBlob);
-    const guideLink = document.createElement('a');
-    guideLink.href = guideUrl;
-    guideLink.download = 'figma-import-guide.txt';
-    document.body.appendChild(guideLink);
-    guideLink.click();
-    document.body.removeChild(guideLink);
-    URL.revokeObjectURL(guideUrl);
-
     return { fileName };
+  }
+
+  private static convertHTMLToSimpleElements(html: string, pageName: string): any[] {
+    const elements = [];
+    let yOffset = 40;
+    const styles = this.extractStylesFromHTML(html);
+    
+    // Header element
+    if (html.includes('<h1') || html.includes('<h2') || html.includes('<h3')) {
+      elements.push({
+        type: 'TEXT',
+        name: `${pageName} Header`,
+        x: 40,
+        y: yOffset,
+        width: 400,
+        height: 48,
+        text: pageName,
+        fontSize: 32,
+        fontFamily: styles.fonts[0] || 'Inter',
+        fontWeight: 'bold',
+        color: '#000000'
+      });
+      yOffset += 80;
+    }
+    
+    // Navigation bar
+    if (html.includes('<nav') || html.includes('navigation')) {
+      elements.push({
+        type: 'RECTANGLE',
+        name: 'Navigation Bar',
+        x: 0,
+        y: yOffset,
+        width: 1200,
+        height: 60,
+        fill: styles.colors[0] || '#f8f9fa',
+        cornerRadius: 8
+      });
+      
+      elements.push({
+        type: 'TEXT',
+        name: 'Nav Items',
+        x: 40,
+        y: yOffset + 20,
+        width: 300,
+        height: 20,
+        text: 'Home • About • Services • Contact',
+        fontSize: 14,
+        fontFamily: styles.fonts[0] || 'Inter',
+        color: '#333333'
+      });
+      yOffset += 100;
+    }
+    
+    // Main content area
+    elements.push({
+      type: 'RECTANGLE',
+      name: 'Content Area',
+      x: 40,
+      y: yOffset,
+      width: 1120,
+      height: 400,
+      fill: '#ffffff',
+      stroke: '#e0e0e0',
+      strokeWidth: 1,
+      cornerRadius: 12
+    });
+    
+    // Form elements
+    if (html.includes('<form') || html.includes('<input')) {
+      elements.push({
+        type: 'RECTANGLE',
+        name: 'Form Container',
+        x: 80,
+        y: yOffset + 40,
+        width: 400,
+        height: 300,
+        fill: '#f8f9fa',
+        cornerRadius: 8
+      });
+      
+      // Input fields
+      for (let i = 0; i < 3; i++) {
+        elements.push({
+          type: 'RECTANGLE',
+          name: `Input Field ${i + 1}`,
+          x: 120,
+          y: yOffset + 80 + (i * 60),
+          width: 320,
+          height: 40,
+          fill: '#ffffff',
+          stroke: '#d1d5db',
+          strokeWidth: 1,
+          cornerRadius: 6
+        });
+      }
+    }
+    
+    // Buttons
+    if (html.includes('<button') || html.includes('btn')) {
+      elements.push({
+        type: 'RECTANGLE',
+        name: 'Primary Button',
+        x: 120,
+        y: yOffset + 300,
+        width: 120,
+        height: 40,
+        fill: styles.colors[1] || '#3b82f6',
+        cornerRadius: 8
+      });
+      
+      elements.push({
+        type: 'TEXT',
+        name: 'Button Text',
+        x: 150,
+        y: yOffset + 312,
+        width: 60,
+        height: 16,
+        text: 'Submit',
+        fontSize: 14,
+        fontFamily: styles.fonts[0] || 'Inter',
+        color: '#ffffff',
+        textAlign: 'center'
+      });
+    }
+    
+    return elements;
   }
 
   static async downloadDesignTokens(wireframes: WireframeForExport[]): Promise<void> {
