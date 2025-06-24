@@ -17,8 +17,8 @@ export class PNGZipExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '2000px'; // Extremely wide to prevent any horizontal cutting
-    iframe.style.height = '1500px'; // Extremely tall to prevent any vertical cutting
+    iframe.style.width = '2500px'; // Maximum width to accommodate all content
+    iframe.style.height = '2000px'; // Maximum height to accommodate all content
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
@@ -30,15 +30,16 @@ export class PNGZipExporter {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=2000, initial-scale=1.0">
+    <meta name="viewport" content="width=2500, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
         html, body {
             margin: 0;
-            padding: 50px; /* Reasonable padding */
-            width: 1400px; /* Fixed width for consistent layout */
+            padding: 100px; /* Maximum padding for complete capture */
+            width: auto; /* Auto width to accommodate all content */
+            min-width: 2000px; /* Minimum width for full content */
             height: auto;
-            min-height: 1000px;
+            min-height: 1500px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -58,17 +59,17 @@ export class PNGZipExporter {
             max-height: none !important;
             overflow: visible !important;
         }
-        /* Container with proper sizing */
+        /* Container with maximum space for complete capture */
         .wireframe-container {
-            width: 100%;
-            max-width: 1300px; /* Reasonable max width */
+            width: auto; /* Auto width for full content */
+            min-width: 100%;
             height: auto;
-            min-height: 900px;
-            padding: 20px; /* Normal padding */
+            min-height: 100%;
+            padding: 50px; /* Generous padding */
             overflow: visible;
             position: relative;
             display: block;
-            margin: 0 auto; /* Center the content */
+            margin: 0; /* No margin to use full space */
         }
         /* Ensure no element is ever cut off */
         div, section, article, aside, nav, header, footer, main, 
@@ -202,22 +203,32 @@ export class PNGZipExporter {
           containerOffset: { width: (container as HTMLElement).offsetWidth, height: (container as HTMLElement).offsetHeight }
         };
         
-        // Use reasonable dimensions that capture content without excessive white space
+        // Use maximum of ALL measurements to ensure nothing is missed
         const contentWidth = Math.max(
+          measurements.containerScroll.width,
+          measurements.documentScroll.width,
+          measurements.bodyScroll.width,
           measurements.containerClient.width,
+          measurements.documentClient.width,
+          measurements.bodyClient.width,
           measurements.containerOffset.width,
           1400 // Standard wireframe width
         );
         
         const contentHeight = Math.max(
+          measurements.containerScroll.height,
+          measurements.documentScroll.height,
+          measurements.bodyScroll.height,
           measurements.containerClient.height,
+          measurements.documentClient.height,
+          measurements.bodyClient.height,
           measurements.containerOffset.height,
           900 // Minimum height for content
         );
         
-        // Add reasonable padding to ensure complete capture
-        const actualWidth = Math.min(contentWidth + 100, 1600); // Cap max width
-        const actualHeight = contentHeight + 100; // Add padding for height
+        // Add substantial padding to guarantee complete capture
+        const actualWidth = contentWidth + 200; // No cap, add generous padding
+        const actualHeight = contentHeight + 200; // Add generous padding for height
 
         console.log(`Complete wireframe measurements for ${wireframe.pageName}:`, measurements);
         console.log(`Final capture dimensions: ${actualWidth}x${actualHeight}`);
@@ -261,21 +272,23 @@ export class PNGZipExporter {
                 overflow: visible !important;
                 height: auto !important;
                 min-height: ${actualHeight}px !important;
-                width: ${actualWidth}px !important;
-                max-width: ${actualWidth}px !important;
+                width: auto !important;
+                min-width: ${actualWidth}px !important;
+                max-width: none !important;
                 margin: 0 !important;
-                padding: 50px !important;
+                padding: 100px !important;
                 background: #ffffff !important;
               }
               #capture-container, .wireframe-container {
                 overflow: visible !important;
                 height: auto !important;
-                min-height: 90% !important;
-                width: 90% !important;
-                max-width: 1300px !important;
-                padding: 20px !important;
+                min-height: 100% !important;
+                width: auto !important;
+                min-width: 100% !important;
+                max-width: none !important;
+                padding: 50px !important;
                 position: relative !important;
-                margin: 0 auto !important;
+                margin: 0 !important;
                 background: transparent !important;
               }
               /* Force all elements to be visible */

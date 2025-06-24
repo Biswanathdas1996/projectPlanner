@@ -210,21 +210,27 @@ export class SVGExporter {
         // Get container and measure complete dimensions
         const container = doc.querySelector('#capture-container') || doc.querySelector('.wireframe-container') || doc.body;
         
-        // Get reasonable content dimensions
+        // Get maximum content dimensions for complete capture
         const contentWidth = Math.max(
+          container.scrollWidth,
           container.clientWidth,
           (container as HTMLElement).offsetWidth,
+          doc.documentElement.scrollWidth,
+          doc.body.scrollWidth,
           1400
         );
         
         const contentHeight = Math.max(
+          container.scrollHeight,
           container.clientHeight,
           (container as HTMLElement).offsetHeight,
+          doc.documentElement.scrollHeight,
+          doc.body.scrollHeight,
           900
         );
         
-        const actualWidth = Math.min(contentWidth + 100, 1600);
-        const actualHeight = contentHeight + 100;
+        const actualWidth = contentWidth + 200;
+        const actualHeight = contentHeight + 200;
 
         // Use html2canvas with maximum capture settings
         const canvas = await html2canvas(container as Element, {
@@ -265,8 +271,8 @@ export class SVGExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '2000px';
-    iframe.style.height = '1500px';
+    iframe.style.width = '2500px';
+    iframe.style.height = '2000px';
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
@@ -283,10 +289,11 @@ export class SVGExporter {
     <style>
         html, body {
             margin: 0;
-            padding: 50px;
-            width: 1400px;
+            padding: 100px;
+            width: auto;
+            min-width: 2000px;
             height: auto;
-            min-height: 1000px;
+            min-height: 1500px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
