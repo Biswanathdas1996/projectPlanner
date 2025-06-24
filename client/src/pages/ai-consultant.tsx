@@ -59,7 +59,7 @@ export default function AIConsultant() {
   >([]);
 
   const agentRef = useRef<ConversationalAIAgent | null>(null);
-  const elevenLabsAgentRef = useRef<ElevenLabsConversationAgent | null>(null);
+  const geminiVoiceAgentRef = useRef<GeminiVoiceAgent | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const speechRecognitionRef = useRef<any>(null);
