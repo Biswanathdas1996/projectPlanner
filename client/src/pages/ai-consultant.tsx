@@ -24,6 +24,12 @@ import {
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { 
+  ElevenLabsConversationAgent,
+  type ConversationEvent,
+  playAudioFromBuffer,
+  getUserAudioStream 
+} from '@/lib/elevenlabs-conversation-agent';
+import { 
   ConversationalAIAgent, 
   createConversationalAIAgent,
   type ConversationMessage,
@@ -32,24 +38,25 @@ import {
 } from '@/lib/conversational-ai-agent';
 
 export default function AIConsultant() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentInput, setCurrentInput] = useState('');
+  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [currentInput, setCurrentInput] = useState('');
   const [projectPlan, setProjectPlan] = useState<ProjectPlan | null>(null);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [context, setContext] = useState<ConversationContext>({});
   const [nextQuestions, setNextQuestions] = useState<string[]>([]);
   const [confidence, setConfidence] = useState(0);
+  const [conversationHistory, setConversationHistory] = useState<ConversationEvent[]>([]);
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const agentRef = useRef<ConversationalAIAgent | null>(null);
+  const elevenLabsAgentRef = useRef<ElevenLabsConversationAgent | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const mediaStreamRef = useRef<MediaStream | null>(null);
   
-  // Initialize the AI agent
+  // Initialize the AI agents
   useEffect(() => {
     try {
+      // Initialize local AI agent for fallback
       agentRef.current = createConversationalAIAgent();
       
       // Try to load existing conversation state
@@ -58,17 +65,29 @@ export default function AIConsultant() {
         agentRef.current.loadState(savedState);
         setContext(agentRef.current.getContext());
       }
+      
+      // Initialize AudioContext for voice features
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      
     } catch (error) {
       console.error('Error initializing AI agent:', error);
       toast({ 
         title: "Initialization failed", 
-        description: "Please check your API configuration", 
+        description: "Voice features may not work properly", 
         variant: "destructive" 
       });
     }
   }, []);
   
-  const conversation = agentRef.current?.getConversation() || [];
+  const conversation = isVoiceMode ? 
+    conversationHistory.filter(e => e.type === 'user_message' || e.type === 'agent_message').map(e => ({
+      id: e.sessionId || Date.now().toString(),
+      role: e.type === 'user_message' ? 'user' as const : 'assistant' as const,
+      content: e.message || '[Voice message]',
+      timestamp: e.timestamp,
+    })) :
+    agentRef.current?.getConversation() || [];
+    
   const currentStage = agentRef.current?.getCurrentStage() || 'discovery';
 
   // Save conversation state whenever it changes
@@ -87,84 +106,162 @@ export default function AIConsultant() {
     }
   }, []);
 
-  const startRecording = async () => {
+  const startVoiceConversation = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const apiKey = import.meta.env.VITE_ELEVENLABS_API_KEY;
+      if (!apiKey) {
+        toast({ 
+          title: "API key missing", 
+          description: "ElevenLabs API key is required for voice conversation", 
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      setIsProcessing(true);
       
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        audioChunksRef.current.push(event.data);
-      };
-
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-        await processAudioInput(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-      toast({ title: "Recording started", description: "Speak about your tech problem..." });
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      toast({ title: "Recording failed", description: "Please check microphone permissions", variant: "destructive" });
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-      toast({ title: "Recording stopped", description: "Processing your audio..." });
-    }
-  };
-
-  const processAudioInput = async (audioBlob: Blob) => {
-    setIsProcessing(true);
-    
-    try {
-      // Use browser's Web Speech API for speech-to-text
-      const recognition = new (window as any).webkitSpeechRecognition() || new (window as any).SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-      recognition.lang = 'en-US';
-
-      // Convert blob to audio URL for processing
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // Create ElevenLabs conversation agent
+      elevenLabsAgentRef.current = await ElevenLabsConversationAgent.createTechConsultantAgent(apiKey);
       
-      recognition.onresult = async (event: any) => {
-        const text = event.results[0][0].transcript;
-        if (text) {
-          await handleUserInput(text);
-        }
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      recognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
-        toast({ title: "Speech recognition failed", description: "Please try again or use text input", variant: "destructive" });
-        URL.revokeObjectURL(audioUrl);
-      };
-
-      // Start recognition - for demo purposes, we'll use a simulated approach
-      // In a real implementation, you'd process the audio blob directly
+      // Start conversation
+      await elevenLabsAgentRef.current.startConversation(handleConversationEvent);
       
-      // For now, let's simulate successful speech recognition
-      setTimeout(async () => {
-        const simulatedText = "I need help building a web application for my business";
-        await handleUserInput(simulatedText);
-        URL.revokeObjectURL(audioUrl);
-      }, 1000);
+      // Get user audio stream
+      mediaStreamRef.current = await getUserAudioStream();
+      
+      setIsVoiceMode(true);
+      setIsConnected(true);
+      
+      toast({ 
+        title: "Voice conversation started", 
+        description: "You can now speak naturally with the AI consultant" 
+      });
       
     } catch (error) {
-      console.error('Error processing audio:', error);
-      toast({ title: "Processing failed", description: "Please try again or use text input", variant: "destructive" });
+      console.error('Error starting voice conversation:', error);
+      toast({ 
+        title: "Voice conversation failed", 
+        description: error instanceof Error ? error.message : "Failed to start voice conversation", 
+        variant: "destructive" 
+      });
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const stopVoiceConversation = () => {
+    if (elevenLabsAgentRef.current) {
+      elevenLabsAgentRef.current.endConversation();
+      elevenLabsAgentRef.current = null;
+    }
+    
+    if (mediaStreamRef.current) {
+      mediaStreamRef.current.getTracks().forEach(track => track.stop());
+      mediaStreamRef.current = null;
+    }
+    
+    setIsVoiceMode(false);
+    setIsConnected(false);
+    
+    toast({ title: "Voice conversation ended" });
+  };
+
+  const handleConversationEvent = async (event: ConversationEvent) => {
+    console.log('Conversation event:', event);
+    
+    setConversationHistory(prev => [...prev, event]);
+    
+    switch (event.type) {
+      case 'agent_message':
+        if (event.audioData && audioContextRef.current) {
+          // Play audio response
+          try {
+            await playAudioFromBuffer(event.audioData, audioContextRef.current);
+          } catch (error) {
+            console.error('Error playing audio:', error);
+          }
+        }
+        
+        if (event.message) {
+          // Update conversation with text version for fallback processing
+          await processAgentMessage(event.message);
+        }
+        break;
+        
+      case 'user_message':
+        if (event.message) {
+          // Process user message through local agent for context building
+          await handleUserInputFromVoice(event.message);
+        }
+        break;
+        
+      case 'conversation_end':
+        stopVoiceConversation();
+        break;
+        
+      case 'error':
+        toast({ 
+          title: "Conversation error", 
+          description: event.message || "An error occurred during conversation", 
+          variant: "destructive" 
+        });
+        break;
+    }
+  };
+
+  const processAgentMessage = async (message: string) => {
+    // Extract insights from agent response to build context
+    const insights = extractContextFromMessage(message);
+    if (insights) {
+      setContext(prev => ({ ...prev, ...insights }));
+    }
+  };
+
+  const extractContextFromMessage = (message: string): Partial<ConversationContext> | null => {
+    const context: Partial<ConversationContext> = {};
+    const lower = message.toLowerCase();
+    
+    // Extract project type
+    if (lower.includes('web app') || lower.includes('website')) context.projectType = 'web application';
+    if (lower.includes('mobile app')) context.projectType = 'mobile application';
+    if (lower.includes('desktop app')) context.projectType = 'desktop application';
+    
+    // Extract domain
+    if (lower.includes('ecommerce') || lower.includes('e-commerce') || lower.includes('online store')) {
+      context.problemDomain = 'e-commerce';
+    }
+    if (lower.includes('healthcare') || lower.includes('medical')) context.problemDomain = 'healthcare';
+    if (lower.includes('education') || lower.includes('learning')) context.problemDomain = 'education';
+    
+    // Extract timeline mentions
+    const timelineMatches = message.match(/(\d+)\s*(week|month|day)s?/gi);
+    if (timelineMatches) {
+      context.timeline = timelineMatches[0];
+    }
+    
+    // Extract budget mentions
+    const budgetMatches = message.match(/\$[\d,]+/g);
+    if (budgetMatches) {
+      context.budget = budgetMatches[0];
+    }
+    
+    return Object.keys(context).length > 0 ? context : null;
+  };
+
+  const handleUserInputFromVoice = async (message: string) => {
+    if (agentRef.current) {
+      try {
+        const response = await agentRef.current.processMessage(message);
+        setContext(response.context);
+        setNextQuestions(response.nextQuestions);
+        setConfidence(response.confidence);
+        
+        if (response.shouldGeneratePlan) {
+          await handleGenerateProjectPlan();
+        }
+      } catch (error) {
+        console.error('Error processing voice message:', error);
+      }
     }
   };
 
@@ -273,25 +370,29 @@ export default function AIConsultant() {
     }
   }, []);
 
-  const handleTextSubmit = () => {
+  const handleTextSubmit = async () => {
     if (currentInput.trim()) {
-      handleUserInput(currentInput.trim());
+      if (isVoiceMode && isConnected) {
+        await sendVoiceMessage(currentInput.trim());
+      } else {
+        await handleUserInput(currentInput.trim());
+      }
       setCurrentInput('');
     }
   };
 
-  const playAudio = () => {
-    if (audioRef.current && audioUrl) {
-      audioRef.current.play();
-      setIsPlaying(true);
-    }
-  };
-
-  const stopAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      setIsPlaying(false);
+  const sendVoiceMessage = async (message: string) => {
+    if (elevenLabsAgentRef.current && isConnected) {
+      try {
+        await elevenLabsAgentRef.current.sendTextMessage(message);
+      } catch (error) {
+        console.error('Error sending voice message:', error);
+        toast({ 
+          title: "Failed to send message", 
+          description: "Please try again", 
+          variant: "destructive" 
+        });
+      }
     }
   };
 
@@ -453,39 +554,42 @@ ${conversation.map(msg => `
 
                 {/* Input Controls */}
                 <div className="space-y-3">
-                  {/* Audio Controls */}
+                  {/* Voice Conversation Controls */}
                   <div className="flex items-center gap-3">
-                    <Button
-                      onClick={isRecording ? stopRecording : startRecording}
-                      disabled={isProcessing}
-                      variant={isRecording ? "destructive" : "default"}
-                      className="flex-1"
-                    >
-                      {isRecording ? (
-                        <>
-                          <MicOff className="h-4 w-4 mr-2" />
-                          Stop Recording
-                        </>
-                      ) : (
-                        <>
-                          <Mic className="h-4 w-4 mr-2" />
-                          Start Recording
-                        </>
-                      )}
-                    </Button>
-                    
-                    {audioUrl && (
+                    {!isVoiceMode ? (
                       <Button
-                        onClick={isPlaying ? stopAudio : playAudio}
-                        variant="outline"
-                        size="sm"
+                        onClick={startVoiceConversation}
+                        disabled={isProcessing}
+                        className="flex-1"
                       >
-                        {isPlaying ? (
-                          <VolumeX className="h-4 w-4" />
+                        {isProcessing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Connecting...
+                          </>
                         ) : (
-                          <Volume2 className="h-4 w-4" />
+                          <>
+                            <Mic className="h-4 w-4 mr-2" />
+                            Start Voice Conversation
+                          </>
                         )}
                       </Button>
+                    ) : (
+                      <>
+                        <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="text-sm text-green-700">
+                            {isConnected ? 'Voice conversation active' : 'Connecting...'}
+                          </span>
+                        </div>
+                        <Button
+                          onClick={stopVoiceConversation}
+                          variant="destructive"
+                          size="sm"
+                        >
+                          <MicOff className="h-4 w-4" />
+                        </Button>
+                      </>
                     )}
                   </div>
 
@@ -496,7 +600,7 @@ ${conversation.map(msg => `
                     <Textarea
                       value={currentInput}
                       onChange={(e) => setCurrentInput(e.target.value)}
-                      placeholder="Or type your question here..."
+                      placeholder={isVoiceMode ? "Type a message to send to voice conversation..." : "Type your question here..."}
                       className="flex-1"
                       rows={2}
                       onKeyPress={(e) => {
@@ -517,7 +621,7 @@ ${conversation.map(msg => `
                         onClick={clearConversation}
                         variant="outline"
                         size="sm"
-                        disabled={isProcessing}
+                        disabled={isProcessing || isVoiceMode}
                       >
                         Clear
                       </Button>
@@ -672,12 +776,13 @@ ${conversation.map(msg => `
         </div>
       </div>
 
-      {/* Hidden audio element */}
-      <audio
-        ref={audioRef}
-        onEnded={() => setIsPlaying(false)}
-        style={{ display: 'none' }}
-      />
+      {/* Voice Mode Indicator */}
+      {isVoiceMode && (
+        <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium">Voice Mode Active</span>
+        </div>
+      )}
     </div>
   );
 }
