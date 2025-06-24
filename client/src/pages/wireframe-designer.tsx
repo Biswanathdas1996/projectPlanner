@@ -5802,23 +5802,24 @@ ${selectedPageCode.jsCode}
                           createdAt: w.createdAt || new Date().toISOString(),
                         }));
                         
+                        console.log("Starting wireframe export...", wireframesForExport);
                         const { fileName } = FigmaExporter.downloadFigmaExport(wireframesForExport);
                         setLastExportedFileName(fileName);
                         
                         toast({
-                          title: "Wireframe Export Complete",
-                          description: `Exported ${wireframesForExport.length} wireframes as SVG files (native Figma support) + HTML preview + FigJam format`,
+                          title: "SVG Export Started",
+                          description: `Downloading ${wireframesForExport.length} SVG files + HTML preview. Check your downloads folder.`,
                         });
 
                         // Show import guide after export
                         setTimeout(() => {
                           setShowFigmaGuide(true);
-                        }, 500);
+                        }, 2000);
                       } catch (error) {
-                        console.error("Figma export error:", error);
+                        console.error("SVG export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to export wireframes to Figma format",
+                          description: "Failed to export wireframes as SVG. Check console for details.",
                           variant: "destructive",
                         });
                       }

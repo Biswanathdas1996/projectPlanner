@@ -532,29 +532,58 @@ The exported JSON is optimized for these plugins and contains all necessary data
   static downloadFigmaExport(wireframes: WireframeForExport[]): { fileName: string } {
     const dateStr = new Date().toISOString().split('T')[0];
     
-    // Create HTML file with embedded wireframes for direct viewing
-    const combinedHtml = this.createCombinedHTMLFile(wireframes);
-    const htmlFileName = `wireframes-preview-${dateStr}.html`;
-    this.downloadFile(combinedHtml, htmlFileName, 'text/html');
+    console.log(`Starting export for ${wireframes.length} wireframes`);
     
-    // Create SVG files for each wireframe (can be imported to Figma)
-    wireframes.forEach((wireframe, index) => {
-      const svgContent = this.convertToSVG(wireframe);
-      const svgFileName = `wireframe-${wireframe.pageName.replace(/\s+/g, '-').toLowerCase()}-${dateStr}.svg`;
+    // Immediate download for first wireframe to test
+    if (wireframes.length > 0) {
+      const firstWireframe = wireframes[0];
+      const svgContent = this.convertToSVG(firstWireframe);
+      const svgFileName = `wireframe-${firstWireframe.pageName.replace(/\s+/g, '-').toLowerCase()}-${dateStr}.svg`;
+      console.log(`Creating immediate SVG for: ${firstWireframe.pageName}`);
       this.downloadFile(svgContent, svgFileName, 'image/svg+xml');
+    }
+    
+    // Create remaining SVG files with staggered downloads
+    wireframes.slice(1).forEach((wireframe, index) => {
+      setTimeout(() => {
+        const svgContent = this.convertToSVG(wireframe);
+        const svgFileName = `wireframe-${wireframe.pageName.replace(/\s+/g, '-').toLowerCase()}-${dateStr}.svg`;
+        console.log(`Creating SVG for: ${wireframe.pageName}`);
+        this.downloadFile(svgContent, svgFileName, 'image/svg+xml');
+      }, (index + 1) * 1000); // Stagger downloads 1 second apart
     });
     
-    // Create Figma Community file format (FigJam whiteboard)
-    const figJamData = this.createFigJamFormat(wireframes);
-    const figJamFileName = `wireframes-figjam-${dateStr}.jam`;
-    this.downloadFile(JSON.stringify(figJamData, null, 2), figJamFileName, 'application/json');
+    // Create ZIP file containing all SVGs (alternative approach)
+    setTimeout(() => {
+      this.createZipDownload(wireframes, dateStr);
+    }, 500);
     
-    // Create detailed instruction file
-    const instructions = this.createDetailedInstructions(wireframes.length);
-    const instructionsFileName = `figma-import-instructions-${dateStr}.txt`;
-    this.downloadFile(instructions, instructionsFileName, 'text/plain');
+    // Create HTML file with embedded wireframes for direct viewing
+    setTimeout(() => {
+      const combinedHtml = this.createCombinedHTMLFile(wireframes);
+      const htmlFileName = `wireframes-preview-${dateStr}.html`;
+      this.downloadFile(combinedHtml, htmlFileName, 'text/html');
+    }, wireframes.length * 1000 + 1000);
 
-    return { fileName: htmlFileName };
+    return { fileName: `wireframes-svg-export-${dateStr}` };
+  }
+
+  private static createZipDownload(wireframes: WireframeForExport[], dateStr: string): void {
+    // Create a simple archive format since we can't use zip libraries
+    let archiveContent = `WIREFRAME SVG ARCHIVE - ${dateStr}\n`;
+    archiveContent += `Generated: ${new Date().toISOString()}\n`;
+    archiveContent += `Total wireframes: ${wireframes.length}\n`;
+    archiveContent += `\n--- WIREFRAME DATA ---\n\n`;
+    
+    wireframes.forEach((wireframe, index) => {
+      const svgContent = this.convertToSVG(wireframe);
+      archiveContent += `=== ${wireframe.pageName.toUpperCase()} ===\n`;
+      archiveContent += `Filename: wireframe-${wireframe.pageName.replace(/\s+/g, '-').toLowerCase()}-${dateStr}.svg\n\n`;
+      archiveContent += svgContent;
+      archiveContent += `\n\n`;
+    });
+    
+    this.downloadFile(archiveContent, `wireframes-archive-${dateStr}.txt`, 'text/plain');
   }
 
   private static convertToSVG(wireframe: WireframeForExport): string {
@@ -691,15 +720,53 @@ No more "Unsupported file format" errors with SVG import!`;
   }
 
   private static downloadFile(content: string, fileName: string, mimeType: string): void {
-    const blob = new Blob([content], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      console.log(`Attempting download: ${fileName} (${content.length} chars)`);
+      
+      // Force download using data URL method for better compatibility
+      const dataUrl = `data:${mimeType};charset=utf-8,${encodeURIComponent(content)}`;
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = fileName;
+      link.style.display = 'none';
+      
+      document.body.appendChild(link);
+      
+      // Force click event
+      const event = new MouseEvent('click', {
+        view: window,
+        bubbles: true,
+        cancelable: false
+      });
+      link.dispatchEvent(event);
+      
+      // Clean up
+      setTimeout(() => {
+        if (document.body.contains(link)) {
+          document.body.removeChild(link);
+        }
+      }, 200);
+      
+      console.log(`Download initiated: ${fileName}`);
+    } catch (error) {
+      console.error(`Download failed for ${fileName}:`, error);
+      
+      // Fallback: try blob method
+      try {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        console.log(`Fallback download successful: ${fileName}`);
+      } catch (fallbackError) {
+        console.error(`Both download methods failed for ${fileName}:`, fallbackError);
+      }
+    }
   }
 
   private static convertHTMLToBasicNodes(html: string, pageName: string): any[] {
