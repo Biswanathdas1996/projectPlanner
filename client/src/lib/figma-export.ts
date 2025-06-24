@@ -74,11 +74,12 @@ export class FigmaExporter {
   }
 
   static async exportToFigmaUsingHtmlToDesign(wireframes: WireframeForExport[]): Promise<void> {
-    const htmlToDesignAPI = 'https://htmlcsstoimage.com/demo_run';
+    console.log(`Starting Figma export for ${wireframes.length} wireframes...`);
     const results: Array<{ name: string; url: string; html: string }> = [];
     
     for (const wireframe of wireframes) {
       try {
+        console.log(`Preparing ${wireframe.pageName} for Figma conversion...`);
         // Prepare HTML for html.to.design conversion
         const cleanHTML = this.prepareHTMLForFigma(wireframe.htmlCode, wireframe.pageName);
         
@@ -92,17 +93,21 @@ export class FigmaExporter {
           html: cleanHTML
         });
         
-        console.log(`Prepared ${wireframe.pageName} for Figma conversion`);
+        console.log(`Successfully prepared ${wireframe.pageName} for Figma conversion`);
       } catch (error) {
         console.error(`Error preparing ${wireframe.pageName} for Figma:`, error);
       }
     }
+    
+    console.log(`Creating Figma export package with ${results.length} wireframes...`);
     
     // Create instructions for using html.to.design
     const instructions = this.generateFigmaInstructions(results);
     
     // Download the instructions and HTML files
     this.downloadFigmaPackage(results, instructions);
+    
+    console.log('Figma export package download completed');
   }
 
   private static prepareHTMLForFigma(htmlCode: string, pageName: string): string {
@@ -273,60 +278,71 @@ ${results.map((result, index) => `${index + 1}. **${result.name}** - Ready for c
     results: Array<{ name: string; url: string; html: string }>, 
     instructions: string
   ): void {
-    // Create a zip-like structure with all files
-    const packageData = {
-      instructions: instructions,
-      wireframes: results.map(result => ({
-        name: result.name,
-        filename: `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`,
-        content: result.html
-      })),
-      metadata: {
-        exportDate: new Date().toISOString(),
-        totalWireframes: results.length,
-        exportTool: 'AI Wireframe Designer',
-        figmaMethod: 'html.to.design'
-      }
-    };
-    
-    // Download the complete package as JSON
-    const dataStr = JSON.stringify(packageData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `figma-wireframes-package-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-    // Also download instructions separately
-    const instructionsBlob = new Blob([instructions], { type: 'text/markdown' });
-    const instructionsUrl = URL.createObjectURL(instructionsBlob);
-    const instructionsLink = document.createElement('a');
-    instructionsLink.href = instructionsUrl;
-    instructionsLink.download = 'figma-import-instructions.md';
-    document.body.appendChild(instructionsLink);
-    instructionsLink.click();
-    document.body.removeChild(instructionsLink);
-    URL.revokeObjectURL(instructionsUrl);
-    
-    // Download individual HTML files
-    results.forEach(result => {
-      const htmlBlob = new Blob([result.html], { type: 'text/html' });
-      const htmlUrl = URL.createObjectURL(htmlBlob);
-      const htmlLink = document.createElement('a');
-      htmlLink.href = htmlUrl;
-      htmlLink.download = `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`;
-      document.body.appendChild(htmlLink);
-      htmlLink.click();
-      document.body.removeChild(htmlLink);
-      URL.revokeObjectURL(htmlUrl);
+    try {
+      console.log('Creating Figma package downloads...');
       
-      // Clean up the object URL
-      URL.revokeObjectURL(result.url);
-    });
+      // Create a zip-like structure with all files
+      const packageData = {
+        instructions: instructions,
+        wireframes: results.map(result => ({
+          name: result.name,
+          filename: `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`,
+          content: result.html
+        })),
+        metadata: {
+          exportDate: new Date().toISOString(),
+          totalWireframes: results.length,
+          exportTool: 'AI Wireframe Designer',
+          figmaMethod: 'html.to.design'
+        }
+      };
+      
+      // Download the complete package as JSON
+      const dataStr = JSON.stringify(packageData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `figma-wireframes-package-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      console.log('Downloaded main package JSON');
+      
+      // Download instructions separately
+      const instructionsBlob = new Blob([instructions], { type: 'text/markdown' });
+      const instructionsUrl = URL.createObjectURL(instructionsBlob);
+      const instructionsLink = document.createElement('a');
+      instructionsLink.href = instructionsUrl;
+      instructionsLink.download = 'figma-import-instructions.md';
+      document.body.appendChild(instructionsLink);
+      instructionsLink.click();
+      document.body.removeChild(instructionsLink);
+      URL.revokeObjectURL(instructionsUrl);
+      console.log('Downloaded instruction guide');
+      
+      // Download individual HTML files with delay
+      results.forEach((result, index) => {
+        setTimeout(() => {
+          const htmlBlob = new Blob([result.html], { type: 'text/html' });
+          const htmlUrl = URL.createObjectURL(htmlBlob);
+          const htmlLink = document.createElement('a');
+          htmlLink.href = htmlUrl;
+          htmlLink.download = `${result.name.toLowerCase().replace(/\s+/g, '-')}.html`;
+          document.body.appendChild(htmlLink);
+          htmlLink.click();
+          document.body.removeChild(htmlLink);
+          URL.revokeObjectURL(htmlUrl);
+          URL.revokeObjectURL(result.url);
+          console.log(`Downloaded ${result.name}.html`);
+        }, index * 300); // 300ms delay between downloads
+      });
+      
+    } catch (error) {
+      console.error('Error creating Figma package downloads:', error);
+      throw error;
+    }
   }
 
   private static extractStylesFromHTML(html: string): {

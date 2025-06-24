@@ -5824,6 +5824,11 @@ ${selectedPageCode.jsCode}
                   <Button
                     onClick={async () => {
                       try {
+                        toast({
+                          title: "Preparing Figma Export",
+                          description: "Optimizing wireframes for html.to.design conversion...",
+                        });
+
                         const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
                           id: w.id,
                           pageName: w.pageName,
@@ -5834,17 +5839,26 @@ ${selectedPageCode.jsCode}
                           createdAt: w.createdAt || new Date().toISOString(),
                         }));
                         
+                        if (wireframesForExport.length === 0) {
+                          toast({
+                            title: "No Wireframes Found",
+                            description: "Please generate wireframes first before exporting to Figma",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+
                         await FigmaExporter.exportToFigmaUsingHtmlToDesign(wireframesForExport);
                         
                         toast({
-                          title: "Figma Export Package Ready",
-                          description: `Downloaded ${wireframesForExport.length} wireframes ready for html.to.design conversion`,
+                          title: "Figma Export Complete",
+                          description: `Downloaded ${wireframesForExport.length} files: package JSON, instructions guide, and individual HTML files ready for html.to.design`,
                         });
                       } catch (error) {
                         console.error("Figma export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to prepare wireframes for Figma export",
+                          description: "Failed to prepare wireframes for Figma export. Check console for details.",
                           variant: "destructive",
                         });
                       }

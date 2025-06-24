@@ -354,6 +354,10 @@ Changelog:
   - SVG files now contain pixel-perfect images of wireframes as displayed in browser
   - Implemented high-resolution capture (2x scale) for crisp SVG output at any size
   - Added comprehensive iframe rendering system for accurate wireframe capture
+  - Fixed Figma export functionality with enhanced error handling and sequential downloads
+  - Figma export now provides complete package: JSON data, instruction guide, and individual HTML files
+  - Added input validation and progress feedback for robust Figma export workflow
+  - Optimized HTML files specifically for html.to.design conversion to editable Figma components
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation
