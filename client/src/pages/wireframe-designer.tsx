@@ -49,6 +49,7 @@ import {
   type BrandGuideline,
 } from "@/lib/brand-guideline-extractor";
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
+import { SVGExporter, type WireframeSVGExport } from "@/lib/svg-exporter";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
@@ -5788,6 +5789,41 @@ ${selectedPageCode.jsCode}
                   <Button
                     onClick={async () => {
                       try {
+                        const wireframesForExport: WireframeSVGExport[] = generatedWireframes.map(w => ({
+                          id: w.id,
+                          pageName: w.pageName,
+                          htmlCode: w.htmlCode,
+                          cssCode: w.cssCode,
+                          userType: w.userType || 'User',
+                          features: w.features || [],
+                          createdAt: w.createdAt || new Date().toISOString(),
+                        }));
+                        
+                        await SVGExporter.downloadAllWireframesAsSVG(wireframesForExport);
+                        
+                        toast({
+                          title: "SVG Export Complete",
+                          description: `Downloaded ${wireframesForExport.length} high-quality SVG wireframes`,
+                        });
+                      } catch (error) {
+                        console.error("SVG export error:", error);
+                        toast({
+                          title: "Export Failed",
+                          description: "Failed to export wireframes as SVG",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-green-200 text-green-700 hover:text-green-800 hover:border-green-300"
+                  >
+                    <Download className="h-4 w-4" />
+                    Export as SVG
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
                         const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
                           id: w.id,
                           pageName: w.pageName,
@@ -5902,6 +5938,41 @@ ${selectedPageCode.jsCode}
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-7 w-7 p-0 hover:bg-green-500/20 text-green-600"
+                            onClick={async () => {
+                              try {
+                                const wireframeForSVG: WireframeSVGExport = {
+                                  id: wireframe.id,
+                                  pageName: wireframe.pageName,
+                                  htmlCode: wireframe.htmlCode,
+                                  cssCode: wireframe.cssCode,
+                                  userType: wireframe.userType || 'User',
+                                  features: wireframe.features || [],
+                                  createdAt: wireframe.createdAt || new Date().toISOString(),
+                                };
+                                
+                                await SVGExporter.downloadWireframeSVG(wireframeForSVG);
+                                
+                                toast({
+                                  title: "SVG Downloaded",
+                                  description: `${wireframe.pageName} exported as high-quality SVG`,
+                                });
+                              } catch (error) {
+                                console.error("Error converting wireframe to SVG:", error);
+                                toast({
+                                  title: "Export Failed",
+                                  description: "Failed to convert wireframe to SVG",
+                                  variant: "destructive",
+                                });
+                              }
+                            }}
+                            title="Download as SVG"
+                          >
+                            <Download className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-7 w-7 p-0 hover:bg-gray-300/50 text-gray-600"
                             onClick={() => {
                               const blob = new Blob([wireframe.htmlCode], {
@@ -5917,8 +5988,9 @@ ${selectedPageCode.jsCode}
                               a.click();
                               URL.revokeObjectURL(url);
                             }}
+                            title="Download as HTML"
                           >
-                            <Download className="h-3 w-3" />
+                            <Code className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
