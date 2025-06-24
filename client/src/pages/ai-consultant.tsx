@@ -42,6 +42,7 @@ export default function AIConsultant() {
   const [isVoiceMode, setIsVoiceMode] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [currentInput, setCurrentInput] = useState('');
   const [projectPlan, setProjectPlan] = useState<ProjectPlan | null>(null);
   const [context, setContext] = useState<ConversationContext>({});
@@ -53,6 +54,7 @@ export default function AIConsultant() {
   const elevenLabsAgentRef = useRef<ElevenLabsConversationAgent | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
+  const speechRecognitionRef = useRef<any>(null);
   
   // Initialize the AI agents
   useEffect(() => {
@@ -128,15 +130,15 @@ export default function AIConsultant() {
       // Start conversation
       await elevenLabsAgentRef.current.startConversation(handleConversationEvent);
       
-      // Get user audio stream
-      mediaStreamRef.current = await getUserAudioStream();
+      // Initialize speech recognition
+      await initializeSpeechRecognition();
       
       setIsVoiceMode(true);
       setIsConnected(true);
       
       toast({ 
         title: "Voice conversation started", 
-        description: "You can now speak naturally with the AI consultant" 
+        description: "Speak naturally - the AI will listen and respond with voice" 
       });
       
     } catch (error) {
@@ -157,6 +159,12 @@ export default function AIConsultant() {
       window.speechSynthesis.cancel();
     }
     
+    // Stop speech recognition
+    if (speechRecognitionRef.current) {
+      speechRecognitionRef.current.stop();
+      speechRecognitionRef.current = null;
+    }
+    
     if (elevenLabsAgentRef.current) {
       elevenLabsAgentRef.current.endConversation();
       elevenLabsAgentRef.current = null;
@@ -169,6 +177,7 @@ export default function AIConsultant() {
     
     setIsVoiceMode(false);
     setIsConnected(false);
+    setIsListening(false);
     
     toast({ title: "Voice conversation ended" });
   };
@@ -592,9 +601,13 @@ ${conversation.map(msg => `
                         <div className="flex-1 flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
                           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                           <span className="text-sm text-green-700">
-                            {isConnected ? 'Voice conversation active - AI speaking' : 'Connecting...'}
+                            {isConnected ? (isListening ? 'Listening for your voice...' : 'Voice conversation active') : 'Connecting...'}
                           </span>
-                          <Volume2 className="h-4 w-4 text-green-600" />
+                          {isListening ? (
+                            <Mic className="h-4 w-4 text-green-600 animate-pulse" />
+                          ) : (
+                            <Volume2 className="h-4 w-4 text-green-600" />
+                          )}
                         </div>
                         <Button
                           onClick={stopVoiceConversation}
@@ -793,8 +806,17 @@ ${conversation.map(msg => `
       {/* Voice Mode Indicator */}
       {isVoiceMode && (
         <div className="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
-          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-          <span className="text-sm font-medium">Voice Mode Active</span>
+          {isListening ? (
+            <>
+              <Mic className="w-4 h-4 animate-pulse" />
+              <span className="text-sm font-medium">Listening...</span>
+            </>
+          ) : (
+            <>
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium">Voice Mode Active</span>
+            </>
+          )}
         </div>
       )}
     </div>
