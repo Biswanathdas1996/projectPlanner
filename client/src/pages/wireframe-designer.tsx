@@ -5806,8 +5806,8 @@ ${selectedPageCode.jsCode}
                         setLastExportedFileName(fileName);
                         
                         toast({
-                          title: "Figma Export Complete",
-                          description: `Successfully exported ${wireframesForExport.length} wireframes to Figma format`,
+                          title: "Multi-Format Export Complete",
+                          description: `Successfully exported ${wireframesForExport.length} wireframes in 4 different formats for maximum compatibility`,
                         });
 
                         // Show import guide after export

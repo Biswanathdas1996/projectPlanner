@@ -530,41 +530,81 @@ The exported JSON is optimized for these plugins and contains all necessary data
   }
 
   static downloadFigmaExport(wireframes: WireframeForExport[]): { fileName: string } {
-    // Create a plugin-compatible format instead of native Figma format
-    const pluginData = {
-      version: "1.0.0",
-      type: "wireframe-export",
-      pages: wireframes.map((wireframe, index) => ({
-        id: `page-${index}`,
+    // Create multiple export formats for maximum compatibility
+    
+    // Format 1: Simplified HTML/CSS structure (most compatible)
+    const htmlCssData = {
+      format: "html-css-wireframes",
+      version: "1.0",
+      wireframes: wireframes.map((wireframe, index) => ({
+        id: wireframe.id,
         name: wireframe.pageName,
-        type: "PAGE",
-        frames: [{
-          id: `frame-${index}`,
-          name: `${wireframe.pageName} - Wireframe`,
+        html: wireframe.htmlCode,
+        css: wireframe.cssCode || "",
+        metadata: {
+          userType: wireframe.userType,
+          features: wireframe.features,
+          createdAt: wireframe.createdAt
+        }
+      }))
+    };
+
+    // Format 2: Basic Figma-style structure
+    const figmaStyleData = {
+      name: "Wireframe Export",
+      children: wireframes.map((wireframe, index) => ({
+        name: wireframe.pageName,
+        type: "CANVAS",
+        children: [{
+          name: `${wireframe.pageName} Frame`,
           type: "FRAME",
           width: 1200,
           height: 800,
-          x: 0,
-          y: 0,
-          backgroundColor: "#FFFFFF",
-          elements: this.convertHTMLToSimpleElements(wireframe.htmlCode, wireframe.pageName),
-          styles: this.extractStylesFromHTML(wireframe.htmlCode)
+          children: this.convertHTMLToBasicNodes(wireframe.htmlCode, wireframe.pageName)
         }]
-      })),
-      metadata: {
-        createdAt: new Date().toISOString(),
-        exportedBy: "AI Wireframe Designer",
-        totalPages: wireframes.length
-      }
+      }))
     };
 
-    // Generate filename with JSON extension for plugin compatibility
-    const fileName = `wireframes-export-${new Date().toISOString().split('T')[0]}.json`;
+    // Format 3: Design specification document
+    const specData = {
+      project: "Wireframe Specifications",
+      pages: wireframes.map(wireframe => {
+        const styles = this.extractStylesFromHTML(wireframe.htmlCode);
+        return {
+          name: wireframe.pageName,
+          elements: this.analyzeHTMLStructure(wireframe.htmlCode),
+          colors: styles.colors,
+          fonts: styles.fonts,
+          layout: "1200x800px desktop layout"
+        };
+      })
+    };
+
+    const dateStr = new Date().toISOString().split('T')[0];
     
-    // Download the plugin-compatible JSON file
-    const dataStr = JSON.stringify(pluginData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
+    // Download HTML/CSS format (primary)
+    const htmlFileName = `wireframes-html-css-${dateStr}.json`;
+    this.downloadFile(JSON.stringify(htmlCssData, null, 2), htmlFileName, 'application/json');
+    
+    // Download Figma-style format
+    const figmaFileName = `wireframes-figma-style-${dateStr}.json`;
+    this.downloadFile(JSON.stringify(figmaStyleData, null, 2), figmaFileName, 'application/json');
+    
+    // Download design spec
+    const specFileName = `wireframes-design-spec-${dateStr}.json`;
+    this.downloadFile(JSON.stringify(specData, null, 2), specFileName, 'application/json');
+    
+    // Download combined HTML file for browser viewing
+    const combinedHtml = this.createCombinedHTMLFile(wireframes);
+    const htmlFileName2 = `wireframes-preview-${dateStr}.html`;
+    this.downloadFile(combinedHtml, htmlFileName2, 'text/html');
+
+    return { fileName: htmlFileName };
+  }
+
+  private static downloadFile(content: string, fileName: string, mimeType: string): void {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
@@ -572,8 +612,120 @@ The exported JSON is optimized for these plugins and contains all necessary data
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
+  }
 
-    return { fileName };
+  private static convertHTMLToBasicNodes(html: string, pageName: string): any[] {
+    const nodes = [];
+    let y = 0;
+    
+    // Header
+    nodes.push({
+      name: "Header",
+      type: "TEXT",
+      characters: pageName,
+      x: 0,
+      y: y,
+      width: 400,
+      height: 48,
+      fontSize: 32,
+      fontName: { family: "Inter", style: "Bold" }
+    });
+    y += 80;
+    
+    // Navigation
+    if (html.includes('nav') || html.includes('menu')) {
+      nodes.push({
+        name: "Navigation",
+        type: "RECTANGLE",
+        x: 0,
+        y: y,
+        width: 1200,
+        height: 60,
+        fills: [{ type: "SOLID", color: { r: 0.97, g: 0.97, b: 0.97 } }]
+      });
+      y += 80;
+    }
+    
+    // Main content
+    nodes.push({
+      name: "Main Content",
+      type: "RECTANGLE",
+      x: 0,
+      y: y,
+      width: 1200,
+      height: 400,
+      fills: [{ type: "SOLID", color: { r: 1, g: 1, b: 1 } }],
+      strokes: [{ type: "SOLID", color: { r: 0.9, g: 0.9, b: 0.9 } }]
+    });
+    
+    return nodes;
+  }
+
+  private static analyzeHTMLStructure(html: string): any[] {
+    const elements = [];
+    
+    if (html.includes('<h1') || html.includes('<h2')) {
+      elements.push({ type: "heading", content: "Page title/header" });
+    }
+    if (html.includes('<nav')) {
+      elements.push({ type: "navigation", content: "Navigation menu" });
+    }
+    if (html.includes('<form') || html.includes('<input')) {
+      elements.push({ type: "form", content: "Input form with fields" });
+    }
+    if (html.includes('<button')) {
+      elements.push({ type: "button", content: "Action buttons" });
+    }
+    if (html.includes('sidebar')) {
+      elements.push({ type: "sidebar", content: "Side navigation or info panel" });
+    }
+    
+    return elements;
+  }
+
+  private static createCombinedHTMLFile(wireframes: WireframeForExport[]): string {
+    const pages = wireframes.map((wireframe, index) => `
+      <div class="wireframe-page" style="margin-bottom: 50px; padding: 20px; border: 2px solid #ddd; border-radius: 8px;">
+        <h2 style="color: #333; margin-bottom: 20px; font-family: Arial, sans-serif;">
+          ${wireframe.pageName}
+        </h2>
+        <div style="border: 1px solid #ccc; border-radius: 4px; overflow: hidden;">
+          ${wireframe.htmlCode}
+        </div>
+      </div>
+    `).join('');
+
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe Export - Preview</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      max-width: 1200px; 
+      margin: 0 auto; 
+      padding: 20px; 
+      background: #f5f5f5; 
+    }
+    .wireframe-page { 
+      background: white; 
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); 
+    }
+  </style>
+</head>
+<body>
+  <h1 style="text-align: center; color: #333; margin-bottom: 40px;">
+    Wireframe Export Preview
+  </h1>
+  ${pages}
+  <div style="text-align: center; margin-top: 40px; color: #666; font-size: 14px;">
+    Generated on ${new Date().toLocaleDateString()} by AI Wireframe Designer
+  </div>
+</body>
+</html>`;
   }
 
   private static convertHTMLToSimpleElements(html: string, pageName: string): any[] {
