@@ -17,29 +17,29 @@ export class PNGZipExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '1400px'; // Increased width for full capture
-    iframe.style.height = '1000px'; // Increased height for full capture
+    iframe.style.width = '2000px'; // Extremely wide to prevent any horizontal cutting
+    iframe.style.height = '1500px'; // Extremely tall to prevent any vertical cutting
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
     iframe.style.overflow = 'visible';
     
-    // Create optimized HTML for complete wireframe rendering
+    // Create HTML with maximum space and no restrictions
     const fullHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1600, initial-scale=1.0">
+    <meta name="viewport" content="width=2000, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
         html, body {
             margin: 0;
-            padding: 40px; /* Increased padding for headers */
-            padding-top: 60px; /* Extra top padding for header content */
-            width: 1600px;
-            min-width: 1600px;
-            min-height: 1200px;
+            padding: 100px; /* Maximum padding on all sides */
+            width: auto;
+            min-width: 2000px;
+            height: auto;
+            min-height: 1500px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -51,58 +51,83 @@ export class PNGZipExporter {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             text-rendering: optimizeLegibility;
+            position: static !important; /* Force all elements to normal flow */
+            float: none !important;
+            transform: none !important;
+            margin: max(0px, attr(margin)) !important;
+            max-width: none !important;
+            max-height: none !important;
+            overflow: visible !important;
         }
-        /* Ensure all content is visible and properly sized */
+        /* Container with maximum space */
         .wireframe-container {
-            width: 100%;
-            min-width: 100%;
-            min-height: 100%;
-            padding: 40px; /* Increased padding */
-            padding-top: 60px; /* Extra top padding for headers */
-            overflow: visible;
-            position: relative;
-        }
-        /* Prevent any cutting of content and ensure full width */
-        img, svg, canvas {
-            max-width: none;
-            height: auto;
-        }
-        /* Ensure flexbox and grid layouts show all content */
-        .flex, .grid, [style*="display: flex"], [style*="display: grid"] {
-            flex-wrap: wrap;
-            overflow: visible;
             width: auto;
-            min-width: max-content;
+            min-width: 100%;
+            height: auto;
+            min-height: 100%;
+            padding: 100px; /* Maximum padding */
+            overflow: visible;
+            position: static;
+            display: block;
         }
-        /* Prevent sidebar and content cutting */
-        aside, .sidebar, .side-panel, [class*="sidebar"], [class*="side"] {
+        /* Ensure no element is ever cut off */
+        div, section, article, aside, nav, header, footer, main, 
+        form, table, ul, ol, li, p, h1, h2, h3, h4, h5, h6 {
             overflow: visible !important;
             max-width: none !important;
+            max-height: none !important;
+            position: static !important;
+            float: none !important;
+            transform: none !important;
+            clip: none !important;
+            clip-path: none !important;
+        }
+        /* Remove any layout restrictions */
+        img, svg, canvas, video, iframe {
+            max-width: none !important;
+            max-height: none !important;
             width: auto !important;
+            height: auto !important;
         }
-        /* Ensure headers and navigation are fully visible */
-        header, nav, .header, .navbar, .navigation, [class*="header"], [class*="nav"] {
+        /* Ensure flexbox and grid show all content */
+        .flex, .grid, 
+        [style*="display: flex"], [style*="display: grid"],
+        [class*="flex"], [class*="grid"] {
+            flex-wrap: wrap !important;
             overflow: visible !important;
-            position: relative !important;
-            top: auto !important;
-            margin-top: 0 !important;
-            padding-top: 20px !important;
+            width: auto !important;
+            min-width: max-content !important;
+            height: auto !important;
+            min-height: max-content !important;
         }
-        /* Prevent any absolute positioning from cutting content */
-        * {
-            position: relative !important;
-        }
-        *[style*="position: absolute"], *[style*="position: fixed"] {
-            position: relative !important;
+        /* Force all positioning to be visible */
+        *[style*="position: absolute"], *[style*="position: fixed"], 
+        *[style*="position: sticky"], .absolute, .fixed, .sticky {
+            position: static !important;
             top: auto !important;
             left: auto !important;
             right: auto !important;
             bottom: auto !important;
+            z-index: auto !important;
+            transform: none !important;
+        }
+        /* Remove any hiding or clipping */
+        *[style*="display: none"], .hidden {
+            display: block !important;
+        }
+        *[style*="visibility: hidden"] {
+            visibility: visible !important;
+        }
+        /* Ensure text and content is always visible */
+        * {
+            color: inherit !important;
+            background-color: inherit !important;
+            opacity: 1 !important;
         }
     </style>
 </head>
 <body>
-    <div class="wireframe-container">
+    <div class="wireframe-container" id="capture-container">
         ${htmlCode}
     </div>
 </body>
@@ -125,8 +150,14 @@ export class PNGZipExporter {
       const checkLoad = () => {
         const doc = iframe.contentDocument;
         if (doc && doc.readyState === 'complete') {
-          // Wait longer for complete rendering and layout
-          setTimeout(resolve, 2500);
+          // Wait for complete layout and content positioning
+          setTimeout(() => {
+            // Force a reflow to ensure all content is positioned
+            if (doc.body) {
+              doc.body.offsetHeight; // Trigger reflow
+            }
+            setTimeout(resolve, 3000); // Extended wait for complete rendering
+          }, 1000);
         } else {
           setTimeout(checkLoad, 100);
         }
@@ -153,19 +184,59 @@ export class PNGZipExporter {
           return;
         }
 
-        // Calculate actual content dimensions
-        const container = doc.querySelector('.wireframe-container') || doc.body;
-        const rect = container.getBoundingClientRect();
-        const actualWidth = Math.max(1400, Math.ceil(rect.width + 40)); // Add padding
-        const actualHeight = Math.max(1000, Math.ceil(rect.height + 40)); // Add padding
+        // Get the container and force complete layout calculation
+        const container = doc.querySelector('#capture-container') || doc.querySelector('.wireframe-container') || doc.body;
+        
+        // Force complete layout and measure everything
+        container.scrollTop = 0;
+        container.scrollLeft = 0;
+        
+        // Get all possible dimension measurements
+        const measurements = {
+          containerScroll: { width: container.scrollWidth, height: container.scrollHeight },
+          documentScroll: { width: doc.documentElement.scrollWidth, height: doc.documentElement.scrollHeight },
+          bodyScroll: { width: doc.body.scrollWidth, height: doc.body.scrollHeight },
+          containerClient: { width: container.clientWidth, height: container.clientHeight },
+          documentClient: { width: doc.documentElement.clientWidth, height: doc.documentElement.clientHeight },
+          bodyClient: { width: doc.body.clientWidth, height: doc.body.clientHeight },
+          containerOffset: { width: (container as HTMLElement).offsetWidth, height: (container as HTMLElement).offsetHeight }
+        };
+        
+        // Use the maximum of all measurements plus generous padding
+        const maxWidth = Math.max(
+          measurements.containerScroll.width,
+          measurements.documentScroll.width,
+          measurements.bodyScroll.width,
+          measurements.containerClient.width,
+          measurements.documentClient.width,
+          measurements.bodyClient.width,
+          measurements.containerOffset.width,
+          2000 // Minimum width
+        );
+        
+        const maxHeight = Math.max(
+          measurements.containerScroll.height,
+          measurements.documentScroll.height,
+          measurements.bodyScroll.height,
+          measurements.containerClient.height,
+          measurements.documentClient.height,
+          measurements.bodyClient.height,
+          measurements.containerOffset.height,
+          1500 // Minimum height
+        );
+        
+        // Add substantial padding to ensure nothing is ever cut off
+        const actualWidth = maxWidth + 400; // 400px padding on all sides
+        const actualHeight = maxHeight + 400; // 400px padding on all sides
 
-        console.log(`Capturing wireframe at ${actualWidth}x${actualHeight} for ${wireframe.pageName}`);
+        console.log(`Complete wireframe measurements for ${wireframe.pageName}:`, measurements);
+        console.log(`Final capture dimensions: ${actualWidth}x${actualHeight}`);
 
-        // Use html2canvas for complete wireframe capture
+        // Use html2canvas with maximum capture settings
         const canvas = await html2canvas(container as Element, {
           width: actualWidth,
           height: actualHeight,
-          scale: 2, // Reduced scale but larger dimensions for complete capture
+          scale: 2, // High quality
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
@@ -176,9 +247,11 @@ export class PNGZipExporter {
           scrollY: 0,
           x: 0,
           y: 0,
+          windowWidth: actualWidth,
+          windowHeight: actualHeight,
           foreignObjectRendering: true,
           onclone: (clonedDoc) => {
-            // Ensure all styles are applied and content is visible
+            // Apply maximum visibility styles to cloned document
             const style = clonedDoc.createElement('style');
             style.textContent = `
               * { 
@@ -186,20 +259,65 @@ export class PNGZipExporter {
                 -moz-osx-font-smoothing: grayscale;
                 text-rendering: optimizeLegibility;
                 overflow: visible !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: static !important;
+                float: none !important;
+                transform: none !important;
+                clip: none !important;
+                clip-path: none !important;
               }
               body, html {
                 overflow: visible !important;
                 height: auto !important;
                 min-height: ${actualHeight}px !important;
-                width: ${actualWidth}px !important;
+                width: auto !important;
+                min-width: ${actualWidth}px !important;
+                max-width: none !important;
+                max-height: none !important;
+                margin: 0 !important;
+                padding: 200px !important;
               }
-              .wireframe-container {
+              #capture-container, .wireframe-container {
                 overflow: visible !important;
                 height: auto !important;
                 min-height: 100% !important;
+                width: auto !important;
+                min-width: 100% !important;
+                max-width: none !important;
+                max-height: none !important;
+                padding: 200px !important;
+                position: static !important;
+              }
+              /* Force all elements to be visible */
+              div, section, article, aside, nav, header, footer, main,
+              form, table, ul, ol, li, p, h1, h2, h3, h4, h5, h6 {
+                overflow: visible !important;
+                max-width: none !important;
+                max-height: none !important;
+                position: static !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+              }
+              /* Remove all positioning constraints */
+              *[style*="position: absolute"], *[style*="position: fixed"], 
+              *[style*="position: sticky"], .absolute, .fixed, .sticky {
+                position: static !important;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+                z-index: auto !important;
+                transform: none !important;
               }
             `;
             clonedDoc.head.appendChild(style);
+            
+            // Force layout calculation on cloned document
+            if (clonedDoc.body) {
+              clonedDoc.body.offsetHeight;
+            }
           }
         });
 

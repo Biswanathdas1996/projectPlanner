@@ -207,21 +207,34 @@ export class SVGExporter {
           return;
         }
 
-        // Calculate actual content dimensions for complete capture
-        const container = doc.querySelector('.wireframe-container') || doc.body;
+        // Get container and measure complete dimensions
+        const container = doc.querySelector('#capture-container') || doc.querySelector('.wireframe-container') || doc.body;
         
-        // Get scroll dimensions to ensure full content capture
-        const scrollWidth = Math.max(container.scrollWidth, doc.documentElement.scrollWidth, doc.body.scrollWidth);
-        const scrollHeight = Math.max(container.scrollHeight, doc.documentElement.scrollHeight, doc.body.scrollHeight);
+        // Force layout and get all measurements
+        const maxWidth = Math.max(
+          container.scrollWidth,
+          doc.documentElement.scrollWidth,
+          doc.body.scrollWidth,
+          (container as HTMLElement).offsetWidth,
+          2000
+        );
         
-        const actualWidth = Math.max(1600, scrollWidth + 200);
-        const actualHeight = Math.max(1200, scrollHeight + 200);
+        const maxHeight = Math.max(
+          container.scrollHeight,
+          doc.documentElement.scrollHeight,
+          doc.body.scrollHeight,
+          (container as HTMLElement).offsetHeight,
+          1500
+        );
+        
+        const actualWidth = maxWidth + 400;
+        const actualHeight = maxHeight + 400;
 
-        // Use html2canvas to capture the complete wireframe
+        // Use html2canvas with maximum capture settings
         const canvas = await html2canvas(container as Element, {
           width: actualWidth,
           height: actualHeight,
-          scale: 2, // High resolution
+          scale: 2,
           useCORS: true,
           allowTaint: true,
           backgroundColor: '#ffffff',
@@ -231,6 +244,8 @@ export class SVGExporter {
           scrollY: 0,
           x: 0,
           y: 0,
+          windowWidth: actualWidth,
+          windowHeight: actualHeight,
           foreignObjectRendering: true
         });
 
@@ -254,48 +269,53 @@ export class SVGExporter {
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
     iframe.style.top = '-9999px';
-    iframe.style.width = '1600px';
-    iframe.style.height = '1200px';
+    iframe.style.width = '2000px';
+    iframe.style.height = '1500px';
     iframe.style.border = 'none';
     iframe.style.visibility = 'hidden';
     iframe.style.backgroundColor = '#ffffff';
     iframe.style.overflow = 'visible';
     
-    // Create optimized HTML for complete wireframe capture
+    // Create HTML with maximum space to prevent cutting
     const fullHTML = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=1600, initial-scale=1.0">
+    <meta name="viewport" content="width=2000, initial-scale=1.0">
     <title>${pageName}</title>
     <style>
         html, body {
             margin: 0;
-            padding: 40px;
-            padding-top: 60px;
-            width: 1600px;
-            min-width: 1600px;
-            min-height: 1200px;
+            padding: 100px;
+            width: auto;
+            min-width: 2000px;
+            height: auto;
+            min-height: 1500px;
             overflow: visible;
             background: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         * {
             box-sizing: border-box;
+            position: static !important;
+            max-width: none !important;
+            max-height: none !important;
+            overflow: visible !important;
         }
         .wireframe-container {
-            width: 100%;
+            width: auto;
+            min-width: 100%;
+            height: auto;
             min-height: 100%;
-            padding: 40px;
-            padding-top: 60px;
+            padding: 100px;
             overflow: visible;
-            position: relative;
+            position: static;
         }
     </style>
 </head>
 <body>
-    <div class="wireframe-container">
+    <div class="wireframe-container" id="capture-container">
         ${htmlCode}
     </div>
 </body>

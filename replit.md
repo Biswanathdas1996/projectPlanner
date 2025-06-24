@@ -366,6 +366,10 @@ Changelog:
   - Added content overflow protection and extended rendering wait times for complete layouts
   - Fixed header section cutting by adding extra top padding (60px) and preventing absolute positioning issues
   - Enhanced CSS rules to force header/navigation visibility and prevent negative margins from hiding content
+  - Permanent fix implemented: Complete wireframe capture refactor with 2000x1500 iframe, 400px padding buffer
+  - Enhanced dimension detection using all measurement methods (scroll, client, offset dimensions)
+  - Forced static positioning for all elements to prevent content from being positioned outside capture area
+  - Comprehensive CSS overrides remove max-width/height restrictions and ensure complete content visibility
 - June 23, 2025. AI-Powered Flow Editor with Node Selection implemented
   - Added AI Flow Generator section to Flow Diagram Editor with node-selection requirement
   - Implemented Gemini AI integration for prompt-based flow component generation
