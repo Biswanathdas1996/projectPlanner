@@ -798,20 +798,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
                   </div>
                 </div>
                 
-                {confidence > 0 && (
-                  <div>
-                    <div className="flex justify-between text-sm mb-2">
-                      <span className="text-gray-300">Confidence</span>
-                      <span className="text-emerald-400">{Math.round(confidence * 100)}%</span>
-                    </div>
-                    <div className="w-full bg-gray-700/50 rounded-full h-2">
-                      <div 
-                        className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${confidence * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
+                
 
                 {getContextSummary().length > 0 && (
                   <div>
