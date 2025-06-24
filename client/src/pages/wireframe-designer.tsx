@@ -48,6 +48,7 @@ import {
   createBrandGuidelineExtractor,
   type BrandGuideline,
 } from "@/lib/brand-guideline-extractor";
+import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
@@ -5779,9 +5780,83 @@ ${selectedPageCode.jsCode}
         {generatedWireframes.length > 0 && (
           <div className="mt-8">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-100">
-              <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Generated Wireframes ({generatedWireframes.length})
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Generated Wireframes ({generatedWireframes.length})
+                </h2>
+                <div className="flex gap-3">
+                  <Button
+                    onClick={() => {
+                      try {
+                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                          id: w.id,
+                          pageName: w.pageName,
+                          htmlCode: w.htmlCode,
+                          cssCode: w.cssCode,
+                          userType: w.userType || 'User',
+                          features: w.features || [],
+                          createdAt: w.createdAt || new Date().toISOString(),
+                        }));
+                        
+                        FigmaExporter.downloadFigmaExport(wireframesForExport);
+                        
+                        toast({
+                          title: "Figma Export Complete",
+                          description: `Successfully exported ${wireframesForExport.length} wireframes to Figma format`,
+                        });
+                      } catch (error) {
+                        console.error("Figma export error:", error);
+                        toast({
+                          title: "Export Failed",
+                          description: "Failed to export wireframes to Figma format",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-purple-200 text-purple-700 hover:text-purple-800 hover:border-purple-300"
+                  >
+                    <Layers className="h-4 w-4" />
+                    Export to Figma
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        const wireframesForExport: WireframeForExport[] = generatedWireframes.map(w => ({
+                          id: w.id,
+                          pageName: w.pageName,
+                          htmlCode: w.htmlCode,
+                          cssCode: w.cssCode,
+                          userType: w.userType || 'User',
+                          features: w.features || [],
+                          createdAt: w.createdAt || new Date().toISOString(),
+                        }));
+                        
+                        await FigmaExporter.downloadDesignTokens(wireframesForExport);
+                        
+                        toast({
+                          title: "Design Tokens Exported",
+                          description: `Successfully exported design tokens from ${wireframesForExport.length} wireframes`,
+                        });
+                      } catch (error) {
+                        console.error("Design tokens export error:", error);
+                        toast({
+                          title: "Export Failed", 
+                          description: "Failed to export design tokens",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2 bg-white/80 hover:bg-white border-blue-200 text-blue-700 hover:text-blue-800 hover:border-blue-300"
+                  >
+                    <Palette className="h-4 w-4" />
+                    Export Tokens
+                  </Button>
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {generatedWireframes.map((wireframe, index) => (
