@@ -35,6 +35,7 @@ import {
   GeminiVoiceAgent,
   VoiceConversationEvent
 } from '@/lib/gemini-voice-agent';
+import { WorkflowProgress } from "@/components/workflow-progress";
 
 export default function AIConsultant() {
   const [isProcessing, setIsProcessing] = useState(false);
