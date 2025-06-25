@@ -161,38 +161,30 @@ export function WorkflowProgress({
           {/* Step 2: Input */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
-              getStepStatus("input") === "active"
-                ? "bg-blue-100 shadow-md"
-                : getStepStatus("input") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+              getStepStatus("input") === "completed"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("input")}
           >
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                getStepStatus("input") === "active"
-                  ? "bg-blue-500 text-white"
-                  : getStepStatus("input") === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                getStepStatus("input") === "completed"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("input") === "completed" ? (
                 <CheckCircle className="h-4 w-4" />
-              ) : getStepStatus("input") === "active" ? (
-                <Sparkles className="h-4 w-4" />
               ) : (
                 "2"
               )}
             </div>
             <span
               className={`text-sm font-medium hidden sm:block ${
-                getStepStatus("input") === "active"
-                  ? "text-blue-700"
-                  : getStepStatus("input") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                getStepStatus("input") === "completed"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
             >Idea</span>
           </div>
