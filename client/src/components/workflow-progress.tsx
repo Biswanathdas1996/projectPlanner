@@ -115,7 +115,48 @@ export function WorkflowProgress({
     <div className="mb-6">
       <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-100 shadow-sm">
         <div className="flex items-center justify-center gap-3 lg:gap-4">
-          {/* Step 1: Input */}
+          {/* Step 1: AI Chat */}
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
+              getStepStatus("chat") === "active"
+                ? "bg-blue-100 shadow-md"
+                : getStepStatus("chat") === "completed"
+                  ? "bg-green-100"
+                  : "bg-white"
+            }`}
+            onClick={() => handleStepClick("chat")}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                getStepStatus("chat") === "active"
+                  ? "bg-blue-500 text-white"
+                  : getStepStatus("chat") === "completed"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {getStepStatus("chat") === "completed" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : getStepStatus("chat") === "active" ? (
+                <MessageCircle className="h-4 w-4" />
+              ) : (
+                "1"
+              )}
+            </div>
+            <span
+              className={`text-sm font-medium hidden sm:block ${
+                getStepStatus("chat") === "active"
+                  ? "text-blue-700"
+                  : getStepStatus("chat") === "completed"
+                    ? "text-green-700"
+                    : "text-gray-600"
+              }`}
+            >AI Chat</span>
+          </div>
+
+          <ArrowRight className="h-4 w-4 text-gray-300" />
+
+          {/* Step 2: Input */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("input") === "active"
@@ -140,7 +181,7 @@ export function WorkflowProgress({
               ) : getStepStatus("input") === "active" ? (
                 <Sparkles className="h-4 w-4" />
               ) : (
-                "1"
+                "2"
               )}
             </div>
             <span
@@ -156,7 +197,7 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 2: Market Research */}
+          {/* Step 3: Market Research */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("research") === "active"
@@ -197,7 +238,7 @@ export function WorkflowProgress({
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
 
-          {/* Step 3: Plan */}
+          {/* Step 4: Plan */}
           <div
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
               getStepStatus("plan") === "active"
@@ -222,7 +263,7 @@ export function WorkflowProgress({
               ) : getStepStatus("plan") === "active" ? (
                 <FileText className="h-4 w-4" />
               ) : (
-                "3"
+                "4"
               )}
             </div>
             <span
@@ -234,47 +275,6 @@ export function WorkflowProgress({
                     : "text-gray-600"
               }`}
             >Stakeholders & Process</span>
-          </div>
-
-          <ArrowRight className="h-4 w-4 text-gray-300" />
-
-          {/* Step 4: AI Chat */}
-          <div
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
-              getStepStatus("chat") === "active"
-                ? "bg-blue-100 shadow-md"
-                : getStepStatus("chat") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
-            }`}
-            onClick={() => handleStepClick("chat")}
-          >
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                getStepStatus("chat") === "active"
-                  ? "bg-blue-500 text-white"
-                  : getStepStatus("chat") === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
-              }`}
-            >
-              {getStepStatus("chat") === "completed" ? (
-                <CheckCircle className="h-4 w-4" />
-              ) : getStepStatus("chat") === "active" ? (
-                <MessageCircle className="h-4 w-4" />
-              ) : (
-                "4"
-              )}
-            </div>
-            <span
-              className={`text-sm font-medium hidden sm:block ${
-                getStepStatus("chat") === "active"
-                  ? "text-blue-700"
-                  : getStepStatus("chat") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
-              }`}
-            >AI Chat</span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
