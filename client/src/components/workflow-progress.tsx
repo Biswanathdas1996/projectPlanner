@@ -10,6 +10,7 @@ import {
   Code,
   TrendingUp,
   Layout,
+  MessageCircle,
 } from "lucide-react";
 
 interface WorkflowProgressProps {
@@ -25,6 +26,7 @@ export function WorkflowProgress({
 
   // Navigation mapping for each step
   const stepRoutes = {
+    chat: "/ai-consultant",
     input: "/start-over",
     research: "/market-research",
     plan: "/plan",
