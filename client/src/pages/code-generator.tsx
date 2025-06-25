@@ -88,6 +88,68 @@ export default function CodeGenerator() {
   const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] =
     useState(false);
 
+  // Download combined localStorage data
+  const downloadProjectData = () => {
+    try {
+      // Get data from localStorage
+      const projectDescription = localStorage.getItem("bpmn-project-description") || "No project description found";
+      const projectFlowData = localStorage.getItem("project-flow-data-intrim") || "No project flow data found";
+      const pageContentCards = localStorage.getItem("page_content_cards") || "No page content cards found";
+      const brandGuidelines = localStorage.getItem("brand-guidelines-external") || "No brand guidelines found";
+
+      // Parse JSON data safely
+      const parseJsonSafely = (data: string, fallback: string) => {
+        try {
+          return JSON.stringify(JSON.parse(data), null, 2);
+        } catch {
+          return data;
+        }
+      };
+
+      // Combine all data into a single text format
+      const combinedData = `
+PROJECT DATA EXPORT
+===================
+Generated: ${new Date().toISOString()}
+
+1. PROJECT DESCRIPTION (bpmn-project-description)
+================================================
+${parseJsonSafely(projectDescription, projectDescription)}
+
+2. PROJECT FLOW DATA (project-flow-data-intrim)
+===============================================
+${parseJsonSafely(projectFlowData, projectFlowData)}
+
+3. PAGE CONTENT CARDS (page_content_cards)
+==========================================
+${parseJsonSafely(pageContentCards, pageContentCards)}
+
+4. BRAND GUIDELINES (brand-guidelines-external)
+===============================================
+${parseJsonSafely(brandGuidelines, brandGuidelines)}
+
+===============================================
+End of Project Data Export
+===============================================
+`;
+
+      // Create and download the file
+      const blob = new Blob([combinedData], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `project-data-export-${new Date().toISOString().split('T')[0]}.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      console.log('Project data downloaded successfully');
+    } catch (error) {
+      console.error('Error downloading project data:', error);
+    }
+  };
+
   // Load data from localStorage
   useEffect(() => {
     // Load project plan from multiple possible sources
