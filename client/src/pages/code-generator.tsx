@@ -1411,7 +1411,7 @@ Time: ${new Date().toLocaleTimeString()}
         
 
         {/* Input Data */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 gap-6 mb-6">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1424,24 +1424,6 @@ Time: ${new Date().toLocaleTimeString()}
                 value={projectPlan}
                 onChange={(e) => setProjectPlan(e.target.value)}
                 placeholder="Paste your project plan here..."
-                rows={8}
-                className="resize-none"
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <GitBranch className="h-5 w-5" />
-                Stakeholder Flows
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={stakeholderFlows}
-                onChange={(e) => setStakeholderFlows(e.target.value)}
-                placeholder="Stakeholder flow analysis data..."
                 rows={8}
                 className="resize-none"
               />
