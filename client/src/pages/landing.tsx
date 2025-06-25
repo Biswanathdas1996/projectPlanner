@@ -39,6 +39,7 @@ import {
   ListOrdered,
   Quote,
   TrendingUp,
+  MessageCircle,
 } from "lucide-react";
 import { InlineBpmnViewer } from "@/components/inline-bpmn-viewer";
 import html2canvas from "html2canvas";
@@ -461,24 +462,117 @@ export default function Landing() {
           </div>
         )}
 
-        {/* Step 1: Project Input */}
+        {/* Modern Workflow Navigation */}
+        <div className="mb-8">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 text-center">Complete AI-Powered Development Workflow</h3>
+            <div className="flex items-center justify-center gap-3 lg:gap-4 overflow-x-auto pb-2">
+              {/* Step 1: AI Chat */}
+              <Link href="/ai-consultant">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-100 shadow-md hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
+                    <MessageCircle className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-blue-700 hidden sm:block">AI Chat</span>
+                </div>
+              </Link>
 
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+
+              {/* Step 2: Idea */}
+              <Link href="/start-over">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Idea</span>
+                </div>
+              </Link>
+
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+
+              {/* Step 3: Research */}
+              <Link href="/market-research">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
+                    <TrendingUp className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Research</span>
+                </div>
+              </Link>
+
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+
+              {/* Step 4: Stakeholders & Process */}
+              <Link href="/plan">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
+                    <Users className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Process</span>
+                </div>
+              </Link>
+
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+
+              {/* Step 5: Wireframes */}
+              <Link href="/wireframes">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
+                    <Workflow className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Wireframes</span>
+                </div>
+              </Link>
+
+              <ArrowRight className="h-4 w-4 text-gray-300" />
+
+              {/* Step 6: Code */}
+              <Link href="/code">
+                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
+                    <Code className="h-4 w-4" />
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Code</span>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Start Here Section */}
         <Card className="mb-6 border-0 shadow-sm bg-white">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center gap-2 text-lg font-semibold text-gray-800">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
-              Describe Your Project
+              Start Your Project Journey
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6 space-y-4">
-            <p className="text-gray-600">
-              Provide a detailed description of your project. Include features,
-              requirements, and any specific goals you want to achieve.
-            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MessageCircle className="h-5 w-5 text-blue-600" />
+                <h4 className="font-medium text-blue-800">Recommended: Start with AI Chat</h4>
+              </div>
+              <p className="text-blue-700 text-sm mb-3">
+                Get personalized guidance through voice or text conversation with our AI consultant.
+              </p>
+              <Link href="/ai-consultant">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Start AI Chat Session
+                </Button>
+              </Link>
+            </div>
+            
+            <div className="border-t border-gray-200 pt-4">
+              <p className="text-gray-600 mb-3">
+                Or describe your project idea here to begin the traditional workflow:
+              </p>
 
-            <Textarea
+              <Textarea
               placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
               value={projectInput}
               onChange={(e) => setProjectInput(e.target.value)}
@@ -626,6 +720,7 @@ export default function Landing() {
                   </>
                 )}
               </Button>
+            </div>
             </div>
           </CardContent>
         </Card>
