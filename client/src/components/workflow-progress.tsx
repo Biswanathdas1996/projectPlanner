@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 interface WorkflowProgressProps {
-  currentStep?: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code";
+  currentStep?: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code" | "chat";
   completedSteps?: string[];
 }
 
@@ -234,6 +234,47 @@ export function WorkflowProgress({
                     : "text-gray-600"
               }`}
             >Stakeholders & Process</span>
+          </div>
+
+          <ArrowRight className="h-4 w-4 text-gray-300" />
+
+          {/* Step 4: AI Chat */}
+          <div
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all cursor-pointer hover:shadow-lg ${
+              getStepStatus("chat") === "active"
+                ? "bg-blue-100 shadow-md"
+                : getStepStatus("chat") === "completed"
+                  ? "bg-green-100"
+                  : "bg-white"
+            }`}
+            onClick={() => handleStepClick("chat")}
+          >
+            <div
+              className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                getStepStatus("chat") === "active"
+                  ? "bg-blue-500 text-white"
+                  : getStepStatus("chat") === "completed"
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+              }`}
+            >
+              {getStepStatus("chat") === "completed" ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : getStepStatus("chat") === "active" ? (
+                <MessageCircle className="h-4 w-4" />
+              ) : (
+                "4"
+              )}
+            </div>
+            <span
+              className={`text-sm font-medium hidden sm:block ${
+                getStepStatus("chat") === "active"
+                  ? "text-blue-700"
+                  : getStepStatus("chat") === "completed"
+                    ? "text-green-700"
+                    : "text-gray-600"
+              }`}
+            >AI Chat</span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
