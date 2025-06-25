@@ -605,46 +605,25 @@ Make it specific to the user's requirements discussed in the conversation.`;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
-
-      {/* Header */}
-      <div className="relative z-10 border-b border-gray-800/50 backdrop-blur-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Brain className="h-4 w-4 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-white">
-                  AI Tech Consultant
-                </h1>
-                <p className="text-sm text-gray-400">Powered by Gemini AI</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <NavigationBar title="AI Project Consultant" showBackButton />
       
       {/* Workflow Progress */}
-      <div className="relative z-10 container mx-auto px-6 pt-6">
+      <div className="container mx-auto px-4 pt-6">
         <WorkflowProgress currentStep="chat" />
       </div>
       
-      <div className="relative z-10 container mx-auto px-6 py-8 max-w-6xl">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface */}
           <div className="lg:col-span-3">
-            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-xl border border-gray-200/50 rounded-2xl shadow-xl overflow-hidden">
               {/* Chat Header */}
-              <div className="border-b border-gray-700/50 bg-gray-800/30 px-6 py-4">
+              <div className="border-b border-gray-200/50 bg-gray-50/30 px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-white font-medium">
+                    <span className="text-gray-900 font-medium">
                       Active Session
                     </span>
                     {isVoiceMode && (
