@@ -15,14 +15,13 @@ export function Toaster() {
     <ToastProvider>
       {toasts.map(function ({ id, title, description, action, ...props }) {
         return (
-          <>
-            {title && <ToastTitle>{title}</ToastTitle>}
+          <Toast key={id} {...props}>
             {description && (
               <ToastDescription>{description}</ToastDescription>
             )}
             {action}
             <ToastClose />
-          </>
+          </Toast>
         )
       })}
       <ToastViewport />
