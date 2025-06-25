@@ -1176,8 +1176,34 @@ Time: ${new Date().toLocaleTimeString()}
             Generate complete React project code based on your project plan and
             stakeholder analysis
           </p>
+        </div>
 
-          {/* Data Loading Status */}
+        {/* Project Data Export Section */}
+        <Card className="border-emerald-200 bg-emerald-50/50 mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Download className="h-5 w-5 text-emerald-600" />
+              Project Data Export
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <p className="text-gray-600">
+                Download a comprehensive text file containing all your project data from localStorage including project description, flow data, page content cards, and brand guidelines.
+              </p>
+              <Button 
+                onClick={downloadProjectData}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download Project Data (.txt)
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Data Loading Status */}
+        <div className="mb-6">
           {dataLoaded && (
             <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
