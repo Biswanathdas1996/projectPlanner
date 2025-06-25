@@ -628,7 +628,12 @@ Make it specific to the user's requirements discussed in the conversation.`;
           </div>
         </div>
       </div>
-      <WorkflowProgress currentStep={"chat"} />
+      
+      {/* Workflow Progress */}
+      <div className="relative z-10 container mx-auto px-6 pt-6">
+        <WorkflowProgress currentStep="chat" />
+      </div>
+      
       <div className="relative z-10 container mx-auto px-6 py-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface */}
