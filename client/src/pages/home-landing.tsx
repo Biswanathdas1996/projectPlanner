@@ -113,11 +113,11 @@ export default function HomeLanding() {
 
             {/* Elegant Workflow Visualization */}
             <div className="mb-10">
-              <div className="relative max-w-5xl mx-auto">
+              <div className="relative max-w-7xl mx-auto">
                 {/* Progress Line */}
                 <div className="absolute top-5 md:top-6 left-0 right-0 h-0.5 bg-gradient-to-r from-green-500 via-blue-500 via-purple-500 via-orange-500 via-teal-500 via-indigo-500 to-pink-500 opacity-30 rounded-full"></div>
                 
-                <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 relative">
+                <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 relative">
                   {[
                     { step: 1, label: "AI Chat", icon: MonitorSpeaker, color: "from-cyan-500 to-blue-600", textColor: "text-cyan-400", href: "/ai-consultant", description: "Voice planning" },
                     { step: 2, label: "Idea", icon: Sparkles, color: "from-green-500 to-emerald-600", textColor: "text-green-400", href: "/start-over", description: "Spark creativity" },
@@ -140,7 +140,7 @@ export default function HomeLanding() {
                           </div>
                           <div className="text-center mt-2 group-hover:scale-105 transition-transform duration-200">
                             <div className={`text-sm font-semibold ${item.textColor} mb-0.5`}>{item.label}</div>
-                            <div className="text-xs text-gray-500 max-w-20 leading-tight hidden md:block">{item.description}</div>
+                            <div className="text-xs text-gray-500 whitespace-nowrap leading-tight hidden md:block">{item.description}</div>
                           </div>
                         </div>
                       </Link>
