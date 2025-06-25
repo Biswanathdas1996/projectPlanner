@@ -27,7 +27,7 @@ export function WorkflowProgress({
   // Navigation mapping for each step
   const stepRoutes = {
     chat: "/ai-consultant",
-    input: "/start-over", 
+    input: "/start-over",
     research: "/market-research",
     plan: "/plan",
     diagram: "/user-journey",
