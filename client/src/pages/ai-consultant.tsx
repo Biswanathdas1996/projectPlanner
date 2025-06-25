@@ -648,7 +648,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
                         onClick={stopVoiceConversation}
                         variant="ghost"
                         size="sm"
-                        className="text-gray-400 hover:text-white hover:bg-gray-700/50"
+                        className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                       >
                         <VolumeX className="h-4 w-4" />
                       </Button>
@@ -667,10 +667,10 @@ Make it specific to the user's requirements discussed in the conversation.`;
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <Brain className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
                       Ready to Assist
                     </h3>
-                    <p className="text-gray-400 max-w-md mx-auto">
+                    <p className="text-gray-600 max-w-md mx-auto">
                       Describe your project idea and I'll help you create a
                       comprehensive technology plan
                     </p>
@@ -706,8 +706,8 @@ Make it specific to the user's requirements discussed in the conversation.`;
                         <div
                           className={`px-4 py-3 rounded-2xl backdrop-blur-sm ${
                             message.role === "user"
-                              ? "bg-blue-600/90 text-white rounded-br-md"
-                              : "bg-gray-800/60 text-gray-100 border border-gray-700/50 rounded-bl-md"
+                              ? "bg-blue-600 text-white rounded-br-md shadow-md"
+                              : "bg-gray-100 text-gray-900 border border-gray-200 rounded-bl-md shadow-sm"
                           }`}
                         >
                           <p className="text-sm leading-relaxed">
@@ -724,10 +724,10 @@ Make it specific to the user's requirements discussed in the conversation.`;
                       <div className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center bg-gradient-to-br from-emerald-500 to-teal-600">
                         <Brain className="h-4 w-4 text-white" />
                       </div>
-                      <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-gray-800/60 border border-gray-700/50 backdrop-blur-sm">
+                      <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-gray-100 border border-gray-200 backdrop-blur-sm shadow-sm">
                         <div className="flex items-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                          <span className="text-sm text-gray-300">
+                          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+                          <span className="text-sm text-gray-700">
                             Thinking...
                           </span>
                         </div>
@@ -738,7 +738,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
               </div>
 
               {/* Input Area */}
-              <div className="border-t border-gray-700/50 bg-gray-800/30 p-6">
+              <div className="border-t border-gray-200/50 bg-gray-50/50 p-6">
                 <div className="flex gap-4 items-end">
                   <div className="flex-1">
                     <Textarea
@@ -753,7 +753,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
                       }}
                       rows={2}
                       disabled={isProcessing}
-                      className="bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl resize-none"
+                      className="bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl resize-none shadow-sm"
                     />
                   </div>
 
@@ -799,21 +799,21 @@ Make it specific to the user's requirements discussed in the conversation.`;
           {/* Side Panel */}
           <div className="space-y-4">
             {/* Progress Card */}
-            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+            <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4">
-                <Target className="h-5 w-5 text-blue-400" />
-                <h3 className="text-lg font-semibold text-white">Progress</h3>
+                <Target className="h-5 w-5 text-blue-600" />
+                <h3 className="text-lg font-semibold text-gray-900">Progress</h3>
               </div>
 
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-300">Stage: {currentStage}</span>
-                    <span className="text-blue-400">
+                    <span className="text-gray-700">Stage: {currentStage}</span>
+                    <span className="text-blue-600 font-medium">
                       {Math.round(getStageProgress())}%
                     </span>
                   </div>
-                  <div className="w-full bg-gray-700/50 rounded-full h-2">
+                  <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${getStageProgress()}%` }}
@@ -823,16 +823,16 @@ Make it specific to the user's requirements discussed in the conversation.`;
 
                 {getContextSummary().length > 0 && (
                   <div>
-                    <p className="text-sm font-medium mb-3 text-white">
+                    <p className="text-sm font-medium mb-3 text-gray-900">
                       Context Summary
                     </p>
                     <div className="space-y-2">
                       {getContextSummary().map((item, index) => (
                         <div
                           key={index}
-                          className="text-xs text-gray-300 flex items-center gap-2"
+                          className="text-xs text-gray-700 flex items-center gap-2"
                         >
-                          <CheckCircle className="h-3 w-3 text-emerald-400 flex-shrink-0" />
+                          <CheckCircle className="h-3 w-3 text-emerald-500 flex-shrink-0" />
                           {item}
                         </div>
                       ))}
@@ -844,10 +844,10 @@ Make it specific to the user's requirements discussed in the conversation.`;
 
             {/* Suggested Questions Card */}
             {nextQuestions.length > 0 && (
-              <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+              <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <Lightbulb className="h-5 w-5 text-yellow-400" />
-                  <h3 className="text-lg font-semibold text-white">
+                  <Lightbulb className="h-5 w-5 text-yellow-500" />
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Suggestions
                   </h3>
                 </div>
@@ -857,7 +857,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
                     <button
                       key={index}
                       onClick={() => handleQuestionClick(question)}
-                      className="w-full text-left p-3 text-sm bg-gray-800/50 border border-gray-600/50 rounded-xl hover:bg-gray-700/50 hover:border-gray-500/50 transition-all duration-200 text-gray-200"
+                      className="w-full text-left p-3 text-sm bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 text-gray-800 shadow-sm"
                     >
                       {question}
                     </button>
@@ -866,12 +866,12 @@ Make it specific to the user's requirements discussed in the conversation.`;
               </div>
             )}
 
-            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
-              <div className="space-y-2">
+            <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
+              <div className="space-y-3">
                 <Button
                   onClick={summarizeAndCreatePlan}
                   disabled={isProcessing || conversation.length === 0}
-                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0"
+                  className="w-full bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0 shadow-md"
                 >
                   {isProcessing ? (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -880,12 +880,11 @@ Make it specific to the user's requirements discussed in the conversation.`;
                   )}
                   Generate Plan & Continue
                 </Button>
-                <br />
                 <Button
                   onClick={clearConversation}
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="text-gray-400 hover:text-white hover:bg-gray-800/50"
+                  className="w-full text-gray-600 hover:text-gray-900 hover:bg-gray-100 border-gray-300"
                 >
                   Clear Session
                 </Button>
@@ -894,27 +893,27 @@ Make it specific to the user's requirements discussed in the conversation.`;
 
             {/* Project Plan Card */}
             {projectPlan && (
-              <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+              <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 mb-4">
-                  <FileText className="h-5 w-5 text-green-400" />
-                  <h3 className="text-lg font-semibold text-white">
+                  <FileText className="h-5 w-5 text-green-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">
                     Project Plan
                   </h3>
                 </div>
 
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium text-white">
+                    <h4 className="font-medium text-gray-900">
                       {projectPlan.title}
                     </h4>
-                    <p className="text-sm text-gray-400 mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       {projectPlan.overview}
                     </p>
                   </div>
 
                   <Button
                     onClick={downloadProjectPlan}
-                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0"
+                    className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0 shadow-md"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Download Plan
