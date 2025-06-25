@@ -469,23 +469,29 @@ export default function Landing() {
             <div className="flex items-center justify-center gap-3 lg:gap-4 overflow-x-auto pb-2">
               {/* Step 1: AI Chat */}
               <Link href="/ai-consultant">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-100 shadow-md hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
-                    <MessageCircle className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xs font-bold">1</span>
                   </div>
-                  <span className="text-sm font-medium text-blue-700 hidden sm:block">AI Chat</span>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4" />
+                    <span className="text-sm font-semibold hidden sm:block">AI Chat</span>
+                  </div>
                 </div>
               </Link>
 
-              <ArrowRight className="h-4 w-4 text-gray-300" />
+              <ArrowRight className="h-5 w-5 text-blue-400" />
 
               {/* Step 2: Idea */}
               <Link href="/start-over">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                    <Sparkles className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                    <span className="text-xs font-bold">2</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Idea</span>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 hidden sm:block">Idea</span>
+                  </div>
                 </div>
               </Link>
 
@@ -493,11 +499,14 @@ export default function Landing() {
 
               {/* Step 3: Research */}
               <Link href="/market-research">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                    <span className="text-xs font-bold">3</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Research</span>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 hidden sm:block">Research</span>
+                  </div>
                 </div>
               </Link>
 
@@ -505,11 +514,14 @@ export default function Landing() {
 
               {/* Step 4: Stakeholders & Process */}
               <Link href="/plan">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                    <Users className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                    <span className="text-xs font-bold">4</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Process</span>
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 hidden sm:block">Process</span>
+                  </div>
                 </div>
               </Link>
 
@@ -517,11 +529,14 @@ export default function Landing() {
 
               {/* Step 5: Wireframes */}
               <Link href="/wireframes">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                    <Workflow className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                    <span className="text-xs font-bold">5</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Wireframes</span>
+                  <div className="flex items-center gap-2">
+                    <Workflow className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 hidden sm:block">Wireframes</span>
+                  </div>
                 </div>
               </Link>
 
@@ -529,11 +544,14 @@ export default function Landing() {
 
               {/* Step 6: Code */}
               <Link href="/code">
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white hover:shadow-lg transition-all cursor-pointer">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center">
-                    <Code className="h-4 w-4" />
+                <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-white border border-gray-200 hover:shadow-lg transition-all cursor-pointer">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 text-gray-700 flex items-center justify-center">
+                    <span className="text-xs font-bold">6</span>
                   </div>
-                  <span className="text-sm font-medium text-gray-600 hidden sm:block">Code</span>
+                  <div className="flex items-center gap-2">
+                    <Code className="h-4 w-4 text-gray-600" />
+                    <span className="text-sm font-medium text-gray-700 hidden sm:block">Code</span>
+                  </div>
                 </div>
               </Link>
             </div>
@@ -551,25 +569,36 @@ export default function Landing() {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-6 pb-6 space-y-4">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <MessageCircle className="h-5 w-5 text-blue-600" />
-                <h4 className="font-medium text-blue-800">Recommended: Start with AI Chat</h4>
+            <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl p-6 mb-6">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white flex items-center justify-center">
+                  <span className="text-sm font-bold">1</span>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-900">Step 1: Start with AI Chat</h4>
+                  <p className="text-sm text-gray-600">Recommended first step for personalized guidance</p>
+                </div>
               </div>
-              <p className="text-blue-700 text-sm mb-3">
-                Get personalized guidance through voice or text conversation with our AI consultant.
+              <p className="text-gray-700 text-sm mb-4 leading-relaxed">
+                Begin your project journey with our AI consultant for voice or text-based guidance. Get personalized recommendations, clarify your vision, and receive strategic direction before moving to the traditional workflow.
               </p>
               <Link href="/ai-consultant">
-                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+                <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                   <MessageCircle className="h-4 w-4 mr-2" />
-                  Start AI Chat Session
+                  Begin AI Chat Session (Step 1)
                 </Button>
               </Link>
             </div>
             
-            <div className="border-t border-gray-200 pt-4">
-              <p className="text-gray-600 mb-3">
-                Or describe your project idea here to begin the traditional workflow:
+            <div className="border-t border-gray-200 pt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 rounded-full bg-gray-200 text-gray-700 flex items-center justify-center">
+                  <span className="text-xs font-bold">2</span>
+                </div>
+                <h4 className="font-medium text-gray-800">Step 2: Project Idea Description</h4>
+              </div>
+              <p className="text-gray-600 mb-4">
+                Alternative path: Describe your project idea here to skip AI Chat and go directly to the traditional workflow (Idea → Research → Process → Wireframes → Code):
               </p>
 
               <Textarea
