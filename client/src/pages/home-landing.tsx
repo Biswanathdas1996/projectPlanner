@@ -119,8 +119,8 @@ export default function HomeLanding() {
                 
                 <div className="flex flex-wrap justify-center items-center gap-3 md:gap-6 relative">
                   {[
-                    { step: 1, label: "Idea", icon: Sparkles, color: "from-green-500 to-emerald-600", textColor: "text-green-400", href: "/start-over", description: "Spark creativity" },
-                    { step: 2, label: "AI Chat", icon: MonitorSpeaker, color: "from-cyan-500 to-blue-600", textColor: "text-cyan-400", href: "/ai-consultant", description: "Voice planning" },
+                    { step: 1, label: "AI Chat", icon: MonitorSpeaker, color: "from-cyan-500 to-blue-600", textColor: "text-cyan-400", href: "/ai-consultant", description: "Voice planning" },
+                    { step: 2, label: "Idea", icon: Sparkles, color: "from-green-500 to-emerald-600", textColor: "text-green-400", href: "/start-over", description: "Spark creativity" },
                     { step: 3, label: "Research", icon: BarChart3, color: "from-blue-500 to-blue-600", textColor: "text-blue-400", href: "/research", description: "Market insights" },
                     { step: 4, label: "Planning", icon: FileText, color: "from-purple-500 to-purple-600", textColor: "text-purple-400", href: "/plan", description: "Smart strategy" },
                     { step: 5, label: "Process", icon: Workflow, color: "from-orange-500 to-red-600", textColor: "text-orange-400", href: "/editor", description: "Flow design" },
@@ -208,35 +208,7 @@ export default function HomeLanding() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {/* Step 1: Idea */}
-              <Link href="/start-over">
-                <div className="relative group cursor-pointer">
-                  <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-2xl p-6 border border-green-400/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20">
-                    <div className="w-14 h-14 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-500/25">
-                      <Sparkles className="h-7 w-7 text-white" />
-                    </div>
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      1
-                    </div>
-                    <h3 className="text-lg font-bold mb-2 text-white">Idea</h3>
-                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
-                      Start with your project concept and let AI transform it into structured requirements.
-                    </p>
-                    <div className="space-y-2">
-                      <div className="flex items-center text-xs text-green-300">
-                        <Brain className="h-3 w-3 mr-2" />
-                        Concept Analysis
-                      </div>
-                      <div className="flex items-center text-xs text-green-300">
-                        <Target className="h-3 w-3 mr-2" />
-                        Goal Definition
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-
-              {/* Step 2: AI Consultant */}
+              {/* Step 1: AI Consultant */}
               <Link href="/ai-consultant">
                 <div className="relative group cursor-pointer">
                   <div className="backdrop-blur-xl bg-gradient-to-br from-cyan-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl p-6 border border-cyan-400/30 hover:border-cyan-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/20">
@@ -244,7 +216,7 @@ export default function HomeLanding() {
                       <MonitorSpeaker className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      2
+                      1
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">AI Consultant</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -258,6 +230,34 @@ export default function HomeLanding() {
                       <div className="flex items-center text-xs text-cyan-300">
                         <FileText className="h-3 w-3 mr-2" />
                         Project Planning
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+
+              {/* Step 2: Idea */}
+              <Link href="/start-over">
+                <div className="relative group cursor-pointer">
+                  <div className="backdrop-blur-xl bg-gradient-to-br from-green-500/10 via-emerald-500/10 to-teal-500/10 rounded-2xl p-6 border border-green-400/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-xl hover:shadow-green-500/20">
+                    <div className="w-14 h-14 bg-gradient-to-r from-green-400 via-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-green-500/25">
+                      <Sparkles className="h-7 w-7 text-white" />
+                    </div>
+                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
+                      2
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 text-white">Idea</h3>
+                    <p className="text-gray-300 text-sm mb-4 leading-relaxed">
+                      Start with your project concept and let AI transform it into structured requirements.
+                    </p>
+                    <div className="space-y-2">
+                      <div className="flex items-center text-xs text-green-300">
+                        <Brain className="h-3 w-3 mr-2" />
+                        Concept Analysis
+                      </div>
+                      <div className="flex items-center text-xs text-green-300">
+                        <Target className="h-3 w-3 mr-2" />
+                        Goal Definition
                       </div>
                     </div>
                   </div>
@@ -328,7 +328,7 @@ export default function HomeLanding() {
                       <Workflow className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      4
+                      5
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Process Mapping</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -356,7 +356,7 @@ export default function HomeLanding() {
                       <Layout className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-teal-500 to-cyan-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      5
+                      6
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Wireframes</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -384,7 +384,7 @@ export default function HomeLanding() {
                       <Users className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      6
+                      7
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Stories</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
@@ -412,7 +412,7 @@ export default function HomeLanding() {
                       <Code2 className="h-7 w-7 text-white" />
                     </div>
                     <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-r from-pink-500 to-rose-500 text-white rounded-lg flex items-center justify-center text-xs font-bold shadow-lg">
-                      7
+                      8
                     </div>
                     <h3 className="text-lg font-bold mb-2 text-white">Code</h3>
                     <p className="text-gray-300 text-sm mb-4 leading-relaxed">
