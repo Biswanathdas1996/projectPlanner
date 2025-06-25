@@ -1,7 +1,12 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export interface VoiceConversationEvent {
-  type: 'agent_message' | 'user_message' | 'conversation_start' | 'conversation_end' | 'error';
+  type:
+    | "agent_message"
+    | "user_message"
+    | "conversation_start"
+    | "conversation_end"
+    | "error";
   message?: string;
   sessionId?: string;
   timestamp: Date;
@@ -21,13 +26,13 @@ export class GeminiVoiceAgent {
   public speechRecognition: any = null;
   private isListening: boolean = false;
   private eventHandler?: (event: VoiceConversationEvent) => void;
-  private conversationHistory: Array<{role: string, content: string}> = [];
+  private conversationHistory: Array<{ role: string; content: string }> = [];
 
   constructor(config: GeminiVoiceConfig) {
     this.config = config;
     this.genAI = new GoogleGenerativeAI(config.apiKey);
-    this.model = this.genAI.getGenerativeModel({ 
-      model: config.model || 'gemini-1.5-flash',
+    this.model = this.genAI.getGenerativeModel({
+      model: config.model || "gemini-2.0-flash",
       systemInstruction: `You are an expert AI tech consultant. Your role is to:
       1. Understand users' technology problems and project ideas
       2. Ask clarifying questions to gather requirements
@@ -41,23 +46,26 @@ export class GeminiVoiceAgent {
       - LARGE (90-130 words): For complex topics, detailed guidance, or comprehensive explanations
       
       Choose the appropriate length based on the complexity of the user's input and what they need.
-      Always include ONE relevant follow-up question. Be engaging and valuable.`
+      Always include ONE relevant follow-up question. Be engaging and valuable.`,
     });
     this.sessionId = `gemini-session-${Date.now()}`;
   }
 
-  async startConversation(onEvent: (event: VoiceConversationEvent) => void): Promise<string> {
+  async startConversation(
+    onEvent: (event: VoiceConversationEvent) => void
+  ): Promise<string> {
     this.eventHandler = onEvent;
     this.isActive = true;
-    
+
     // Initialize speech recognition
     await this.initializeSpeechRecognition();
-    
+
     // Send welcome message
-    const welcomeMessage = "Hello! I'm your AI tech consultant powered by Gemini. I'm here to help you understand your technology needs and create comprehensive project plans. What kind of project are you thinking about?";
-    
+    const welcomeMessage =
+      "Hello! I'm your AI tech consultant powered by Gemini. I'm here to help you understand your technology needs and create comprehensive project plans. What kind of project are you thinking about?";
+
     this.eventHandler({
-      type: 'conversation_start',
+      type: "conversation_start",
       sessionId: this.sessionId,
       timestamp: new Date(),
     });
@@ -65,7 +73,7 @@ export class GeminiVoiceAgent {
     setTimeout(() => {
       this.speakMessage(welcomeMessage);
       this.eventHandler?.({
-        type: 'agent_message',
+        type: "agent_message",
         message: welcomeMessage,
         sessionId: this.sessionId,
         timestamp: new Date(),
@@ -77,10 +85,12 @@ export class GeminiVoiceAgent {
 
   private async initializeSpeechRecognition(): Promise<void> {
     try {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+
       if (!SpeechRecognition) {
-        console.warn('Speech recognition not supported');
+        console.warn("Speech recognition not supported");
         return;
       }
 
@@ -88,15 +98,15 @@ export class GeminiVoiceAgent {
       // Make it accessible for manual control
       this.speechRecognition.continuous = false;
       this.speechRecognition.interimResults = false;
-      this.speechRecognition.lang = 'en-US';
+      this.speechRecognition.lang = "en-US";
 
       this.speechRecognition.onstart = () => {
         this.isListening = true;
-        console.log('Speech recognition started');
+        console.log("Speech recognition started");
         // Notify UI about listening state change
         this.eventHandler?.({
-          type: 'agent_message',
-          message: '',
+          type: "agent_message",
+          message: "",
           sessionId: this.sessionId,
           timestamp: new Date(),
         });
@@ -104,20 +114,20 @@ export class GeminiVoiceAgent {
 
       this.speechRecognition.onresult = async (event: any) => {
         const transcript = event.results[0][0].transcript.trim();
-        
+
         if (transcript) {
-          console.log('User said:', transcript);
+          console.log("User said:", transcript);
           this.isListening = false;
-          
+
           // Add to conversation history
           this.conversationHistory.push({
-            role: 'user',
-            content: transcript
+            role: "user",
+            content: transcript,
           });
 
           // Send user message event
           this.eventHandler?.({
-            type: 'user_message',
+            type: "user_message",
             message: transcript,
             sessionId: this.sessionId,
             timestamp: new Date(),
@@ -129,13 +139,14 @@ export class GeminiVoiceAgent {
       };
 
       this.speechRecognition.onerror = (event: any) => {
-        console.error('Speech recognition error:', event.error);
+        console.error("Speech recognition error:", event.error);
         this.isListening = false;
-        
-        if (event.error === 'not-allowed') {
+
+        if (event.error === "not-allowed") {
           this.eventHandler?.({
-            type: 'error',
-            message: 'Microphone access denied. Please allow microphone access.',
+            type: "error",
+            message:
+              "Microphone access denied. Please allow microphone access.",
             sessionId: this.sessionId,
             timestamp: new Date(),
           });
@@ -144,11 +155,10 @@ export class GeminiVoiceAgent {
 
       this.speechRecognition.onend = () => {
         this.isListening = false;
-        console.log('Speech recognition ended');
+        console.log("Speech recognition ended");
       };
-
     } catch (error) {
-      console.error('Failed to initialize speech recognition:', error);
+      console.error("Failed to initialize speech recognition:", error);
     }
   }
 
@@ -157,31 +167,39 @@ export class GeminiVoiceAgent {
       // Build conversation context
       const conversationContext = this.conversationHistory
         .slice(-6) // Keep last 6 messages for context
-        .map(msg => `${msg.role}: ${msg.content}`)
-        .join('\n');
+        .map((msg) => `${msg.role}: ${msg.content}`)
+        .join("\n");
 
       // Determine response complexity based on user input and conversation context
-      const determineResponseLength = (userMessage: string, conversationLength: number) => {
+      const determineResponseLength = (
+        userMessage: string,
+        conversationLength: number
+      ) => {
         const messageLength = userMessage.length;
-        const isSimpleResponse = messageLength < 30 || 
-          userMessage.toLowerCase().includes('yes') || 
-          userMessage.toLowerCase().includes('no') ||
-          userMessage.toLowerCase().includes('okay') ||
-          userMessage.toLowerCase().includes('sure');
-        
-        const isComplexTopic = userMessage.toLowerCase().includes('explain') ||
-          userMessage.toLowerCase().includes('detail') ||
-          userMessage.toLowerCase().includes('how') ||
-          userMessage.toLowerCase().includes('architecture') ||
-          userMessage.toLowerCase().includes('plan') ||
+        const isSimpleResponse =
+          messageLength < 30 ||
+          userMessage.toLowerCase().includes("yes") ||
+          userMessage.toLowerCase().includes("no") ||
+          userMessage.toLowerCase().includes("okay") ||
+          userMessage.toLowerCase().includes("sure");
+
+        const isComplexTopic =
+          userMessage.toLowerCase().includes("explain") ||
+          userMessage.toLowerCase().includes("detail") ||
+          userMessage.toLowerCase().includes("how") ||
+          userMessage.toLowerCase().includes("architecture") ||
+          userMessage.toLowerCase().includes("plan") ||
           conversationLength > 8;
 
-        if (isSimpleResponse) return 'SMALL (20-40 words)';
-        if (isComplexTopic) return 'LARGE (90-130 words)';
-        return 'MEDIUM (50-80 words)';
+        if (isSimpleResponse) return "SMALL (20-40 words)";
+        if (isComplexTopic) return "LARGE (90-130 words)";
+        return "MEDIUM (50-80 words)";
       };
 
-      const responseLength = determineResponseLength(userMessage, this.conversationHistory.length);
+      const responseLength = determineResponseLength(
+        userMessage,
+        this.conversationHistory.length
+      );
 
       const prompt = `Based on this conversation about a technology project:
 
@@ -202,14 +220,14 @@ Match your response length to the context - be concise for simple inputs, detail
 
       // Add AI response to history
       this.conversationHistory.push({
-        role: 'assistant',
-        content: response
+        role: "assistant",
+        content: response,
       });
 
       // Send response event and speak it
       setTimeout(() => {
         this.eventHandler?.({
-          type: 'agent_message',
+          type: "agent_message",
           message: response,
           sessionId: this.sessionId,
           timestamp: new Date(),
@@ -217,15 +235,15 @@ Match your response length to the context - be concise for simple inputs, detail
 
         this.speakMessage(response);
       }, 800);
-
     } catch (error) {
-      console.error('Error generating response:', error);
-      
+      console.error("Error generating response:", error);
+
       // Fallback response
-      const fallbackResponse = "I'm having trouble processing that right now. Could you tell me more about your project goals?";
-      
+      const fallbackResponse =
+        "I'm having trouble processing that right now. Could you tell me more about your project goals?";
+
       this.eventHandler?.({
-        type: 'agent_message',
+        type: "agent_message",
         message: fallbackResponse,
         sessionId: this.sessionId,
         timestamp: new Date(),
@@ -244,7 +262,7 @@ Match your response length to the context - be concise for simple inputs, detail
       this.speechRecognition.start();
       this.isListening = true;
     } catch (error) {
-      console.error('Error starting speech recognition:', error);
+      console.error("Error starting speech recognition:", error);
       this.isListening = false;
     }
   }
@@ -258,78 +276,86 @@ Match your response length to the context - be concise for simple inputs, detail
       this.speechRecognition.stop();
       this.isListening = false;
     } catch (error) {
-      console.error('Error stopping speech recognition:', error);
+      console.error("Error stopping speech recognition:", error);
       this.isListening = false;
     }
   }
 
   private cleanTextForSpeech(text: string): string {
-    return text
-      // Remove markdown formatting
-      .replace(/\*\*(.*?)\*\*/g, '$1') // Bold
-      .replace(/\*(.*?)\*/g, '$1') // Italic
-      .replace(/`(.*?)`/g, '$1') // Code
-      .replace(/#{1,6}\s*/g, '') // Headers
-      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Links
-      
-      // Clean up bullet points and lists
-      .replace(/^\s*[\*\-\+]\s*/gm, '') // Bullet points
-      .replace(/^\s*\d+\.\s*/gm, '') // Numbered lists
-      
-      // Remove special characters that cause speech issues
-      .replace(/[^\w\s.,!?;:()\-'"]/g, ' ') // Keep basic punctuation
-      .replace(/\s+/g, ' ') // Multiple spaces to single
-      .replace(/\.\s*\./g, '.') // Multiple periods
-      .replace(/([.!?])\1+/g, '$1') // Repeated punctuation
-      
-      // Clean up common abbreviations for better speech
-      .replace(/\be\.g\./g, 'for example')
-      .replace(/\bi\.e\./g, 'that is')
-      .replace(/\betc\./g, 'and so on')
-      .replace(/\$(\d+),?(\d+)/g, '$1 thousand dollars') // Currency formatting
-      .replace(/\$(\d+)/g, '$1 dollars')
-      
-      .trim();
+    return (
+      text
+        // Remove markdown formatting
+        .replace(/\*\*(.*?)\*\*/g, "$1") // Bold
+        .replace(/\*(.*?)\*/g, "$1") // Italic
+        .replace(/`(.*?)`/g, "$1") // Code
+        .replace(/#{1,6}\s*/g, "") // Headers
+        .replace(/\[(.*?)\]\(.*?\)/g, "$1") // Links
+
+        // Clean up bullet points and lists
+        .replace(/^\s*[\*\-\+]\s*/gm, "") // Bullet points
+        .replace(/^\s*\d+\.\s*/gm, "") // Numbered lists
+
+        // Remove special characters that cause speech issues
+        .replace(/[^\w\s.,!?;:()\-'"]/g, " ") // Keep basic punctuation
+        .replace(/\s+/g, " ") // Multiple spaces to single
+        .replace(/\.\s*\./g, ".") // Multiple periods
+        .replace(/([.!?])\1+/g, "$1") // Repeated punctuation
+
+        // Clean up common abbreviations for better speech
+        .replace(/\be\.g\./g, "for example")
+        .replace(/\bi\.e\./g, "that is")
+        .replace(/\betc\./g, "and so on")
+        .replace(/\$(\d+),?(\d+)/g, "$1 thousand dollars") // Currency formatting
+        .replace(/\$(\d+)/g, "$1 dollars")
+
+        .trim()
+    );
   }
 
   private speakMessage(message: string): void {
     try {
-      if ('speechSynthesis' in window) {
+      if ("speechSynthesis" in window) {
         window.speechSynthesis.cancel();
-        
+
         // Clean the message for better speech synthesis
         const cleanedMessage = this.cleanTextForSpeech(message);
-        
+
         const utterance = new SpeechSynthesisUtterance(cleanedMessage);
         utterance.rate = 0.9;
         utterance.pitch = 1.0;
         utterance.volume = 0.8;
-        
+
         const voices = window.speechSynthesis.getVoices();
-        const preferredVoice = voices.find(voice => 
-          voice.lang.startsWith('en') && 
-          (voice.name.includes('Female') || voice.name.includes('Karen') || voice.name.includes('Samantha'))
-        ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
-        
+        const preferredVoice =
+          voices.find(
+            (voice) =>
+              voice.lang.startsWith("en") &&
+              (voice.name.includes("Female") ||
+                voice.name.includes("Karen") ||
+                voice.name.includes("Samantha"))
+          ) ||
+          voices.find((voice) => voice.lang.startsWith("en")) ||
+          voices[0];
+
         if (preferredVoice) {
           utterance.voice = preferredVoice;
         }
-        
-        console.log('Speaking:', cleanedMessage.substring(0, 50) + '...');
-        
+
+        console.log("Speaking:", cleanedMessage.substring(0, 50) + "...");
+
         utterance.onend = () => {
-          console.log('Speech completed');
+          console.log("Speech completed");
           // Don't auto-start listening - let user control with button
         };
-        
+
         utterance.onerror = (event) => {
-          console.error('Speech synthesis error:', event.error);
+          console.error("Speech synthesis error:", event.error);
         };
-        
+
         window.speechSynthesis.speak(utterance);
       }
     } catch (error) {
-      console.error('Error speaking message:', error);
+      console.error("Error speaking message:", error);
     }
   }
 
@@ -338,13 +364,13 @@ Match your response length to the context - be concise for simple inputs, detail
 
     // Add to conversation history
     this.conversationHistory.push({
-      role: 'user',
-      content: message
+      role: "user",
+      content: message,
     });
 
     // Send user message event
     this.eventHandler?.({
-      type: 'user_message',
+      type: "user_message",
       message: message,
       sessionId: this.sessionId,
       timestamp: new Date(),
@@ -358,7 +384,7 @@ Match your response length to the context - be concise for simple inputs, detail
     this.isActive = false;
     this.isListening = false;
 
-    if ('speechSynthesis' in window) {
+    if ("speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
 
@@ -366,12 +392,12 @@ Match your response length to the context - be concise for simple inputs, detail
       try {
         this.speechRecognition.stop();
       } catch (error) {
-        console.log('Speech recognition already stopped');
+        console.log("Speech recognition already stopped");
       }
     }
 
     this.eventHandler?.({
-      type: 'conversation_end',
+      type: "conversation_end",
       sessionId: this.sessionId,
       timestamp: new Date(),
     });
@@ -392,7 +418,7 @@ Match your response length to the context - be concise for simple inputs, detail
   static async createTechConsultant(apiKey: string): Promise<GeminiVoiceAgent> {
     return new GeminiVoiceAgent({
       apiKey,
-      model: 'gemini-1.5-flash'
+      model: "gemini-2.0-flash",
     });
   }
 }

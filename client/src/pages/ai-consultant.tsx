@@ -1,16 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { NavigationBar } from "@/components/navigation-bar";
-import { Progress } from "@/components/ui/progress";
 import {
   Mic,
   MicOff,
@@ -29,12 +20,12 @@ import { toast } from "@/hooks/use-toast";
 import {
   ConversationalAIAgent,
   ProjectPlan,
-  type ConversationContext 
-} from '@/lib/conversational-ai-agent';
+  type ConversationContext,
+} from "@/lib/conversational-ai-agent";
 import {
   GeminiVoiceAgent,
-  VoiceConversationEvent
-} from '@/lib/gemini-voice-agent';
+  VoiceConversationEvent,
+} from "@/lib/gemini-voice-agent";
 import { WorkflowProgress } from "@/components/workflow-progress";
 
 export default function AIConsultant() {
@@ -43,17 +34,21 @@ export default function AIConsultant() {
   const [isConnected, setIsConnected] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [currentInput, setCurrentInput] = useState("");
-  const [conversation, setConversation] = useState<Array<{
-    id: string;
-    role: "user" | "assistant";
-    content: string;
-    timestamp: Date;
-  }>>([]);
+  const [conversation, setConversation] = useState<
+    Array<{
+      id: string;
+      role: "user" | "assistant";
+      content: string;
+      timestamp: Date;
+    }>
+  >([]);
   const [projectPlan, setProjectPlan] = useState<ProjectPlan | null>(null);
   const [context, setContext] = useState<ConversationContext>({});
   const [nextQuestions, setNextQuestions] = useState<string[]>([]);
   const [confidence, setConfidence] = useState(0);
-  const [conversationHistory, setConversationHistory] = useState<VoiceConversationEvent[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<
+    VoiceConversationEvent[]
+  >([]);
 
   const agentRef = useRef<ConversationalAIAgent | null>(null);
   const geminiVoiceAgentRef = useRef<GeminiVoiceAgent | null>(null);
@@ -64,7 +59,7 @@ export default function AIConsultant() {
     const initializeAgent = async () => {
       try {
         agentRef.current = new ConversationalAIAgent();
-        
+
         // Load saved state if available
         const savedState = localStorage.getItem("ai-consultant-state");
         if (savedState) {
@@ -109,52 +104,62 @@ export default function AIConsultant() {
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
     }
   }, [conversation, isProcessing]);
 
   const startVoiceConversation = async () => {
     try {
-      const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg';
-      
+      const geminiApiKey =
+        import.meta.env.VITE_GEMINI_API_KEY ||
+        "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg";
+
       if (!geminiApiKey) {
-        toast({ 
-          title: "Voice features unavailable", 
-          description: "Gemini API key not configured.", 
-          variant: "destructive" 
+        toast({
+          title: "Voice features unavailable",
+          description: "Gemini API key not configured.",
+          variant: "destructive",
         });
         return;
       }
 
-      console.log('Using Gemini API key:', geminiApiKey ? 'Available' : 'Missing');
-      
+      console.log(
+        "Using Gemini API key:",
+        geminiApiKey ? "Available" : "Missing"
+      );
+
       setIsProcessing(true);
-      
+
       // Create Gemini voice agent
-      geminiVoiceAgentRef.current = await GeminiVoiceAgent.createTechConsultant(geminiApiKey);
-      
+      geminiVoiceAgentRef.current = await GeminiVoiceAgent.createTechConsultant(
+        geminiApiKey
+      );
+
       // Start conversation
-      await geminiVoiceAgentRef.current.startConversation(handleConversationEvent);
-      
+      await geminiVoiceAgentRef.current.startConversation(
+        handleConversationEvent
+      );
+
       setIsVoiceMode(true);
       setIsConnected(true);
-      
-      toast({ 
-        title: "Voice conversation started", 
-        description: "Speak naturally - the AI will listen and respond with voice powered by Gemini" 
+
+      toast({
+        title: "Voice conversation started",
+        description:
+          "Speak naturally - the AI will listen and respond with voice powered by Gemini",
       });
-      
     } catch (error) {
-      console.error('Error starting voice conversation:', error);
-      toast({ 
-        title: "Voice conversation failed to start", 
+      console.error("Error starting voice conversation:", error);
+      toast({
+        title: "Voice conversation failed to start",
         description: "Please try again or use text mode",
-        variant: "destructive" 
+        variant: "destructive",
       });
       setIsVoiceMode(false);
       setIsConnected(false);
     }
-    
+
     setIsProcessing(false);
   };
 
@@ -163,64 +168,70 @@ export default function AIConsultant() {
       geminiVoiceAgentRef.current.endConversation();
       geminiVoiceAgentRef.current = null;
     }
-    
+
     setIsVoiceMode(false);
     setIsConnected(false);
     setIsListening(false);
-    
+
     toast({ title: "Voice conversation ended" });
   };
 
   const handleConversationEvent = async (event: VoiceConversationEvent) => {
-    console.log('Conversation event:', event);
-    
-    setConversationHistory(prev => [...prev, event]);
-    
+    console.log("Conversation event:", event);
+
+    setConversationHistory((prev) => [...prev, event]);
+
     // Update listening state based on Gemini agent
     if (geminiVoiceAgentRef.current) {
       setIsListening(geminiVoiceAgentRef.current.isSpeechListening());
     }
-    
+
     switch (event.type) {
-      case 'agent_message':
+      case "agent_message":
         if (event.message) {
           // Add AI message to conversation
-          setConversation(prev => [...prev, {
-            id: `ai-${Date.now()}`,
-            role: "assistant",
-            content: event.message!,
-            timestamp: new Date(),
-          }]);
-          
+          setConversation((prev) => [
+            ...prev,
+            {
+              id: `ai-${Date.now()}`,
+              role: "assistant",
+              content: event.message!,
+              timestamp: new Date(),
+            },
+          ]);
+
           // Process through local agent for context building
           await processAgentMessage(event.message);
         }
         break;
-        
-      case 'user_message':
+
+      case "user_message":
         if (event.message) {
           // Add user message to conversation
-          setConversation(prev => [...prev, {
-            id: `user-${Date.now()}`,
-            role: "user",
-            content: event.message!,
-            timestamp: new Date(),
-          }]);
-          
+          setConversation((prev) => [
+            ...prev,
+            {
+              id: `user-${Date.now()}`,
+              role: "user",
+              content: event.message!,
+              timestamp: new Date(),
+            },
+          ]);
+
           // Process user message through local agent for context building
           await handleUserInputFromVoice(event.message);
         }
         break;
-        
-      case 'conversation_end':
+
+      case "conversation_end":
         stopVoiceConversation();
         break;
-        
-      case 'error':
-        toast({ 
-          title: "Conversation error", 
-          description: event.message || "An error occurred", 
-          variant: "destructive" 
+
+      case "error":
+        toast({
+          title: "Conversation error",
+          description: event.message || "An error occurred",
+          variant: "destructive",
         });
         break;
     }
@@ -237,7 +248,7 @@ export default function AIConsultant() {
         setContext(response.context);
         setNextQuestions(response.nextQuestions);
         setConfidence(response.confidence);
-        
+
         if (response.shouldGeneratePlan) {
           await handleGenerateProjectPlan();
         }
@@ -266,12 +277,12 @@ export default function AIConsultant() {
       content: input,
       timestamp: new Date(),
     };
-    setConversation(prev => [...prev, userMessage]);
+    setConversation((prev) => [...prev, userMessage]);
 
     try {
       // Process message through AI agent
       const response = await agentRef.current.processMessage(input);
-      
+
       // Update context and questions
       setContext(response.context);
       setNextQuestions(response.nextQuestions);
@@ -284,7 +295,7 @@ export default function AIConsultant() {
         content: response.message,
         timestamp: new Date(),
       };
-      setConversation(prev => [...prev, aiMessage]);
+      setConversation((prev) => [...prev, aiMessage]);
 
       // Generate project plan if ready
       if (response.shouldGeneratePlan) {
@@ -309,10 +320,10 @@ export default function AIConsultant() {
       setIsProcessing(true);
       const plan = await agentRef.current.generateProjectPlan();
       setProjectPlan(plan);
-      
+
       // Save project plan
       localStorage.setItem("ai-consultant-project-plan", JSON.stringify(plan));
-      
+
       toast({
         title: "Project plan generated!",
         description: "Your comprehensive project plan is ready",
@@ -330,15 +341,18 @@ export default function AIConsultant() {
 
   const downloadProjectPlan = () => {
     if (!projectPlan) return;
-    
+
     const dataStr = JSON.stringify(projectPlan, null, 2);
-    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
-    
-    const exportFileDefaultName = `project-plan-${new Date().toISOString().split('T')[0]}.json`;
-    
-    const linkElement = document.createElement('a');
-    linkElement.setAttribute('href', dataUri);
-    linkElement.setAttribute('download', exportFileDefaultName);
+    const dataUri =
+      "data:application/json;charset=utf-8," + encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = `project-plan-${
+      new Date().toISOString().split("T")[0]
+    }.json`;
+
+    const linkElement = document.createElement("a");
+    linkElement.setAttribute("href", dataUri);
+    linkElement.setAttribute("download", exportFileDefaultName);
     linkElement.click();
   };
 
@@ -355,8 +369,10 @@ export default function AIConsultant() {
     setIsProcessing(true);
 
     try {
-      const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg';
-      
+      const geminiApiKey =
+        import.meta.env.VITE_GEMINI_API_KEY ||
+        "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg";
+
       if (!geminiApiKey) {
         toast({
           title: "Unable to generate plan",
@@ -369,8 +385,8 @@ export default function AIConsultant() {
 
       // Prepare conversation summary for Gemini
       const conversationSummary = conversation
-        .map(msg => `${msg.role}: ${msg.content}`)
-        .join('\n');
+        .map((msg) => `${msg.role}: ${msg.content}`)
+        .join("\n");
 
       const prompt = `Based on this conversation with a user about their technology project, create a comprehensive project description and plan:
 
@@ -396,9 +412,9 @@ Generate a detailed project plan in JSON format with the following structure:
 
 Make it specific to the user's requirements discussed in the conversation.`;
 
-      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const { GoogleGenerativeAI } = await import("@google/generative-ai");
       const genAI = new GoogleGenerativeAI(geminiApiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
       const result = await model.generateContent(prompt);
       const response = result.response.text();
@@ -415,22 +431,25 @@ Make it specific to the user's requirements discussed in the conversation.`;
             projectTitle: "Technology Project",
             problemStatement: "Project discussed in conversation",
             conversationSummary: conversationSummary,
-            generatedAt: new Date().toISOString()
+            generatedAt: new Date().toISOString(),
           };
         }
       } catch (parseError) {
-        console.error('Error parsing Gemini response:', parseError);
+        console.error("Error parsing Gemini response:", parseError);
         projectDescription = {
           projectTitle: "Technology Project",
           problemStatement: "Project discussed in conversation",
           conversationSummary: conversationSummary,
           rawResponse: response,
-          generatedAt: new Date().toISOString()
+          generatedAt: new Date().toISOString(),
         };
       }
 
       // Store in localStorage
-      localStorage.setItem('bpmn-project-description', JSON.stringify(projectDescription));
+      localStorage.setItem(
+        "bpmn-project-description",
+        JSON.stringify(projectDescription)
+      );
 
       toast({
         title: "Project plan generated!",
@@ -439,11 +458,10 @@ Make it specific to the user's requirements discussed in the conversation.`;
 
       // Redirect after short delay
       setTimeout(() => {
-        window.location.href = '/start-over';
+        window.location.href = "/start-over";
       }, 1500);
-
     } catch (error) {
-      console.error('Error generating project plan:', error);
+      console.error("Error generating project plan:", error);
       toast({
         title: "Failed to generate plan",
         description: "Please try again",
@@ -455,9 +473,13 @@ Make it specific to the user's requirements discussed in the conversation.`;
   };
 
   const clearConversation = useCallback(() => {
-    if (window.confirm("Are you sure you want to start a new consultation? This will clear all current progress.")) {
+    if (
+      window.confirm(
+        "Are you sure you want to start a new consultation? This will clear all current progress."
+      )
+    ) {
       // Reset agent if it has a reset method
-      if (agentRef.current && typeof agentRef.current.reset === 'function') {
+      if (agentRef.current && typeof agentRef.current.reset === "function") {
         agentRef.current.reset();
       }
       setConversation([]);
@@ -521,7 +543,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
           description: "Click microphone to start again",
         });
       } catch (error) {
-        console.error('Error stopping speech recognition:', error);
+        console.error("Error stopping speech recognition:", error);
         setIsListening(false);
       }
       return;
@@ -530,25 +552,27 @@ Make it specific to the user's requirements discussed in the conversation.`;
     try {
       geminiVoiceAgentRef.current.startListening();
       setIsListening(true);
-      
+
       toast({
         title: "Listening...",
         description: "Speak now, click again to stop",
       });
-      
     } catch (error) {
-      console.error('Error starting speech recognition:', error);
+      console.error("Error starting speech recognition:", error);
       setIsListening(false);
       toast({
         title: "Microphone error",
         description: "Please allow microphone access and try again",
-        variant: "destructive"
+        variant: "destructive",
       });
     }
   };
 
   const isGeminiAvailable = () => {
-    return !!(import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg');
+    return !!(
+      import.meta.env.VITE_GEMINI_API_KEY ||
+      "AIzaSyA1TeASa5De0Uvtlw8OKhoCWRkzi_vlowg"
+    );
   };
 
   const handleQuestionClick = async (question: string) => {
@@ -559,15 +583,23 @@ Make it specific to the user's requirements discussed in the conversation.`;
     const summary = [];
     if (context.projectType) summary.push(`Project: ${context.projectType}`);
     if (context.problemDomain) summary.push(`Domain: ${context.problemDomain}`);
-    if (context.targetAudience) summary.push(`Audience: ${context.targetAudience}`);
+    if (context.targetAudience)
+      summary.push(`Audience: ${context.targetAudience}`);
     if (context.timeline) summary.push(`Timeline: ${context.timeline}`);
     if (context.budget) summary.push(`Budget: ${context.budget}`);
-    if (context.techRequirements?.length) summary.push(`Tech: ${context.techRequirements.join(', ')}`);
+    if (context.techRequirements?.length)
+      summary.push(`Tech: ${context.techRequirements.join(", ")}`);
     return summary;
   };
 
   const getStageProgress = () => {
-    const stages = ["discovery", "analysis", "specification", "planning", "complete"];
+    const stages = [
+      "discovery",
+      "analysis",
+      "specification",
+      "planning",
+      "complete",
+    ];
     const currentIndex = stages.indexOf(currentStage);
     return ((currentIndex + 1) / stages.length) * 100;
   };
@@ -577,7 +609,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
       {/* Background Pattern */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/50 to-transparent" />
-      
+
       {/* Header */}
       <div className="relative z-10 border-b border-gray-800/50 backdrop-blur-sm">
         <div className="container mx-auto px-6 py-4">
@@ -587,36 +619,16 @@ Make it specific to the user's requirements discussed in the conversation.`;
                 <Brain className="h-4 w-4 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-white">AI Tech Consultant</h1>
+                <h1 className="text-xl font-semibold text-white">
+                  AI Tech Consultant
+                </h1>
                 <p className="text-sm text-gray-400">Powered by Gemini AI</p>
               </div>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                onClick={summarizeAndCreatePlan}
-                disabled={isProcessing || conversation.length === 0}
-                className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0"
-              >
-                {isProcessing ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <FileText className="h-4 w-4 mr-2" />
-                )}
-                Generate Plan & Continue
-              </Button>
-              <Button
-                onClick={clearConversation}
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-white hover:bg-gray-800/50"
-              >
-                Clear Session
-              </Button>
             </div>
           </div>
         </div>
       </div>
-
+      <WorkflowProgress currentStep={"chat"} />
       <div className="relative z-10 container mx-auto px-6 py-8 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface */}
@@ -627,7 +639,9 @@ Make it specific to the user's requirements discussed in the conversation.`;
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                    <span className="text-white font-medium">Active Session</span>
+                    <span className="text-white font-medium">
+                      Active Session
+                    </span>
                     {isVoiceMode && (
                       <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
                         Voice Mode
@@ -657,9 +671,9 @@ Make it specific to the user's requirements discussed in the conversation.`;
                   )}
                 </div>
               </div>
-              
+
               {/* Chat Messages */}
-              <div 
+              <div
                 ref={chatContainerRef}
                 className="flex-1 overflow-y-auto p-6 space-y-6 min-h-[500px] max-h-[500px] scroll-smooth"
               >
@@ -668,23 +682,36 @@ Make it specific to the user's requirements discussed in the conversation.`;
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
                       <Brain className="h-8 w-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">Ready to Assist</h3>
+                    <h3 className="text-xl font-semibold text-white mb-2">
+                      Ready to Assist
+                    </h3>
                     <p className="text-gray-400 max-w-md mx-auto">
-                      Describe your project idea and I'll help you create a comprehensive technology plan
+                      Describe your project idea and I'll help you create a
+                      comprehensive technology plan
                     </p>
                   </div>
                 ) : (
                   conversation.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} group`}
+                      className={`flex ${
+                        message.role === "user"
+                          ? "justify-end"
+                          : "justify-start"
+                      } group`}
                     >
-                      <div className={`flex gap-3 max-w-[85%] ${message.role === "user" ? "flex-row-reverse" : ""}`}>
-                        <div className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
-                          message.role === "user" 
-                            ? "bg-gradient-to-br from-blue-500 to-purple-600" 
-                            : "bg-gradient-to-br from-emerald-500 to-teal-600"
-                        }`}>
+                      <div
+                        className={`flex gap-3 max-w-[85%] ${
+                          message.role === "user" ? "flex-row-reverse" : ""
+                        }`}
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center ${
+                            message.role === "user"
+                              ? "bg-gradient-to-br from-blue-500 to-purple-600"
+                              : "bg-gradient-to-br from-emerald-500 to-teal-600"
+                          }`}
+                        >
                           {message.role === "user" ? (
                             <div className="w-3 h-3 bg-white rounded-full" />
                           ) : (
@@ -698,7 +725,9 @@ Make it specific to the user's requirements discussed in the conversation.`;
                               : "bg-gray-800/60 text-gray-100 border border-gray-700/50 rounded-bl-md"
                           }`}
                         >
-                          <p className="text-sm leading-relaxed">{message.content}</p>
+                          <p className="text-sm leading-relaxed">
+                            {message.content}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -713,7 +742,9 @@ Make it specific to the user's requirements discussed in the conversation.`;
                       <div className="px-4 py-3 rounded-2xl rounded-bl-md bg-gray-800/60 border border-gray-700/50 backdrop-blur-sm">
                         <div className="flex items-center gap-2">
                           <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                          <span className="text-sm text-gray-300">Thinking...</span>
+                          <span className="text-sm text-gray-300">
+                            Thinking...
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -740,7 +771,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
                       className="bg-gray-900/50 border-gray-600/50 text-white placeholder:text-gray-400 focus:border-blue-500/50 focus:ring-blue-500/20 rounded-xl resize-none"
                     />
                   </div>
-                  
+
                   {/* Floating Action Buttons */}
                   <div className="flex gap-2">
                     {isVoiceMode && (
@@ -749,15 +780,19 @@ Make it specific to the user's requirements discussed in the conversation.`;
                         disabled={isProcessing}
                         size="lg"
                         className={`w-12 h-12 rounded-full ${
-                          isListening 
-                            ? "bg-red-500 hover:bg-red-600 animate-pulse" 
+                          isListening
+                            ? "bg-red-500 hover:bg-red-600 animate-pulse"
                             : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                         } border-0 shadow-lg`}
                       >
-                        {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                        {isListening ? (
+                          <MicOff className="h-5 w-5" />
+                        ) : (
+                          <Mic className="h-5 w-5" />
+                        )}
                       </Button>
                     )}
-                    
+
                     <Button
                       onClick={handleTextSubmit}
                       disabled={!currentInput.trim() || isProcessing}
@@ -784,22 +819,22 @@ Make it specific to the user's requirements discussed in the conversation.`;
                 <Target className="h-5 w-5 text-blue-400" />
                 <h3 className="text-lg font-semibold text-white">Progress</h3>
               </div>
-              
+
               <div className="space-y-4">
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-300">Stage: {currentStage}</span>
-                    <span className="text-blue-400">{Math.round(getStageProgress())}%</span>
+                    <span className="text-blue-400">
+                      {Math.round(getStageProgress())}%
+                    </span>
                   </div>
                   <div className="w-full bg-gray-700/50 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${getStageProgress()}%` }}
                     />
                   </div>
                 </div>
-                
-                
 
                 {getContextSummary().length > 0 && (
                   <div>
@@ -827,9 +862,11 @@ Make it specific to the user's requirements discussed in the conversation.`;
               <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <Lightbulb className="h-5 w-5 text-yellow-400" />
-                  <h3 className="text-lg font-semibold text-white">Suggestions</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    Suggestions
+                  </h3>
                 </div>
-                
+
                 <div className="space-y-2">
                   {nextQuestions.map((question, index) => (
                     <button
@@ -844,20 +881,52 @@ Make it specific to the user's requirements discussed in the conversation.`;
               </div>
             )}
 
+            <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
+              <div className="space-y-2">
+                <Button
+                  onClick={summarizeAndCreatePlan}
+                  disabled={isProcessing || conversation.length === 0}
+                  className="bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white border-0"
+                >
+                  {isProcessing ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4 mr-2" />
+                  )}
+                  Generate Plan & Continue
+                </Button>
+                <br />
+                <Button
+                  onClick={clearConversation}
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-white hover:bg-gray-800/50"
+                >
+                  Clear Session
+                </Button>
+              </div>
+            </div>
+
             {/* Project Plan Card */}
             {projectPlan && (
               <div className="bg-gray-900/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl p-6">
                 <div className="flex items-center gap-2 mb-4">
                   <FileText className="h-5 w-5 text-green-400" />
-                  <h3 className="text-lg font-semibold text-white">Project Plan</h3>
+                  <h3 className="text-lg font-semibold text-white">
+                    Project Plan
+                  </h3>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
-                    <h4 className="font-medium text-white">{projectPlan.title}</h4>
-                    <p className="text-sm text-gray-400 mt-1">{projectPlan.overview}</p>
+                    <h4 className="font-medium text-white">
+                      {projectPlan.title}
+                    </h4>
+                    <p className="text-sm text-gray-400 mt-1">
+                      {projectPlan.overview}
+                    </p>
                   </div>
-                  
+
                   <Button
                     onClick={downloadProjectPlan}
                     className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 border-0"
