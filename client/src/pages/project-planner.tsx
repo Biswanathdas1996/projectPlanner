@@ -44,6 +44,7 @@ import {
   ProjectSection as SettingsProjectSection,
 } from "@/components/project-sections-settings";
 import { SectionFlowViewer } from "@/components/section-flow-viewer";
+import { ROUTES } from "@/lib/routes";
 import { FlowDiagramViewer } from "@/components/flow-diagram-viewer";
 import {
   createAIFlowDiagramGenerator,
@@ -115,7 +116,6 @@ const getPlanContentForExternalUse = (projectPlan: string): string => {
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { Link, useLocation } from "wouter";
-import { ROUTES } from "@/lib/routes";
 import {
   Sparkles,
   FileText,
@@ -380,10 +380,9 @@ export default function ProjectPlanner() {
       }
     }
 
-    // Set current step based on route
-    if (location === "/plan") {
+    if (location === ROUTES.PLAN) {
       setCurrentStep("plan");
-    } else if (location === "/diagram") {
+    } else if (location === ROUTES.DIAGRAM) {
       setCurrentStep("diagram");
     } else {
       setCurrentStep("input");
@@ -457,7 +456,7 @@ export default function ProjectPlanner() {
 
     // Always navigate to plan page first
     setCurrentStep("plan");
-    setLocation("/plan");
+    setLocation(ROUTES.PLAN);
 
     // Use enhanced planner by default for individual section generation
     await handleGenerateEnhancedPlan();
@@ -501,7 +500,7 @@ export default function ProjectPlanner() {
       );
 
       setCurrentStep("plan");
-      setLocation("/plan");
+      setLocation(ROUTES.PLAN);
     } catch (err) {
       console.error("Dynamic plan generation error:", err);
       setError("Failed to generate project plan. Please try again.");
@@ -714,7 +713,7 @@ Please ensure the project plan addresses all the selected requirements above and
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       setCurrentStep("plan");
-      setLocation("/plan");
+      setLocation(ROUTES.PLAN);
     } catch (err) {
       console.error("Project plan generation error:", err);
       setError("Failed to generate project plan. Please try again.");
@@ -760,7 +759,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       localStorage.setItem("comprehensive_plan", JSON.stringify(plan));
 
       setCurrentStep("plan");
-      setLocation("/plan");
+      setLocation(ROUTES.PLAN);
     } catch (err) {
       console.error("Comprehensive plan generation error:", err);
       setError(
@@ -823,7 +822,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       );
 
       setCurrentStep("plan");
-      setLocation("/plan");
+      setLocation(ROUTES.PLAN);
     } catch (err) {
       console.error("Dynamic plan generation error:", err);
       setError("Failed to generate dynamic project plan. Please try again.");
@@ -1052,7 +1051,7 @@ ${selectedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n")}`;
       localStorage.setItem(STORAGE_KEYS.PROJECT_PLAN, projectPlan);
       localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, projectInput);
       localStorage.setItem(STORAGE_KEYS.TIMESTAMP, Date.now().toString());
-      setLocation("/diagram");
+      setLocation(ROUTES.DIAGRAM);
     } catch (err) {
       console.error("BPMN generation error:", err);
       setError("Failed to generate BPMN diagram. Please try again.");
@@ -1797,7 +1796,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
     localStorage.removeItem(STORAGE_KEYS.PROJECT_PLAN);
     localStorage.removeItem(STORAGE_KEYS.CURRENT_DIAGRAM);
     localStorage.removeItem("enhanced_plan_sections");
-    setLocation("/");
+    setLocation(ROUTES.HOME);
   };
 
   // Parse project plan into sections for tabbed interface
@@ -6432,10 +6431,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </Button>
 
                   <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                    <Link
-                      href={ROUTES.MARKET_RESEARCH}
-                      className="w-full sm:w-auto"
-                    >
+                    <Link href="/market-research" className="w-full sm:w-auto">
                       <Button
                         variant="outline"
                         className={`w-full ${
@@ -6453,7 +6449,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                     </Link>
 
                     <Link
-                      href={ROUTES.USER_JOURNEY}
+                      href={ROUTES.WIREFRAME_DESIGNER}
                       className="w-full sm:w-auto"
                     >
                       <Button
@@ -6461,7 +6457,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                         className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
                       >
                         <Users className="h-4 w-4 mr-2" />
-                        User Journey Flows
+                        Generate Wireframe
                       </Button>
                     </Link>
                   </div>
@@ -6487,7 +6483,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   diagram with process flows and decision points.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href={ROUTES.EDITOR}>
+                  <Link href="/editor">
                     <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                       <Workflow className="h-4 w-4 mr-2" />
                       View & Edit Diagram

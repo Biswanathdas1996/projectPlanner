@@ -160,7 +160,7 @@ export default function Landing() {
       );
 
       // Redirect to /plan page without API calls
-      setLocation("/market-research");
+      setLocation(ROUTES.MARKET_RESEARCH);
     } catch (error) {
       console.error("Error storing project description:", error);
       setError("Failed to store project description. Please try again.");
