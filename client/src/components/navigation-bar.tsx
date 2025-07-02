@@ -1,7 +1,8 @@
-import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw, Home } from 'lucide-react';
-import { useLocation } from 'wouter';
-import { STORAGE_KEYS } from '@/lib/bpmn-utils';
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, RotateCcw, Home } from "lucide-react";
+import { useLocation } from "wouter";
+import { STORAGE_KEYS } from "@/lib/bpmn-utils";
+import { ROUTES } from "@/lib/routes";
 
 interface NavigationBarProps {
   title?: string;
@@ -9,10 +10,10 @@ interface NavigationBarProps {
   showStartOverButton?: boolean;
 }
 
-export function NavigationBar({ 
-  title, 
-  showBackButton = true, 
-  showStartOverButton = true 
+export function NavigationBar({
+  title,
+  showBackButton = true,
+  showStartOverButton = true,
 }: NavigationBarProps) {
   const [location, setLocation] = useLocation();
 
@@ -22,29 +23,29 @@ export function NavigationBar({
 
   const handleStartOver = () => {
     // Clear all localStorage data
-    const keysToKeep = ['theme']; // Keep theme preference
+    const keysToKeep = ["theme"]; // Keep theme preference
     const allKeys = Object.keys(localStorage);
-    
-    allKeys.forEach(key => {
+
+    allKeys.forEach((key) => {
       if (!keysToKeep.includes(key)) {
         localStorage.removeItem(key);
       }
     });
 
     // Clear specific storage keys
-    Object.values(STORAGE_KEYS).forEach(key => {
+    Object.values(STORAGE_KEYS).forEach((key) => {
       localStorage.removeItem(key);
     });
 
     // Clear additional user story data
-    localStorage.removeItem('user_stories');
+    localStorage.removeItem("user_stories");
 
     // Navigate to start-over page
-    setLocation('/start-over');
+    setLocation(ROUTES.START_OVER);
   };
 
   const handleHome = () => {
-    setLocation('/');
+    setLocation(ROUTES.HOME);
   };
 
   return (
@@ -62,7 +63,7 @@ export function NavigationBar({
               Back
             </Button>
           )}
-          
+
           <Button
             onClick={handleHome}
             variant="ghost"

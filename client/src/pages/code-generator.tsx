@@ -88,65 +88,312 @@ export default function CodeGenerator() {
   const [isGeneratingConsolidatedFlow, setIsGeneratingConsolidatedFlow] =
     useState(false);
 
-  // Download combined localStorage data
+  // Download Replit-compliant project plan
   const downloadProjectData = () => {
     try {
-      // Get data from localStorage
-      const projectDescription = localStorage.getItem("bpmn-project-description") || "No project description found";
-      const projectFlowData = localStorage.getItem("project-flow-data-intrim") || "No project flow data found";
-      const pageContentCards = localStorage.getItem("page_content_cards") || "No page content cards found";
-      const brandGuidelines = localStorage.getItem("brand-guidelines-external") || "No brand guidelines found";
+      // Get comprehensive data from localStorage
+      const projectDescription =
+        localStorage.getItem("bpmn-project-description") || "";
+      const projectIdea =
+        localStorage.getItem("project-idea") ||
+        localStorage.getItem("project-plan") ||
+        "";
+      const projectFlowData =
+        localStorage.getItem("project-flow-data-intrim") || "";
+      const pageContentCards = localStorage.getItem("page_content_cards") || "";
+      const brandGuidelines =
+        localStorage.getItem("brand-guidelines-external") ||
+        localStorage.getItem("brand_guidelines") ||
+        "";
+      const stakeholderData =
+        localStorage.getItem("stakeholder-flow-data") ||
+        localStorage.getItem("stakeholder_analysis") ||
+        "";
+      const flowDetails = localStorage.getItem("flow_details") || "";
+      const consolidatedFlow =
+        localStorage.getItem("consolidatedMasterFlow") || "";
 
-      // Parse JSON data safely
-      const parseJsonSafely = (data: string, fallback: string) => {
+      // Parse JSON data safely and extract meaningful content
+      const parseAndExtract = (data: string, fieldName: string) => {
+        if (!data || data.trim() === "") return "";
         try {
-          return JSON.stringify(JSON.parse(data), null, 2);
+          const parsed = JSON.parse(data);
+          if (typeof parsed === "string") return parsed;
+          if (typeof parsed === "object" && parsed !== null) {
+            // Extract relevant text content from objects
+            const textContent = [];
+            if (parsed.description) textContent.push(parsed.description);
+            if (parsed.content) textContent.push(parsed.content);
+            if (parsed.text) textContent.push(parsed.text);
+            if (parsed.summary) textContent.push(parsed.summary);
+            if (parsed.requirements) textContent.push(parsed.requirements);
+            if (parsed.features) {
+              if (Array.isArray(parsed.features)) {
+                textContent.push("Features: " + parsed.features.join(", "));
+              } else if (typeof parsed.features === "object") {
+                textContent.push(
+                  "Features: " + Object.values(parsed.features).join(", ")
+                );
+              }
+            }
+            return textContent.join("\n");
+          }
+          return JSON.stringify(parsed, null, 2);
         } catch {
           return data;
         }
       };
 
-      // Combine all data into a single text format
-      const combinedData = `
-PROJECT DATA EXPORT
-===================
-Generated: ${new Date().toISOString()}
+      // Extract project details
+      const extractedDescription = parseAndExtract(
+        projectDescription,
+        "description"
+      );
+      const extractedIdea = parseAndExtract(projectIdea, "idea");
+      const extractedFlowData = parseAndExtract(projectFlowData, "flow");
+      const extractedPages = parseAndExtract(pageContentCards, "pages");
+      const extractedBrand = parseAndExtract(brandGuidelines, "brand");
+      const extractedStakeholder = parseAndExtract(
+        stakeholderData,
+        "stakeholder"
+      );
+      const extractedFlowDetails = parseAndExtract(flowDetails, "flowDetails");
+      const extractedConsolidatedFlow = parseAndExtract(
+        consolidatedFlow,
+        "consolidatedFlow"
+      );
 
-1. PROJECT DESCRIPTION (bpmn-project-description)
-================================================
-${parseJsonSafely(projectDescription, projectDescription)}
+      // Create Replit-compliant project plan
+      const replitProjectPlan = `
+# Replit Project Plan
 
-2. PROJECT FLOW DATA (project-flow-data-intrim)
-===============================================
-${parseJsonSafely(projectFlowData, projectFlowData)}
+## Project Overview
+${
+  extractedDescription ||
+  extractedIdea ||
+  "A modern web application with comprehensive user workflows and features."
+}
 
-3. PAGE CONTENT CARDS (page_content_cards)
-==========================================
-${parseJsonSafely(pageContentCards, pageContentCards)}
+## Core Concept
+${
+  extractedIdea ||
+  "Interactive application with user authentication, dashboard, and workflow management."
+}
 
-4. BRAND GUIDELINES (brand-guidelines-external)
-===============================================
-${parseJsonSafely(brandGuidelines, brandGuidelines)}
+## Technical Requirements
 
-===============================================
-End of Project Data Export
-===============================================
+### Frontend Framework
+- **Primary**: React.js with TypeScript
+- **Styling**: Tailwind CSS for modern, responsive design
+- **UI Components**: Custom component library with consistent design system
+- **State Management**: React Context API or Redux Toolkit
+- **Routing**: React Router for navigation
+
+### Backend Architecture
+- **Framework**: Node.js with Express.js
+- **Database**: PostgreSQL for data persistence
+- **Authentication**: JWT-based authentication system
+- **API**: RESTful API design with proper error handling
+- **File Upload**: Support for document and image uploads
+
+### Key Features
+
+#### User Management
+- User registration and login
+- Profile management
+- Role-based access control
+- Password reset functionality
+
+#### Dashboard & Analytics
+- Interactive dashboard with data visualization
+- Real-time updates and notifications
+- Progress tracking and reporting
+- Customizable user preferences
+
+#### Workflow Management
+${
+  extractedFlowData
+    ? `
+Based on the analyzed workflows:
+${extractedFlowData}
+`
+    : `
+- Multi-step process handling
+- Status tracking and updates
+- Automated notifications
+- Document management
+`
+}
+
+#### Pages & Content
+${
+  extractedPages
+    ? `
+Application pages and content structure:
+${extractedPages}
+`
+    : `
+- Landing page with clear value proposition
+- User dashboard with key metrics
+- Settings and configuration pages
+- Help and documentation sections
+`
+}
+
+#### Brand Compliance
+${
+  extractedBrand
+    ? `
+Brand guidelines and design requirements:
+${extractedBrand}
+`
+    : `
+- Consistent color scheme and typography
+- Professional and modern design
+- Responsive layout for all devices
+- Accessible interface design
+`
+}
+
+## User Flows & Stakeholder Analysis
+${
+  extractedStakeholder ||
+  extractedFlowDetails ||
+  `
+Primary user journeys include:
+- New user onboarding and setup
+- Daily workflow operations
+- Administrative and management tasks
+- Support and help processes
+`
+}
+
+## Technical Implementation
+
+### Project Structure
+\`\`\`
+project-root/
+├── client/                 # React frontend
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Application pages
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── utils/          # Helper functions
+│   │   └── styles/         # CSS and styling
+│   ├── public/             # Static assets
+│   └── package.json        # Frontend dependencies
+├── server/                 # Node.js backend
+│   ├── routes/             # API endpoints
+│   ├── models/             # Database models
+│   ├── middleware/         # Custom middleware
+│   ├── utils/              # Backend utilities
+│   └── package.json        # Backend dependencies
+├── database/               # Database schemas and migrations
+├── docs/                   # Project documentation
+└── README.md              # Project setup instructions
+\`\`\`
+
+### Database Schema
+\`\`\`sql
+-- Users table
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(100),
+    last_name VARCHAR(100),
+    role VARCHAR(50) DEFAULT 'user',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Additional tables based on workflow requirements
+-- Projects, tasks, documents, notifications, etc.
+\`\`\`
+
+### API Endpoints
+\`\`\`
+Authentication:
+POST /api/auth/register      # User registration
+POST /api/auth/login         # User login
+POST /api/auth/logout        # User logout
+GET  /api/auth/verify        # Token verification
+
+User Management:
+GET    /api/users/profile    # Get user profile
+PUT    /api/users/profile    # Update user profile
+DELETE /api/users/account    # Delete user account
+
+Application Features:
+GET    /api/dashboard        # Dashboard data
+POST   /api/workflows        # Create new workflow
+GET    /api/workflows/:id    # Get workflow details
+PUT    /api/workflows/:id    # Update workflow
+\`\`\`
+
+## Development Setup
+
+### Prerequisites
+- Node.js (v16 or higher)
+- PostgreSQL database
+- Git for version control
+
+### Installation Steps
+1. Clone the repository
+2. Install frontend dependencies: \`cd client && npm install\`
+3. Install backend dependencies: \`cd server && npm install\`
+4. Set up environment variables
+5. Run database migrations
+6. Start development servers
+
+### Environment Variables
+\`\`\`
+# Database
+DATABASE_URL=postgresql://username:password@localhost:5432/dbname
+
+# JWT
+JWT_SECRET=your-secure-jwt-secret
+
+# API Keys (if needed)
+GEMINI_API_KEY=your-api-key
+\`\`\`
+
+## Deployment Strategy
+- **Frontend**: Deploy to Vercel or Netlify
+- **Backend**: Deploy to Railway, Heroku, or DigitalOcean
+- **Database**: Use managed PostgreSQL service
+- **CI/CD**: GitHub Actions for automated deployment
+
+## Success Metrics
+- User engagement and retention rates
+- Workflow completion times
+- System performance and uptime
+- User satisfaction scores
+
+---
+
+Generated on: ${new Date().toLocaleDateString()}
+Project Planning Tool: Advanced AI-Powered Project Planner
+
+This project plan is optimized for Replit development environment and includes all necessary technical details for implementation.
 `;
 
       // Create and download the file
-      const blob = new Blob([combinedData], { type: 'text/plain' });
+      const blob = new Blob([replitProjectPlan], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.download = `project-data-export-${new Date().toISOString().split('T')[0]}.txt`;
+      link.download = `replit-project-plan-${
+        new Date().toISOString().split("T")[0]
+      }.txt`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      console.log('Project data downloaded successfully');
+      console.log("Replit-compliant project plan downloaded successfully");
     } catch (error) {
-      console.error('Error downloading project data:', error);
+      console.error("Error downloading Replit project plan:", error);
     }
   };
 
@@ -1189,14 +1436,17 @@ Time: ${new Date().toLocaleTimeString()}
           <CardContent>
             <div className="space-y-4">
               <p className="text-gray-600">
-                Download a comprehensive text file containing all your project data from localStorage including project description, flow data, page content cards, and brand guidelines.
+                Generate and download a comprehensive Replit-compliant project
+                plan that combines your project idea, workflow data, page
+                content, and brand guidelines into a structured development
+                blueprint ready for implementation.
               </p>
-              <Button 
+              <Button
                 onClick={downloadProjectData}
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Download Project Data (.txt)
+                Download Replit Project Plan (.txt)
               </Button>
             </div>
           </CardContent>
@@ -1408,8 +1658,6 @@ Time: ${new Date().toLocaleTimeString()}
           </CardContent>
         </Card>
 
-        
-
         {/* Input Data */}
         <div className="grid grid-cols-1 gap-6 mb-6">
           <Card>
@@ -1480,8 +1728,6 @@ Time: ${new Date().toLocaleTimeString()}
             </CardContent>
           </Card>
         )}
-
-        
 
         {/* Generated Project */}
         {generatedProject && (
