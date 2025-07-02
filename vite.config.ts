@@ -16,7 +16,7 @@ export default defineConfig({
         ]
       : []),
   ],
-  base: "/projectPlanner/",
+  // base: "/projectPlanner/",
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),

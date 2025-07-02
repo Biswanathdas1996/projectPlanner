@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { NavigationBar } from "@/components/navigation-bar";
+import { ROUTES } from "@/lib/routes";
 import {
   Mic,
   MicOff,
@@ -459,7 +460,7 @@ Make it specific to the user's requirements discussed in the conversation.`;
 
       // Redirect after short delay
       setTimeout(() => {
-        window.location.href = "/start-over";
+        window.location.href = ROUTES.START_OVER;
       }, 1500);
     } catch (error) {
       console.error("Error generating project plan:", error);
@@ -608,12 +609,12 @@ Make it specific to the user's requirements discussed in the conversation.`;
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       <NavigationBar title="AI Project Consultant" showBackButton />
-      
+
       {/* Workflow Progress */}
       <div className="container mx-auto px-4 pt-6">
         <WorkflowProgress currentStep="chat" />
       </div>
-      
+
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Chat Interface */}
@@ -802,7 +803,9 @@ Make it specific to the user's requirements discussed in the conversation.`;
             <div className="bg-white/90 backdrop-blur-xl border border-gray-200/50 rounded-2xl p-6 shadow-lg">
               <div className="flex items-center gap-2 mb-4">
                 <Target className="h-5 w-5 text-blue-600" />
-                <h3 className="text-lg font-semibold text-gray-900">Progress</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Progress
+                </h3>
               </div>
 
               <div className="space-y-4">

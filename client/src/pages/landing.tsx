@@ -15,6 +15,7 @@ import { STORAGE_KEYS } from "@/lib/bpmn-utils";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { Link, useLocation } from "wouter";
+import { ROUTES } from "@/lib/routes";
 import {
   Sparkles,
   FileText,
@@ -50,7 +51,7 @@ export default function Landing() {
   const [projectPlan, setProjectPlan] = useState("");
   const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
   const [currentStep, setCurrentStep] = useState<"input" | "plan" | "diagram">(
-    "input",
+    "input"
   );
   const [isGeneratingBpmn, setIsGeneratingBpmn] = useState(false);
   const [error, setError] = useState("");
@@ -75,7 +76,7 @@ export default function Landing() {
   // Load data from localStorage when component mounts or route changes
   useEffect(() => {
     const savedProjectDescription = localStorage.getItem(
-      STORAGE_KEYS.PROJECT_DESCRIPTION,
+      STORAGE_KEYS.PROJECT_DESCRIPTION
     );
     const savedProjectPlan = localStorage.getItem(STORAGE_KEYS.PROJECT_PLAN);
     const savedDiagram = localStorage.getItem(STORAGE_KEYS.CURRENT_DIAGRAM);
@@ -112,10 +113,11 @@ export default function Landing() {
     try {
       // Clear all localStorage data before starting fresh
       localStorage.clear();
-      
+
       // Generate suggestions first
-      const generatedSuggestions =
-        await generateCustomSuggestions(projectInput);
+      const generatedSuggestions = await generateCustomSuggestions(
+        projectInput
+      );
       setSuggestions(generatedSuggestions);
       setIsGeneratingSuggestions(false);
       setShowSuggestions(true);
@@ -134,21 +136,28 @@ export default function Landing() {
 
     try {
       // Get existing project description from localStorage
-      const existingDescription = localStorage.getItem("bpmn-project-description") || "";
-      
+      const existingDescription =
+        localStorage.getItem("bpmn-project-description") || "";
+
       // Create enhanced description with selected requirements
-      const enhancedDescription = selectedSuggestions.length > 0
-        ? `${projectInput}\n\nAdditional Requirements:\n${selectedSuggestions.map((s) => `• ${s}`).join("\n")}`
-        : projectInput;
+      const enhancedDescription =
+        selectedSuggestions.length > 0
+          ? `${projectInput}\n\nAdditional Requirements:\n${selectedSuggestions
+              .map((s) => `• ${s}`)
+              .join("\n")}`
+          : projectInput;
 
       // Append to existing description or set new one
-      const finalDescription = existingDescription 
+      const finalDescription = existingDescription
         ? `${existingDescription}\n\n${enhancedDescription}`
         : enhancedDescription;
 
       // Store the enhanced description in localStorage
       localStorage.setItem("bpmn-project-description", finalDescription);
-      localStorage.setItem(STORAGE_KEYS.PROJECT_DESCRIPTION, enhancedDescription);
+      localStorage.setItem(
+        STORAGE_KEYS.PROJECT_DESCRIPTION,
+        enhancedDescription
+      );
 
       // Redirect to /plan page without API calls
       setLocation("/market-research");
@@ -187,7 +196,7 @@ export default function Landing() {
     setSelectedSuggestions((prev) =>
       prev.includes(suggestion)
         ? prev.filter((s) => s !== suggestion)
-        : [...prev, suggestion],
+        : [...prev, suggestion]
     );
   };
 
@@ -252,7 +261,9 @@ export default function Landing() {
         .substring(0, 50)
         .replace(/[^a-zA-Z0-9]/g, "_");
       pdf.save(
-        `project-plan-${projectName}-${new Date().toISOString().slice(0, 10)}.pdf`,
+        `project-plan-${projectName}-${new Date()
+          .toISOString()
+          .slice(0, 10)}.pdf`
       );
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -397,7 +408,10 @@ export default function Landing() {
                           className="h-5 w-5 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 border-2 border-gray-300"
                         />
                         <label
-                          htmlFor={`suggestion-${suggestion.replace(/\s+/g, "-")}`}
+                          htmlFor={`suggestion-${suggestion.replace(
+                            /\s+/g,
+                            "-"
+                          )}`}
                           className="text-sm text-gray-700 cursor-pointer flex-1 leading-relaxed"
                           onClick={() => toggleSuggestion(suggestion)}
                         >
@@ -462,8 +476,6 @@ export default function Landing() {
           </div>
         )}
 
-        
-
         {/* Start Here Section */}
         <Card className="mb-6 border-0 shadow-sm bg-white">
           <CardHeader className="pb-4">
@@ -478,173 +490,177 @@ export default function Landing() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-2 mb-2">
                 <MessageCircle className="h-5 w-5 text-blue-600" />
-                <h4 className="font-medium text-blue-800">Recommended: Start with AI Chat</h4>
+                <h4 className="font-medium text-blue-800">
+                  Recommended: Start with AI Chat
+                </h4>
               </div>
               <p className="text-blue-700 text-sm mb-3">
-                Get personalized guidance through voice or text conversation with our AI consultant.
+                Get personalized guidance through voice or text conversation
+                with our AI consultant.
               </p>
-              <Link href="/ai-consultant">
+              <Link href={ROUTES.AI_CONSULTANT}>
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                   <MessageCircle className="h-4 w-4 mr-2" />
                   Start AI Chat Session
                 </Button>
               </Link>
             </div>
-            
+
             <div className="border-t border-gray-200 pt-4">
               <p className="text-gray-600 mb-3">
-                Or describe your project idea here to begin the traditional workflow:
+                Or describe your project idea here to begin the traditional
+                workflow:
               </p>
 
               <Textarea
-              placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
-              value={projectInput}
-              onChange={(e) => setProjectInput(e.target.value)}
-              className="min-h-32 text-sm"
-              disabled={isGeneratingPlan}
-            />
+                placeholder="Example: Create an e-commerce website with user registration, product catalog, shopping cart, payment processing, and order management. Include admin features for inventory management and analytics."
+                value={projectInput}
+                onChange={(e) => setProjectInput(e.target.value)}
+                className="min-h-32 text-sm"
+                disabled={isGeneratingPlan}
+              />
 
-            {/* Compact Example Projects Section */}
-            <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Quick Start Examples
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    Social Media
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Profiles, messaging, content sharing
-                  </p>
-                </div>
+              {/* Compact Example Projects Section */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Quick Start Examples
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Create a comprehensive social media platform with user profiles, real-time messaging, content sharing (posts, photos, videos), news feed with personalized algorithms, friend connections, groups, events management, notifications system, and mobile app compatibility. Include admin dashboard for content moderation and analytics."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Social Media
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Profiles, messaging, content sharing
+                    </p>
+                  </div>
 
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    Project Management
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Tasks, collaboration, timelines
-                  </p>
-                </div>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Build a complete project management application with task tracking, team collaboration, time logging, file sharing, project timelines (Gantt charts), resource allocation, budget tracking, reporting dashboard, and integrations with third-party tools. Support multiple project types and user roles."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Project Management
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Tasks, collaboration, timelines
+                    </p>
+                  </div>
 
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    Learning Platform
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Courses, quizzes, certifications
-                  </p>
-                </div>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Develop an online learning management system with course creation, video streaming, interactive quizzes, student progress tracking, certification system, discussion forums, assignment submissions, grade management, and payment processing for course purchases. Include mobile app for offline learning."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Learning Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Courses, quizzes, certifications
+                    </p>
+                  </div>
 
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    Finance App
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Expense tracking, investments
-                  </p>
-                </div>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Create a fintech application for personal finance management with bank account integration, expense tracking, budget planning, investment portfolio tracking, bill reminders, financial goal setting, credit score monitoring, and AI-powered financial advice. Ensure bank-level security and compliance."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Finance App
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Expense tracking, investments
+                    </p>
+                  </div>
 
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    Healthcare Platform
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Records, telemedicine, billing
-                  </p>
-                </div>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Build a healthcare management platform with patient records, appointment scheduling, telemedicine video calls, prescription management, medical history tracking, insurance integration, billing system, and provider dashboard. Include patient mobile app and compliance with healthcare regulations."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      Healthcare Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Records, telemedicine, billing
+                    </p>
+                  </div>
 
-                <div
-                  className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
-                  onClick={() =>
-                    setProjectInput(
-                      "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands.",
-                    )
-                  }
-                >
-                  <h5 className="font-medium text-gray-800 text-xs mb-0.5">
-                    IoT Platform
-                  </h5>
-                  <p className="text-xs text-gray-500">
-                    Smart devices, automation
-                  </p>
+                  <div
+                    className="bg-white rounded-md p-2 border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all cursor-pointer"
+                    onClick={() =>
+                      setProjectInput(
+                        "Develop a smart home IoT platform with device management, automation rules, energy monitoring, security system integration, voice control, mobile app, real-time alerts, usage analytics, and machine learning for predictive automation. Support multiple device protocols and brands."
+                      )
+                    }
+                  >
+                    <h5 className="font-medium text-gray-800 text-xs mb-0.5">
+                      IoT Platform
+                    </h5>
+                    <p className="text-xs text-gray-500">
+                      Smart devices, automation
+                    </p>
+                  </div>
                 </div>
+                <p className="text-xs text-blue-600 mt-3">
+                  Click any example to use it as a starting point, then
+                  customize as needed.
+                </p>
               </div>
-              <p className="text-xs text-blue-600 mt-3">
-                Click any example to use it as a starting point, then customize
-                as needed.
-              </p>
-            </div>
 
-            <div className="flex justify-between items-center pt-2">
-              <div className="text-xs text-gray-400">
-                {projectInput.length}/1000 characters
+              <div className="flex justify-between items-center pt-2">
+                <div className="text-xs text-gray-400">
+                  {projectInput.length}/1000 characters
+                </div>
+                <Button
+                  onClick={handleGenerateProjectPlan}
+                  disabled={
+                    !projectInput.trim() ||
+                    isGeneratingPlan ||
+                    isGeneratingSuggestions
+                  }
+                  size="sm"
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
+                >
+                  {isGeneratingSuggestions ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : isGeneratingPlan ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3 w-3 mr-2" />
+                      Generate Plan
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button
-                onClick={handleGenerateProjectPlan}
-                disabled={
-                  !projectInput.trim() ||
-                  isGeneratingPlan ||
-                  isGeneratingSuggestions
-                }
-                size="sm"
-                className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-sm"
-              >
-                {isGeneratingSuggestions ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : isGeneratingPlan ? (
-                  <>
-                    <Loader2 className="h-3 w-3 mr-2 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-3 w-3 mr-2" />
-                    Generate Plan
-                  </>
-                )}
-              </Button>
-            </div>
             </div>
           </CardContent>
         </Card>
@@ -654,7 +670,7 @@ export default function Landing() {
           <div className="space-y-12">
             {/* Features Grid */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Link href="/plan">
+              <Link href={ROUTES.PLAN}>
                 <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
                   <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mb-4">
                     <Sparkles className="h-6 w-6 text-white" />
@@ -669,7 +685,7 @@ export default function Landing() {
                 </div>
               </Link>
 
-              <Link href="/market-research">
+              <Link href={ROUTES.MARKET_RESEARCH}>
                 <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
                   <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-lg flex items-center justify-center mb-4">
                     <TrendingUp className="h-6 w-6 text-white" />
@@ -684,7 +700,7 @@ export default function Landing() {
                 </div>
               </Link>
 
-              <Link href="/user-journey">
+              <Link href={ROUTES.USER_JOURNEY}>
                 <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
                   <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg flex items-center justify-center mb-4">
                     <Users className="h-6 w-6 text-white" />
@@ -699,7 +715,7 @@ export default function Landing() {
                 </div>
               </Link>
 
-              <Link href="/user-stories">
+              <Link href={ROUTES.USER_STORIES}>
                 <div className="bg-white rounded-xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow cursor-pointer">
                   <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <FileText className="h-6 w-6 text-white" />

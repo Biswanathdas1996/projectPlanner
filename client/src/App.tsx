@@ -17,39 +17,43 @@ import AIConsultant from "@/pages/ai-consultant";
 import Landing from "@/pages/landing";
 import HomeLanding from "@/pages/home-landing";
 import NotFound from "@/pages/not-found";
+import { ROUTES } from "@/lib/routes";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={HomeLanding} />
-      <Route path="/plan" component={ProjectPlanner} />
-      <Route path="/start-over" component={Landing} />
-      <Route path="/landing" component={Landing} />
-      <Route path="/user-journey" component={UserJourneyEnhanced} />
-      <Route path="/user-journey-enhanced" component={UserJourneyEnhanced} />
-      <Route path="/stakeholder-flows" component={UserJourneyEnhanced} />
-      <Route path="/user-stories" component={UserStoryGenerator} />
-      <Route path="/stories" component={UserStoryGenerator} />
-      <Route path="/gherkin" component={UserStoryGenerator} />
-      <Route path="/code-generator" component={CodeGenerator} />
-      <Route path="/code" component={CodeGenerator} />
-      <Route path="/wireframes" component={WireframeDesigner} />
-      <Route path="/wireframe-designer" component={WireframeDesigner} />
-      <Route path="/design" component={WireframeDesigner} />
-      <Route path="/market-research" component={MarketResearch} />
-      <Route path="/research" component={MarketResearch} />
-      <Route path="/competitors" component={MarketResearch} />
-      <Route path="/editor" component={BpmnEditor} />
-      <Route path="/bpmn-editor" component={BpmnEditor} />
-      <Route path="/diagram" component={BpmnEditor} />
-      <Route path="/html-editor" component={HTMLEditor} />
-      <Route path="/html-editor/:wireframeId" component={HTMLEditor} />
-      <Route path="/flow-mapping" component={FlowWireframeMappingPage} />
-      <Route path="/mapping" component={FlowWireframeMappingPage} />
-      <Route path="/flows" component={FlowWireframeMappingPage} />
-      <Route path="/ai-consultant" component={AIConsultant} />
-      <Route path="/consultant" component={AIConsultant} />
-      <Route path="/chat" component={AIConsultant} />
+      <Route path={ROUTES.HOME} component={HomeLanding} />
+      <Route path={ROUTES.PLAN} component={ProjectPlanner} />
+      <Route path={ROUTES.START_OVER} component={Landing} />
+      <Route path={ROUTES.LANDING} component={Landing} />
+      <Route path={ROUTES.USER_JOURNEY} component={UserJourneyEnhanced} />
+      <Route
+        path={ROUTES.USER_JOURNEY_ENHANCED}
+        component={UserJourneyEnhanced}
+      />
+      <Route path={ROUTES.STAKEHOLDER_FLOWS} component={UserJourneyEnhanced} />
+      <Route path={ROUTES.USER_STORIES} component={UserStoryGenerator} />
+      <Route path={ROUTES.STORIES} component={UserStoryGenerator} />
+      <Route path={ROUTES.GHERKIN} component={UserStoryGenerator} />
+      <Route path={ROUTES.CODE_GENERATOR} component={CodeGenerator} />
+      <Route path={ROUTES.CODE} component={CodeGenerator} />
+      <Route path={ROUTES.WIREFRAMES} component={WireframeDesigner} />
+      <Route path={ROUTES.WIREFRAME_DESIGNER} component={WireframeDesigner} />
+      <Route path={ROUTES.DESIGN} component={WireframeDesigner} />
+      <Route path={ROUTES.MARKET_RESEARCH} component={MarketResearch} />
+      <Route path={ROUTES.RESEARCH} component={MarketResearch} />
+      <Route path={ROUTES.COMPETITORS} component={MarketResearch} />
+      <Route path={ROUTES.EDITOR} component={BpmnEditor} />
+      <Route path={ROUTES.BPMN_EDITOR} component={BpmnEditor} />
+      <Route path={ROUTES.DIAGRAM} component={BpmnEditor} />
+      <Route path={ROUTES.HTML_EDITOR} component={HTMLEditor} />
+      <Route path={ROUTES.HTML_EDITOR_WITH_ID} component={HTMLEditor} />
+      <Route path={ROUTES.FLOW_MAPPING} component={FlowWireframeMappingPage} />
+      <Route path={ROUTES.MAPPING} component={FlowWireframeMappingPage} />
+      <Route path={ROUTES.FLOWS} component={FlowWireframeMappingPage} />
+      <Route path={ROUTES.AI_CONSULTANT} component={AIConsultant} />
+      <Route path={ROUTES.CONSULTANT} component={AIConsultant} />
+      <Route path={ROUTES.CHAT} component={AIConsultant} />
       <Route component={NotFound} />
     </Switch>
   );

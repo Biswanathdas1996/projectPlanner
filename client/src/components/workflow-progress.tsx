@@ -1,5 +1,6 @@
 import { useLocation } from "wouter";
 import { hasMarketResearchData } from "@/lib/storage-utils";
+import { ROUTES } from "@/lib/routes";
 import {
   ArrowRight,
   CheckCircle,
@@ -14,7 +15,15 @@ import {
 } from "lucide-react";
 
 interface WorkflowProgressProps {
-  currentStep?: "input" | "research" | "plan" | "diagram" | "wireframes" | "stories" | "code" | "chat";
+  currentStep?:
+    | "input"
+    | "research"
+    | "plan"
+    | "diagram"
+    | "wireframes"
+    | "stories"
+    | "code"
+    | "chat";
   completedSteps?: string[];
 }
 
@@ -26,14 +35,14 @@ export function WorkflowProgress({
 
   // Navigation mapping for each step
   const stepRoutes = {
-    chat: "/ai-consultant",
-    input: "/start-over",
-    research: "/market-research",
-    plan: "/plan",
-    diagram: "/user-journey",
-    wireframes: "/wireframes",
-    stories: "/user-stories",
-    code: "/code",
+    chat: ROUTES.AI_CONSULTANT,
+    input: ROUTES.START_OVER,
+    research: ROUTES.MARKET_RESEARCH,
+    plan: ROUTES.PLAN,
+    diagram: ROUTES.USER_JOURNEY,
+    wireframes: ROUTES.WIREFRAMES,
+    stories: ROUTES.USER_STORIES,
+    code: ROUTES.CODE,
   };
 
   const handleStepClick = (step: string) => {
@@ -46,35 +55,35 @@ export function WorkflowProgress({
   // Determine step status based on current route and passed props
   const getStepStatus = (step: string) => {
     if (completedSteps.includes(step)) return "completed";
-    
+
     // Check for completed steps based on available data
     const hasResearchData = hasMarketResearchData();
 
     // Route-based determination - explicit handling for each route
     switch (location) {
-      case "/start-over":
+      case ROUTES.START_OVER:
         if (step === "input") return "active";
         return "pending";
-      case "/market-research":
+      case ROUTES.MARKET_RESEARCH:
         if (step === "input") return "completed";
         if (step === "research") return "active";
         return "pending";
-      case "/plan":
+      case ROUTES.PLAN:
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
         if (step === "plan") return "active";
         return "pending";
-      case "/user-journey":
-      case "/user-journey-enhanced":
+      case ROUTES.USER_JOURNEY:
+      case ROUTES.USER_JOURNEY_ENHANCED:
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
         if (step === "plan") return "completed";
         if (step === "diagram") return "active";
         return "pending";
-      case "/wireframes":
-      case "/wireframe-designer":
+      case ROUTES.WIREFRAMES:
+      case ROUTES.WIREFRAME_DESIGNER:
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
@@ -82,7 +91,7 @@ export function WorkflowProgress({
         if (step === "diagram") return "completed";
         if (step === "wireframes") return "active";
         return "pending";
-      case "/user-stories":
+      case ROUTES.USER_STORIES:
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
@@ -91,7 +100,7 @@ export function WorkflowProgress({
         if (step === "wireframes") return "completed";
         if (step === "stories") return "active";
         return "pending";
-      case "/code":
+      case ROUTES.CODE:
         if (step === "input") return "completed";
         if (step === "research")
           return hasResearchData ? "completed" : "pending";
@@ -104,7 +113,7 @@ export function WorkflowProgress({
       default:
         // Handle currentStep prop if provided
         if (currentStep === step) return "active";
-        
+
         // Default logic for home page or other routes
         if (step === "input") return "active";
         if (step === "research")
@@ -123,8 +132,8 @@ export function WorkflowProgress({
               getStepStatus("chat") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("chat") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("chat")}
           >
@@ -133,8 +142,8 @@ export function WorkflowProgress({
                 getStepStatus("chat") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("chat") === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("chat") === "completed" ? (
@@ -150,10 +159,12 @@ export function WorkflowProgress({
                 getStepStatus("chat") === "active"
                   ? "text-blue-700"
                   : getStepStatus("chat") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
-            >AI Consultant</span>
+            >
+              AI Consultant
+            </span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
@@ -186,7 +197,9 @@ export function WorkflowProgress({
                   ? "text-green-700"
                   : "text-gray-600"
               }`}
-            >Idea</span>
+            >
+              Idea
+            </span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
@@ -197,8 +210,8 @@ export function WorkflowProgress({
               getStepStatus("research") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("research") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("research")}
           >
@@ -207,8 +220,8 @@ export function WorkflowProgress({
                 getStepStatus("research") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("research") === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("research") === "completed" ? (
@@ -224,10 +237,12 @@ export function WorkflowProgress({
                 getStepStatus("research") === "active"
                   ? "text-blue-700"
                   : getStepStatus("research") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
-            >Research</span>
+            >
+              Research
+            </span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
@@ -238,8 +253,8 @@ export function WorkflowProgress({
               getStepStatus("plan") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("plan") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("plan")}
           >
@@ -248,8 +263,8 @@ export function WorkflowProgress({
                 getStepStatus("plan") === "active"
                   ? "bg-blue-500 text-white"
                   : getStepStatus("plan") === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("plan") === "completed" ? (
@@ -265,10 +280,12 @@ export function WorkflowProgress({
                 getStepStatus("plan") === "active"
                   ? "text-blue-700"
                   : getStepStatus("plan") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
-            >Stakeholders & Process</span>
+            >
+              Stakeholders & Process
+            </span>
           </div>
 
           <ArrowRight className="h-4 w-4 text-gray-300" />
@@ -279,8 +296,8 @@ export function WorkflowProgress({
               getStepStatus("wireframes") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("wireframes") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("wireframes")}
           >
@@ -289,8 +306,8 @@ export function WorkflowProgress({
                 getStepStatus("wireframes") === "completed"
                   ? "bg-green-500 text-white"
                   : getStepStatus("wireframes") === "active"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("wireframes") === "completed" ? (
@@ -306,8 +323,8 @@ export function WorkflowProgress({
                 getStepStatus("wireframes") === "active"
                   ? "text-blue-700"
                   : getStepStatus("wireframes") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
             >
               Wireframes
@@ -322,8 +339,8 @@ export function WorkflowProgress({
               getStepStatus("code") === "active"
                 ? "bg-blue-100 shadow-md"
                 : getStepStatus("code") === "completed"
-                  ? "bg-green-100"
-                  : "bg-white"
+                ? "bg-green-100"
+                : "bg-white"
             }`}
             onClick={() => handleStepClick("code")}
           >
@@ -332,8 +349,8 @@ export function WorkflowProgress({
                 getStepStatus("code") === "completed"
                   ? "bg-green-500 text-white"
                   : getStepStatus("code") === "active"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-600"
+                  ? "bg-blue-500 text-white"
+                  : "bg-gray-200 text-gray-600"
               }`}
             >
               {getStepStatus("code") === "completed" ? (
@@ -349,8 +366,8 @@ export function WorkflowProgress({
                 getStepStatus("code") === "active"
                   ? "text-blue-700"
                   : getStepStatus("code") === "completed"
-                    ? "text-green-700"
-                    : "text-gray-600"
+                  ? "text-green-700"
+                  : "text-gray-600"
               }`}
             >
               Code

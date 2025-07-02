@@ -3,7 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NavigationBar } from "@/components/navigation-bar";
@@ -20,6 +26,7 @@ import {
   saveProjectDescription,
 } from "@/lib/storage-utils";
 import { Link } from "wouter";
+import { ROUTES } from "@/lib/routes";
 import {
   Search,
   Globe,
@@ -48,12 +55,66 @@ import {
 
 // Country list for market research
 const COUNTRIES = [
-  "United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Netherlands", "Sweden", "Norway", "Denmark",
-  "Switzerland", "Austria", "Belgium", "Ireland", "Finland", "Italy", "Spain", "Portugal", "Japan", "South Korea",
-  "Singapore", "Hong Kong", "New Zealand", "Israel", "United Arab Emirates", "Saudi Arabia", "Brazil", "Mexico", "Argentina", "Chile",
-  "Colombia", "Peru", "India", "China", "Thailand", "Malaysia", "Indonesia", "Philippines", "Vietnam", "Taiwan",
-  "Poland", "Czech Republic", "Hungary", "Romania", "Bulgaria", "Croatia", "Slovenia", "Estonia", "Latvia", "Lithuania",
-  "South Africa", "Nigeria", "Kenya", "Egypt", "Morocco", "Ghana", "Turkey", "Russia", "Ukraine", "Belarus"
+  "United States",
+  "United Kingdom",
+  "Canada",
+  "Australia",
+  "Germany",
+  "France",
+  "Netherlands",
+  "Sweden",
+  "Norway",
+  "Denmark",
+  "Switzerland",
+  "Austria",
+  "Belgium",
+  "Ireland",
+  "Finland",
+  "Italy",
+  "Spain",
+  "Portugal",
+  "Japan",
+  "South Korea",
+  "Singapore",
+  "Hong Kong",
+  "New Zealand",
+  "Israel",
+  "United Arab Emirates",
+  "Saudi Arabia",
+  "Brazil",
+  "Mexico",
+  "Argentina",
+  "Chile",
+  "Colombia",
+  "Peru",
+  "India",
+  "China",
+  "Thailand",
+  "Malaysia",
+  "Indonesia",
+  "Philippines",
+  "Vietnam",
+  "Taiwan",
+  "Poland",
+  "Czech Republic",
+  "Hungary",
+  "Romania",
+  "Bulgaria",
+  "Croatia",
+  "Slovenia",
+  "Estonia",
+  "Latvia",
+  "Lithuania",
+  "South Africa",
+  "Nigeria",
+  "Kenya",
+  "Egypt",
+  "Morocco",
+  "Ghana",
+  "Turkey",
+  "Russia",
+  "Ukraine",
+  "Belarus",
 ];
 
 export default function MarketResearch() {
@@ -61,35 +122,40 @@ export default function MarketResearch() {
   const [selectedCountry, setSelectedCountry] = useState("United States");
   const [isResearching, setIsResearching] = useState(false);
   const [researchData, setResearchData] = useState<MarketResearchData | null>(
-    null,
+    null
   );
   const [error, setError] = useState("");
   const [currentStep, setCurrentStep] = useState<
     "input" | "research" | "results"
   >("input");
-  
+
   // Pagination state for competitor analysis
   const [currentPage, setCurrentPage] = useState(1);
   const competitorsPerPage = 6;
 
   // State for selected features
-  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(new Set());
+  const [selectedFeatures, setSelectedFeatures] = useState<Set<string>>(
+    new Set()
+  );
   const [isUpdatingProject, setIsUpdatingProject] = useState(false);
 
   // Helper function to convert market cap string to number for sorting
   const parseMarketCap = (marketCap: string): number => {
     if (!marketCap) return 0;
-    const cleanValue = marketCap.toLowerCase().replace(/[^0-9.]/g, '');
+    const cleanValue = marketCap.toLowerCase().replace(/[^0-9.]/g, "");
     const numValue = parseFloat(cleanValue);
-    if (marketCap.toLowerCase().includes('trillion')) return numValue * 1000000;
-    if (marketCap.toLowerCase().includes('billion')) return numValue * 1000;
-    if (marketCap.toLowerCase().includes('million')) return numValue;
+    if (marketCap.toLowerCase().includes("trillion")) return numValue * 1000000;
+    if (marketCap.toLowerCase().includes("billion")) return numValue * 1000;
+    if (marketCap.toLowerCase().includes("million")) return numValue;
     return numValue;
   };
 
   // Sort competitors by market cap in descending order
-  const sortedCompetitors = researchData?.competitors ? 
-    [...researchData.competitors].sort((a, b) => parseMarketCap(b.marketCap) - parseMarketCap(a.marketCap)) : [];
+  const sortedCompetitors = researchData?.competitors
+    ? [...researchData.competitors].sort(
+        (a, b) => parseMarketCap(b.marketCap) - parseMarketCap(a.marketCap)
+      )
+    : [];
 
   // Calculate pagination
   const totalPages = Math.ceil(sortedCompetitors.length / competitorsPerPage);
@@ -99,9 +165,13 @@ export default function MarketResearch() {
 
   // Load project input and existing research from localStorage
   useEffect(() => {
-    const savedProjectDescription = localStorage.getItem('bpmn-project-description') || getProjectDescription();
+    const savedProjectDescription =
+      localStorage.getItem("bpmn-project-description") ||
+      getProjectDescription();
     const savedResearchData = getMarketResearchData();
-    const savedSelectedFeatures = localStorage.getItem('market-research-selected-features');
+    const savedSelectedFeatures = localStorage.getItem(
+      "market-research-selected-features"
+    );
 
     if (savedProjectDescription) {
       setProjectInput(savedProjectDescription);
@@ -126,7 +196,7 @@ Target Audience:
 - Investment beginners seeking guidance and portfolio management
 
 The platform will use machine learning to analyze spending patterns, provide personalized recommendations, and help users make informed financial decisions. It will integrate with major banks and financial institutions to provide real-time data synchronization.`;
-      
+
       setProjectInput(defaultProjectIdea);
     }
 
@@ -139,13 +209,13 @@ The platform will use machine learning to analyze spending patterns, provide per
 
     if (savedSelectedFeatures) {
       try {
-        const features = JSON.parse(savedSelectedFeatures);
-        const featuresSet = new Set(features);
+        const features = JSON.parse(savedSelectedFeatures) as string[];
+        const featuresSet = new Set<string>(features);
         setSelectedFeatures(featuresSet);
         // Ensure project description is updated with loaded features
         updateProjectDescriptionWithFeatures(featuresSet);
       } catch (e) {
-        console.warn('Failed to parse saved selected features');
+        console.warn("Failed to parse saved selected features");
       }
     }
   }, []);
@@ -153,7 +223,7 @@ The platform will use machine learning to analyze spending patterns, provide per
   const handleProjectInputChange = (value: string) => {
     setProjectInput(value);
     // Save to both storage systems for consistency
-    localStorage.setItem('bpmn-project-description', value);
+    localStorage.setItem("bpmn-project-description", value);
     saveProjectDescription(value);
   };
 
@@ -167,14 +237,15 @@ The platform will use machine learning to analyze spending patterns, provide per
     try {
       const marketResearchAgent = createMarketResearchAgent();
       const researchPrompt = `${projectInput}\n\nFocus research specifically on the ${selectedCountry} market. Include country-specific competitors, market conditions, regulations, and opportunities.`;
-      const researchData =
-        await marketResearchAgent.performMarketResearch(researchPrompt);
+      const researchData = await marketResearchAgent.performMarketResearch(
+        researchPrompt
+      );
 
       // Add country information to the research data
       const countrySpecificData = {
         ...researchData,
         targetCountry: selectedCountry,
-        marketAnalysis: `${researchData.marketOverview}\n\nTarget Market: ${selectedCountry}`
+        marketAnalysis: `${researchData.marketOverview}\n\nTarget Market: ${selectedCountry}`,
       };
 
       setResearchData(countrySpecificData);
@@ -241,7 +312,7 @@ ${researchData.competitors
 - Market Share: ${comp.marketShare}
 - Pricing: ${comp.pricing}
 - Key Features: ${comp.keyFeatures.join(", ")}
-`,
+`
   )
   .join("\n")}
 
@@ -263,35 +334,47 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
       newSelectedFeatures.delete(featureKey);
     }
     setSelectedFeatures(newSelectedFeatures);
-    
+
     // Save to localStorage
-    localStorage.setItem('market-research-selected-features', JSON.stringify([...newSelectedFeatures]));
-    
+    localStorage.setItem(
+      "market-research-selected-features",
+      JSON.stringify(Array.from(newSelectedFeatures))
+    );
+
     // Automatically update project description with selected features
     updateProjectDescriptionWithFeatures(newSelectedFeatures);
   };
 
   const updateProjectDescriptionWithFeatures = (features: Set<string>) => {
     // Get current project description
-    const currentProject = localStorage.getItem('bpmn-project-description') || projectInput;
-    
+    const currentProject =
+      localStorage.getItem("bpmn-project-description") || projectInput;
+
     // Remove existing market research features section if it exists
-    const cleanedProject = currentProject.replace(/\n\n## Additional Features \(from Market Research\):[\s\S]*?(?=\n\n##|\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\.|$)/g, '');
-    
+    const cleanedProject = currentProject.replace(
+      /\n\n## Additional Features \(from Market Research\):[\s\S]*?(?=\n\n##|\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\.|$)/g,
+      ""
+    );
+
     if (features.size === 0) {
       // If no features selected, just save the cleaned project description
-      const finalProject = cleanedProject.replace(/\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\./g, '');
-      localStorage.setItem('bpmn-project-description', finalProject);
+      const finalProject = cleanedProject.replace(
+        /\n\nThese features have been identified from competitive analysis and can help differentiate the product in the market\./g,
+        ""
+      );
+      localStorage.setItem("bpmn-project-description", finalProject);
       setProjectInput(finalProject);
       return;
     }
-    
+
     // Convert selected features to readable format
-    const featuresList = [...features].map(featureKey => {
-      const [competitorName, feature] = featureKey.split('::');
-      return `- ${feature} (inspired by ${competitorName})`;
-    }).join('\n');
-    
+    const featuresList = Array.from(features)
+      .map((featureKey) => {
+        const [competitorName, feature] = featureKey.split("::");
+        return `- ${feature} (inspired by ${competitorName})`;
+      })
+      .join("\n");
+
     // Create enhanced project description
     const enhancedProject = `${cleanedProject}
 
@@ -299,29 +382,29 @@ ${researchData.differentiationOpportunities.map((opp) => `- ${opp}`).join("\n")}
 ${featuresList}
 
 These features have been identified from competitive analysis and can help differentiate the product in the market.`;
-    
+
     // Update both localStorage and state
-    localStorage.setItem('bpmn-project-description', enhancedProject);
+    localStorage.setItem("bpmn-project-description", enhancedProject);
     setProjectInput(enhancedProject);
   };
 
   const addSelectedFeaturesToProject = async () => {
     if (selectedFeatures.size === 0) return;
-    
+
     setIsUpdatingProject(true);
-    
+
     try {
       // Features are already automatically added to project description
       // This function now just clears the selection
       setSelectedFeatures(new Set());
-      localStorage.removeItem('market-research-selected-features');
-      
+      localStorage.removeItem("market-research-selected-features");
+
       // Update project description to remove the features section since we're "finalizing" the addition
-      const currentProject = localStorage.getItem('bpmn-project-description') || projectInput;
+      const currentProject =
+        localStorage.getItem("bpmn-project-description") || projectInput;
       updateProjectDescriptionWithFeatures(new Set());
-      
     } catch (error) {
-      console.error('Error finalizing project features:', error);
+      console.error("Error finalizing project features:", error);
     } finally {
       setIsUpdatingProject(false);
     }
@@ -388,10 +471,17 @@ These features have been identified from competitive analysis and can help diffe
 
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="country-select" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="country-select"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Target Market Country
                   </Label>
-                  <Select value={selectedCountry} onValueChange={setSelectedCountry} disabled={isResearching}>
+                  <Select
+                    value={selectedCountry}
+                    onValueChange={setSelectedCountry}
+                    disabled={isResearching}
+                  >
                     <SelectTrigger id="country-select" className="w-full">
                       <SelectValue placeholder="Select a country" />
                     </SelectTrigger>
@@ -406,7 +496,10 @@ These features have been identified from competitive analysis and can help diffe
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="project-description" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="project-description"
+                    className="text-sm font-medium text-gray-700"
+                  >
                     Project Description
                   </Label>
                   <Textarea
@@ -616,7 +709,11 @@ These features have been identified from competitive analysis and can help diffe
                             </h4>
                             {competitor.website && (
                               <a
-                                href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                                href={
+                                  competitor.website.startsWith("http")
+                                    ? competitor.website
+                                    : `https://${competitor.website}`
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:text-blue-800 transition-colors"
@@ -632,12 +729,16 @@ These features have been identified from competitive analysis and can help diffe
                           {competitor.website && (
                             <div className="mt-2">
                               <a
-                                href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                                href={
+                                  competitor.website.startsWith("http")
+                                    ? competitor.website
+                                    : `https://${competitor.website}`
+                                }
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-xs text-blue-600 hover:text-blue-800 hover:underline break-all"
                               >
-                                {competitor.website.replace(/^https?:\/\//, '')}
+                                {competitor.website.replace(/^https?:\/\//, "")}
                               </a>
                             </div>
                           )}
@@ -651,27 +752,35 @@ These features have been identified from competitive analysis and can help diffe
                       {/* Business Metrics Grid */}
                       <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">Market Cap</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            Market Cap
+                          </div>
                           <div className="font-semibold text-green-600 text-sm">
-                            {competitor.marketCap || 'Generating...'}
+                            {competitor.marketCap || "Generating..."}
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">Revenue</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            Revenue
+                          </div>
                           <div className="font-semibold text-blue-600 text-sm">
-                            {competitor.revenue || 'Generating...'}
+                            {competitor.revenue || "Generating..."}
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">Founded</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            Founded
+                          </div>
                           <div className="font-semibold text-gray-700 text-sm">
-                            {competitor.founded || 'Generating...'}
+                            {competitor.founded || "Generating..."}
                           </div>
                         </div>
                         <div className="text-center">
-                          <div className="text-xs text-gray-500 uppercase tracking-wide">Employees</div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide">
+                            Employees
+                          </div>
                           <div className="font-semibold text-purple-600 text-sm">
-                            {competitor.employees || 'Generating...'}
+                            {competitor.employees || "Generating..."}
                           </div>
                         </div>
                       </div>
@@ -682,13 +791,17 @@ These features have been identified from competitive analysis and can help diffe
                           {competitor.headquarters && (
                             <div className="flex items-center gap-2 text-sm">
                               <MapPin className="h-3 w-3 text-gray-400" />
-                              <span className="text-gray-600">{competitor.headquarters}</span>
+                              <span className="text-gray-600">
+                                {competitor.headquarters}
+                              </span>
                             </div>
                           )}
                           {competitor.valuation && (
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="h-3 w-3 text-gray-400" />
-                              <span className="text-gray-600">Valuation: {competitor.valuation}</span>
+                              <span className="text-gray-600">
+                                Valuation: {competitor.valuation}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -721,19 +834,30 @@ These features have been identified from competitive analysis and can help diffe
                             Strengths:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {competitor.strengths && Array.isArray(competitor.strengths) && competitor.strengths.length > 0
-                              ? competitor.strengths.slice(0, 2).map((strength, i) => (
+                            {competitor.strengths &&
+                            Array.isArray(competitor.strengths) &&
+                            competitor.strengths.length > 0 ? (
+                              competitor.strengths
+                                .slice(0, 2)
+                                .map((strength, i) => (
                                   <Badge
                                     key={i}
                                     variant="outline"
                                     className="text-xs bg-green-50 border-green-200 text-green-700"
                                   >
-                                    {typeof strength === 'string' ? strength : 'Strong market position'}
+                                    {typeof strength === "string"
+                                      ? strength
+                                      : "Strong market position"}
                                   </Badge>
                                 ))
-                              : <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700">
-                                  Strong market position
-                                </Badge>}
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-green-50 border-green-200 text-green-700"
+                              >
+                                Strong market position
+                              </Badge>
+                            )}
                           </div>
                         </div>
 
@@ -742,19 +866,30 @@ These features have been identified from competitive analysis and can help diffe
                             Weaknesses:
                           </span>
                           <div className="flex flex-wrap gap-1 mt-1">
-                            {competitor.weaknesses && Array.isArray(competitor.weaknesses) && competitor.weaknesses.length > 0
-                              ? competitor.weaknesses.slice(0, 2).map((weakness, i) => (
+                            {competitor.weaknesses &&
+                            Array.isArray(competitor.weaknesses) &&
+                            competitor.weaknesses.length > 0 ? (
+                              competitor.weaknesses
+                                .slice(0, 2)
+                                .map((weakness, i) => (
                                   <Badge
                                     key={i}
                                     variant="outline"
                                     className="text-xs bg-red-50 border-red-200 text-red-700"
                                   >
-                                    {typeof weakness === 'string' ? weakness : 'Market challenges'}
+                                    {typeof weakness === "string"
+                                      ? weakness
+                                      : "Market challenges"}
                                   </Badge>
                                 ))
-                              : <Badge variant="outline" className="text-xs bg-red-50 border-red-200 text-red-700">
-                                  Market challenges
-                                </Badge>}
+                            ) : (
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-red-50 border-red-200 text-red-700"
+                              >
+                                Market challenges
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -766,25 +901,34 @@ These features have been identified from competitive analysis and can help diffe
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-200">
                     <div className="text-sm text-gray-600">
-                      Showing {startIndex + 1}-{Math.min(endIndex, sortedCompetitors.length)} of {sortedCompetitors.length} competitors
+                      Showing {startIndex + 1}-
+                      {Math.min(endIndex, sortedCompetitors.length)} of{" "}
+                      {sortedCompetitors.length} competitors
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
                         disabled={currentPage === 1}
                         className="gap-1"
                       >
                         <ChevronLeft className="h-4 w-4" />
                         Previous
                       </Button>
-                      
+
                       <div className="flex items-center gap-1">
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        {Array.from(
+                          { length: totalPages },
+                          (_, i) => i + 1
+                        ).map((page) => (
                           <Button
                             key={page}
-                            variant={page === currentPage ? "default" : "outline"}
+                            variant={
+                              page === currentPage ? "default" : "outline"
+                            }
                             size="sm"
                             onClick={() => setCurrentPage(page)}
                             className="w-8 h-8 p-0"
@@ -797,7 +941,11 @@ These features have been identified from competitive analysis and can help diffe
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(totalPages, prev + 1)
+                          )
+                        }
                         disabled={currentPage === totalPages}
                         className="gap-1"
                       >
@@ -821,10 +969,11 @@ These features have been identified from competitive analysis and can help diffe
               <CardContent className="p-6">
                 <div className="mb-4">
                   <p className="text-gray-600 text-sm">
-                    Products and platforms that offer similar functionality to your project idea
+                    Products and platforms that offer similar functionality to
+                    your project idea
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {researchData.competitors.map((competitor, index) => (
                     <div
@@ -836,51 +985,66 @@ These features have been identified from competitive analysis and can help diffe
                           <h4 className="font-bold text-gray-900 text-base">
                             {competitor.productName || competitor.name}
                           </h4>
-                          {competitor.productName && competitor.name !== competitor.productName && (
-                            <p className="text-xs text-gray-500 mt-0.5">
-                              by {competitor.name}
-                            </p>
-                          )}
+                          {competitor.productName &&
+                            competitor.name !== competitor.productName && (
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                by {competitor.name}
+                              </p>
+                            )}
                         </div>
                         {competitor.website && (
                           <a
-                            href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                            href={
+                              competitor.website.startsWith("http")
+                                ? competitor.website
+                                : `https://${competitor.website}`
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-blue-600 hover:text-blue-800 transition-colors flex-shrink-0"
-                            title={`Visit ${competitor.productName || competitor.name} website`}
+                            title={`Visit ${
+                              competitor.productName || competitor.name
+                            } website`}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         )}
                       </div>
-                      
+
                       <p className="text-xs text-gray-600 mb-3 line-clamp-3">
                         {competitor.description}
                       </p>
-                      
+
                       <div className="space-y-2">
                         {competitor.website && (
                           <div className="bg-gray-50 rounded p-2">
-                            <div className="text-xs text-gray-500 mb-1">Website:</div>
+                            <div className="text-xs text-gray-500 mb-1">
+                              Website:
+                            </div>
                             <a
-                              href={competitor.website.startsWith('http') ? competitor.website : `https://${competitor.website}`}
+                              href={
+                                competitor.website.startsWith("http")
+                                  ? competitor.website
+                                  : `https://${competitor.website}`
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs text-blue-600 hover:text-blue-800 hover:underline break-all"
                             >
-                              {competitor.website.replace(/^https?:\/\//, '')}
+                              {competitor.website.replace(/^https?:\/\//, "")}
                             </a>
                           </div>
                         )}
-                        
+
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Market Position:</span>
+                          <span className="text-gray-500">
+                            Market Position:
+                          </span>
                           <Badge variant="outline" className="text-xs">
                             {competitor.marketPosition}
                           </Badge>
                         </div>
-                        
+
                         {competitor.pricing && (
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-gray-500">Pricing:</span>
@@ -891,47 +1055,65 @@ These features have been identified from competitive analysis and can help diffe
                         )}
 
                         {/* Features Section */}
-                        {competitor.keyFeatures && competitor.keyFeatures.length > 0 && (
-                          <div className="mt-3 pt-3 border-t border-gray-100">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="h-3 w-3 text-blue-600" />
-                              <span className="text-xs font-medium text-gray-700">Features</span>
+                        {competitor.keyFeatures &&
+                          competitor.keyFeatures.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-gray-100">
+                              <div className="flex items-center gap-2 mb-2">
+                                <CheckCircle className="h-3 w-3 text-blue-600" />
+                                <span className="text-xs font-medium text-gray-700">
+                                  Features
+                                </span>
+                              </div>
+                              <div className="space-y-1.5">
+                                {competitor.keyFeatures.map(
+                                  (feature, featureIndex) => {
+                                    const featureKey = `${
+                                      competitor.productName || competitor.name
+                                    }::${feature}`;
+                                    const isSelected =
+                                      selectedFeatures.has(featureKey);
+
+                                    return (
+                                      <div
+                                        key={featureIndex}
+                                        className="flex items-start gap-2"
+                                      >
+                                        <Checkbox
+                                          id={`feature-${index}-${featureIndex}`}
+                                          checked={isSelected}
+                                          onCheckedChange={(checked) =>
+                                            handleFeatureToggle(
+                                              featureKey,
+                                              checked as boolean
+                                            )
+                                          }
+                                          className="mt-0.5 h-3 w-3"
+                                        />
+                                        <label
+                                          htmlFor={`feature-${index}-${featureIndex}`}
+                                          className="text-xs text-gray-600 leading-relaxed cursor-pointer hover:text-gray-800 transition-colors"
+                                        >
+                                          {feature}
+                                        </label>
+                                      </div>
+                                    );
+                                  }
+                                )}
+                              </div>
                             </div>
-                            <div className="space-y-1.5">
-                              {competitor.keyFeatures.map((feature, featureIndex) => {
-                                const featureKey = `${competitor.productName || competitor.name}::${feature}`;
-                                const isSelected = selectedFeatures.has(featureKey);
-                                
-                                return (
-                                  <div key={featureIndex} className="flex items-start gap-2">
-                                    <Checkbox
-                                      id={`feature-${index}-${featureIndex}`}
-                                      checked={isSelected}
-                                      onCheckedChange={(checked) => handleFeatureToggle(featureKey, checked as boolean)}
-                                      className="mt-0.5 h-3 w-3"
-                                    />
-                                    <label
-                                      htmlFor={`feature-${index}-${featureIndex}`}
-                                      className="text-xs text-gray-600 leading-relaxed cursor-pointer hover:text-gray-800 transition-colors"
-                                    >
-                                      {feature}
-                                    </label>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   ))}
                 </div>
-                
+
                 {researchData.competitors.length === 0 && (
                   <div className="text-center py-8 text-gray-500">
                     <Globe className="h-12 w-12 mx-auto mb-3 text-gray-300" />
                     <p>No similar products found in the current research.</p>
-                    <p className="text-sm">Try generating enhanced data for more results.</p>
+                    <p className="text-sm">
+                      Try generating enhanced data for more results.
+                    </p>
                   </div>
                 )}
 
@@ -965,12 +1147,18 @@ These features have been identified from competitive analysis and can help diffe
                       </Button>
                     </div>
                     <div className="space-y-1">
-                      {[...selectedFeatures].map((featureKey, index) => {
-                        const [competitorName, feature] = featureKey.split('::');
+                      {Array.from(selectedFeatures).map((featureKey, index) => {
+                        const [competitorName, feature] =
+                          featureKey.split("::");
                         return (
-                          <div key={index} className="text-xs text-blue-700 flex items-center gap-2">
+                          <div
+                            key={index}
+                            className="text-xs text-blue-700 flex items-center gap-2"
+                          >
                             <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
-                            <span><strong>{feature}</strong> from {competitorName}</span>
+                            <span>
+                              <strong>{feature}</strong> from {competitorName}
+                            </span>
                           </div>
                         );
                       })}
@@ -1000,7 +1188,7 @@ These features have been identified from competitive analysis and can help diffe
                             {opportunity}
                           </span>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </CardContent>
@@ -1022,7 +1210,7 @@ These features have been identified from competitive analysis and can help diffe
                           <Zap className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <span className="text-sm text-gray-700">{trend}</span>
                         </div>
-                      ),
+                      )
                     )}
                   </div>
                 </CardContent>
@@ -1056,7 +1244,7 @@ These features have been identified from competitive analysis and can help diffe
                               {recommendation}
                             </span>
                           </div>
-                        ),
+                        )
                       )}
                     </div>
                   </div>
@@ -1075,7 +1263,7 @@ These features have been identified from competitive analysis and can help diffe
                           >
                             {opportunity}
                           </Badge>
-                        ),
+                        )
                       )}
                     </div>
                   </div>
@@ -1095,7 +1283,7 @@ These features have been identified from competitive analysis and can help diffe
               </Button>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <Link href="/plan">
+                <Link href={ROUTES.PLAN}>
                   <Button
                     variant="outline"
                     className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white border-0 shadow-lg"
@@ -1104,8 +1292,6 @@ These features have been identified from competitive analysis and can help diffe
                     View Project Plan
                   </Button>
                 </Link>
-
-                
               </div>
             </div>
           </div>

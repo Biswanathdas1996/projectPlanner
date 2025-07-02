@@ -115,6 +115,7 @@ const getPlanContentForExternalUse = (projectPlan: string): string => {
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
 import { Link, useLocation } from "wouter";
+import { ROUTES } from "@/lib/routes";
 import {
   Sparkles,
   FileText,
@@ -6431,7 +6432,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   </Button>
 
                   <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-                    <Link href="/market-research" className="w-full sm:w-auto">
+                    <Link
+                      href={ROUTES.MARKET_RESEARCH}
+                      className="w-full sm:w-auto"
+                    >
                       <Button
                         variant="outline"
                         className={`w-full ${
@@ -6448,7 +6452,10 @@ Please provide the regenerated section content as properly formatted HTML:`;
                       </Button>
                     </Link>
 
-                    <Link href="/user-journey" className="w-full sm:w-auto">
+                    <Link
+                      href={ROUTES.USER_JOURNEY}
+                      className="w-full sm:w-auto"
+                    >
                       <Button
                         variant="outline"
                         className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white border-0 shadow-lg"
@@ -6480,7 +6487,7 @@ Please provide the regenerated section content as properly formatted HTML:`;
                   diagram with process flows and decision points.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/editor">
+                  <Link href={ROUTES.EDITOR}>
                     <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                       <Workflow className="h-4 w-4 mr-2" />
                       View & Edit Diagram

@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/accordion";
 import { NavigationBar } from "@/components/navigation-bar";
 import { WorkflowProgress } from "@/components/workflow-progress";
+import { ROUTES, createRoute } from "@/lib/routes";
 import {
   createWireframeAnalysisAgent,
   type PageRequirement,
@@ -50,14 +51,20 @@ import {
 } from "@/lib/brand-guideline-extractor";
 import { FigmaExporter, type WireframeForExport } from "@/lib/figma-export";
 import { SVGExporter, type WireframeSVGExport } from "@/lib/svg-exporter";
-import { PNGZipExporter, type WireframePNGExport } from "@/lib/png-zip-exporter";
-import { HTMLToImageExporter, type WireframeHTMLToImageExport } from "@/lib/html-to-image-exporter";
+import {
+  PNGZipExporter,
+  type WireframePNGExport,
+} from "@/lib/png-zip-exporter";
+import {
+  HTMLToImageExporter,
+  type WireframeHTMLToImageExport,
+} from "@/lib/html-to-image-exporter";
 
 import { BrandGuidelinesUpload } from "@/components/brand-guidelines-upload";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { 
+import {
   createPDFExtractionClient,
-  type PDFExtractionResult 
+  type PDFExtractionResult,
 } from "@/lib/pdf-extraction-client";
 
 // External API Brand Data Interface
@@ -3988,7 +3995,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const wireframeId =
                               wireframe?.id ||
                               encodeURIComponent(page.pageName);
-                            window.location.href = `/html-editor?id=${wireframeId}`;
+                            window.location.href = `${ROUTES.HTML_EDITOR}?id=${wireframeId}`;
                           }}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />
@@ -5790,37 +5797,40 @@ ${selectedPageCode.jsCode}
                   Generated Wireframes ({generatedWireframes.length})
                 </h2>
                 <div className="flex gap-3">
-                  
-                  
                   <Button
                     onClick={async () => {
                       try {
                         toast({
                           title: "Generating PNG ZIP",
-                          description: "Converting wireframes to PNG using html-to-image library...",
+                          description:
+                            "Converting wireframes to PNG using html-to-image library...",
                         });
 
-                        const wireframesForPNG: WireframeHTMLToImageExport[] = generatedWireframes.map(w => ({
-                          id: w.id,
-                          pageName: w.pageName,
-                          htmlCode: w.htmlCode,
-                          cssCode: w.cssCode,
-                          userType: w.userType || 'User',
-                          features: w.features || [],
-                          createdAt: w.createdAt || new Date().toISOString(),
-                        }));
-                        
+                        const wireframesForPNG: WireframeHTMLToImageExport[] =
+                          generatedWireframes.map((w) => ({
+                            id: w.id,
+                            pageName: w.pageName,
+                            htmlCode: w.htmlCode,
+                            cssCode: w.cssCode,
+                            userType: "User",
+                            features: [],
+                            createdAt: new Date().toISOString(),
+                          }));
+
                         if (wireframesForPNG.length === 0) {
                           toast({
                             title: "No Wireframes Found",
-                            description: "Please generate wireframes first before exporting as PNG ZIP",
+                            description:
+                              "Please generate wireframes first before exporting as PNG ZIP",
                             variant: "destructive",
                           });
                           return;
                         }
 
-                        await HTMLToImageExporter.exportAllWireframesAsHTMLToImagePNG(wireframesForPNG);
-                        
+                        await HTMLToImageExporter.exportAllWireframesAsHTMLToImagePNG(
+                          wireframesForPNG
+                        );
+
                         toast({
                           title: "PNG ZIP Export Complete",
                           description: `Downloaded ${wireframesForPNG.length} wireframes as complete PNG images using html-to-image`,
@@ -5829,7 +5839,8 @@ ${selectedPageCode.jsCode}
                         console.error("html-to-image PNG export error:", error);
                         toast({
                           title: "Export Failed",
-                          description: "Failed to export wireframes using html-to-image. Please try again.",
+                          description:
+                            "Failed to export wireframes using html-to-image. Please try again.",
                           variant: "destructive",
                         });
                       }
@@ -5901,22 +5912,28 @@ ${selectedPageCode.jsCode}
                                   pageName: wireframe.pageName,
                                   htmlCode: wireframe.htmlCode,
                                   cssCode: wireframe.cssCode,
-                                  userType: wireframe.userType || 'User',
-                                  features: wireframe.features || [],
-                                  createdAt: wireframe.createdAt || new Date().toISOString(),
+                                  userType: "User",
+                                  features: [],
+                                  createdAt: new Date().toISOString(),
                                 };
-                                
-                                await SVGExporter.downloadWireframeSVG(wireframeForSVG);
-                                
+
+                                await SVGExporter.downloadWireframeSVG(
+                                  wireframeForSVG
+                                );
+
                                 toast({
                                   title: "SVG Downloaded",
                                   description: `${wireframe.pageName} exported as exact visual SVG`,
                                 });
                               } catch (error) {
-                                console.error("Error converting wireframe to SVG:", error);
+                                console.error(
+                                  "Error converting wireframe to SVG:",
+                                  error
+                                );
                                 toast({
                                   title: "Export Failed",
-                                  description: "Failed to convert wireframe to SVG",
+                                  description:
+                                    "Failed to convert wireframe to SVG",
                                   variant: "destructive",
                                 });
                               }
@@ -6031,7 +6048,7 @@ ${selectedPageCode.jsCode}
                                 wireframe
                               );
                             }
-                            window.location.href = `/html-editor?id=${wireframe.id}`;
+                            window.location.href = `${ROUTES.HTML_EDITOR}?id=${wireframe.id}`;
                           }}
                         >
                           <Edit3 className="h-3 w-3 mr-1" />
